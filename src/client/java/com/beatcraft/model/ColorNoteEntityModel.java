@@ -28,11 +28,13 @@ public class ColorNoteEntityModel extends EntityModel<ColorNoteEntity> {
     }
 
     public static void addBody(ModelPartData base) {
-        base.addChild("body", ModelPartBuilder.create().cuboid(-6, -6, -6, 12, 12, 12), ModelTransform.pivot(0,0,0));
+        float size = 16;
+        float offset = -size * 0.5f;
+        base.addChild("body", ModelPartBuilder.create().cuboid(offset, offset, offset, size, size, size), ModelTransform.pivot(0,0,0));
     }
 
     public static void addArrow(ModelPartData base) {
-        base.addChild("arrow", ModelPartBuilder.create().cuboid(-4, 2, 6, 8, 1, 2), ModelTransform.pivot(0,0,0));
+        base.addChild("arrow", ModelPartBuilder.create().cuboid(-4, 2, 7.9f, 8, 1, 2), ModelTransform.pivot(0,0,0));
     }
 
     public void renderColored(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {

@@ -26,6 +26,8 @@ public class ColorNoteRenderer extends EntityRenderer<ColorNoteEntity> {
 
     @Override
     public void render(ColorNoteEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+        matrices.scale(0.6f, 0.6f, 0.6f);
+
         RenderLayer renderLayer = model.getLayer(getTexture(entity));
         VertexConsumer vertices = vertexConsumers.getBuffer(renderLayer);
         Color color = entity.color;

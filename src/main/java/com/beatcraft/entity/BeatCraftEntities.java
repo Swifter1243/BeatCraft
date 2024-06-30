@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 
 public class BeatCraftEntities {
     public static final EntityType<ColorNoteEntity> COLOR_NOTE = register(
-            "color_note", EntityType.Builder.create(ColorNoteEntity::new, SpawnGroup.MISC));
+            "color_note", EntityType.Builder.create(ColorNoteEntity::new, SpawnGroup.MISC).setDimensions(0.6f, 0.6f));
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> type) {
         Identifier identifier = new Identifier(BeatCraft.MOD_ID, name);

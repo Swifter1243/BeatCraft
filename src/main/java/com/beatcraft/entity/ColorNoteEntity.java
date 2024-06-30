@@ -7,7 +7,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
 public class ColorNoteEntity extends Entity {
-
     public Color color = new Color();
 
     public ColorNoteEntity(EntityType<?> type, World world) {
