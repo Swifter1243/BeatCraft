@@ -1,6 +1,7 @@
 package com.beatcraft.entity;
 
 import com.beatcraft.BeatCraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -8,9 +9,11 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 
 public class BeatCraftEntities {
-    public static final EntityType<ColorNoteEntity> COLOR_NOTE = Registry.register(
-            Registries.ENTITY_TYPE,
-            new Identifier(BeatCraft.MOD_ID, "color_note"),
-            EntityType.Builder.create(ColorNoteEntity::new, SpawnGroup.MISC).build(BeatCraft.MOD_ID)
-    );
+    public static final EntityType<ColorNoteEntity> COLOR_NOTE = register(
+            "color_note", EntityType.Builder.create(ColorNoteEntity::new, SpawnGroup.MISC));
+
+    private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> type) {
+        Identifier identifier = new Identifier(BeatCraft.MOD_ID, name);
+        return Registry.register(Registries.ENTITY_TYPE, identifier, type.build());
+    }
 }
