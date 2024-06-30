@@ -16,10 +16,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.beatcraft.ExampleMod"
+			"com.beatcraft.BeatCraft"
 		],
 		"client": [
-			"com.beatcraft.ExampleModClient"
+			"com.beatcraft.BeatCraftClient"
 		]
 	},
 	"mixins": [
