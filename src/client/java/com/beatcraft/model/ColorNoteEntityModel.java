@@ -23,11 +23,24 @@ public class ColorNoteEntityModel extends EntityModel<ColorNoteEntity> {
         ModelPartData modelPartData = modelData.getRoot();
         ModelPartData base = modelPartData.addChild("base", ModelPartBuilder.create(), ModelTransform.pivot(0F, 0F, 0F));
         addBody(base);
+        addArrow(base);
         return TexturedModelData.of(modelData, 64, 64);
     }
 
     public static void addBody(ModelPartData base) {
-        base.addChild("body", ModelPartBuilder.create().cuboid(-6F, -6F, -6F, 12F, 12F, 12F), ModelTransform.pivot(0,0,0));
+        base.addChild("body", ModelPartBuilder.create().cuboid(-6, -6, -6, 12, 12, 12), ModelTransform.pivot(0,0,0));
+    }
+
+    public static void addArrow(ModelPartData base) {
+        base.addChild("arrow", ModelPartBuilder.create().cuboid(-4, 2, 6, 8, 1, 2), ModelTransform.pivot(0,0,0));
+    }
+
+    public void renderColored(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+        ModelPart body = this.base.getChild("body");
+        ModelPart arrow = this.base.getChild("arrow");
+
+        body.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+        arrow.render(matrices, vertices, light, overlay, 1, 1, 1, alpha);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.beatcraft.entity;
 
+import com.beatcraft.data.Color;
 import com.beatcraft.model.ColorNoteEntityModel;
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -26,6 +28,8 @@ public class ColorNoteRenderer extends EntityRenderer<ColorNoteEntity> {
     public void render(ColorNoteEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         RenderLayer renderLayer = model.getLayer(getTexture(entity));
         VertexConsumer vertices = vertexConsumers.getBuffer(renderLayer);
-        model.render(matrices, vertices, light, 0, 1, 0, 0, 1);
+        Color color = entity.color;
+        int overlay = OverlayTexture.getUv(0, false);
+        model.renderColored(matrices, vertices, light, overlay, color.r, color.g, color.b, 1);
     }
 }
