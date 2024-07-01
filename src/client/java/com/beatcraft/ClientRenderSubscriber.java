@@ -28,7 +28,7 @@ public class ClientRenderSubscriber {
 
         matrices.translate(-0.5, -0.5, -0.5);
 
-        var modelID = new ModelIdentifier("minecraft", "enchanting_table", "inventory");
+        var modelID = new ModelIdentifier("minecraft", "stone", "inventory");
         var blockModel = mc.getBakedModelManager().getModel(modelID);
 
         for (int i = 0; i < 100; i++) {
