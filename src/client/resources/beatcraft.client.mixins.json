@@ -3,7 +3,7 @@
 	"package": "com.beatcraft.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"ExampleClientMixin"
+		"WorldRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
