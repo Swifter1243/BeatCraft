@@ -7,7 +7,7 @@ public class BeatmapPlayer {
 
     public static boolean isPlaying = false;
 
-    public static float bpm = 60;
+    public static float bpm = 150;
     public static float beat = 0;
 
     public static void play() {
@@ -34,7 +34,6 @@ public class BeatmapPlayer {
 
     public static void progressSong() {
         float deltaTime = 1.0f / (float)mc.getCurrentFps();
-        float secondsToBeat = bpm / 60;
-        beat += deltaTime * secondsToBeat;
+        beat += BeatmapCalculations.secondsToBeats(deltaTime, bpm);
     }
 }

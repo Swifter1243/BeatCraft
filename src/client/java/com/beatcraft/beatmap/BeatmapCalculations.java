@@ -19,4 +19,12 @@ public class BeatmapCalculations {
     }
 
     public record Jumps(float halfDuration, float jumpDistance) {}
+
+    public static float secondsToBeats(float seconds, float bpm) {
+        return seconds * (bpm / 60);
+    }
+
+    public static float beatsToSeconds(float beats, float bpm) {
+        return beats * (60 / bpm);
+    }
 }
