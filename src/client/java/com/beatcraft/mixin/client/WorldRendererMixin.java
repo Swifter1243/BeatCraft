@@ -1,7 +1,7 @@
 package com.beatcraft.mixin.client;
 
 
-import com.beatcraft.ClientRenderSubscriber;
+import com.beatcraft.render.ClientRenderSubscriber;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;

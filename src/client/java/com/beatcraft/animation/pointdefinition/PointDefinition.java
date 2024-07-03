@@ -39,16 +39,7 @@ public abstract class PointDefinition<T> {
         return interpolatePoints(indexInfo.left, indexInfo.right, betweenTime);
     }
 
-    private static class TimeIndexInfo {
-        public TimeIndexInfo(int left, int right)
-        {
-            this.left = left;
-            this.right = right;
-        }
-
-        int left;
-        int right;
-    }
+    private record TimeIndexInfo(int left, int right) {}
 
     private TimeIndexInfo searchIndexAtTime(float time) {
         int left = 0;
