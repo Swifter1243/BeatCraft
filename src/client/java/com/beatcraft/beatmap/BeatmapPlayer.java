@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.math.GenericMath;
 import net.minecraft.client.MinecraftClient;
 
 public class BeatmapPlayer {
@@ -28,13 +29,13 @@ public class BeatmapPlayer {
     }
 
     public static void onFrame() {
-        if (isPlaying) {
+        if (isPlaying && !mc.isPaused()) {
             progressSong();
         }
     }
 
     public static void progressSong() {
         float deltaTime = 1.0f / (float)mc.getCurrentFps();
-        beat += BeatmapCalculations.secondsToBeats(deltaTime, bpm) * speed;
+        beat += GenericMath.secondsToBeats(deltaTime, bpm) * speed;
     }
 }

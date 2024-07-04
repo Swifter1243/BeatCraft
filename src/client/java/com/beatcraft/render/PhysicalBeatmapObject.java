@@ -1,10 +1,11 @@
 package com.beatcraft.render;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
-import com.beatcraft.beatmap.BeatmapCalculations;
 import com.beatcraft.beatmap.BeatmapPlayer;
 import com.beatcraft.data.BeatmapObject;
 import com.beatcraft.math.GenericMath;
+import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
@@ -18,14 +19,14 @@ public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends Wor
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     public T data;
-    BeatmapCalculations.Jumps jumps;
+    NoteMath.Jumps jumps;
     public Vector3f position = new Vector3f();
     public Quaternionf rotation = new Quaternionf();
     public Vector3f scale = new Vector3f(1,1,1);
 
     PhysicalBeatmapObject(T data) {
         this.data = data;
-        this.jumps = BeatmapCalculations.getJumps(data.njs, data.offset, BeatmapPlayer.bpm);
+        this.jumps = NoteMath.getJumps(data.njs, data.offset, BeatmapPlayer.bpm);
     }
 
     public float getSpawnBeat() {
@@ -37,7 +38,7 @@ public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends Wor
     }
 
     public boolean shouldRender() {
-        float margin = BeatmapCalculations.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.bpm);
+        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.bpm);
         boolean isAboveSpawnBeat = BeatmapPlayer.beat >= getSpawnBeat() - margin;
         boolean isBelowDespawnBeat = BeatmapPlayer.beat <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
