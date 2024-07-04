@@ -1,9 +1,8 @@
 package com.beatcraft.render;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
-import com.beatcraft.beatmap.BeatmapPlayer;
-import com.beatcraft.data.BeatmapObject;
+import com.beatcraft.beatmap.data.BeatmapObject;
+import com.beatcraft.beatmap.data.Info;
 import com.beatcraft.math.GenericMath;
 import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
@@ -26,7 +25,7 @@ public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends Wor
 
     PhysicalBeatmapObject(T data) {
         this.data = data;
-        this.jumps = NoteMath.getJumps(data.njs, data.offset, BeatmapPlayer.bpm);
+        this.jumps = NoteMath.getJumps(data.njs, data.offset, BeatmapPlayer.currentInfo.bpm);
     }
 
     public float getSpawnBeat() {
@@ -38,9 +37,9 @@ public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends Wor
     }
 
     public boolean shouldRender() {
-        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.bpm);
-        boolean isAboveSpawnBeat = BeatmapPlayer.beat >= getSpawnBeat() - margin;
-        boolean isBelowDespawnBeat = BeatmapPlayer.beat <= getDespawnBeat() + margin;
+        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.bpm);
+        boolean isAboveSpawnBeat = BeatmapPlayer.currentBeat >= getSpawnBeat() - margin;
+        boolean isBelowDespawnBeat = BeatmapPlayer.currentBeat <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
     }
 
@@ -103,7 +102,7 @@ public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends Wor
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         if (!shouldRender()) return;
 
-        updateTime(BeatmapPlayer.beat);
+        updateTime(BeatmapPlayer.currentBeat);
         matrices.translate(position.x, position.y, position.z);
         matrices.scale(scale.x * 0.6f, scale.y * 0.6f, scale.z * 0.6f);
         matrices.multiply(rotation);

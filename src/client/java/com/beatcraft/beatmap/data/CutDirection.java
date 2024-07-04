@@ -1,4 +1,4 @@
-package com.beatcraft.data;
+package com.beatcraft.beatmap.data;
 
 public enum CutDirection {
     UP,

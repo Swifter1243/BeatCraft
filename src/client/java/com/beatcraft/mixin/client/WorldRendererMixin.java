@@ -1,7 +1,7 @@
 package com.beatcraft.mixin.client;
 
 
-import com.beatcraft.render.ClientRenderSubscriber;
+import com.beatcraft.render.BeatcraftRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -19,6 +19,6 @@ public class WorldRendererMixin {
     public void render(
             MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix, CallbackInfo ci
     ) {
-        ClientRenderSubscriber.onRender(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix);
+        BeatcraftRenderer.onRender(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix);
     }
 }

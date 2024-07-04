@@ -5,7 +5,7 @@ import java.util.function.Function;
 public class Easing {
     // https://easings.net/
 
-    public static Function<float, float> getEasing(String easing) {
+    public static Function<Float, Float> getEasing(String easing) {
         return switch (easing) {
             case "easeStep" -> Easing::easeStep;
             case "easeOutQuad" -> Easing::easeOutQuad;

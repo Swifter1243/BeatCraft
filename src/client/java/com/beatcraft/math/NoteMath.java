@@ -1,6 +1,6 @@
 package com.beatcraft.math;
 
-import com.beatcraft.data.CutDirection;
+import com.beatcraft.beatmap.data.CutDirection;
 import org.joml.Math;
 import org.joml.Quaternionf;
 

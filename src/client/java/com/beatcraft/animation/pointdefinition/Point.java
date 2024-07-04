@@ -5,6 +5,6 @@ import java.util.function.Function;
 public class Point<T> {
     T value;
     float time;
-    Function<float, float> easing;
+    Function<Float, Float> easing;
     boolean spline;
 }

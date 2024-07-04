@@ -1,6 +1,6 @@
 package com.beatcraft.render;
 
-import com.beatcraft.data.ColorNote;
+import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
