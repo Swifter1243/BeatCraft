@@ -3,38 +3,37 @@ package com.beatcraft.render;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.BeatmapCalculations;
 import com.beatcraft.beatmap.BeatmapPlayer;
+import com.beatcraft.data.BeatmapObject;
 import com.beatcraft.math.GenericMath;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public abstract class PhysicalBeatmapObject extends WorldRenderer {
+public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends WorldRenderer {
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 2;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
-    public float beat;
-    public float njs;
-    public float offset;
+    protected Quaternionf baseRotation = new Quaternionf();
+    public T data;
     BeatmapCalculations.Jumps jumps;
     public Vector3f position = new Vector3f();
     public Quaternionf rotation = new Quaternionf();
     public Vector3f scale = new Vector3f(1,1,1);
 
-    PhysicalBeatmapObject(float beat, float njs, float offset) {
-        this.beat = beat;
-        this.njs = njs;
-        this.offset = offset;
-        this.jumps = BeatmapCalculations.getJumps(njs, offset, BeatmapPlayer.bpm);
+    PhysicalBeatmapObject(T data) {
+        this.data = data;
+        this.jumps = BeatmapCalculations.getJumps(data.njs, data.offset, BeatmapPlayer.bpm);
     }
 
     public float getSpawnBeat() {
-        return beat - jumps.halfDuration();
+        return data.beat - jumps.halfDuration();
     }
 
     public float getDespawnBeat() {
-        return beat + jumps.halfDuration();
+        return data.beat + jumps.halfDuration();
     }
 
     public boolean shouldRender() {
@@ -72,13 +71,21 @@ public abstract class PhysicalBeatmapObject extends WorldRenderer {
         }
     }
 
+    protected Vector2f get2DPosition() {
+        return new Vector2f(
+                (this.data.x - 1.5f) * 0.6f * -1,
+                (this.data.y) * 0.6f
+        );
+    }
+
     protected void doSpawnAnimation(float time) {
         float lifetime = GenericMath.clamp01(GenericMath.inverseLerp(getDespawnBeat(), getSpawnBeat(), time));
         float spawnLifetime = GenericMath.clamp01(1 - ((lifetime - 0.5f) * 2));
         float jumpTime = Easing.easeOutQuad(spawnLifetime);
 
-        float noteY = 1; // temp
-        position.y = Math.lerp(1.1f, noteY + 1.1f, jumpTime);
+        Vector2f grid = get2DPosition();
+        position.x = grid.x;
+        position.y = Math.lerp(1.1f, grid.y + 1.1f, jumpTime);
 
         if (lifetime > 0.5) {
             doSpawnRotation(spawnLifetime);
@@ -88,7 +95,7 @@ public abstract class PhysicalBeatmapObject extends WorldRenderer {
     protected void doSpawnRotation(float spawnLifetime) {
         float rotationLifetime = GenericMath.clamp01(spawnLifetime / 0.3f);
         float rotationTime = Easing.easeOutQuad(rotationLifetime);
-        rotation = spawnQuaternion.slerp(new Quaternionf(), rotationTime);
+        rotation = new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
     }
 
     @Override
@@ -99,6 +106,7 @@ public abstract class PhysicalBeatmapObject extends WorldRenderer {
         matrices.translate(position.x, position.y, position.z);
         matrices.scale(scale.x * 0.6f, scale.y * 0.6f, scale.z * 0.6f);
         matrices.multiply(rotation);
+        matrices.multiply(new Quaternionf().rotateZ(Math.toRadians(90))); // TODO: TEMPORARY MEASURE, REMOVE LATER.
         matrices.translate(-0.5, -0.5, -0.5);
 
         objectRender(matrices, vertexConsumer);
