@@ -5,7 +5,6 @@ import com.beatcraft.beatmap.BeatmapPlayer;
 import com.beatcraft.data.ColorNote;
 import com.beatcraft.data.CutDirection;
 import com.beatcraft.render.ClientRenderSubscriber;
-import com.beatcraft.render.PhysicalBeatmapObject;
 import com.beatcraft.render.PhysicalColorNote;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -51,6 +50,15 @@ public class BeatCraftClient implements ClientModInitializer {
                             return 1;
                         }
                 )));
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("songspeed")
+                .then(argument("speed", FloatArgumentType.floatArg(0)
+                ).executes(context -> {
+                    float speed = FloatArgumentType.getFloat(context, "speed");
+                    BeatmapPlayer.speed = speed;
+                    context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
+                    return 1;
+                }))));
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("clearobjects")
                 .executes(context -> {
