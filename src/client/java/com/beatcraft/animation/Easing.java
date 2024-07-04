@@ -79,7 +79,7 @@ public class Easing {
     }
 
     public static float easeOutCubic(float x) {
-        return 1 - (float) (float) Math.pow(1 - x, 3);
+        return 1 - (float) Math.pow(1 - x, 3);
     }
 
     public static float easeInOutCubic(float x) {
@@ -91,7 +91,7 @@ public class Easing {
     }
 
     public static float easeOutQuart(float x) {
-        return 1 - (float) (float) Math.pow(1 - x, 4);
+        return 1 - (float) Math.pow(1 - x, 4);
     }
 
     public static float easeInOutQuart(float x) {
@@ -103,7 +103,7 @@ public class Easing {
     }
 
     public static float easeOutQuint(float x) {
-        return 1 - (float) (float) Math.pow(1 - x, 5);
+        return 1 - (float) Math.pow(1 - x, 5);
     }
 
     public static float easeInOutQuint(float x) {
@@ -111,11 +111,11 @@ public class Easing {
     }
 
     public static float easeInExpo(float x) {
-        return x == 0 ? 0 : (float) (float) Math.pow(2, 10 * x - 10);
+        return x == 0 ? 0 : (float) Math.pow(2, 10 * x - 10);
     }
 
     public static float easeOutExpo(float x) {
-        return x == 1 ? 1 : 1 - (float) (float) Math.pow(2, -10 * x);
+        return x == 1 ? 1 : 1 - (float) Math.pow(2, -10 * x);
     }
 
     public static float easeInOutExpo(float x) {
@@ -124,8 +124,8 @@ public class Easing {
                 : x == 1
                 ? 1
                 : x < 0.5
-                ? (float) (float) Math.pow(2, 20 * x - 10) / 2
-                : (2 - (float) (float) Math.pow(2, -20 * x + 10)) / 2;
+                ? (float) Math.pow(2, 20 * x - 10) / 2
+                : (2 - (float) Math.pow(2, -20 * x + 10)) / 2;
     }
 
     public static float easeInCirc(float x) {
