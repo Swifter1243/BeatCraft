@@ -30,12 +30,8 @@ public class BeatmapPlayer {
 
     public static void onFrame() {
         if (isPlaying && !mc.isPaused()) {
-            progressSong();
+            float deltaTime = 1.0f / (float)mc.getCurrentFps();
+            beat += GenericMath.secondsToBeats(deltaTime, bpm) * speed;
         }
-    }
-
-    public static void progressSong() {
-        float deltaTime = 1.0f / (float)mc.getCurrentFps();
-        beat += GenericMath.secondsToBeats(deltaTime, bpm) * speed;
     }
 }
