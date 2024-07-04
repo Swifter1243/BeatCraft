@@ -13,7 +13,7 @@ public class BeatmapPlayer {
     public static float speed = 1;
 
     public static void play() {
-        play(beat);
+        isPlaying = true;
     }
     public static void play(float beat) {
         BeatmapPlayer.beat = beat;
