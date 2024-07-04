@@ -34,7 +34,7 @@ public abstract class PointDefinition<T> {
             betweenTime = (time - leftPoint.time) / divisor;
         }
 
-        betweenTime = Easing.applyEasing(betweenTime, rightPoint.easing);
+        betweenTime = rightPoint.easing.apply(betweenTime);
 
         return interpolatePoints(indexInfo.left, indexInfo.right, betweenTime);
     }

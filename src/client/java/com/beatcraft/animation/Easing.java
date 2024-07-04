@@ -1,43 +1,53 @@
 package com.beatcraft.animation;
 
+import java.util.function.Function;
+
 public class Easing {
     // https://easings.net/
 
-    public static float applyEasing(float x, String easing) {
+    public static Function<float, float> getEasing(String easing) {
         return switch (easing) {
-            case "easeStep" -> x >= 1 ? 1 : 0;
-            case "easeOutQuad" -> easeOutQuad(x);
-            case "easeInQuad" -> easeInQuad(x);
-            case "easeInOutQuad" -> easeInOutQuad(x);
-            case "easeInCubic" -> easeInCubic(x);
-            case "easeOutCubic" -> easeOutCubic(x);
-            case "easeInOutCubic" -> easeInOutCubic(x);
-            case "easeInQuart" -> easeInQuart(x);
-            case "easeOutQuart" -> easeOutQuart(x);
-            case "easeInOutQuart" -> easeInOutQuart(x);
-            case "easeInQuint" -> easeInQuint(x);
-            case "easeOutQuint" -> easeOutQuint(x);
-            case "easeInOutQuint" -> easeInOutQuint(x);
-            case "easeInSine" -> easeInSine(x);
-            case "easeOutSine" -> easeOutSine(x);
-            case "easeInOutSine" -> easeInOutSine(x);
-            case "easeInCirc" -> easeInCirc(x);
-            case "easeOutCirc" -> easeOutCirc(x);
-            case "easeInOutCirc" -> easeInOutCirc(x);
-            case "easeInExpo" -> easeInExpo(x);
-            case "easeOutExpo" -> easeOutExpo(x);
-            case "easeInOutExpo" -> easeInOutExpo(x);
-            case "easeInElastic" -> easeInElastic(x);
-            case "easeOutElastic" -> easeOutElastic(x);
-            case "easeInOutElastic" -> easeInOutElastic(x);
-            case "easeInBack" -> easeInBack(x);
-            case "easeOutBack" -> easeOutBack(x);
-            case "easeInOutBack" -> easeInOutBack(x);
-            case "easeInBounce" -> easeInBounce(x);
-            case "easeOutBounce" -> easeOutBounce(x);
-            case "easeInOutBounce" -> easeInOutBounce(x);
-            default -> x;
+            case "easeStep" -> Easing::easeStep;
+            case "easeOutQuad" -> Easing::easeOutQuad;
+            case "easeInQuad" -> Easing::easeInQuad;
+            case "easeInOutQuad" -> Easing::easeInOutQuad;
+            case "easeInCubic" -> Easing::easeInCubic;
+            case "easeOutCubic" -> Easing::easeOutCubic;
+            case "easeInOutCubic" -> Easing::easeInOutCubic;
+            case "easeInQuart" -> Easing::easeInQuart;
+            case "easeOutQuart" -> Easing::easeOutQuart;
+            case "easeInOutQuart" -> Easing::easeInOutQuart;
+            case "easeInQuint" -> Easing::easeInQuint;
+            case "easeOutQuint" -> Easing::easeOutQuint;
+            case "easeInOutQuint" -> Easing::easeInOutQuint;
+            case "easeInSine" -> Easing::easeInSine;
+            case "easeOutSine" -> Easing::easeOutSine;
+            case "easeInOutSine" -> Easing::easeInOutSine;
+            case "easeInCirc" -> Easing::easeInCirc;
+            case "easeOutCirc" -> Easing::easeOutCirc;
+            case "easeInOutCirc" -> Easing::easeInOutCirc;
+            case "easeInExpo" -> Easing::easeInExpo;
+            case "easeOutExpo" -> Easing::easeOutExpo;
+            case "easeInOutExpo" -> Easing::easeInOutExpo;
+            case "easeInElastic" -> Easing::easeInElastic;
+            case "easeOutElastic" -> Easing::easeOutElastic;
+            case "easeInOutElastic" -> Easing::easeInOutElastic;
+            case "easeInBack" -> Easing::easeInBack;
+            case "easeOutBack" -> Easing::easeOutBack;
+            case "easeInOutBack" -> Easing::easeInOutBack;
+            case "easeInBounce" -> Easing::easeInBounce;
+            case "easeOutBounce" -> Easing::easeOutBounce;
+            case "easeInOutBounce" -> Easing::easeInOutBounce;
+            default -> Easing::easeLinear;
         };
+    }
+
+    public static float easeStep(float x) {
+        return x >= 1 ? 1 : 0;
+    }
+
+    public static float easeLinear(float x) {
+        return x;
     }
 
     public static float easeInSine(float x) {
