@@ -6,9 +6,9 @@ import com.beatcraft.render.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-public class DifficultyV3 extends Difficulty {
+public class DifficultyV4 extends Difficulty {
     @Override
-    DifficultyV3 load(JsonObject json, Info.SetDifficulty setDifficulty) {
+    DifficultyV4 load(JsonObject json, Info.SetDifficulty setDifficulty) {
         loadNotes(json, setDifficulty);
 
         return this;
@@ -16,12 +16,15 @@ public class DifficultyV3 extends Difficulty {
 
     void loadNotes(JsonObject json, Info.SetDifficulty setDifficulty) {
         JsonArray rawColorNotes = json.getAsJsonArray("colorNotes");
+        JsonArray rawColorNotesData = json.getAsJsonArray("colorNoteData");
 
         rawColorNotes.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            ColorNote note = new ColorNote().loadV3(obj, setDifficulty);
+            int lutIndex = obj.get("i").getAsInt();
+            JsonObject lut = rawColorNotesData.get(lutIndex).getAsJsonObject();
+
+            ColorNote note = new ColorNote().loadV4(obj, lut, setDifficulty);
             colorNotes.add(new PhysicalColorNote(note));
         });
     }
-
 }

@@ -8,10 +8,12 @@ public class Info {
     public float bpm;
     public HashMap<String, StyleSet> styleSets = new HashMap<>();
 
-    public Info load(JsonObject json) {
-        bpm = json.get("_beatsPerMinute").getAsFloat();
+    public static Info from(JsonObject json) {
+        Info info = new Info();
 
-        return this;
+        info.bpm = json.get("_beatsPerMinute").getAsFloat();
+
+        return info;
     }
 
     public static class StyleSet {
@@ -23,11 +25,13 @@ public class Info {
         public float offset;
         // also color palette shit goes here too, but I Do Not Care for now
 
-        public SetDifficulty load(JsonObject json) {
-            njs = json.get("_noteJumpMovementSpeed").getAsFloat();
-            offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+        public static SetDifficulty from(JsonObject json) {
+            SetDifficulty setDifficulty = new SetDifficulty();
 
-            return this;
+            setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
+            setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+
+            return setDifficulty;
         }
     }
 }

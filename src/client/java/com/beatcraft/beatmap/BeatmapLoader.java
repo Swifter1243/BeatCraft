@@ -16,7 +16,7 @@ public class BeatmapLoader {
         String jsonString = Files.readString(Paths.get(path));
         JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
 
-        Info info = new Info().load(json);
+        Info info = Info.from(json);
 
         JsonArray styleSetsRaw = json.get("_difficultyBeatmapSets").getAsJsonArray();
         styleSetsRaw.forEach(styleSetRaw -> {
@@ -29,7 +29,7 @@ public class BeatmapLoader {
             JsonArray difficultiesRaw = styleSetObject.get("_difficultyBeatmaps").getAsJsonArray();
             difficultiesRaw.forEach(difficultyRaw -> {
                 JsonObject difficultyObject = difficultyRaw.getAsJsonObject();
-                Info.SetDifficulty setDifficulty = new Info.SetDifficulty().load(difficultyObject);
+                Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(difficultyObject);
                 String fileName = difficultyObject.get("_beatmapFilename").getAsString();
                 styleSet.difficulties.put(fileName, setDifficulty);
             });
@@ -60,25 +60,29 @@ public class BeatmapLoader {
         return getDifficultyFromFile(path, setDifficulty);
     }
 
-    public static Difficulty getDifficultyFromFile(String path, Info.SetDifficulty setDifficulty) throws IOException {
-        String jsonString = Files.readString(Paths.get(path));
-        JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
-
-        String version = "";
+    private static int getMajorVersion(JsonObject json) {
+        String version;
         if (json.has("version")) {
             version = json.get("version").getAsString();
         } else {
             version = json.get("_version").getAsString();
         }
-        int majorVersion = Integer.parseInt(version.substring(0, 1));
+        return Integer.parseInt(version.substring(0, 1));
+    }
 
+    public static Difficulty getDifficultyFromFile(String path, Info.SetDifficulty setDifficulty) throws IOException {
+        String jsonString = Files.readString(Paths.get(path));
+        JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+
+        int majorVersion = getMajorVersion(json);
         switch (majorVersion) {
-            case 3: {
+            case 2 -> {
+                return new DifficultyV2().load(json, setDifficulty);
+            }
+            case 3 -> {
                 return new DifficultyV3().load(json, setDifficulty);
             }
-            default: {
-                throw new UnrecognizedFormatException();
-            }
+            default -> throw new UnrecognizedFormatException();
         }
     }
 }

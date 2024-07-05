@@ -1,8 +1,7 @@
 package com.beatcraft.render;
 
 import com.beatcraft.animation.Easing;
-import com.beatcraft.beatmap.data.BeatmapObject;
-import com.beatcraft.beatmap.data.Info;
+import com.beatcraft.beatmap.data.GameplayObject;
 import com.beatcraft.math.GenericMath;
 import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
@@ -12,7 +11,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public abstract class PhysicalBeatmapObject<T extends BeatmapObject> extends WorldRenderer {
+public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends WorldRenderer {
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 2;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
