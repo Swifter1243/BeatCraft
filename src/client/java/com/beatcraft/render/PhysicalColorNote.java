@@ -15,15 +15,7 @@ import org.joml.Quaternionf;
 public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
     public static final ModelIdentifier colorNoteArrowModelID = new ModelIdentifier("beatcraft", "color_note_arrow", "inventory");
     public static final ModelIdentifier colorNoteDotModelID = new ModelIdentifier("beatcraft", "color_note_dot", "inventory");
-    private static BakedModel colorNoteArrowModel;
-    private static BakedModel colorNoteArrowDot;
     private static final int overlay = OverlayTexture.getUv(0, false);
-
-    public static void loadModels() {
-        if (colorNoteArrowModel != null) return;
-        colorNoteArrowModel = mc.getBakedModelManager().getModel(colorNoteArrowModelID);
-        colorNoteArrowDot = mc.getBakedModelManager().getModel(colorNoteDotModelID);
-    }
 
     public PhysicalColorNote(ColorNote data) {
         super(data);
@@ -42,12 +34,12 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
         float green = 0;
         float blue = data.noteColor == NoteColor.BLUE ? 1 : 0;
 
-        loadModels();
-
+        BakedModel model;
         if (data.cutDirection == CutDirection.DOT) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, colorNoteArrowDot, red, green, blue, 255, overlay);
+            model = mc.getBakedModelManager().getModel(colorNoteDotModelID);
         } else {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, colorNoteArrowModel, red, green, blue, 255, overlay);
+            model = mc.getBakedModelManager().getModel(colorNoteArrowModelID);
         }
+        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, red, green, blue, 255, overlay);
     }
 }
