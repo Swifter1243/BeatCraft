@@ -2,12 +2,11 @@ package com.beatcraft.render;
 
 import org.joml.Quaternionf;
 import org.joml.Random;
-import org.joml.Vector3f;
 
 public class SpawnQuaternionPool {
 
     private static final Random random = new Random();
-    private static final float ROTATION_RANGE = 1;
+    private static final float ROTATION_RANGE = 0.6f;
 
     private static float getRandomComponent() {
         return (random.nextFloat() * ROTATION_RANGE * 2) - ROTATION_RANGE;

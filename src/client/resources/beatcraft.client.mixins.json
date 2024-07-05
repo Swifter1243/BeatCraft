@@ -1,11 +1,12 @@
 {
-	"required": true,
-	"package": "com.beatcraft.mixin.client",
-	"compatibilityLevel": "JAVA_21",
-	"client": [
-		"WorldRendererMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "com.beatcraft.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "CustomModelLoader",
+    "WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

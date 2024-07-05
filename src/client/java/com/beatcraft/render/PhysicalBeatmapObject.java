@@ -13,7 +13,8 @@ import org.joml.Vector3f;
 
 public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends WorldRenderer {
     private static final float JUMP_FAR_Z = 500;
-    private static final float JUMP_SECONDS = 2;
+    private static final float JUMP_SECONDS = 0.4f;
+    protected static final float SIZE_SCALAR = 0.5f;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     public T data;
@@ -103,9 +104,8 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
 
         updateTime(BeatmapPlayer.currentBeat);
         matrices.translate(position.x, position.y, position.z);
-        matrices.scale(scale.x * 0.6f, scale.y * 0.6f, scale.z * 0.6f);
+        matrices.scale(scale.x * SIZE_SCALAR, scale.y * SIZE_SCALAR, scale.z * SIZE_SCALAR);
         matrices.multiply(rotation);
-        matrices.multiply(new Quaternionf().rotateZ(Math.toRadians(90))); // TODO: TEMPORARY MEASURE, REMOVE LATER.
         matrices.translate(-0.5, -0.5, -0.5);
 
         objectRender(matrices, vertexConsumer);

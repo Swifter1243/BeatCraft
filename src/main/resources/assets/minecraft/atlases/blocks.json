@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "beatcraft:gameplay_objects/arrow"
+    },
+    {
+      "type": "single",
+      "resource": "beatcraft:gameplay_objects/color_note"
+    }
+  ]
+}
