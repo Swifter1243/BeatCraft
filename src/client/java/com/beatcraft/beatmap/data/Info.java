@@ -7,11 +7,13 @@ import java.util.HashMap;
 public class Info {
     public float bpm;
     public HashMap<String, StyleSet> styleSets = new HashMap<>();
+    String environmentName;
 
     public static Info from(JsonObject json) {
         Info info = new Info();
 
         info.bpm = json.get("_beatsPerMinute").getAsFloat();
+        info.environmentName = json.get("_environmentName").getAsString();
 
         return info;
     }
@@ -23,13 +25,46 @@ public class Info {
     public static class SetDifficulty {
         public float njs;
         public float offset;
-        // also color palette shit goes here too, but I Do Not Care for now
+        public ColorScheme colorScheme;
 
-        public static SetDifficulty from(JsonObject json) {
+        public static SetDifficulty from(JsonObject json, Info info) {
             SetDifficulty setDifficulty = new SetDifficulty();
 
             setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
             setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+            setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.environmentName);
+
+            if (json.has("_customData")) {
+                JsonObject customData = json.get("_customData").getAsJsonObject();
+
+                if (customData.has("_colorLeft")) {
+                    setDifficulty.colorScheme.noteLeftColor = Color.fromJsonObject(customData.get("_colorLeft").getAsJsonObject());
+                }
+                if (customData.has("_colorRight")) {
+                    setDifficulty.colorScheme.noteRightColor = Color.fromJsonObject(customData.get("_colorRight").getAsJsonObject());
+                }
+                if (customData.has("_obstacleColor")) {
+                    setDifficulty.colorScheme.obstacleColor = Color.fromJsonObject(customData.get("_obstacleColor").getAsJsonObject());
+                }
+                if (customData.has("_envColorLeft")) {
+                    setDifficulty.colorScheme.environmentLeftColor = Color.fromJsonObject(customData.get("_envColorLeft").getAsJsonObject());
+                }
+                if (customData.has("_envColorLeftBoost")) {
+                    setDifficulty.colorScheme.environmentLeftColorBoost = Color.fromJsonObject(customData.get("_envColorLeftBoost").getAsJsonObject());
+                }
+                if (customData.has("_envColorRight")) {
+                    setDifficulty.colorScheme.environmentRightColor = Color.fromJsonObject(customData.get("_envColorRight").getAsJsonObject());
+                }
+                if (customData.has("_envColorRightBoost")) {
+                    setDifficulty.colorScheme.environmentRightColorBoost = Color.fromJsonObject(customData.get("_envColorRightBoost").getAsJsonObject());
+                }
+                if (customData.has("_envColorWhite")) {
+                    setDifficulty.colorScheme.environmentWhiteColor = Color.fromJsonObject(customData.get("_envColorWhite").getAsJsonObject());
+                }
+                if (customData.has("_envColorWhiteBoost")) {
+                    setDifficulty.colorScheme.environmentWhiteColorBoost = Color.fromJsonObject(customData.get("_envColorWhiteBoost").getAsJsonObject());
+                }
+            }
 
             return setDifficulty;
         }

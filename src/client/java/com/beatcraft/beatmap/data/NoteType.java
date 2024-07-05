@@ -1,6 +1,6 @@
 package com.beatcraft.beatmap.data;
 
-public enum NoteColor {
+public enum NoteType {
     RED,
     BLUE
 }

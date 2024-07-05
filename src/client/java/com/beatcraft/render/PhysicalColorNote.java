@@ -2,7 +2,6 @@ package com.beatcraft.render;
 
 import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
-import com.beatcraft.beatmap.data.NoteColor;
 import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
@@ -30,16 +29,12 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         var localPos = matrices.peek();
 
-        float red = data.noteColor == NoteColor.RED ? 1 : 0;
-        float green = 0;
-        float blue = data.noteColor == NoteColor.BLUE ? 1 : 0;
-
         BakedModel model;
         if (data.cutDirection == CutDirection.DOT) {
             model = mc.getBakedModelManager().getModel(colorNoteDotModelID);
         } else {
             model = mc.getBakedModelManager().getModel(colorNoteArrowModelID);
         }
-        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, red, green, blue, 255, overlay);
+        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, data.color.red, data.color.green, data.color.blue, 255, overlay);
     }
 }

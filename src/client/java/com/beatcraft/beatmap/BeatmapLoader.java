@@ -29,7 +29,7 @@ public class BeatmapLoader {
             JsonArray difficultiesRaw = styleSetObject.get("_difficultyBeatmaps").getAsJsonArray();
             difficultiesRaw.forEach(difficultyRaw -> {
                 JsonObject difficultyObject = difficultyRaw.getAsJsonObject();
-                Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(difficultyObject);
+                Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(difficultyObject, info);
                 String fileName = difficultyObject.get("_beatmapFilename").getAsString();
                 styleSet.difficulties.put(fileName, setDifficulty);
             });
