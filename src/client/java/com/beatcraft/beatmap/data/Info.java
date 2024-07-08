@@ -2,24 +2,34 @@ package com.beatcraft.beatmap.data;
 
 import com.google.gson.JsonObject;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 
 public class Info {
     public float bpm;
-    public HashMap<String, StyleSet> styleSets = new HashMap<>();
-    String environmentName;
+    public String environmentName;
+    public String songFilename;
+    public String mapDirectory;
 
-    public static Info from(JsonObject json) {
+    public HashMap<String, StyleSet> styleSets = new HashMap<>();
+    public static class StyleSet {
+        public HashMap<String, SetDifficulty> difficulties = new HashMap<>();
+    }
+
+    public String attachPathToMapDirectory(String path) {
+        return Path.of(this.mapDirectory, path).toString();
+    }
+
+    public static Info from(JsonObject json, String path) {
         Info info = new Info();
+
+        info.mapDirectory = Path.of(path).getParent().toString();
 
         info.bpm = json.get("_beatsPerMinute").getAsFloat();
         info.environmentName = json.get("_environmentName").getAsString();
+        info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
 
         return info;
-    }
-
-    public static class StyleSet {
-        public HashMap<String, SetDifficulty> difficulties = new HashMap<>();
     }
 
     public static class SetDifficulty {

@@ -16,7 +16,7 @@ public class BeatmapLoader {
         String jsonString = Files.readString(Paths.get(path));
         JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
 
-        Info info = Info.from(json);
+        Info info = Info.from(json, path);
 
         JsonArray styleSetsRaw = json.get("_difficultyBeatmapSets").getAsJsonArray();
         styleSetsRaw.forEach(styleSetRaw -> {

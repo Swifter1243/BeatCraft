@@ -1,7 +1,7 @@
 package com.beatcraft;
 
 
-import com.beatcraft.beatmap.BeatmapLoader;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.render.BeatmapPlayer;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -75,9 +75,19 @@ public class BeatCraftClient implements ClientModInitializer {
                         BeatmapPlayer.setupDifficultyFromFile(path);
                     } catch (UnrecognizedFormatException e) {
                         context.getSource().sendError(Text.literal("That jawn is an unsupported version!"));
+                        e.printStackTrace();
                         return -1;
                     } catch (IOException e) {
                         context.getSource().sendError(Text.literal("That path didn't exist or something!"));
+                        e.printStackTrace();
+                        return -1;
+                    }
+
+                    try {
+                        BeatmapAudioPlayer.loadAudioFromFile(BeatmapPlayer.currentInfo.songFilename);
+                    } catch (IOException e) {
+                        context.getSource().sendError(Text.literal("The audio file didn't exist or something!"));
+                        e.printStackTrace();
                         return -1;
                     }
 
