@@ -27,6 +27,7 @@ public class BeatCraftClient implements ClientModInitializer {
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("playsong")
                 .executes(context -> {
+                    BeatmapPlayer.play();
                     context.getSource().sendFeedback(Text.literal("Song played"));
                     return 1;
                 })

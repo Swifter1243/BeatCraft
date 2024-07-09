@@ -83,6 +83,7 @@ public class BeatmapPlayer {
     }
 
     public static void play() {
+        BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
     }
     public static void play(float beat) {
