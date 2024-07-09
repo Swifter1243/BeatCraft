@@ -21,12 +21,52 @@ public class BeatmapPlayer {
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
 
-    private static float currentBeat = 0;
+    private static long lastNanoTime = 0;
+    private static long elapsedNanoTime = 0;
     private static float playbackSpeed = 1;
     private static boolean isPlaying = false;
 
     public static float getCurrentBeat() {
-        return currentBeat;
+        if (currentInfo == null) return 0;
+        return GenericMath.secondsToBeats(getCurrentSeconds(), currentInfo.bpm);
+    }
+
+    public static float getCurrentSeconds() {
+        return nanoToSeconds(elapsedNanoTime);
+    }
+
+    private static void setCurrentSeconds(float seconds) {
+        elapsedNanoTime = secondsToNano(seconds);
+    }
+
+    private static void setCurrentBeat(float beat) {
+        if (currentInfo == null) return;
+        float seconds = GenericMath.beatsToSeconds(beat, currentInfo.bpm);
+        elapsedNanoTime = secondsToNano(seconds);
+    }
+
+    private static float nanoToSeconds(long nanoseconds) {
+        return nanoseconds / 1000000000F;
+    }
+
+    private static long secondsToNano(float seconds) {
+        return (long)(seconds * 1000000000);
+    }
+
+    private static void updateLastNanoTime() {
+        lastNanoTime = System.nanoTime();
+    }
+
+    private static long getNanoDeltaTime() {
+        long nanoDeltaTime = System.nanoTime() - lastNanoTime;
+        updateLastNanoTime();
+
+        // Prevent lag spikes that are too big.
+        if (nanoDeltaTime > 1000000000) {
+            return 0;
+        }
+
+        return nanoDeltaTime;
     }
 
     public static float getPlaybackSpeed() {
@@ -46,7 +86,7 @@ public class BeatmapPlayer {
         isPlaying = true;
     }
     public static void play(float beat) {
-        BeatmapPlayer.currentBeat = beat;
+        setCurrentBeat(beat);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
     }
@@ -61,9 +101,11 @@ public class BeatmapPlayer {
 
     public static void onRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
         // Progress time
-        if (isPlaying && !mc.isPaused() && BeatmapAudioPlayer.ready()) {
-            float deltaTime = 1.0f / (float)mc.getCurrentFps();
-            currentBeat += GenericMath.secondsToBeats(deltaTime, currentInfo.bpm) * playbackSpeed;
+        long deltaNanoSeconds = getNanoDeltaTime();
+
+        boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.ready();
+        if (shouldMapPlay) {
+            elapsedNanoTime += deltaNanoSeconds * playbackSpeed;
         }
 
         // Handle Audio

@@ -51,8 +51,12 @@ public class BeatmapAudioPlayer {
         beatmapAudio.seek(time);
     }
 
+    public static void goToSecond(float second) {
+        beatmapAudio.seek(second);
+    }
+
     public static void syncTimeWithBeatmap() {
-        goToBeat(BeatmapPlayer.getCurrentBeat());
+        goToSecond(BeatmapPlayer.getCurrentSeconds());
     }
 
     public static boolean ready() {
