@@ -80,6 +80,16 @@ public class BeatCraftClient implements ClientModInitializer {
                         return -1;
                     }
                 }))));
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("scrubsong")
+                .then(argument("beats", FloatArgumentType.floatArg()).executes(context -> {
+                    float beats = FloatArgumentType.getFloat(context, "beats");
+                    float newBeat = Math.max(0.0f, BeatmapPlayer.getCurrentBeat() + beats);
+                    BeatmapPlayer.play(newBeat);
+
+                    context.getSource().sendFeedback(Text.literal("Scrubbed to beat " + newBeat + "!"));
+                    return 1;
+                }))));
     }
 
     private int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
