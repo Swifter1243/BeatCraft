@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap.data;
 
+import com.beatcraft.beatmap.Difficulty;
 import com.google.gson.JsonObject;
 
 public abstract class GameplayObject extends BeatmapObject {
@@ -9,8 +10,8 @@ public abstract class GameplayObject extends BeatmapObject {
     public int y = 0;
 
     @Override
-    public GameplayObject loadV2(JsonObject json, Info.SetDifficulty setDifficulty) {
-        super.loadV2(json, setDifficulty);
+    public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
+        super.loadV2(json, difficulty);
 
         x = json.get("_lineIndex").getAsInt();
         y = json.get("_lineLayer").getAsInt();
@@ -22,13 +23,13 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("_noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = setDifficulty.offset;
+                offset = difficulty.setDifficulty.offset;
             }
             if (customData.has("_noteJumpMovementSpeed")) {
                 njs = customData.get("_noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = setDifficulty.njs;
+                njs = difficulty.setDifficulty.njs;
             }
         }
 
@@ -36,8 +37,8 @@ public abstract class GameplayObject extends BeatmapObject {
     }
 
     @Override
-    public GameplayObject loadV3(JsonObject json, Info.SetDifficulty setDifficulty) {
-        super.loadV3(json, setDifficulty);
+    public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
 
         x = json.get("x").getAsInt();
         y = json.get("y").getAsInt();
@@ -49,13 +50,13 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = setDifficulty.offset;
+                offset = difficulty.setDifficulty.offset;
             }
             if (customData.has("noteJumpMovementSpeed")) {
                 njs = customData.get("noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = setDifficulty.njs;
+                njs = difficulty.setDifficulty.njs;
             }
         }
 
@@ -63,8 +64,8 @@ public abstract class GameplayObject extends BeatmapObject {
     }
 
     @Override
-    public BeatmapObject loadV4(JsonObject objectJson, JsonObject lutJson, Info.SetDifficulty setDifficulty) {
-        super.loadV4(objectJson, lutJson, setDifficulty);
+    public BeatmapObject loadV4(JsonObject objectJson, JsonObject lutJson, Difficulty difficulty) {
+        super.loadV4(objectJson, lutJson, difficulty);
 
         x = lutJson.get("x").getAsInt();
         y = lutJson.get("y").getAsInt();
@@ -76,13 +77,13 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = setDifficulty.offset;
+                offset = difficulty.setDifficulty.offset;
             }
             if (customData.has("noteJumpMovementSpeed")) {
                 njs = customData.get("noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = setDifficulty.njs;
+                njs = difficulty.setDifficulty.njs;
             }
         }
 

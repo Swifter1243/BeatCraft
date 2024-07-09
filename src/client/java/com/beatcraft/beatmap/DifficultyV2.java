@@ -9,15 +9,18 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 
 public class DifficultyV2 extends Difficulty {
+    public DifficultyV2(Info info, Info.SetDifficulty setDifficulty) {
+        super(info, setDifficulty);
+    }
 
     @Override
-    DifficultyV2 load(JsonObject json, Info.SetDifficulty setDifficulty) {
-        loadNotesAndBombs(json,setDifficulty);
+    DifficultyV2 load(JsonObject json) {
+        loadNotesAndBombs(json);
 
         return this;
     }
 
-    void loadNotesAndBombs(JsonObject json, Info.SetDifficulty setDifficulty) {
+    void loadNotesAndBombs(JsonObject json) {
         JsonArray rawNotes = json.getAsJsonArray("_notes");
         ArrayList<JsonObject> rawBombs = new ArrayList<>();
         ArrayList<JsonObject> rawColorNotes = new ArrayList<>();
@@ -33,7 +36,7 @@ public class DifficultyV2 extends Difficulty {
         });
 
         rawColorNotes.forEach(obj -> {
-            ColorNote note = new ColorNote().loadV2(obj, setDifficulty);
+            ColorNote note = new ColorNote().loadV2(obj, this);
             colorNotes.add(new PhysicalColorNote(note));
         });
     }

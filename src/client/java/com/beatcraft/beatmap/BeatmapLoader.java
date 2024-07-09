@@ -54,12 +54,6 @@ public class BeatmapLoader {
         return null;
     }
 
-    public static Difficulty getDifficultyFromFile(String path, Info info) throws IOException {
-        String fileName = getPathFileName(path);
-        Info.SetDifficulty setDifficulty = getSetDifficulty(fileName, info);
-        return getDifficultyFromFile(path, setDifficulty);
-    }
-
     private static int getMajorVersion(JsonObject json) {
         String version;
         if (json.has("version")) {
@@ -70,17 +64,25 @@ public class BeatmapLoader {
         return Integer.parseInt(version.substring(0, 1));
     }
 
-    public static Difficulty getDifficultyFromFile(String path, Info.SetDifficulty setDifficulty) throws IOException {
+    public static Difficulty getDifficultyFromFile(String path, Info info) throws IOException {
+        String fileName = getPathFileName(path);
+        Info.SetDifficulty setDifficulty = getSetDifficulty(fileName, info);
+        return getDifficultyFromFile(path, setDifficulty, info);
+    }
+    public static Difficulty getDifficultyFromFile(String path, Info.SetDifficulty setDifficulty, Info info) throws IOException {
         String jsonString = Files.readString(Paths.get(path));
         JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
 
         int majorVersion = getMajorVersion(json);
         switch (majorVersion) {
             case 2 -> {
-                return new DifficultyV2().load(json, setDifficulty);
+                return new DifficultyV2(info, setDifficulty).load(json);
             }
             case 3 -> {
-                return new DifficultyV3().load(json, setDifficulty);
+                return new DifficultyV3(info, setDifficulty).load(json);
+            }
+            case 4 -> {
+                return new DifficultyV4(info, setDifficulty).load(json);
             }
             default -> throw new UnrecognizedFormatException();
         }
