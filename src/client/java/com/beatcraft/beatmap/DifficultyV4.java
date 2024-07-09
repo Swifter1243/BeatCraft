@@ -16,7 +16,9 @@ public class DifficultyV4 extends Difficulty {
 
     void loadNotes(JsonObject json, Info.SetDifficulty setDifficulty) {
         JsonArray rawColorNotes = json.getAsJsonArray("colorNotes");
+        rawColorNotes.addAll(json.getAsJsonArray("fakeColorNotes"));
         JsonArray rawColorNotesData = json.getAsJsonArray("colorNoteData");
+        rawColorNotesData.addAll(json.getAsJsonArray("fakeColorNoteData"));
 
         rawColorNotes.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
