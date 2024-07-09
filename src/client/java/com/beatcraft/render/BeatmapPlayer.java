@@ -1,5 +1,6 @@
 package com.beatcraft.render;
 
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.Info;
@@ -29,6 +30,8 @@ public class BeatmapPlayer {
     }
     public static void play(float beat) {
         BeatmapPlayer.currentBeat = beat;
+        float time = GenericMath.beatsToSeconds(beat, currentInfo.bpm);
+        BeatmapAudioPlayer.beatmapAudio.seek(time); // TODO: Normalize beatmap to seconds.
         isPlaying = true;
     }
 
@@ -42,10 +45,13 @@ public class BeatmapPlayer {
 
     public static void onRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
         // Progress time
-        if (isPlaying && !mc.isPaused()) {
+        if (isPlaying && !mc.isPaused() && BeatmapAudioPlayer.ready()) {
             float deltaTime = 1.0f / (float)mc.getCurrentFps();
             currentBeat += GenericMath.secondsToBeats(deltaTime, currentInfo.bpm) * playbackSpeed;
         }
+
+        // Handle Audio
+        BeatmapAudioPlayer.onFrame();
 
         // Render beatmap
         if (currentBeatmap != null) {

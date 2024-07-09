@@ -6,8 +6,10 @@ import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.render.BeatmapPlayer;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 
@@ -51,8 +53,7 @@ public class BeatCraftClient implements ClientModInitializer {
                 })));
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("songspeed")
-                .then(argument("speed", FloatArgumentType.floatArg(0)
-                ).executes(context -> {
+                .then(argument("speed", FloatArgumentType.floatArg(0)).executes(context -> {
                     float speed = FloatArgumentType.getFloat(context, "speed");
                     BeatmapPlayer.playbackSpeed = speed;
                     context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
@@ -67,34 +68,35 @@ public class BeatCraftClient implements ClientModInitializer {
                 })));
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("loadmap")
-                .then(argument("path", StringArgumentType.greedyString()
-                ).executes(context -> {
+                .then(argument("path", StringArgumentType.greedyString()).executes(context -> {
                     String path = StringArgumentType.getString(context, "path");
 
-                    try {
-                        BeatmapPlayer.setupDifficultyFromFile(path);
-                    } catch (UnrecognizedFormatException e) {
-                        context.getSource().sendError(Text.literal("That jawn is an unsupported version!"));
-                        e.printStackTrace();
-                        return -1;
-                    } catch (IOException e) {
-                        context.getSource().sendError(Text.literal("That path didn't exist or something!"));
-                        e.printStackTrace();
+                    if (handleDifficultySetup(context, path) == 1) {
+                        BeatmapAudioPlayer.beatmapAudio.closeBuffer();
+                        BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.songFilename);
+                        BeatmapPlayer.restart();
+                        return 1;
+                    } else {
                         return -1;
                     }
-
-                    try {
-                        BeatmapAudioPlayer.loadAudioFromFile(BeatmapPlayer.currentInfo.songFilename);
-                    } catch (IOException e) {
-                        context.getSource().sendError(Text.literal("The audio file didn't exist or something!"));
-                        e.printStackTrace();
-                        return -1;
-                    }
-
-                    BeatmapPlayer.restart();
-                    context.getSource().sendFeedback(Text.literal("Beatmap loaded!"));
-                    return 1;
                 }))));
+    }
+
+    private int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
+        try {
+            BeatmapPlayer.setupDifficultyFromFile(path);
+        } catch (UnrecognizedFormatException e) {
+            context.getSource().sendError(Text.literal("That jawn is an unsupported version!"));
+            e.printStackTrace();
+            return -1;
+        } catch (IOException e) {
+            context.getSource().sendError(Text.literal("That path didn't exist or something!"));
+            e.printStackTrace();
+            return -1;
+        }
+
+        context.getSource().sendFeedback(Text.literal("Beatmap loaded!"));
+        return 1;
     }
 
     private CutDirection getCutFromString(String cutDirection) {

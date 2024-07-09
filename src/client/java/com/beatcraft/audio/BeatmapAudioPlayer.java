@@ -1,39 +1,47 @@
 package com.beatcraft.audio;
 
-import net.minecraft.client.sound.*;
-import org.lwjgl.openal.AL10;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 
 public class BeatmapAudioPlayer {
-    public static void loadAudioFromFile(String path) throws IOException {
-        InputStream inputStream = Files.newInputStream(Path.of(path));
-        OggAudioStream oggAudioStream = new OggAudioStream(inputStream);
+    private static final MinecraftClient mc = MinecraftClient.getInstance();
+    public static BeatmapAudio beatmapAudio = new BeatmapAudio();
+    public static CompletableFuture<Void> loadRequest = null;
 
-        ByteBuffer audioData = oggAudioStream.getBuffer();
+    public static void playAudioFromFile(String path) {
+        cancelLoad();
 
-        int format;
-        if (oggAudioStream.getFormat().getChannels() == 1) {
-            format = AL10.AL_FORMAT_MONO16;
-        } else if (oggAudioStream.getFormat().getChannels() == 2) {
-            format = AL10.AL_FORMAT_STEREO16;
-        } else {
-            throw new IllegalArgumentException("Unsupported number of channels: " + oggAudioStream.getFormat().getChannels());
+        loadRequest = CompletableFuture.runAsync(() -> {
+            try {
+                beatmapAudio.loadAudioFromFile(path);
+                beatmapAudio.play();
+            } catch (IOException e) {
+                throw new RuntimeException("Something FUCKED happened.", e);
+            }
+        });
+    }
+
+    private static void cancelLoad() {
+        if (loadRequest != null) {
+            loadRequest.cancel(true);
         }
+    }
 
-        int buffer = AL10.alGenBuffers();
-        AL10.alBufferData(buffer, format, audioData, (int)oggAudioStream.getFormat().getSampleRate());
+    public static void onFrame() {
+        if (mc.isPaused()) {
+            beatmapAudio.pause();
+        } else {
+            beatmapAudio.play();
+        }
+    }
 
-        oggAudioStream.close();
-        inputStream.close();
+    public static boolean ready() {
+        // load request isn't active
+        if (loadRequest == null) return false;
 
-        int source = AL10.alGenSources();
-        AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
-
-        AL10.alSourcePlay(source);
+        // load request is done and worked
+        return loadRequest.isDone() && !loadRequest.isCompletedExceptionally();
     }
 }
