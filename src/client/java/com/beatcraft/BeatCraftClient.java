@@ -55,7 +55,7 @@ public class BeatCraftClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("songspeed")
                 .then(argument("speed", FloatArgumentType.floatArg(0)).executes(context -> {
                     float speed = FloatArgumentType.getFloat(context, "speed");
-                    BeatmapPlayer.playbackSpeed = speed;
+                    BeatmapPlayer.setPlaybackSpeed(speed);
                     context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
                     return 1;
                 }))));

@@ -38,8 +38,8 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
 
     public boolean shouldRender() {
         float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.bpm);
-        boolean isAboveSpawnBeat = BeatmapPlayer.currentBeat >= getSpawnBeat() - margin;
-        boolean isBelowDespawnBeat = BeatmapPlayer.currentBeat <= getDespawnBeat() + margin;
+        boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
+        boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
     }
 
@@ -102,7 +102,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         if (!shouldRender()) return;
 
-        updateTime(BeatmapPlayer.currentBeat);
+        updateTime(BeatmapPlayer.getCurrentBeat());
         matrices.translate(position.x, position.y, position.z);
         matrices.scale(scale.x * SIZE_SCALAR, scale.y * SIZE_SCALAR, scale.z * SIZE_SCALAR);
         matrices.multiply(rotation);

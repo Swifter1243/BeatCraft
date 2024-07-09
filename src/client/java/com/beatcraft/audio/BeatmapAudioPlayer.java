@@ -1,5 +1,7 @@
 package com.beatcraft.audio;
 
+import com.beatcraft.math.GenericMath;
+import com.beatcraft.render.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;
@@ -30,11 +32,27 @@ public class BeatmapAudioPlayer {
     }
 
     public static void onFrame() {
-        if (mc.isPaused()) {
+        if (!beatmapAudio.isLoaded()) {
+            return;
+        }
+
+        if (mc.isPaused() || !BeatmapPlayer.isPlaying()) {
             beatmapAudio.pause();
         } else {
-            beatmapAudio.play();
+            if (!beatmapAudio.isPlaying()) {
+                syncTimeWithBeatmap();
+                beatmapAudio.play();
+            }
         }
+    }
+
+    public static void goToBeat(float beat) {
+        float time = GenericMath.beatsToSeconds(beat, BeatmapPlayer.currentInfo.bpm);
+        beatmapAudio.seek(time);
+    }
+
+    public static void syncTimeWithBeatmap() {
+        goToBeat(BeatmapPlayer.getCurrentBeat());
     }
 
     public static boolean ready() {

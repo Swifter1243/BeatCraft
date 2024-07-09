@@ -60,6 +60,10 @@ public class BeatmapAudio {
         }
     }
 
+    public void setPlaybackSpeed(float speed) {
+        AL10.alSourcef(source, AL10.AL_PITCH, speed);
+    }
+
     private int getFormatID(AudioFormat format) {
         AudioFormat.Encoding encoding = format.getEncoding();
         int channels = format.getChannels();

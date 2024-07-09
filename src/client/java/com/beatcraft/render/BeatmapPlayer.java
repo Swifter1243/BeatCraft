@@ -21,17 +21,33 @@ public class BeatmapPlayer {
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
 
-    public static float currentBeat = 0;
-    public static float playbackSpeed = 1;
-    public static boolean isPlaying = false;
+    private static float currentBeat = 0;
+    private static float playbackSpeed = 1;
+    private static boolean isPlaying = false;
+
+    public static float getCurrentBeat() {
+        return currentBeat;
+    }
+
+    public static float getPlaybackSpeed() {
+        return playbackSpeed;
+    }
+    public static void setPlaybackSpeed(float speed) {
+        BeatmapAudioPlayer.beatmapAudio.setPlaybackSpeed(speed);
+        BeatmapAudioPlayer.syncTimeWithBeatmap();
+        playbackSpeed = speed;
+    }
+
+    public static boolean isPlaying() {
+        return isPlaying;
+    }
 
     public static void play() {
         isPlaying = true;
     }
     public static void play(float beat) {
         BeatmapPlayer.currentBeat = beat;
-        float time = GenericMath.beatsToSeconds(beat, currentInfo.bpm);
-        BeatmapAudioPlayer.beatmapAudio.seek(time); // TODO: Normalize beatmap to seconds.
+        BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
     }
 
