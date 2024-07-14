@@ -92,7 +92,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     }
 
     protected float getSpawnLifetime(float lifetime) {
-        return GenericMath.clamp01(1 - ((0.5f - lifetime) * 2));
+        return GenericMath.clamp01(lifetime * 2);
     }
 
     protected void doSpawnAnimation(float time) {
