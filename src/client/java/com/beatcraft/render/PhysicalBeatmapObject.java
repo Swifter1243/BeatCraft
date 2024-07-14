@@ -6,10 +6,8 @@ import com.beatcraft.math.GenericMath;
 import com.beatcraft.math.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends WorldRenderer {
     private static final float JUMP_FAR_Z = 500;
@@ -44,11 +42,22 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     }
 
     public void updateTime(float time) {
-        doJumpsPosition(time);
         doSpawnAnimation(time);
     }
 
-    protected void doJumpsPosition(float time) {
+    protected Vector3f getJumpsPosition(float spawnLifetime, float time) {
+        Vector2f xy = getJumpsXY(spawnLifetime);
+        return new Vector3f(xy.x, xy.y, getJumpsZ(time));
+    }
+
+    protected Vector2f getJumpsXY(float spawnLifetime) {
+        float jumpTime = Easing.easeOutQuad(spawnLifetime);
+        Vector2f grid = get2DPosition();
+        grid.y = Math.lerp(1.1f, grid.y + 1.1f, jumpTime);
+        return grid;
+    }
+
+    protected float getJumpsZ(float time) {
         float spawnPosition = jumps.jumpDistance() / 2;
         float despawnPosition = -spawnPosition;
 
@@ -59,43 +68,51 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
         if (time < spawnBeat) {
             // jump in
             float percent = (spawnBeat - time) / 2;
-            position.z = Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
+            return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
         } else if (time > despawnBeat) {
             // jump out
             float percent = (time - despawnBeat) / 2;
-            position.z = Math.lerp(despawnPosition, -JUMP_FAR_Z, percent);
+            return Math.lerp(despawnPosition, -JUMP_FAR_Z, percent);
         } else {
             // in between
             float percent = (time - spawnBeat) / (despawnBeat - spawnBeat);
-            position.z = Math.lerp(spawnPosition, despawnPosition, percent);
+            return Math.lerp(spawnPosition, despawnPosition, percent);
         }
     }
 
     protected Vector2f get2DPosition() {
-        return new Vector2f(
-                (this.getData().getX() - 1.5f) * 0.6f * -1,
-                (this.getData().getY()) * 0.6f
-        );
+        float x = (this.getData().getX() - 1.5f) * 0.6f * -1;
+        float y = (this.getData().getY()) * 0.6f;
+        return new Vector2f(x, y);
+    }
+
+    protected float getLifetime(float time) {
+        float lifetime = GenericMath.inverseLerp(getSpawnBeat(), getDespawnBeat(), time);
+        return GenericMath.clamp01(lifetime);
+    }
+
+    protected float getSpawnLifetime(float lifetime) {
+        return GenericMath.clamp01(1 - ((0.5f - lifetime) * 2));
     }
 
     protected void doSpawnAnimation(float time) {
-        float lifetime = GenericMath.clamp01(GenericMath.inverseLerp(getDespawnBeat(), getSpawnBeat(), time));
-        float spawnLifetime = GenericMath.clamp01(1 - ((lifetime - 0.5f) * 2));
-        float jumpTime = Easing.easeOutQuad(spawnLifetime);
+        float lifetime = getLifetime(time);
+        float spawnLifetime = getSpawnLifetime(lifetime);
 
-        Vector2f grid = get2DPosition();
-        position.x = grid.x;
-        position.y = Math.lerp(1.1f, grid.y + 1.1f, jumpTime);
+        position = getJumpsPosition(spawnLifetime, time);
 
-        if (lifetime > 0.5) {
-            doSpawnRotation(spawnLifetime);
+        if (lifetime < 0.5) {
+            rotation = getJumpsRotation(spawnLifetime);
+        }
+        else {
+            rotation = baseRotation;
         }
     }
 
-    protected void doSpawnRotation(float spawnLifetime) {
+    protected Quaternionf getJumpsRotation(float spawnLifetime) {
         float rotationLifetime = GenericMath.clamp01(spawnLifetime / 0.3f);
         float rotationTime = Easing.easeOutQuad(rotationLifetime);
-        rotation = new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
+        return new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
     }
 
     @Override
