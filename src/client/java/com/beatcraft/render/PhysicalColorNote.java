@@ -2,7 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
-import com.beatcraft.math.NoteMath;
+import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.model.BakedModel;

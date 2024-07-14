@@ -1,13 +1,17 @@
 package com.beatcraft.beatmap.data;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonObject;
+import org.joml.Quaternionf;
 
 public abstract class GameplayObject extends BeatmapObject {
     private float njs = 20;
     private float offset = 0;
     private int x = 0;
     private int y = 0;
+    private Quaternionf localRotation;
+    private Quaternionf worldRotation;
 
     @Override
     public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
@@ -30,6 +34,12 @@ public abstract class GameplayObject extends BeatmapObject {
             }
             else {
                 njs = difficulty.getSetDifficulty().getNjs();
+            }
+            if (customData.has("_rotation")) {
+                worldRotation = JsonUtil.getQuaternion(customData.get("_rotation"));
+            }
+            if (customData.has("_localRotation")) {
+                localRotation = JsonUtil.getQuaternion(customData.get("_localRotation"));
             }
         }
 
@@ -58,6 +68,12 @@ public abstract class GameplayObject extends BeatmapObject {
             else {
                 njs = difficulty.getSetDifficulty().getNjs();
             }
+            if (customData.has("worldRotation")) {
+                worldRotation = JsonUtil.getQuaternion(customData.get("worldRotation"));
+            }
+            if (customData.has("localRotation")) {
+                localRotation = JsonUtil.getQuaternion(customData.get("localRotation"));
+            }
         }
 
         return this;
@@ -85,6 +101,12 @@ public abstract class GameplayObject extends BeatmapObject {
             else {
                 njs = difficulty.getSetDifficulty().getNjs();
             }
+            if (customData.has("worldRotation")) {
+                worldRotation = JsonUtil.getQuaternion(customData.get("worldRotation"));
+            }
+            if (customData.has("localRotation")) {
+                localRotation = JsonUtil.getQuaternion(customData.get("localRotation"));
+            }
         }
 
         return this;
@@ -104,5 +126,13 @@ public abstract class GameplayObject extends BeatmapObject {
 
     public int getY() {
         return y;
+    }
+
+    public Quaternionf getLocalRotation() {
+        return localRotation;
+    }
+
+    public Quaternionf getWorldRotation() {
+        return worldRotation;
     }
 }

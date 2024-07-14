@@ -1,4 +1,4 @@
-package com.beatcraft.math;
+package com.beatcraft.utils;
 
 import com.beatcraft.beatmap.data.CutDirection;
 import org.joml.Math;

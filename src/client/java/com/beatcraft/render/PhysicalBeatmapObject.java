@@ -2,8 +2,8 @@ package com.beatcraft.render;
 
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.GameplayObject;
-import com.beatcraft.math.GenericMath;
-import com.beatcraft.math.NoteMath;
+import com.beatcraft.utils.MathUtil;
+import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.*;
@@ -32,7 +32,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     }
 
     public boolean shouldRender() {
-        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
         boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
         boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
@@ -80,16 +80,28 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     }
 
     protected float getLifetime(float time) {
-        float lifetime = GenericMath.inverseLerp(getSpawnBeat(), getDespawnBeat(), time);
-        return GenericMath.clamp01(lifetime);
+        float lifetime = MathUtil.inverseLerp(getSpawnBeat(), getDespawnBeat(), time);
+        return MathUtil.clamp01(lifetime);
     }
 
     protected float getSpawnLifetime(float lifetime) {
-        return GenericMath.clamp01(lifetime * 2);
+        return MathUtil.clamp01(lifetime * 2);
     }
 
     protected Matrix4f getMatrixAtTime(float time) {
-        return getSpawnMatrix(time);
+        Matrix4f m = new Matrix4f();
+
+        if (data.getLocalRotation() != null) {
+            //m.rotate(data.getLocalRotation());
+        }
+
+        m = getSpawnMatrix(time);
+
+        if (data.getWorldRotation() != null) {
+            //m.rotate(data.getWorldRotation());
+        }
+
+        return m;
     }
 
     protected Matrix4f getSpawnMatrix(float time) {
@@ -104,14 +116,14 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
             m.rotate(getJumpsRotation(spawnLifetime));
         }
         else {
-            m.rotate(baseRotation);
+            //m.rotate(baseRotation);
         }
 
         return m;
     }
 
     protected Quaternionf getJumpsRotation(float spawnLifetime) {
-        float rotationLifetime = GenericMath.clamp01(spawnLifetime / 0.3f);
+        float rotationLifetime = MathUtil.clamp01(spawnLifetime / 0.3f);
         float rotationTime = Easing.easeOutQuad(rotationLifetime);
         return new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
     }

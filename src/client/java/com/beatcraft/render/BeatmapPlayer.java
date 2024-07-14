@@ -4,7 +4,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.Info;
-import com.beatcraft.math.GenericMath;
+import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
@@ -28,7 +28,7 @@ public class BeatmapPlayer {
 
     public static float getCurrentBeat() {
         if (currentInfo == null) return 0;
-        return GenericMath.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+        return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
     }
 
     public static float getCurrentSeconds() {
@@ -41,7 +41,7 @@ public class BeatmapPlayer {
 
     private static void setCurrentBeat(float beat) {
         if (currentInfo == null) return;
-        float seconds = GenericMath.beatsToSeconds(beat, currentInfo.getBpm());
+        float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());
         elapsedNanoTime = secondsToNano(seconds);
     }
 

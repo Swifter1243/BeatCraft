@@ -1,6 +1,6 @@
 package com.beatcraft.audio;
 
-import com.beatcraft.math.GenericMath;
+import com.beatcraft.utils.MathUtil;
 import com.beatcraft.render.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 
@@ -47,7 +47,7 @@ public class BeatmapAudioPlayer {
     }
 
     public static void goToBeat(float beat) {
-        float time = GenericMath.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
+        float time = MathUtil.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
         beatmapAudio.seek(time);
     }
 
