@@ -17,9 +17,6 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected Quaternionf baseRotation = new Quaternionf();
     protected T data;
     protected NoteMath.Jumps jumps;
-    protected Vector3f position = new Vector3f();
-    protected Quaternionf rotation = new Quaternionf();
-    protected Vector3f scale = new Vector3f(1,1,1);
 
     PhysicalBeatmapObject(T data) {
         this.data = data;
@@ -39,10 +36,6 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
         boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
         boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
-    }
-
-    public void updateTime(float time) {
-        doSpawnAnimation(time);
     }
 
     protected Vector3f getJumpsPosition(float spawnLifetime, float time) {
@@ -95,18 +88,26 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
         return GenericMath.clamp01(lifetime * 2);
     }
 
-    protected void doSpawnAnimation(float time) {
+    protected Matrix4f getMatrixAtTime(float time) {
+        return getSpawnMatrix(time);
+    }
+
+    protected Matrix4f getSpawnMatrix(float time) {
         float lifetime = getLifetime(time);
         float spawnLifetime = getSpawnLifetime(lifetime);
 
-        position = getJumpsPosition(spawnLifetime, time);
+        Matrix4f m = new Matrix4f();
+        Vector3f v = getJumpsPosition(spawnLifetime, time);
+        m.translate(v);
 
         if (lifetime < 0.5) {
-            rotation = getJumpsRotation(spawnLifetime);
+            m.rotate(getJumpsRotation(spawnLifetime));
         }
         else {
-            rotation = baseRotation;
+            m.rotate(baseRotation);
         }
+
+        return m;
     }
 
     protected Quaternionf getJumpsRotation(float spawnLifetime) {
@@ -119,10 +120,10 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         if (!shouldRender()) return;
 
-        updateTime(BeatmapPlayer.getCurrentBeat());
-        matrices.translate(position.x, position.y, position.z);
-        matrices.scale(scale.x * SIZE_SCALAR, scale.y * SIZE_SCALAR, scale.z * SIZE_SCALAR);
-        matrices.multiply(rotation);
+        float time = BeatmapPlayer.getCurrentBeat();
+        matrices.multiplyPositionMatrix(getMatrixAtTime(time));
+        // TODO: Handle normal matrix???
+        matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 
         objectRender(matrices, vertexConsumer);
