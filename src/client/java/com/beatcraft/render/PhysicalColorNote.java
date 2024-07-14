@@ -19,8 +19,8 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
     public PhysicalColorNote(ColorNote data) {
         super(data);
 
-        Quaternionf baseRotation = NoteMath.rotationFromCut(data.cutDirection);
-        baseRotation.rotateZ(Math.toRadians(data.angleOffset));
+        Quaternionf baseRotation = NoteMath.rotationFromCut(data.getCutDirection());
+        baseRotation.rotateZ(Math.toRadians(data.getAngleOffset()));
         this.baseRotation = baseRotation;
     }
 
@@ -30,11 +30,11 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
         var localPos = matrices.peek();
 
         BakedModel model;
-        if (data.cutDirection == CutDirection.DOT) {
+        if (getData().getCutDirection() == CutDirection.DOT) {
             model = mc.getBakedModelManager().getModel(colorNoteDotModelID);
         } else {
             model = mc.getBakedModelManager().getModel(colorNoteArrowModelID);
         }
-        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, data.color.red, data.color.green, data.color.blue, 255, overlay);
+        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
     }
 }

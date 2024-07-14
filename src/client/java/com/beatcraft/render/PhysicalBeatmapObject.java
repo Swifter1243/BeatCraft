@@ -17,27 +17,27 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected static final float SIZE_SCALAR = 0.5f;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
-    public T data;
-    NoteMath.Jumps jumps;
-    public Vector3f position = new Vector3f();
-    public Quaternionf rotation = new Quaternionf();
-    public Vector3f scale = new Vector3f(1,1,1);
+    protected T data;
+    protected NoteMath.Jumps jumps;
+    protected Vector3f position = new Vector3f();
+    protected Quaternionf rotation = new Quaternionf();
+    protected Vector3f scale = new Vector3f(1,1,1);
 
     PhysicalBeatmapObject(T data) {
         this.data = data;
-        this.jumps = NoteMath.getJumps(data.njs, data.offset, BeatmapPlayer.currentInfo.bpm);
+        this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), BeatmapPlayer.currentInfo.getBpm());
     }
 
     public float getSpawnBeat() {
-        return data.beat - jumps.halfDuration();
+        return getData().getBeat() - jumps.halfDuration();
     }
 
     public float getDespawnBeat() {
-        return data.beat + jumps.halfDuration();
+        return getData().getBeat() + jumps.halfDuration();
     }
 
     public boolean shouldRender() {
-        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.bpm);
+        float margin = GenericMath.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
         boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
         boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat() + margin;
         return isAboveSpawnBeat && isBelowDespawnBeat;
@@ -73,8 +73,8 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
 
     protected Vector2f get2DPosition() {
         return new Vector2f(
-                (this.data.x - 1.5f) * 0.6f * -1,
-                (this.data.y) * 0.6f
+                (this.getData().getX() - 1.5f) * 0.6f * -1,
+                (this.getData().getY()) * 0.6f
         );
     }
 
@@ -112,4 +112,8 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     }
 
     abstract protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer);
+
+    public T getData() {
+        return data;
+    }
 }

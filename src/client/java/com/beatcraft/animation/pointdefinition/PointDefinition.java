@@ -1,7 +1,5 @@
 package com.beatcraft.animation.pointdefinition;
 
-import com.beatcraft.animation.Easing;
-
 import java.util.ArrayList;
 
 public abstract class PointDefinition<T> {
@@ -15,13 +13,13 @@ public abstract class PointDefinition<T> {
         }
 
         Point<T> lastPoint = points.getLast();
-        if (lastPoint.time <= time) {
-            return lastPoint.value;
+        if (lastPoint.getTime() <= time) {
+            return lastPoint.getValue();
         }
 
         Point<T> firstPoint = points.getFirst();
-        if (firstPoint.time >= time) {
-            return firstPoint.value;
+        if (firstPoint.getTime() >= time) {
+            return firstPoint.getValue();
         }
 
         TimeIndexInfo indexInfo = searchIndexAtTime(time);
@@ -29,12 +27,12 @@ public abstract class PointDefinition<T> {
         Point<T> rightPoint = points.get(indexInfo.right);
 
         float betweenTime = 0;
-        float divisor = rightPoint.time - leftPoint.time;
+        float divisor = rightPoint.getTime() - leftPoint.getTime();
         if (divisor != 0) {
-            betweenTime = (time - leftPoint.time) / divisor;
+            betweenTime = (time - leftPoint.getTime()) / divisor;
         }
 
-        betweenTime = rightPoint.easing.apply(betweenTime);
+        betweenTime = rightPoint.getEasing().apply(betweenTime);
 
         return interpolatePoints(indexInfo.left, indexInfo.right, betweenTime);
     }
@@ -47,7 +45,7 @@ public abstract class PointDefinition<T> {
 
         while (left < right - 1) {
             int middle = (left + right) / 2;
-            float pointTime = points.get(middle).time;
+            float pointTime = points.get(middle).getTime();
 
             if (pointTime < time) {
                 left = middle;

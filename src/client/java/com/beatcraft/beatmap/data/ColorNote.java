@@ -4,16 +4,16 @@ import com.beatcraft.beatmap.Difficulty;
 import com.google.gson.JsonObject;
 
 public class ColorNote extends GameplayObject {
-    public float angleOffset;
-    public CutDirection cutDirection;
-    public NoteType noteType;
-    public Color color;
+    private float angleOffset;
+    private CutDirection cutDirection;
+    private NoteType noteType;
+    private Color color;
 
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
-        if (noteType == NoteType.RED) {
-            color = setDifficulty.colorScheme.noteLeftColor;
+        if (getNoteType() == NoteType.RED) {
+            color = setDifficulty.getColorScheme().getNoteLeftColor();
         } else {
-            color = setDifficulty.colorScheme.noteRightColor;
+            color = setDifficulty.getColorScheme().getNoteRightColor();
         }
     }
 
@@ -25,7 +25,7 @@ public class ColorNote extends GameplayObject {
         cutDirection = CutDirection.values()[json.get("_cutDirection").getAsInt()];
         noteType = NoteType.values()[json.get("_type").getAsInt()];
 
-        applyColorScheme(difficulty.setDifficulty);
+        applyColorScheme(difficulty.getSetDifficulty());
 
         if (json.has("_customData")) {
             JsonObject customData = json.get("_customData").getAsJsonObject();
@@ -46,7 +46,7 @@ public class ColorNote extends GameplayObject {
         cutDirection = CutDirection.values()[json.get("d").getAsInt()]; // what the fuck
         noteType = NoteType.values()[json.get("c").getAsInt()];
 
-        applyColorScheme(difficulty.setDifficulty);
+        applyColorScheme(difficulty.getSetDifficulty());
 
         if (json.has("customData")) {
             JsonObject customData = json.get("customData").getAsJsonObject();
@@ -67,7 +67,7 @@ public class ColorNote extends GameplayObject {
         cutDirection = CutDirection.values()[lutJson.get("d").getAsInt()]; // what the fuck
         noteType = NoteType.values()[lutJson.get("c").getAsInt()];
 
-        applyColorScheme(difficulty.setDifficulty);
+        applyColorScheme(difficulty.getSetDifficulty());
 
         if (objectJson.has("customData")) {
             JsonObject customData = objectJson.get("customData").getAsJsonObject();
@@ -78,5 +78,21 @@ public class ColorNote extends GameplayObject {
         }
 
         return this;
+    }
+
+    public float getAngleOffset() {
+        return angleOffset;
+    }
+
+    public CutDirection getCutDirection() {
+        return cutDirection;
+    }
+
+    public NoteType getNoteType() {
+        return noteType;
+    }
+
+    public Color getColor() {
+        return color;
     }
 }

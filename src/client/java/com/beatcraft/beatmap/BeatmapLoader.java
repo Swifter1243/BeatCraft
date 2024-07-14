@@ -24,7 +24,7 @@ public class BeatmapLoader {
             Info.StyleSet styleSet = new Info.StyleSet();
 
             String styleKey = styleSetObject.get("_beatmapCharacteristicName").getAsString();
-            info.styleSets.put(styleKey, styleSet);
+            info.getStyleSets().put(styleKey, styleSet);
 
             JsonArray difficultiesRaw = styleSetObject.get("_difficultyBeatmaps").getAsJsonArray();
             difficultiesRaw.forEach(difficultyRaw -> {
@@ -43,7 +43,7 @@ public class BeatmapLoader {
     }
 
     public static Info.SetDifficulty getSetDifficulty(String fileName, Info info) {
-        for (Info.StyleSet styleSet : info.styleSets.values()) {
+        for (Info.StyleSet styleSet : info.getStyleSets().values()) {
             for (var entry : styleSet.difficulties.entrySet()) {
                 if (Objects.equals(entry.getKey(), fileName)) {
                     return entry.getValue();

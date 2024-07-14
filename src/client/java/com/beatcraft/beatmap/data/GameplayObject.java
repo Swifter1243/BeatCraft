@@ -4,10 +4,10 @@ import com.beatcraft.beatmap.Difficulty;
 import com.google.gson.JsonObject;
 
 public abstract class GameplayObject extends BeatmapObject {
-    public float njs = 20;
-    public float offset = 0;
-    public int x = 0;
-    public int y = 0;
+    private float njs = 20;
+    private float offset = 0;
+    private int x = 0;
+    private int y = 0;
 
     @Override
     public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
@@ -23,13 +23,13 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("_noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = difficulty.setDifficulty.offset;
+                offset = difficulty.getSetDifficulty().getOffset();
             }
             if (customData.has("_noteJumpMovementSpeed")) {
                 njs = customData.get("_noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = difficulty.setDifficulty.njs;
+                njs = difficulty.getSetDifficulty().getNjs();
             }
         }
 
@@ -50,13 +50,13 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = difficulty.setDifficulty.offset;
+                offset = difficulty.getSetDifficulty().getOffset();
             }
             if (customData.has("noteJumpMovementSpeed")) {
                 njs = customData.get("noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = difficulty.setDifficulty.njs;
+                njs = difficulty.getSetDifficulty().getNjs();
             }
         }
 
@@ -77,16 +77,32 @@ public abstract class GameplayObject extends BeatmapObject {
                 offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
             }
             else {
-                offset = difficulty.setDifficulty.offset;
+                offset = difficulty.getSetDifficulty().getOffset();
             }
             if (customData.has("noteJumpMovementSpeed")) {
                 njs = customData.get("noteJumpMovementSpeed").getAsFloat();
             }
             else {
-                njs = difficulty.setDifficulty.njs;
+                njs = difficulty.getSetDifficulty().getNjs();
             }
         }
 
         return this;
+    }
+
+    public float getNjs() {
+        return njs;
+    }
+
+    public float getOffset() {
+        return offset;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }

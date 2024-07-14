@@ -7,21 +7,21 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
     protected Vector3f interpolatePoints(int a, int b, float time) {
         Point<Vector3f> right = points.get(b);
 
-        if (right.spline) {
+        if (right.isSpline()) {
             return splineInterpolation(a, b, time);
         } else {
             Point<Vector3f> left = points.get(a);
-            return left.value.lerp(right.value, time);
+            return left.getValue().lerp(right.getValue(), time);
         }
     }
 
     protected Vector3f splineInterpolation(int a, int b, float time) {
-        Vector3f pa = points.get(a).value;
-        Vector3f pb = points.get(b).value;
+        Vector3f pa = points.get(a).getValue();
+        Vector3f pb = points.get(b).getValue();
 
         // Catmull-Rom Spline
-        Vector3f p0 = a - 1 < 0 ? pa : points.get(a - 1).value;
-        Vector3f p3 = b + 1 > points.size() - 1 ? pb : points.get(b + 1).value;
+        Vector3f p0 = a - 1 < 0 ? pa : points.get(a - 1).getValue();
+        Vector3f p3 = b + 1 > points.size() - 1 ? pb : points.get(b + 1).getValue();
 
         float tt = time * time;
         float ttt = tt * time;

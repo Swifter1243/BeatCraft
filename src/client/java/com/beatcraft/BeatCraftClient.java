@@ -74,7 +74,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
                     if (handleDifficultySetup(context, path) == 1) {
                         BeatmapAudioPlayer.beatmapAudio.closeBuffer();
-                        BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.songFilename);
+                        BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
                         BeatmapPlayer.restart();
                         return 1;
                     } else {
