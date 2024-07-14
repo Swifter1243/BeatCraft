@@ -21,11 +21,10 @@ public class MathUtil {
         return beats * (60 / bpm);
     }
 
-    public static final float DEG2RAD = 180f / (float)Math.PI;
-    public static final float RAD2DEG = (float)Math.PI / 180f;
+    public static final float DEG2RAD = (float)Math.PI / 180f;
+    public static final float RAD2DEG = 180f / (float)Math.PI;
 
     public static Quaternionf eulerToQuaternion(Vector3f euler) {
-        euler = euler.mul(DEG2RAD);
-        return new Quaternionf().rotateXYZ(euler.x, euler.y, euler.z);
+        return new Quaternionf().rotateXYZ(euler.x * DEG2RAD, euler.y * DEG2RAD, euler.z * DEG2RAD);
     }
 }

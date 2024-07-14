@@ -91,14 +91,14 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected Matrix4f getMatrixAtTime(float time) {
         Matrix4f m = new Matrix4f();
 
-        if (data.getLocalRotation() != null) {
-            //m.rotate(data.getLocalRotation());
+        if (data.getWorldRotation() != null) {
+            m.rotate(data.getWorldRotation());
         }
 
-        m = getSpawnMatrix(time);
+        m.mul(getSpawnMatrix(time));
 
-        if (data.getWorldRotation() != null) {
-            //m.rotate(data.getWorldRotation());
+        if (data.getLocalRotation() != null) {
+            m.rotate(data.getLocalRotation());
         }
 
         return m;
@@ -116,7 +116,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
             m.rotate(getJumpsRotation(spawnLifetime));
         }
         else {
-            //m.rotate(baseRotation);
+            m.rotate(baseRotation);
         }
 
         return m;
