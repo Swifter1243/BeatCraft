@@ -10,7 +10,7 @@ public class MathUtil {
     }
 
     public static float clamp01(float x) {
-        return Math.clamp(x, 0, 1);
+        return Math.clamp(0, 1, x);
     }
 
     public static float secondsToBeats(float seconds, float bpm) {
