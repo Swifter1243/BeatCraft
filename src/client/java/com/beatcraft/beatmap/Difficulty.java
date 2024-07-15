@@ -2,6 +2,7 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.beatmap.data.BeatmapObject;
 import com.beatcraft.beatmap.data.GameplayObject;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.RotationEvent;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.event.RotationEventHandler;
@@ -11,6 +12,9 @@ import org.joml.Math;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class Difficulty {
     private final Info info;
@@ -57,8 +61,30 @@ public abstract class Difficulty {
         });
     }
 
+    private void setupNoteWindows() {
+        Map<NoteType, List<PhysicalColorNote>> noteTypes = colorNotes.stream().collect(Collectors.groupingBy(o -> o.getData().getNoteType()));
+
+        noteTypes.values().forEach(typedNotes -> {
+            Map<Float, List<PhysicalColorNote>> timeGroups = typedNotes.stream().collect(Collectors.groupingBy(o -> o.getData().getBeat()));
+
+            timeGroups.forEach((time, notes) -> {
+                if (notes.size() != 2) {
+                    return;
+                }
+
+                PhysicalColorNote a = notes.get(0);
+                PhysicalColorNote b = notes.get(1);
+                a.checkWindow(b);
+                b.checkWindow(a);
+            });
+        });
+
+        colorNotes.forEach(PhysicalColorNote::finalizeBaseRotation);
+    }
+
     protected void doPostLoad() {
         sortObjectsByTime();
+        setupNoteWindows();
         applyRotationEvents();
     }
 
