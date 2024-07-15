@@ -2,7 +2,6 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
-import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.render.BeatmapPlayer;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -24,73 +23,73 @@ public class BeatCraftClient implements ClientModInitializer {
         registerCommands();
     }
 
-    private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("playsong")
-                .executes(context -> {
-                    BeatmapPlayer.play();
-                    context.getSource().sendFeedback(Text.literal("Song played"));
-                    return 1;
-                })
-                .then(argument("beat", FloatArgumentType.floatArg(0)).executes(context -> {
-                    float beat = FloatArgumentType.getFloat(context, "beat");
-                    BeatmapPlayer.play(beat);
+    private int songPlay(CommandContext<FabricClientCommandSource> context) {
+        BeatmapPlayer.play();
+        context.getSource().sendFeedback(Text.literal("Song played"));
+        return 1;
+    }
 
-                    context.getSource().sendFeedback(Text.literal("Song played at beat " + beat));
-                    return 1;
-                }))));
+    private int songPlayBeat(CommandContext<FabricClientCommandSource> context) {
+        float beat = FloatArgumentType.getFloat(context, "beat");
+        BeatmapPlayer.play(beat);
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("pausesong")
-                .executes(context -> {
-                    BeatmapPlayer.pause();
-                    context.getSource().sendFeedback(Text.literal("Song paused"));
-                    return 1;
-                })));
+        context.getSource().sendFeedback(Text.literal("Song played at beat " + beat));
+        return 1;
+    }
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("restartsong")
-                .executes(context -> {
-                    BeatmapPlayer.restart();
-                    context.getSource().sendFeedback(Text.literal("Song restarted"));
-                    return 1;
-                })));
+    private int songPause(CommandContext<FabricClientCommandSource> context) {
+        BeatmapPlayer.pause();
+        context.getSource().sendFeedback(Text.literal("Song paused"));
+        return 1;
+    }
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("songspeed")
-                .then(argument("speed", FloatArgumentType.floatArg(0)).executes(context -> {
-                    float speed = FloatArgumentType.getFloat(context, "speed");
-                    BeatmapPlayer.setPlaybackSpeed(speed);
-                    context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
-                    return 1;
-                }))));
+    private int songRestart(CommandContext<FabricClientCommandSource> context) {
+        BeatmapPlayer.restart();
+        context.getSource().sendFeedback(Text.literal("Song restarted"));
+        return 1;
+    }
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("clearobjects")
-                .executes(context -> {
-                    BeatmapPlayer.currentBeatmap = null;
-                    context.getSource().sendFeedback(Text.literal("Objects cleared!"));
-                    return 1;
-                })));
+    private int songSpeedReset(CommandContext<FabricClientCommandSource> context) {
+        BeatmapPlayer.setPlaybackSpeed(1);
+        context.getSource().sendFeedback(Text.literal("Song speed reset! (1.0)"));
+        return 1;
+    }
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("loadmap")
-                .then(argument("path", StringArgumentType.greedyString()).executes(context -> {
-                    String path = StringArgumentType.getString(context, "path");
+    private int songSpeedScalar(CommandContext<FabricClientCommandSource> context) {
+        float speed = FloatArgumentType.getFloat(context, "scalar");
+        BeatmapPlayer.setPlaybackSpeed(speed);
+        context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
+        return 1;
+    }
 
-                    if (handleDifficultySetup(context, path) == 1) {
-                        BeatmapAudioPlayer.beatmapAudio.closeBuffer();
-                        BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
-                        BeatmapPlayer.restart();
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                }))));
+    private int songUnload(CommandContext<FabricClientCommandSource> context) {
+        BeatmapPlayer.currentBeatmap = null;
+        BeatmapPlayer.currentInfo = null;
+        BeatmapAudioPlayer.unload();
+        context.getSource().sendFeedback(Text.literal("Song unloaded!"));
+        return 1;
+    }
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal("scrubsong")
-                .then(argument("beats", FloatArgumentType.floatArg()).executes(context -> {
-                    float beats = FloatArgumentType.getFloat(context, "beats");
-                    float newBeat = Math.max(0.0f, BeatmapPlayer.getCurrentBeat() + beats);
-                    BeatmapPlayer.play(newBeat);
+    private int songLoad(CommandContext<FabricClientCommandSource> context) {
+        String path = StringArgumentType.getString(context, "path");
+        path = trimPathQuotes(path);
 
-                    context.getSource().sendFeedback(Text.literal("Scrubbed to beat " + newBeat + "!"));
-                    return 1;
-                }))));
+        if (handleDifficultySetup(context, path) == 1) {
+            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
+            BeatmapPlayer.restart();
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    private String trimPathQuotes(String path) {
+        if (path.startsWith("\"") && path.endsWith("\"")) {
+            return path.substring(1, path.length() - 1);
+        }
+        else {
+            return path;
+        }
     }
 
     private int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
@@ -110,18 +109,51 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
-    private CutDirection getCutFromString(String cutDirection) {
-        return switch (cutDirection) {
-            case "up" -> CutDirection.UP;
-            case "left" -> CutDirection.LEFT;
-            case "right" -> CutDirection.RIGHT;
-            case "up_left", "left_up", "upleft", "leftup" -> CutDirection.UP_LEFT;
-            case "down_left", "left_down", "downleft", "leftdown" -> CutDirection.DOWN_LEFT;
-            case "up_right", "right_up", "upright", "rightup" -> CutDirection.UP_RIGHT;
-            case "down_right", "right_down", "downright", "rightdown" -> CutDirection.DOWN_RIGHT;
-            case "dot" -> CutDirection.DOT;
-            default -> CutDirection.DOWN;
-        };
+    private int songScrub(CommandContext<FabricClientCommandSource> context) {
+        float beats = FloatArgumentType.getFloat(context, "beats");
+        float newBeat = Math.max(0.0f, BeatmapPlayer.getCurrentBeat() + beats);
+        BeatmapPlayer.play(newBeat);
+
+        context.getSource().sendFeedback(Text.literal("Scrubbed to beat " + newBeat + "!"));
+        return 1;
     }
 
+    private void registerCommands() {
+        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) ->
+                dispatcher.register(literal("song")
+                        .then(literal("play")
+                                .executes(this::songPlay)
+                                .then(argument("beat", FloatArgumentType.floatArg(0))
+                                        .executes(this::songPlayBeat)
+                                )
+                        )
+                        .then(literal("pause")
+                                .executes(this::songPause)
+                        )
+                        .then(literal("restart")
+                                .executes(this::songRestart)
+                        )
+                        .then(literal("speed")
+                                .then(literal("reset")
+                                        .executes(this::songSpeedReset)
+                                )
+                                .then(argument("scalar", FloatArgumentType.floatArg(0.0001f, 5))
+                                        .executes(this::songSpeedScalar)
+                                )
+                        )
+                        .then(literal("unload")
+                                .executes(this::songUnload)
+                        )
+                        .then(literal("load")
+                                .then(argument("path", StringArgumentType.greedyString())
+                                        .executes(this::songLoad)
+                                )
+                        )
+                        .then(literal("scrub")
+                                .then(argument("beats", FloatArgumentType.floatArg())
+                                        .executes(this::songScrub)
+                                )
+                        )
+                )));
+    }
 }

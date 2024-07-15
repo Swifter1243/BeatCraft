@@ -13,7 +13,7 @@ public class BeatmapAudioPlayer {
     public static CompletableFuture<Void> loadRequest = null;
 
     public static void playAudioFromFile(String path) {
-        cancelLoad();
+        unload();
 
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
@@ -65,5 +65,10 @@ public class BeatmapAudioPlayer {
 
         // load request is done and worked
         return loadRequest.isDone() && !loadRequest.isCompletedExceptionally();
+    }
+
+    public static void unload() {
+        cancelLoad();
+        beatmapAudio.closeBuffer();
     }
 }
