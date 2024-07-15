@@ -1,5 +1,7 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.beatmap;
 
+import com.beatcraft.beatmap.data.Color;
+import com.beatcraft.beatmap.data.ColorScheme;
 import com.google.gson.JsonObject;
 
 import java.nio.file.Path;

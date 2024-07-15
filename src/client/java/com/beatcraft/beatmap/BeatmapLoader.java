@@ -1,10 +1,10 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.beatmap.data.Info;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -81,9 +81,7 @@ public class BeatmapLoader {
             case 3 -> {
                 return new DifficultyV3(info, setDifficulty).load(json);
             }
-            case 4 -> {
-                return new DifficultyV4(info, setDifficulty).load(json);
-            }
+            case 4 -> throw new NotImplementedException("Beatmap V4 is not implemented.");
             default -> throw new UnrecognizedFormatException();
         }
     }

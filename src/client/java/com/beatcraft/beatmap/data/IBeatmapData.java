@@ -7,6 +7,4 @@ public interface IBeatmapData<T> {
     T loadV2(JsonObject json, Difficulty difficulty);
 
     T loadV3(JsonObject json, Difficulty difficulty);
-
-    T loadV4(JsonObject objectJson, JsonObject lutJson, Difficulty difficulty);
 }

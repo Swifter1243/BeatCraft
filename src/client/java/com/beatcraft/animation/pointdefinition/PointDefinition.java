@@ -26,15 +26,15 @@ public abstract class PointDefinition<T> {
         Point<T> leftPoint = points.get(indexInfo.left);
         Point<T> rightPoint = points.get(indexInfo.right);
 
-        float betweenTime = 0;
+        float normalTime = 0;
         float divisor = rightPoint.getTime() - leftPoint.getTime();
         if (divisor != 0) {
-            betweenTime = (time - leftPoint.getTime()) / divisor;
+            normalTime = (time - leftPoint.getTime()) / divisor;
         }
 
-        betweenTime = rightPoint.getEasing().apply(betweenTime);
+        normalTime = rightPoint.getEasing().apply(normalTime);
 
-        return interpolatePoints(indexInfo.left, indexInfo.right, betweenTime);
+        return interpolatePoints(indexInfo.left, indexInfo.right, normalTime);
     }
 
     private record TimeIndexInfo(int left, int right) {}

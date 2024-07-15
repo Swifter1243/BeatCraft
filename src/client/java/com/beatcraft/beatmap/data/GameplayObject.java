@@ -79,39 +79,6 @@ public abstract class GameplayObject extends BeatmapObject {
         return this;
     }
 
-    @Override
-    public BeatmapObject loadV4(JsonObject objectJson, JsonObject lutJson, Difficulty difficulty) {
-        super.loadV4(objectJson, lutJson, difficulty);
-
-        x = lutJson.get("x").getAsInt();
-        y = lutJson.get("y").getAsInt();
-
-        if (lutJson.has("customData")) {
-            JsonObject customData = lutJson.get("customData").getAsJsonObject();
-
-            if (customData.has("noteJumpStartBeatOffset")) {
-                offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
-            }
-            else {
-                offset = difficulty.getSetDifficulty().getOffset();
-            }
-            if (customData.has("noteJumpMovementSpeed")) {
-                njs = customData.get("noteJumpMovementSpeed").getAsFloat();
-            }
-            else {
-                njs = difficulty.getSetDifficulty().getNjs();
-            }
-            if (customData.has("worldRotation")) {
-                worldRotation = JsonUtil.getQuaternion(customData.get("worldRotation"));
-            }
-            if (customData.has("localRotation")) {
-                localRotation = JsonUtil.getQuaternion(customData.get("localRotation"));
-            }
-        }
-
-        return this;
-    }
-
     public float getNjs() {
         return njs;
     }

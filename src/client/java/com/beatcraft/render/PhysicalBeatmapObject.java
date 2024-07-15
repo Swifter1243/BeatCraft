@@ -15,6 +15,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected static final float SIZE_SCALAR = 0.5f;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
+    private Quaternionf laneRotation;
     protected T data;
     protected NoteMath.Jumps jumps;
 
@@ -95,6 +96,10 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
             m.rotate(data.getWorldRotation());
         }
 
+        if (getLaneRotation() != null) {
+            m.rotate(getLaneRotation());
+        }
+
         m.mul(getSpawnMatrix(time));
 
         if (data.getLocalRotation() != null) {
@@ -145,5 +150,13 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
 
     public T getData() {
         return data;
+    }
+
+    public Quaternionf getLaneRotation() {
+        return laneRotation;
+    }
+
+    public void setLaneRotation(Quaternionf laneRotation) {
+        this.laneRotation = laneRotation;
     }
 }

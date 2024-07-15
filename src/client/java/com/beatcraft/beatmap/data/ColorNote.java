@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap.data;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.beatmap.Info;
 import com.google.gson.JsonObject;
 
 public class ColorNote extends GameplayObject {
@@ -50,27 +51,6 @@ public class ColorNote extends GameplayObject {
 
         if (json.has("customData")) {
             JsonObject customData = json.get("customData").getAsJsonObject();
-
-            if (customData.has("color")) {
-                color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
-            }
-        }
-
-        return this;
-    }
-
-    @Override
-    public ColorNote loadV4(JsonObject objectJson, JsonObject lutJson, Difficulty difficulty) {
-        super.loadV4(objectJson, lutJson, difficulty);
-
-        angleOffset = lutJson.get("a").getAsFloat();
-        cutDirection = CutDirection.values()[lutJson.get("d").getAsInt()]; // what the fuck
-        noteType = NoteType.values()[lutJson.get("c").getAsInt()];
-
-        applyColorScheme(difficulty.getSetDifficulty());
-
-        if (objectJson.has("customData")) {
-            JsonObject customData = objectJson.get("customData").getAsJsonObject();
 
             if (customData.has("color")) {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
