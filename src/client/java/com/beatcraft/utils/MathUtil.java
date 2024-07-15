@@ -26,12 +26,7 @@ public class MathUtil {
     }
     public static float normalizeAngle(float angle) {
         angle = angle % 360;
-
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        return angle;
+        return angle < 0 ? (angle + 360) : angle;
     }
     public static float degreesBetween(float a, float b) {
         a = normalizeAngle(a);
