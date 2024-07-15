@@ -27,6 +27,14 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
     }
 
     public void checkWindow(PhysicalColorNote other) {
+        boolean sameCuts = data.getCutDirection() == other.data.getCutDirection();
+        boolean dotIncluded = data.getCutDirection() == CutDirection.DOT || other.data.getCutDirection() == CutDirection.DOT;
+        boolean compatibleCuts = sameCuts || dotIncluded;
+
+        if (!compatibleCuts) {
+            return;
+        }
+
         Vector2f thisPos = get2DPosition();
         Vector2f otherPos = other.get2DPosition();
         Vector2f toOther = otherPos.sub(thisPos);
@@ -34,7 +42,7 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
         float windowDegrees = MathUtil.getVectorAngleDegrees(toOther) + 90; // identity note rotation (down) is -90 in typical angle space
         float between = MathUtil.degreesBetween(baseDegrees, windowDegrees);
 
-        if (between < 45) {
+        if (between < 45 || dotIncluded) {
             baseDegrees = windowDegrees;
             other.baseDegrees = windowDegrees;
         }

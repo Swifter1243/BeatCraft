@@ -64,7 +64,7 @@ public abstract class Difficulty {
     private void setupNoteWindows() {
         Map<NoteType, List<PhysicalColorNote>> noteTypes = colorNotes.stream().collect(Collectors.groupingBy(o -> o.getData().getNoteType()));
 
-        noteTypes.values().forEach(typedNotes -> {
+        noteTypes.forEach((type, typedNotes) -> {
             Map<Float, List<PhysicalColorNote>> timeGroups = typedNotes.stream().collect(Collectors.groupingBy(o -> o.getData().getBeat()));
 
             timeGroups.forEach((time, notes) -> {
@@ -78,13 +78,16 @@ public abstract class Difficulty {
                 b.checkWindow(a);
             });
         });
+    }
 
+    private void finalizeBaseRotations() {
         colorNotes.forEach(PhysicalColorNote::finalizeBaseRotation);
     }
 
     protected void doPostLoad() {
         sortObjectsByTime();
         setupNoteWindows();
+        finalizeBaseRotations();
         applyRotationEvents();
     }
 
