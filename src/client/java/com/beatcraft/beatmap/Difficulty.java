@@ -61,7 +61,7 @@ public abstract class Difficulty {
         });
     }
 
-    private void setupNoteWindows() {
+    private void checkNotesWindowSnap() {
         Map<NoteType, List<PhysicalColorNote>> noteTypes = colorNotes.stream().collect(Collectors.groupingBy(o -> o.getData().getNoteType()));
 
         noteTypes.forEach((type, typedNotes) -> {
@@ -74,8 +74,8 @@ public abstract class Difficulty {
 
                 PhysicalColorNote a = notes.get(0);
                 PhysicalColorNote b = notes.get(1);
-                a.checkWindow(b);
-                b.checkWindow(a);
+                a.checkWindowSnap(b);
+                b.checkWindowSnap(a);
             });
         });
     }
@@ -86,7 +86,7 @@ public abstract class Difficulty {
 
     protected void doPostLoad() {
         sortObjectsByTime();
-        setupNoteWindows();
+        checkNotesWindowSnap();
         finalizeBaseRotations();
         applyRotationEvents();
     }

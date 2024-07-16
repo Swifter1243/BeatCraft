@@ -26,23 +26,32 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
         baseDegrees = (baseDegrees + data.getAngleOffset()) % 360;
     }
 
-    public void checkWindow(PhysicalColorNote other) {
+    public void checkWindowSnap(PhysicalColorNote other) {
         boolean sameCuts = data.getCutDirection() == other.data.getCutDirection();
-        boolean dotIncluded = data.getCutDirection() == CutDirection.DOT || other.data.getCutDirection() == CutDirection.DOT;
-        boolean compatibleCuts = sameCuts || dotIncluded;
+        boolean thisIsDot = data.getCutDirection() == CutDirection.DOT;
+        boolean otherIsDot = other.data.getCutDirection() == CutDirection.DOT;
 
-        if (!compatibleCuts) {
+        boolean bothAreDifferentArrows = !sameCuts && !thisIsDot && !otherIsDot;
+        if (bothAreDifferentArrows) {
             return;
         }
 
         Vector2f thisPos = get2DPosition();
         Vector2f otherPos = other.get2DPosition();
         Vector2f toOther = otherPos.sub(thisPos);
-
         float windowDegrees = MathUtil.getVectorAngleDegrees(toOther) + 90; // identity note rotation (down) is -90 in typical angle space
-        float between = MathUtil.degreesBetween(baseDegrees, windowDegrees);
 
-        if (between < 45 || dotIncluded) {
+        boolean bothAreDots = thisIsDot && otherIsDot;
+        if (bothAreDots) {
+            baseDegrees = windowDegrees;
+            other.baseDegrees = windowDegrees;
+            return;
+        }
+
+        float degrees = thisIsDot ? other.baseDegrees : baseDegrees;
+        float between = MathUtil.degreesBetween(degrees, windowDegrees);
+
+        if (between <= 40) {
             baseDegrees = windowDegrees;
             other.baseDegrees = windowDegrees;
         }
