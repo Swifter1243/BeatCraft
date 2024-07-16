@@ -10,6 +10,11 @@ public class RotationEventHandler extends EventHandler<Float, RotationEvent> {
     }
 
     @Override
+    public void onEventInterrupted(RotationEvent event, float normalTime) {
+        // Rotation events are instant
+    }
+
+    @Override
     public void onInsideEvent(RotationEvent event, float normalTime) {
         // Rotation events are instant
     }
