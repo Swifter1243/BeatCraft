@@ -2,6 +2,7 @@ package com.beatcraft.utils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -17,5 +18,12 @@ public class JsonUtil {
     public static Quaternionf getQuaternion(JsonElement element) {
         Vector3f euler = getVector3(element);
         return MathUtil.eulerToQuaternion(euler);
+    }
+    public static Quaternionf getQuaternion(JsonObject object, String property, Quaternionf defaultValue) {
+        if (object.has(property)) {
+            return getQuaternion(object.get("property"));
+        } else {
+            return defaultValue;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.beatcraft.beatmap.data;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonObject;
+import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
 
 public abstract class GameplayObject extends BeatmapObject {
@@ -21,26 +22,12 @@ public abstract class GameplayObject extends BeatmapObject {
         y = json.get("_lineLayer").getAsInt();
 
         if (json.has("_customData")) {
-            JsonObject customData = json.get("_customData").getAsJsonObject();
+            JsonObject customData = json.getAsJsonObject("_customData");
 
-            if (customData.has("_noteJumpStartBeatOffset")) {
-                offset = customData.get("_noteJumpStartBeatOffset").getAsFloat();
-            }
-            else {
-                offset = difficulty.getSetDifficulty().getOffset();
-            }
-            if (customData.has("_noteJumpMovementSpeed")) {
-                njs = customData.get("_noteJumpMovementSpeed").getAsFloat();
-            }
-            else {
-                njs = difficulty.getSetDifficulty().getNjs();
-            }
-            if (customData.has("_rotation")) {
-                worldRotation = JsonUtil.getQuaternion(customData.get("_rotation"));
-            }
-            if (customData.has("_localRotation")) {
-                localRotation = JsonUtil.getQuaternion(customData.get("_localRotation"));
-            }
+            offset = JsonHelper.getFloat(customData, "_noteJumpStartBeatOffset", difficulty.getSetDifficulty().getOffset());
+            njs = JsonHelper.getFloat(customData, "_noteJumpMovementSpeed", difficulty.getSetDifficulty().getNjs());
+            worldRotation = JsonUtil.getQuaternion(customData, "_rotation", null);
+            localRotation = JsonUtil.getQuaternion(customData, "_localRotation", null);
         }
 
         return this;
@@ -54,26 +41,12 @@ public abstract class GameplayObject extends BeatmapObject {
         y = json.get("y").getAsInt();
 
         if (json.has("customData")) {
-            JsonObject customData = json.get("customData").getAsJsonObject();
+            JsonObject customData = json.getAsJsonObject("customData");
 
-            if (customData.has("noteJumpStartBeatOffset")) {
-                offset = customData.get("noteJumpStartBeatOffset").getAsFloat();
-            }
-            else {
-                offset = difficulty.getSetDifficulty().getOffset();
-            }
-            if (customData.has("noteJumpMovementSpeed")) {
-                njs = customData.get("noteJumpMovementSpeed").getAsFloat();
-            }
-            else {
-                njs = difficulty.getSetDifficulty().getNjs();
-            }
-            if (customData.has("worldRotation")) {
-                worldRotation = JsonUtil.getQuaternion(customData.get("worldRotation"));
-            }
-            if (customData.has("localRotation")) {
-                localRotation = JsonUtil.getQuaternion(customData.get("localRotation"));
-            }
+            offset = JsonHelper.getFloat(customData, "noteJumpStartBeatOffset", difficulty.getSetDifficulty().getOffset());
+            njs = JsonHelper.getFloat(customData, "noteJumpMovementSpeed", difficulty.getSetDifficulty().getNjs());
+            worldRotation = JsonUtil.getQuaternion(customData, "worldRotation", null);
+            localRotation = JsonUtil.getQuaternion(customData, "localRotation", null);
         }
 
         return this;
