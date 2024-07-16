@@ -10,8 +10,8 @@ public abstract class EventHandler<D, E extends IEvent<D>> {
     protected final D initialState;
     protected D state;
 
-    public EventHandler(ArrayList<E> elements, D initialState) {
-        this.events = elements;
+    public EventHandler(ArrayList<E> events, D initialState) {
+        this.events = events;
         this.initialState = initialState;
         reset();
     }
