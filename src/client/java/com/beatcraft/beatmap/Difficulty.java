@@ -8,7 +8,12 @@ import com.beatcraft.event.EventHandler;
 import com.beatcraft.event.RotationEventHandler;
 import com.beatcraft.render.PhysicalBeatmapObject;
 import com.beatcraft.render.PhysicalColorNote;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
@@ -97,5 +102,9 @@ public abstract class Difficulty {
 
     public Info.SetDifficulty getSetDifficulty() {
         return setDifficulty;
+    }
+
+    public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
+        colorNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
     }
 }
