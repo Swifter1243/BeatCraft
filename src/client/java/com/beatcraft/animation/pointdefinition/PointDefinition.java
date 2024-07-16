@@ -1,11 +1,87 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.animation.Easing;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import net.minecraft.util.JsonHelper;
+
 import java.util.ArrayList;
 
 public abstract class PointDefinition<T> {
     protected ArrayList<Point<T>> points = new ArrayList<>();
 
     abstract protected T interpolatePoints(int a, int b, float time);
+
+    public static boolean isSimple(JsonArray json) {
+        return !json.get(0).isJsonArray();
+    }
+    protected abstract int getValueLength();
+    public int getTimeIndex() {
+        return getValueLength() + 1;
+    }
+    public boolean hasFlags(JsonArray json) {
+        return json.size() > getTimeIndex() + 1;
+    }
+
+    public Integer getFlagIndex(JsonArray json, String flag) {
+        if (!hasFlags(json)) {
+            return null;
+        }
+
+        for (int i = getTimeIndex() + 1; i < json.size(); i++) {
+            JsonElement element = json.get(i);
+            if (JsonHelper.isString(element) && element.getAsString().contains(flag)) {
+                return i;
+            }
+        }
+
+        return null;
+    }
+
+    public Integer getEasingIndex(JsonArray json) {
+        return getFlagIndex(json, "easing");
+    }
+
+    public Integer getSplineIndex(JsonArray json) {
+        return getFlagIndex(json, "spline");
+    }
+
+    public PointDefinition(JsonArray json) throws RuntimeException {
+        if (isSimple(json)) {
+            loadSimple(json);
+        } else {
+            loadComplex(json);
+        }
+    }
+
+    private void loadSimple(JsonArray json) {
+        Point<T> point = new Point<>();
+        loadValue(json, point, true);
+        points.add(point);
+    }
+
+    private void loadComplex(JsonArray json) {
+        json.forEach(x -> {
+            JsonArray inner = x.getAsJsonArray();
+            Point<T> point = new Point<>();
+
+            float time = inner.get(getTimeIndex()).getAsFloat();
+            point.setTime(time);
+
+            Integer easingIndex = getEasingIndex(inner);
+            if (easingIndex != null) {
+                String easing = inner.get(easingIndex).getAsString();
+                point.setEasing(Easing.getEasing(easing));
+            }
+
+            Integer splineIndex = getSplineIndex(inner);
+            point.setSpline(splineIndex != null);
+
+            loadValue(inner, point, false);
+            points.add(point);
+        });
+    }
+    protected abstract void loadValue(JsonArray json, Point<T> point, boolean isSimple);
 
     public T interpolate(float time) {
         if (points.isEmpty()) {

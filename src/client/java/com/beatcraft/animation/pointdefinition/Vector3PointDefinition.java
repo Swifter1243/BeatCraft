@@ -1,8 +1,14 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
 import org.joml.Vector3f;
 
 public class Vector3PointDefinition extends PointDefinition<Vector3f> {
+    public Vector3PointDefinition(JsonArray json) throws RuntimeException {
+        super(json);
+    }
+
     @Override
     protected Vector3f interpolatePoints(int a, int b, float time) {
         Point<Vector3f> right = points.get(b);
@@ -13,6 +19,17 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
             Point<Vector3f> left = points.get(a);
             return left.getValue().lerp(right.getValue(), time);
         }
+    }
+
+    @Override
+    protected int getValueLength() {
+        return 3;
+    }
+
+    @Override
+    protected void loadValue(JsonArray json, Point<Vector3f> point, boolean isSimple) {
+        Vector3f vector = JsonUtil.getVector3(json);
+        point.setValue(vector);
     }
 
     protected Vector3f splineInterpolation(int a, int b, float time) {

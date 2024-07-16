@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 public class Point<T> {
     private T value;
-    private float time;
+    private float time = 0;
     private Function<Float, Float> easing;
     private boolean spline;
 
