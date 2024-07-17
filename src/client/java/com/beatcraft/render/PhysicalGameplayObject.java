@@ -1,5 +1,6 @@
 package com.beatcraft.render;
 
+import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.GameplayObject;
 import com.beatcraft.utils.MathUtil;
@@ -9,7 +10,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.joml.*;
 import org.joml.Math;
 
-public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends WorldRenderer {
+public abstract class PhysicalGameplayObject<T extends GameplayObject> extends WorldRenderer {
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
@@ -19,7 +20,7 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected T data;
     protected NoteMath.Jumps jumps;
 
-    PhysicalBeatmapObject(T data) {
+    PhysicalGameplayObject(T data) {
         this.data = data;
         this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), BeatmapPlayer.currentInfo.getBpm());
     }
@@ -89,11 +90,15 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
         return MathUtil.clamp01(lifetime * 2);
     }
 
-    protected Matrix4f getMatrixAtTime(float time) {
+    protected Matrix4f getBaseMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
 
         if (data.getWorldRotation() != null) {
             m.rotate(data.getWorldRotation());
+        }
+
+        if (animationState.getOffsetWorldRotation() != null) {
+            m.rotate(animationState.getOffsetWorldRotation());
         }
 
         if (getLaneRotation() != null) {
@@ -104,6 +109,10 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
 
         if (data.getLocalRotation() != null) {
             m.rotate(data.getLocalRotation());
+        }
+
+        if (animationState.getLocalRotation() != null) {
+            m.rotate(animationState.getLocalRotation());
         }
 
         return m;
@@ -127,6 +136,12 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
         return m;
     }
 
+    protected Matrix4f getMatrix(float time, AnimationState animationState) {
+        Matrix4f baseMatrix = getBaseMatrix(time, animationState);
+
+        return baseMatrix;
+    }
+
     protected Quaternionf getJumpsRotation(float spawnLifetime) {
         float rotationLifetime = MathUtil.clamp01(spawnLifetime / 0.3f);
         float rotationTime = Easing.easeOutQuad(rotationLifetime);
@@ -137,16 +152,20 @@ public abstract class PhysicalBeatmapObject<T extends GameplayObject> extends Wo
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         if (!shouldRender()) return;
 
-        float time = BeatmapPlayer.getCurrentBeat();
-        matrices.multiplyPositionMatrix(getMatrixAtTime(time));
+
+        float beat = BeatmapPlayer.getCurrentBeat();
+        AnimationState animationState = data.getTrackContainer().getAnimationState();
+        Matrix4f matrix = getMatrix(beat, animationState);
+
+        matrices.multiplyPositionMatrix(matrix);
         // TODO: Handle normal matrix???
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 
-        objectRender(matrices, vertexConsumer);
+        objectRender(matrices, vertexConsumer, animationState);
     }
 
-    abstract protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer);
+    abstract protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState);
 
     public T getData() {
         return data;

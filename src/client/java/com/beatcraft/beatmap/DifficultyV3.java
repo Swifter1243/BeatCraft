@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.beatmap.data.AnimateTrack;
 import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.RotationEvent;
@@ -16,6 +17,7 @@ public class DifficultyV3 extends Difficulty {
         loadNotes(json);
         loadBasicEvents(json);
         loadRotationEvents(json);
+        loadCustomEvents(json);
         doPostLoad();
         return this;
     }
@@ -62,5 +64,29 @@ public class DifficultyV3 extends Difficulty {
             boolean early = obj.get("e").getAsInt() == 1;
             rotationEvents.add(new RotationEvent(early).loadV3(obj, this));
         });
+    }
+
+    private void loadCustomEvents(JsonObject json) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+            if (customData.has("customEvents")) {
+                JsonArray customEvents = customData.getAsJsonArray("customEvents");
+                customEvents.forEach(o -> loadCustomEvent(o.getAsJsonObject()));
+            }
+        }
+    }
+
+    private void loadCustomEvent(JsonObject json) {
+        String type = json.get("t").getAsString();
+        switch (type) {
+            case "AnimateTrack" -> {
+                animateTracks.add(new AnimateTrack().loadV3(json, this));
+                return;
+            }
+            case "AssignPathAnimation" -> {
+                // TODO: Implement
+                return;
+            }
+        }
     }
 }

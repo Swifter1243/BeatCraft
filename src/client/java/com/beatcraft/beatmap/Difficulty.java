@@ -1,12 +1,11 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.beatmap.data.BeatmapObject;
-import com.beatcraft.beatmap.data.GameplayObject;
-import com.beatcraft.beatmap.data.NoteType;
-import com.beatcraft.beatmap.data.RotationEvent;
+import com.beatcraft.animation.Animation;
+import com.beatcraft.animation.track.TrackLibrary;
+import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.event.RotationEventHandler;
-import com.beatcraft.render.PhysicalBeatmapObject;
+import com.beatcraft.render.PhysicalGameplayObject;
 import com.beatcraft.render.PhysicalColorNote;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
@@ -24,8 +23,10 @@ import java.util.stream.Collectors;
 public abstract class Difficulty {
     private final Info info;
     private final Info.SetDifficulty setDifficulty;
-    public ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
-    public ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
+    private final TrackLibrary trackLibrary = new TrackLibrary();
+    public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
+    public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
+    public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
 
     public Difficulty(Info info, Info.SetDifficulty setDifficulty) {
         this.info = info;
@@ -47,6 +48,7 @@ public abstract class Difficulty {
     private void sortObjectsByTime() {
         colorNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         rotationEvents.sort(this::compareObjects);
+        animateTracks.sort(this::compareObjects);
     }
 
     private void applyRotationEvents() {
@@ -54,7 +56,7 @@ public abstract class Difficulty {
         applyRotationOnArray(eventHandler, colorNotes);
     }
 
-    private <T extends PhysicalBeatmapObject<K>, K extends GameplayObject> void applyRotationOnArray(EventHandler<Float, RotationEvent> eventHandler, ArrayList<T> array) {
+    private <T extends PhysicalGameplayObject<K>, K extends GameplayObject> void applyRotationOnArray(EventHandler<Float, RotationEvent> eventHandler, ArrayList<T> array) {
         eventHandler.reset();
         array.forEach(o -> {
             float beat = o.getData().getBeat();
@@ -89,11 +91,19 @@ public abstract class Difficulty {
         colorNotes.forEach(PhysicalColorNote::finalizeBaseRotation);
     }
 
+    private void setupAnimatedProperties() {
+        animateTracks.forEach(event -> {
+            Animation.EventContainer eventFrame = event.toEventContainer();
+            event.getTracks().forEach(track -> track.loadEventContainer(eventFrame));
+        });
+    }
+
     protected void doPostLoad() {
         sortObjectsByTime();
         checkNotesWindowSnap();
         finalizeBaseRotations();
         applyRotationEvents();
+        setupAnimatedProperties();
     }
 
     public Info getInfo() {
@@ -106,5 +116,17 @@ public abstract class Difficulty {
 
     public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
         colorNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
+    }
+
+    public void seek(float beat) {
+        trackLibrary.getTracks().forEach(track -> track.getAnimationProperties().seek(beat));
+    }
+
+    public void update(float beat) {
+        trackLibrary.getTracks().forEach(track -> track.getAnimationProperties().update(beat));
+    }
+
+    public TrackLibrary getTrackLibrary() {
+        return trackLibrary;
     }
 }

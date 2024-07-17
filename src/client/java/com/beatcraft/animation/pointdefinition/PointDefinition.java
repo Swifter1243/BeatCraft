@@ -1,6 +1,8 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.animation.Easing;
+import com.beatcraft.beatmap.data.AnimateTrack;
+import com.beatcraft.event.AnimatedPropertyEvent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.minecraft.util.JsonHelper;
@@ -17,7 +19,7 @@ public abstract class PointDefinition<T> {
     }
     protected abstract int getValueLength();
     public int getTimeIndex() {
-        return getValueLength() + 1;
+        return getValueLength();
     }
     public boolean hasFlags(JsonArray json) {
         return json.size() > getTimeIndex() + 1;
@@ -39,7 +41,7 @@ public abstract class PointDefinition<T> {
     }
 
     public Integer getEasingIndex(JsonArray json) {
-        return getFlagIndex(json, "easing");
+        return getFlagIndex(json, "ease");
     }
 
     public Integer getSplineIndex(JsonArray json) {
@@ -108,7 +110,9 @@ public abstract class PointDefinition<T> {
             normalTime = (time - leftPoint.getTime()) / divisor;
         }
 
-        normalTime = rightPoint.getEasing().apply(normalTime);
+        if (rightPoint.getEasing() != null) {
+            normalTime = rightPoint.getEasing().apply(normalTime);
+        }
 
         return interpolatePoints(indexInfo.left, indexInfo.right, normalTime);
     }
@@ -132,5 +136,9 @@ public abstract class PointDefinition<T> {
         }
 
         return new TimeIndexInfo(left, right);
+    }
+
+    public AnimatedPropertyEvent<T> toAnimatedPropertyEvent(AnimateTrack animateTrack) {
+        return new AnimatedPropertyEvent<>(this, animateTrack);
     }
 }

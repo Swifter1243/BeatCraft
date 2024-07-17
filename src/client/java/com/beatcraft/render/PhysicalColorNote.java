@@ -1,5 +1,6 @@
 package com.beatcraft.render;
 
+import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.utils.MathUtil;
@@ -13,7 +14,7 @@ import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 
-public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
+public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     public static final ModelIdentifier colorNoteArrowModelID = new ModelIdentifier("beatcraft", "color_note_arrow", "inventory");
     public static final ModelIdentifier colorNoteDotModelID = new ModelIdentifier("beatcraft", "color_note_dot", "inventory");
     private static final int overlay = OverlayTexture.getUv(0, false);
@@ -63,7 +64,7 @@ public class PhysicalColorNote extends PhysicalBeatmapObject<ColorNote> {
     }
 
     @Override
-    protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
+    protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
         BakedModel model;

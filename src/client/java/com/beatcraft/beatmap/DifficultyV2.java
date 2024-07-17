@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.beatmap.data.AnimateTrack;
 import com.beatcraft.beatmap.data.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.RotationEvent;
@@ -16,11 +17,12 @@ public class DifficultyV2 extends Difficulty {
     DifficultyV2 load(JsonObject json) {
         loadNotesAndBombs(json);
         loadEvents(json);
+        loadCustomEvents(json);
         doPostLoad();
         return this;
     }
 
-    void loadNotesAndBombs(JsonObject json) {
+    private void loadNotesAndBombs(JsonObject json) {
         JsonArray rawNotes = json.getAsJsonArray("_notes");
 
         rawNotes.forEach(o -> {
@@ -35,7 +37,7 @@ public class DifficultyV2 extends Difficulty {
         });
     }
 
-    void loadEvents(JsonObject json) {
+    private void loadEvents(JsonObject json) {
         JsonArray events = json.getAsJsonArray("_events");
 
         events.forEach(o -> {
@@ -48,5 +50,29 @@ public class DifficultyV2 extends Difficulty {
                 rotationEvents.add(new RotationEvent(false).loadV2(obj, this));
             }
         });
+    }
+
+    private void loadCustomEvents(JsonObject json) {
+        if (json.has("_customData")) {
+            JsonObject customData = json.getAsJsonObject("_customData");
+            if (customData.has("_customEvents")) {
+                JsonArray customEvents = customData.getAsJsonArray("_customEvents");
+                customEvents.forEach(o -> loadCustomEvent(o.getAsJsonObject()));
+            }
+        }
+    }
+
+    private void loadCustomEvent(JsonObject json) {
+        String type = json.get("_type").getAsString();
+        switch (type) {
+            case "AnimateTrack" -> {
+                animateTracks.add(new AnimateTrack().loadV2(json, this));
+                return;
+            }
+            case "AssignPathAnimation" -> {
+                // TODO: Implement
+                return;
+            }
+        }
     }
 }
