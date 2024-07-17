@@ -4,7 +4,7 @@ import com.beatcraft.utils.MathUtil;
 
 import java.util.ArrayList;
 
-public abstract class EventHandler<D, E extends IEvent<D>> {
+public abstract class EventHandler<D, E extends IEvent> {
     private final ArrayList<E> events;
     private final ArrayList<E> upcoming = new ArrayList<>();
     protected final D initialState;
