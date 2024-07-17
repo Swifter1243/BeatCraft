@@ -33,7 +33,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     private Vector3f getPlayerHeadPosition() {
-        return new Vector3f(0, 1.4f, 0);
+        return new Vector3f(0, 1.62f, 0);
     }
 
     public float getSpawnBeat() {
@@ -179,7 +179,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
                 headPosition = MathUtil.matrixTransformPoint3D(new Matrix4f(m).invert(), headPosition);
                 headPosition = MathUtil.matrixTransformPoint3D(jumpMatrix, headPosition.mul(-1));
                 Vector3f up = new Vector3f(0.0f, 0, 1);
-                lookRotation = new Quaternionf().rotateTo(up, headPosition);
+                Quaternionf targetLookRotation = new Quaternionf().rotateTo(up, headPosition);
+                lookRotation = new Quaternionf().slerp(targetLookRotation, spawnLifetime);
             }
 
             m.mul(jumpMatrix).rotate(lookRotation);
