@@ -7,6 +7,7 @@ import com.beatcraft.beatmap.data.RotationEvent;
 import com.beatcraft.render.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.util.JsonHelper;
 
 public class DifficultyV2 extends Difficulty {
     public DifficultyV2(Info info, Info.SetDifficulty setDifficulty) {
@@ -17,6 +18,7 @@ public class DifficultyV2 extends Difficulty {
     DifficultyV2 load(JsonObject json) {
         loadNotesAndBombs(json);
         loadEvents(json);
+        loadPointDefinitions(json);
         loadCustomEvents(json);
         doPostLoad();
         return this;
@@ -50,6 +52,21 @@ public class DifficultyV2 extends Difficulty {
                 rotationEvents.add(new RotationEvent(false).loadV2(obj, this));
             }
         });
+    }
+
+    private void loadPointDefinitions(JsonObject json) {
+        if (json.has("_customData")) {
+            JsonObject customData = json.getAsJsonObject("_customData");
+            if (customData.has("_pointDefinitions")) {
+                JsonArray pointDefinitions = customData.getAsJsonArray("_pointDefinitions");
+                pointDefinitions.forEach(x -> {
+                    JsonObject pointDefinition = x.getAsJsonObject();
+                    String name = JsonHelper.getString(pointDefinition, "_name");
+                    JsonArray points = pointDefinition.getAsJsonArray("_points");
+                    this.pointDefinitions.put(name, points);
+                });
+            }
+        }
     }
 
     private void loadCustomEvents(JsonObject json) {

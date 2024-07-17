@@ -17,6 +17,7 @@ public class DifficultyV3 extends Difficulty {
         loadNotes(json);
         loadBasicEvents(json);
         loadRotationEvents(json);
+        loadPointDefinitions(json);
         loadCustomEvents(json);
         doPostLoad();
         return this;
@@ -64,6 +65,16 @@ public class DifficultyV3 extends Difficulty {
             boolean early = obj.get("e").getAsInt() == 1;
             rotationEvents.add(new RotationEvent(early).loadV3(obj, this));
         });
+    }
+
+    private void loadPointDefinitions(JsonObject json) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+            if (customData.has("pointDefinitions")) {
+                JsonObject pointDefinitions = customData.getAsJsonObject("pointDefinitions");
+                pointDefinitions.asMap().forEach((name, points) -> this.pointDefinitions.put(name, points.getAsJsonArray()));
+            }
+        }
     }
 
     private void loadCustomEvents(JsonObject json) {

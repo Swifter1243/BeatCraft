@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
-import org.apache.commons.lang3.NotImplementedException;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -62,7 +61,8 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
 
         JsonElement element = json.get(property);
         if (JsonHelper.isString(element)) {
-            throw new NotImplementedException("TODO: Difficulty point definitions");
+            String name = element.getAsString();
+            return factory.apply(difficulty.pointDefinitions.get(name));
         } else {
             return factory.apply(element.getAsJsonArray());
         }

@@ -7,6 +7,7 @@ import com.beatcraft.event.EventHandler;
 import com.beatcraft.event.RotationEventHandler;
 import com.beatcraft.render.PhysicalGameplayObject;
 import com.beatcraft.render.PhysicalColorNote;
+import com.google.gson.JsonArray;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -16,6 +17,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public abstract class Difficulty {
     public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
+    public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
 
     public Difficulty(Info info, Info.SetDifficulty setDifficulty) {
         this.info = info;
