@@ -106,15 +106,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.rotate(getLaneRotation());
         }
 
-        applySpawnMatrix(time, m);
-
-        if (data.getLocalRotation() != null) {
-            m.rotate(data.getLocalRotation());
-        }
-
-        if (animationState.getLocalRotation() != null) {
-            m.rotate(animationState.getLocalRotation());
-        }
+        applySpawnMatrix(time, m, animationState);
 
         MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
@@ -125,7 +117,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return false;
     }
 
-    protected void applySpawnMatrix(float time, Matrix4f m) {
+    protected void applySpawnMatrix(float time, Matrix4f m, AnimationState animationState) {
         float lifetime = getLifetime(time);
         float spawnLifetime = getSpawnLifetime(lifetime);
 
@@ -144,6 +136,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.mul(jumpMatrix).mul(lookRotation);
         } else {
             m.mul(jumpMatrix);
+        }
+
+        if (data.getLocalRotation() != null) {
+            m.rotate(data.getLocalRotation());
+        }
+
+        if (animationState.getLocalRotation() != null) {
+            m.rotate(animationState.getLocalRotation());
         }
 
         if (lifetime < 0.5) {
