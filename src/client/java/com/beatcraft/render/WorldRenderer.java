@@ -10,6 +10,8 @@ public abstract class WorldRenderer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
 
     public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
+        if (!shouldRender()) return;
+
         VertexConsumerProvider provider = mc.getBufferBuilders().getEntityVertexConsumers();
         VertexConsumer vertexConsumer = provider.getBuffer(RenderLayer.getSolid());
 
@@ -22,4 +24,5 @@ public abstract class WorldRenderer {
 
     // I'll probably add more parameters to this as I need them
     protected abstract void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer);
+    protected abstract boolean shouldRender();
 }

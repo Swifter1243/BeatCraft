@@ -33,6 +33,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return getData().getBeat() + jumps.halfDuration();
     }
 
+    @Override
     public boolean shouldRender() {
         float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
         boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
@@ -166,8 +167,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
-        if (!shouldRender()) return;
-
         float beat = BeatmapPlayer.getCurrentBeat();
         AnimationState animationState = data.getTrackContainer().getAnimationState();
         Matrix4f matrix = getMatrix(beat, animationState);
