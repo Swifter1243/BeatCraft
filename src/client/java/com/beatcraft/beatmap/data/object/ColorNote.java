@@ -1,7 +1,10 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
+import com.beatcraft.beatmap.data.Color;
+import com.beatcraft.beatmap.data.CutDirection;
+import com.beatcraft.beatmap.data.NoteType;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 

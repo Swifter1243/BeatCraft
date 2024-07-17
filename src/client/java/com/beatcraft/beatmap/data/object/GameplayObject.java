@@ -1,4 +1,4 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.animation.track.ObjectTrackContainer;
 import com.beatcraft.beatmap.Difficulty;

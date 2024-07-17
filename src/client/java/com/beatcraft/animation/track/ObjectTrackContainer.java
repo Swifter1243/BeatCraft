@@ -17,7 +17,7 @@ public class ObjectTrackContainer {
     }
 
     private AnimationState getAnimationPropertyState() {
-        Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimationProperties().getCurrentState()).reduce(AnimationState::combine);
+        Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimatedProperties().getCurrentState()).reduce(AnimationState::combine);
         return state.orElseGet(AnimationState::new);
     }
 

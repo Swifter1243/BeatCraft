@@ -1,8 +1,8 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.animation.Easing;
-import com.beatcraft.beatmap.data.AnimateTrack;
-import com.beatcraft.event.AnimatedPropertyEvent;
+import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.animation.event.AnimatedPropertyEvent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.minecraft.util.JsonHelper;

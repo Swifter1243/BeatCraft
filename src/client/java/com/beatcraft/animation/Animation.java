@@ -2,16 +2,13 @@ package com.beatcraft.animation;
 
 import com.beatcraft.animation.pointdefinition.*;
 import com.beatcraft.beatmap.Difficulty;
-import com.beatcraft.beatmap.data.AnimateTrack;
+import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.IBeatmapData;
-import com.beatcraft.event.AnimatedPropertyEvent;
+import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.function.Function;
 
@@ -68,33 +65,7 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
         }
     }
 
-    public EventContainer toEventContainer(AnimateTrack animateTrack) {
-        return new EventContainer(this, animateTrack);
-    }
-
-    public static class EventContainer extends AnimationPropertyContainer<AnimatedPropertyEvent<Float>, AnimatedPropertyEvent<Vector3f>, AnimatedPropertyEvent<Vector4f>, AnimatedPropertyEvent<Quaternionf>> {
-        private static <T> AnimatedPropertyEvent<T> propertyToEvent(PointDefinition<T> property, AnimateTrack animateTrack) {
-            if (property == null) {
-                return null;
-            } else {
-                return property.toAnimatedPropertyEvent(animateTrack);
-            }
-        }
-
-        public EventContainer(Animation animation, AnimateTrack animateTrack) {
-            offsetPosition = propertyToEvent(animation.getOffsetPosition(), animateTrack);
-            offsetWorldRotation = propertyToEvent(animation.getOffsetWorldRotation(), animateTrack);
-            localRotation = propertyToEvent(animation.getLocalRotation(), animateTrack);
-            localPosition = propertyToEvent(animation.getLocalPosition(), animateTrack);
-            definitePosition = propertyToEvent(animation.getDefinitePosition(), animateTrack);
-            position = propertyToEvent(animation.getPosition(), animateTrack);
-            rotation = propertyToEvent(animation.getRotation(), animateTrack);
-            scale = propertyToEvent(animation.getScale(), animateTrack);
-            dissolve = propertyToEvent(animation.getDissolve(), animateTrack);
-            dissolveArrow = propertyToEvent(animation.getDissolveArrow(), animateTrack);
-            interactable = propertyToEvent(animation.getInteractable(), animateTrack);
-            time = propertyToEvent(animation.getTime(), animateTrack);
-            color = propertyToEvent(animation.getColor(), animateTrack);
-        }
+    public AnimatedPropertyEventContainer toAnimatedPropertyEvents(AnimateTrack animateTrack) {
+        return new AnimatedPropertyEventContainer(this, animateTrack);
     }
 }

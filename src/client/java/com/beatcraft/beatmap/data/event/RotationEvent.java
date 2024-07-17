@@ -1,6 +1,7 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.beatmap.data.event;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.event.IEvent;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

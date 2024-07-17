@@ -1,10 +1,10 @@
 package com.beatcraft.animation.track;
 
-import com.beatcraft.animation.Animation;
+import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.AnimationPropertyContainer;
 import com.beatcraft.animation.AnimationState;
-import com.beatcraft.event.AnimatedPropertyEvent;
-import com.beatcraft.event.AnimatedPropertyEventHandler;
+import com.beatcraft.animation.event.AnimatedPropertyEvent;
+import com.beatcraft.animation.event.AnimatedPropertyEventHandler;
 import com.google.gson.JsonElement;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -13,16 +13,16 @@ import org.joml.Vector4f;
 import java.util.ArrayList;
 
 public class Track {
-    private final AnimationProperties animationProperties = new AnimationProperties();
+    private final AnimatedProperties animatedProperties = new AnimatedProperties();
 
-    public AnimationProperties getAnimationProperties() {
-        return animationProperties;
+    public AnimatedProperties getAnimatedProperties() {
+        return animatedProperties;
     }
 
-    public static class AnimationProperties extends AnimationPropertyContainer<AnimatedPropertyEventHandler<Float>, AnimatedPropertyEventHandler<Vector3f>, AnimatedPropertyEventHandler<Vector4f>, AnimatedPropertyEventHandler<Quaternionf>> {
+    public static class AnimatedProperties extends AnimationPropertyContainer<AnimatedPropertyEventHandler<Float>, AnimatedPropertyEventHandler<Vector3f>, AnimatedPropertyEventHandler<Vector4f>, AnimatedPropertyEventHandler<Quaternionf>> {
         private final AnimationState currentState = new AnimationState();
 
-        AnimationProperties() {
+        AnimatedProperties() {
             offsetPosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
             offsetWorldRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
             localRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
@@ -46,7 +46,7 @@ public class Track {
             currentState.applyUpdate(beat, this);
         }
 
-        public void loadEventContainer(Animation.EventContainer eventContainer) {
+        public void loadAnimatedPropertyEvents(AnimatedPropertyEventContainer eventContainer) {
             loadEvent(getOffsetPosition(), eventContainer.getOffsetPosition());
             loadEvent(getOffsetWorldRotation(), eventContainer.getOffsetWorldRotation());
             loadEvent(getLocalRotation(), eventContainer.getLocalRotation());
@@ -91,7 +91,7 @@ public class Track {
         tracks.add(track);
     }
 
-    public void loadEventContainer(Animation.EventContainer eventContainer) {
-        animationProperties.loadEventContainer(eventContainer);
+    public void loadAnimatedPropertyEvents(AnimatedPropertyEventContainer eventContainer) {
+        animatedProperties.loadAnimatedPropertyEvents(eventContainer);
     }
 }

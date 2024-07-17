@@ -1,7 +1,7 @@
 package com.beatcraft.render;
 
 import com.beatcraft.animation.AnimationState;
-import com.beatcraft.beatmap.data.ColorNote;
+import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;

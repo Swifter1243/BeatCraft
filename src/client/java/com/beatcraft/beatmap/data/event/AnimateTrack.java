@@ -1,5 +1,7 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.beatmap.data.event;
 
+import com.beatcraft.beatmap.data.object.BeatmapObject;
+import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.animation.track.Track;
@@ -86,7 +88,7 @@ public class AnimateTrack extends BeatmapObject {
         return tracks;
     }
 
-    public Animation.EventContainer toEventContainer() {
-        return animation.toEventContainer(this);
+    public AnimatedPropertyEventContainer toAnimatedPropertyEvents() {
+        return animation.toAnimatedPropertyEvents(this);
     }
 }

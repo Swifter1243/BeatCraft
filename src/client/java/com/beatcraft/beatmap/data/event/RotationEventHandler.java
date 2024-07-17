@@ -1,6 +1,6 @@
-package com.beatcraft.event;
+package com.beatcraft.beatmap.data.event;
 
-import com.beatcraft.beatmap.data.RotationEvent;
+import com.beatcraft.event.EventHandler;
 
 import java.util.ArrayList;
 

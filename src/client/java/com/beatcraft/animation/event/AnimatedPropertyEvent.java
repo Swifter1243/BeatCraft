@@ -1,7 +1,8 @@
-package com.beatcraft.event;
+package com.beatcraft.animation.event;
 
 import com.beatcraft.animation.pointdefinition.PointDefinition;
-import com.beatcraft.beatmap.data.AnimateTrack;
+import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.event.IEvent;
 
 public class AnimatedPropertyEvent<T> implements IEvent {
     private final PointDefinition<T> property;

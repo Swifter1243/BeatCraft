@@ -1,9 +1,9 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.beatmap.data.AnimateTrack;
-import com.beatcraft.beatmap.data.ColorNote;
+import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
-import com.beatcraft.beatmap.data.RotationEvent;
+import com.beatcraft.beatmap.data.event.RotationEvent;
 import com.beatcraft.render.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

@@ -2,7 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
-import com.beatcraft.beatmap.data.GameplayObject;
+import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.VertexConsumer;

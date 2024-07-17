@@ -1,7 +1,7 @@
 package com.beatcraft.animation;
 
 import com.beatcraft.animation.track.Track;
-import com.beatcraft.event.AnimatedPropertyEventHandler;
+import com.beatcraft.animation.event.AnimatedPropertyEventHandler;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, Vector4f, Quaternionf> {
-    private void applyOperation(Track.AnimationProperties properties, Function<AnimatedPropertyEventHandler<?>, ?> operation) {
+    private void applyOperation(Track.AnimatedProperties properties, Function<AnimatedPropertyEventHandler<?>, ?> operation) {
         offsetPosition = (Vector3f) operation.apply(properties.getOffsetPosition());
         offsetWorldRotation = (Quaternionf) operation.apply(properties.getOffsetWorldRotation());
         localRotation = (Quaternionf) operation.apply(properties.getLocalRotation());
@@ -26,11 +26,11 @@ public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, 
         color = (Vector4f) operation.apply(properties.getColor());
     }
 
-    public void applySeek(float beat, Track.AnimationProperties properties) {
+    public void applySeek(float beat, Track.AnimatedProperties properties) {
         applyOperation(properties, (handler) -> handler.seek(beat));
     }
 
-    public void applyUpdate(float beat, Track.AnimationProperties properties) {
+    public void applyUpdate(float beat, Track.AnimatedProperties properties) {
         applyOperation(properties, (handler) -> handler.update(beat));
     }
 

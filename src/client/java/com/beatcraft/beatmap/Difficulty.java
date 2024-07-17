@@ -1,10 +1,14 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.animation.Animation;
+import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.beatmap.data.object.BeatmapObject;
+import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.event.RotationEventHandler;
+import com.beatcraft.beatmap.data.event.RotationEventHandler;
 import com.beatcraft.render.PhysicalGameplayObject;
 import com.beatcraft.render.PhysicalColorNote;
 import com.google.gson.JsonArray;
@@ -96,8 +100,8 @@ public abstract class Difficulty {
 
     private void setupAnimatedProperties() {
         animateTracks.forEach(event -> {
-            Animation.EventContainer eventFrame = event.toEventContainer();
-            event.getTracks().forEach(track -> track.loadEventContainer(eventFrame));
+            AnimatedPropertyEventContainer animatedPropertyEvents = event.toAnimatedPropertyEvents();
+            event.getTracks().forEach(track -> track.loadAnimatedPropertyEvents(animatedPropertyEvents));
         });
     }
 
@@ -123,11 +127,11 @@ public abstract class Difficulty {
 
     public void seek(float beat) {
         colorNotes.forEach(PhysicalGameplayObject::reset);
-        trackLibrary.getTracks().forEach(track -> track.getAnimationProperties().seek(beat));
+        trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().seek(beat));
     }
 
     public void update(float beat) {
-        trackLibrary.getTracks().forEach(track -> track.getAnimationProperties().update(beat));
+        trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().update(beat));
     }
 
     public TrackLibrary getTrackLibrary() {

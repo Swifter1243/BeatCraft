@@ -1,4 +1,6 @@
-package com.beatcraft.event;
+package com.beatcraft.animation.event;
+
+import com.beatcraft.event.EventHandler;
 
 import java.util.ArrayList;
 
