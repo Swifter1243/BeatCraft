@@ -1,5 +1,6 @@
 package com.beatcraft.render;
 
+import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;

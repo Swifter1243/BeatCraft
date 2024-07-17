@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap.data.object;
 
+import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.track.ObjectTrackContainer;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.utils.JsonUtil;
@@ -14,7 +15,8 @@ public abstract class GameplayObject extends BeatmapObject {
     private int y;
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
-    private ObjectTrackContainer trackContainer = new ObjectTrackContainer();
+    private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
+    private final Animation pathAnimation = new Animation();
 
     @Override
     public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
@@ -34,7 +36,11 @@ public abstract class GameplayObject extends BeatmapObject {
             localRotation = JsonUtil.getQuaternion(customData, "_localRotation", null);
 
             if (customData.has("_track")) {
-                trackContainer = new ObjectTrackContainer(customData.get("_track"), difficulty.getTrackLibrary());
+                trackContainer.loadTracks(customData.get("_track"), difficulty.getTrackLibrary());
+            }
+
+            if (customData.has("_animation")) {
+                pathAnimation.loadV2(customData.get("_animation").getAsJsonObject(), difficulty);
             }
         }
 
@@ -59,7 +65,11 @@ public abstract class GameplayObject extends BeatmapObject {
             localRotation = JsonUtil.getQuaternion(customData, "localRotation", null);
 
             if (customData.has("track")) {
-                trackContainer = new ObjectTrackContainer(customData.get("track"), difficulty.getTrackLibrary());
+                trackContainer.loadTracks(customData.get("track"), difficulty.getTrackLibrary());
+            }
+
+            if (customData.has("animation")) {
+                pathAnimation.loadV3(customData.get("animation").getAsJsonObject(), difficulty);
             }
         }
 
@@ -92,5 +102,9 @@ public abstract class GameplayObject extends BeatmapObject {
 
     public ObjectTrackContainer getTrackContainer() {
         return trackContainer;
+    }
+
+    public Animation getPathAnimation() {
+        return pathAnimation;
     }
 }

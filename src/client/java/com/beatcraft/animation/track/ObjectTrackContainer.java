@@ -7,21 +7,15 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class ObjectTrackContainer {
-    private final ArrayList<Track> tracks;
+    private final ArrayList<Track> tracks = new ArrayList<>();
 
-    public ObjectTrackContainer(JsonElement trackElement, TrackLibrary trackLibrary) {
-        tracks = Track.getTracksAsList(trackElement, trackLibrary);
-    }
-    public ObjectTrackContainer() {
-        tracks = new ArrayList<>();
+    public void loadTracks(JsonElement trackElement, TrackLibrary trackLibrary) {
+        tracks.addAll(Track.getTracksAsList(trackElement, trackLibrary));
     }
 
-    private AnimationState getAnimationPropertyState() {
+
+    public AnimationState getAnimatedPropertyState() {
         Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimatedProperties().getCurrentState()).reduce(AnimationState::combine);
         return state.orElseGet(AnimationState::new);
-    }
-
-    public AnimationState getAnimationState() {
-        return getAnimationPropertyState();
     }
 }

@@ -1,4 +1,4 @@
-package com.beatcraft.render;
+package com.beatcraft;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.BeatmapLoader;

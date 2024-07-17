@@ -68,4 +68,8 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
     public AnimatedPropertyEventContainer toAnimatedPropertyEvents(AnimateTrack animateTrack) {
         return new AnimatedPropertyEventContainer(this, animateTrack);
     }
+
+    public AnimationState toState(float time) {
+        return AnimationState.fromAnimation(this, time);
+    }
 }

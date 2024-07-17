@@ -1,6 +1,6 @@
 package com.beatcraft.mixin.client;
 
-import com.beatcraft.render.PhysicalColorNote;
+import com.beatcraft.render.object.PhysicalColorNote;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;

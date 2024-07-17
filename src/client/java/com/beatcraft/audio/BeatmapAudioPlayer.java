@@ -1,7 +1,7 @@
 package com.beatcraft.audio;
 
 import com.beatcraft.utils.MathUtil;
-import com.beatcraft.render.BeatmapPlayer;
+import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;

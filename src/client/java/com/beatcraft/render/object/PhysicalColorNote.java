@@ -1,4 +1,4 @@
-package com.beatcraft.render;
+package com.beatcraft.render.object;
 
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.ColorNote;

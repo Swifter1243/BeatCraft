@@ -1,8 +1,11 @@
-package com.beatcraft.render;
+package com.beatcraft.render.object;
 
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.render.SpawnQuaternionPool;
+import com.beatcraft.render.WorldRenderer;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
@@ -24,7 +27,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected NoteMath.Jumps jumps;
     protected boolean despawned = false;
 
-    PhysicalGameplayObject(T data) {
+    public PhysicalGameplayObject(T data) {
         this.data = data;
 
         float bpm = BeatmapPlayer.currentInfo.getBpm();
@@ -121,8 +124,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return new Vector2f(x, y);
     }
 
-    protected float getLifetime(float time) {
-        float lifetime = MathUtil.inverseLerp(getSpawnBeat(), getDespawnBeat(), time);
+    protected float getLifetime(float beat) {
+        float lifetime = MathUtil.inverseLerp(getSpawnBeat(), getDespawnBeat(), beat);
         return MathUtil.clamp01(lifetime);
     }
 
@@ -221,34 +224,50 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return beat >= getDespawnBeat();
     }
 
+    private void applyMatrixToRender(Matrix4f matrix, MatrixStack matrices) {
+        Matrix3f normalMatrix = new Matrix3f();
+        matrix.get3x3(normalMatrix);
+        matrices.multiplyPositionMatrix(matrix);
+        matrices.peek().getNormalMatrix().mul(normalMatrix);
+    }
+
+    private float applyTimeRemapping(float beat, AnimationState animatedPropertyState) {
+        float spawnBeat = getSpawnBeat();
+        float despawnBeat = getDespawnBeat();
+        Float animationTime = animatedPropertyState.getTime();
+
+        if (beat >= spawnBeat && animationTime != null) {
+            return Math.lerp(spawnBeat, despawnBeat, animationTime);
+        } else {
+            return beat;
+        }
+    }
+
+    private AnimationState getPathAnimationState(float beat) {
+        return data.getPathAnimation().toState(getLifetime(beat));
+    }
+
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         float beat = BeatmapPlayer.getCurrentBeat();
-        AnimationState animationState = data.getTrackContainer().getAnimationState();
+        AnimationState animatedPropertyState = data.getTrackContainer().getAnimatedPropertyState();
 
-        float spawnBeat = getSpawnBeat();
-        float despawnBeat = getDespawnBeat();
-        Float animationTime = animationState.getTime();
-        if (beat >= spawnBeat && animationTime != null) {
-            beat = Math.lerp(spawnBeat, despawnBeat, animationTime);
-        }
-
+        beat = applyTimeRemapping(beat, animatedPropertyState);
         if (jumpEnded(beat)) {
             despawn();
             return;
         }
 
-        Matrix4f matrix = getMatrix(beat, animationState);
+        AnimationState finalState = animatedPropertyState;
+        finalState = AnimationState.combine(finalState, getPathAnimationState(beat));
 
-        Matrix3f normalMatrix = new Matrix3f();
-        matrix.get3x3(normalMatrix);
-        matrices.multiplyPositionMatrix(matrix);
-        matrices.peek().getNormalMatrix().mul(normalMatrix);
+        Matrix4f matrix = getMatrix(beat, finalState);
+        applyMatrixToRender(matrix, matrices);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 
-        objectRender(matrices, vertexConsumer, animationState);
+        objectRender(matrices, vertexConsumer, animatedPropertyState);
     }
 
     abstract protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState);
