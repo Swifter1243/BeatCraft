@@ -23,6 +23,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
     private Quaternionf lookRotation = new Quaternionf();
+    private Matrix4f matrix = new Matrix4f();
+    private AnimationState animationState = new AnimationState();
     protected T data;
     protected NoteMath.Jumps jumps;
     protected boolean despawned = false;
@@ -67,18 +69,42 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return despawned;
     }
 
-    public void reset() {
+    public void seek(float beat) {
         despawned = false;
+        update(beat);
+    }
+
+    public void update(float beat) {
+        if (!isInWorld()) {
+            return;
+        }
+
+        AnimationState animatedPropertyState = data.getTrackContainer().getAnimatedPropertyState();
+
+        beat = applyTimeRemapping(beat, animatedPropertyState);
+        if (jumpEnded(beat)) {
+            despawn();
+            return;
+        }
+
+        animationState = animatedPropertyState;
+        animationState = AnimationState.combine(animationState, getPathAnimationState(beat));
+
+        matrix = getMatrix(beat, animationState);
+    }
+
+    public boolean hasAppeared() {
+        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
+    }
+
+    public boolean isInWorld() {
+        return hasAppeared() && !isDespawned();
     }
 
     @Override
     public boolean shouldRender() {
-        if (isDespawned()) {
-            return false;
-        }
-
-        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
-        return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
+        return isInWorld();
     }
 
     protected Vector3f getJumpsPosition(float lifetime, float time) {
@@ -249,25 +275,12 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
-        float beat = BeatmapPlayer.getCurrentBeat();
-        AnimationState animatedPropertyState = data.getTrackContainer().getAnimatedPropertyState();
-
-        beat = applyTimeRemapping(beat, animatedPropertyState);
-        if (jumpEnded(beat)) {
-            despawn();
-            return;
-        }
-
-        AnimationState finalState = animatedPropertyState;
-        finalState = AnimationState.combine(finalState, getPathAnimationState(beat));
-
-        Matrix4f matrix = getMatrix(beat, finalState);
         applyMatrixToRender(matrix, matrices);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 
-        objectRender(matrices, vertexConsumer, animatedPropertyState);
+        objectRender(matrices, vertexConsumer, animationState);
     }
 
     abstract protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState);

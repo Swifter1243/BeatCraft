@@ -126,11 +126,12 @@ public abstract class Difficulty {
     }
 
     public void seek(float beat) {
-        colorNotes.forEach(PhysicalGameplayObject::reset);
+        colorNotes.forEach(o -> o.seek(beat));
         trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().seek(beat));
     }
 
     public void update(float beat) {
+        colorNotes.forEach(o -> o.update(beat));
         trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().update(beat));
     }
 
