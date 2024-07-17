@@ -17,7 +17,7 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
             return splineInterpolation(a, b, time);
         } else {
             Point<Vector3f> left = points.get(a);
-            return left.getValue().lerp(right.getValue(), time);
+            return new Vector3f(left.getValue()).lerp(right.getValue(), time);
         }
     }
 

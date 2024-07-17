@@ -13,7 +13,7 @@ public class QuaternionPointDefinition extends PointDefinition<Quaternionf> {
     protected Quaternionf interpolatePoints(int a, int b, float time) {
         Quaternionf left = points.get(a).getValue();
         Quaternionf right = points.get(b).getValue();
-        return left.slerp(right, time);
+        return new Quaternionf(left).slerp(right, time);
     }
 
     @Override
