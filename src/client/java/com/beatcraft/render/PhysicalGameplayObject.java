@@ -14,10 +14,12 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
+    protected static final Vector3f WORLD_OFFSET = new Vector3f(0, 0.8f, 1f);
     private final float jumpBeats;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
+    private Quaternionf lookRotation = new Quaternionf();
     protected T data;
     protected NoteMath.Jumps jumps;
     protected boolean despawned = false;
@@ -28,6 +30,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         float bpm = BeatmapPlayer.currentInfo.getBpm();
         this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), bpm);
         this.jumpBeats = MathUtil.secondsToBeats(JUMP_SECONDS, bpm);
+    }
+
+    private Vector3f getPlayerHeadPosition() {
+        return new Vector3f(0, 1.4f, 0);
+    }
+    public Vector3f getWorldOffset() {
+        Vector3f worldOffset = new Vector3f(WORLD_OFFSET);
+        worldOffset.z += getPlayerHeadPosition().z;
+        return worldOffset;
     }
 
     public float getSpawnBeat() {
@@ -80,7 +91,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Vector2f getJumpsXY(float spawnLifetime) {
         float jumpTime = Easing.easeOutQuad(spawnLifetime);
         Vector2f grid = get2DPosition();
-        grid.y = Math.lerp(1.1f, grid.y + 1.1f, jumpTime);
+        grid.y = Math.lerp(0, grid.y, jumpTime);
         return grid;
     }
 
@@ -127,6 +138,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Matrix4f getMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
 
+        m.translate(getWorldOffset());
+
         if (data.getWorldRotation() != null) {
             m.rotate(data.getWorldRotation());
         }
@@ -164,13 +177,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         jumpMatrix.translate(v);
 
         if (doNoteLook()) {
-            Vector3f headPosition = new Vector3f(0, 1, 0);
-            headPosition = MathUtil.matrixTransformPoint3D(new Matrix4f(m).invert(), headPosition);
-            headPosition = MathUtil.matrixTransformPoint3D(jumpMatrix, headPosition.mul(-1));
-            Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-            Matrix4f lookRotation = new Matrix4f().rotateTowards(headPosition, up);
+            if (lifetime < 0.5) {
+                Vector3f headPosition = getPlayerHeadPosition();
+                headPosition = MathUtil.matrixTransformPoint3D(new Matrix4f(m).invert(), headPosition);
+                headPosition = MathUtil.matrixTransformPoint3D(jumpMatrix, headPosition.mul(-1));
+                Vector3f up = new Vector3f(0.0f, 0, 1);
+                lookRotation = new Quaternionf().rotateTo(up, headPosition);
+            }
 
-            m.mul(jumpMatrix).mul(lookRotation);
+            m.mul(jumpMatrix).rotate(lookRotation);
         } else {
             m.mul(jumpMatrix);
         }
