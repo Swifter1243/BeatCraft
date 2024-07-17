@@ -90,10 +90,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return MathUtil.clamp01(lifetime * 2);
     }
 
+    // Converts world space to the object's local space
     protected Matrix4f getMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
-
-        m.scale(-1, 1, 1); // Beat Saber's space is flipped on the X axis compared to Minecraft's space
 
         if (data.getWorldRotation() != null) {
             m.rotate(data.getWorldRotation());
@@ -116,6 +115,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (animationState.getLocalRotation() != null) {
             m.rotate(animationState.getLocalRotation());
         }
+
+        MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
         return m;
     }
@@ -153,8 +154,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         AnimationState animationState = data.getTrackContainer().getAnimationState();
         Matrix4f matrix = getMatrix(beat, animationState);
 
+        Matrix3f normalMatrix = new Matrix3f();
+        matrix.get3x3(normalMatrix);
         matrices.multiplyPositionMatrix(matrix);
-        // TODO: Handle normal matrix???
+        matrices.peek().getNormalMatrix().mul(normalMatrix);
+
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 

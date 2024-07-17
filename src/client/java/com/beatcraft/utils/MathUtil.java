@@ -36,4 +36,11 @@ public class MathUtil {
         float radians = Math.atan2(v.y, v.x);
         return (float) Math.toDegrees(radians);
     }
+    public static void reflectMatrixAcrossX(Matrix4f matrix) {
+        matrix.m30(matrix.m30() * -1);
+        matrix.m10(matrix.m10() * -1);
+        matrix.m20(matrix.m20() * -1);
+        matrix.m01(matrix.m01() * -1);
+        matrix.m02(matrix.m02() * -1);
+    }
 }
