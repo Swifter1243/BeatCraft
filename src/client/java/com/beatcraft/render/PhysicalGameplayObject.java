@@ -35,11 +35,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private Vector3f getPlayerHeadPosition() {
         return new Vector3f(0, 1.4f, 0);
     }
-    public Vector3f getWorldOffset() {
-        Vector3f worldOffset = new Vector3f(WORLD_OFFSET);
-        worldOffset.z += getPlayerHeadPosition().z;
-        return worldOffset;
-    }
 
     public float getSpawnBeat() {
         return getData().getBeat() - jumps.halfDuration();
@@ -138,7 +133,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Matrix4f getMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
 
-        m.translate(getWorldOffset());
+        m.translate(getPlayerHeadPosition().x, 0, getPlayerHeadPosition().z);
 
         if (data.getWorldRotation() != null) {
             m.rotate(data.getWorldRotation());
@@ -175,6 +170,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         Vector3f v = getJumpsPosition(spawnLifetime, time);
         jumpMatrix.translate(v);
+
+        m.translate(WORLD_OFFSET);
 
         if (doNoteLook()) {
             if (lifetime < 0.5) {
