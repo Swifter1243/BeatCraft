@@ -32,6 +32,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public float getDespawnBeat() {
         return getData().getBeat() + jumps.halfDuration();
     }
+    public float getJumpOutBeat() {
+        return getData().getBeat() + jumps.halfDuration() * 0.5f;
+    }
 
     @Override
     public boolean shouldRender() {
@@ -55,24 +58,25 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     protected float getJumpsZ(float time) {
         float spawnPosition = jumps.jumpDistance() / 2;
-        float despawnPosition = -spawnPosition;
+        float jumpOutPosition = jumps.jumpDistance() * -0.25f;
 
         float spawnBeat = getSpawnBeat();
-        float despawnBeat = getDespawnBeat();
+        float jumpOutBeat = getJumpOutBeat();
 
         // jumps
         if (time < spawnBeat) {
             // jump in
             float percent = (spawnBeat - time) / 2;
             return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
-        } else if (time > despawnBeat) {
+        } else if (time > jumpOutBeat) {
             // jump out
-            float percent = (time - despawnBeat) / 2;
-            return Math.lerp(despawnPosition, -JUMP_FAR_Z, percent);
+            float percent = (time - jumpOutBeat) / 2;
+            percent *= percent; // bullshit parabola or something
+            return Math.lerp(jumpOutPosition, -JUMP_FAR_Z, percent);
         } else {
             // in between
-            float percent = (time - spawnBeat) / (despawnBeat - spawnBeat);
-            return Math.lerp(spawnPosition, despawnPosition, percent);
+            float percent = MathUtil.inverseLerp(spawnBeat, jumpOutBeat, time);
+            return Math.lerp(spawnPosition, jumpOutPosition, percent);
         }
     }
 
