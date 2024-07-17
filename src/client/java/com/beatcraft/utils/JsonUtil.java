@@ -41,7 +41,7 @@ public class JsonUtil {
     }
     public static Quaternionf getQuaternion(JsonObject object, String property, Quaternionf defaultValue) {
         if (object.has(property)) {
-            return getQuaternion(object.get("property"));
+            return getQuaternion(object.get(property));
         } else {
             return defaultValue;
         }
