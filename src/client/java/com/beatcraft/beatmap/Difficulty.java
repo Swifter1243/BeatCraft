@@ -126,13 +126,13 @@ public abstract class Difficulty {
     }
 
     public void seek(float beat) {
-        colorNotes.forEach(o -> o.seek(beat));
         trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().seek(beat));
+        colorNotes.forEach(o -> o.seek(beat));
     }
 
     public void update(float beat) {
-        colorNotes.forEach(o -> o.update(beat));
         trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().update(beat));
+        colorNotes.forEach(o -> o.update(beat));
     }
 
     public TrackLibrary getTrackLibrary() {
