@@ -3,7 +3,7 @@ package com.beatcraft.event;
 import com.beatcraft.animation.pointdefinition.PointDefinition;
 import com.beatcraft.beatmap.data.AnimateTrack;
 
-public class AnimatedPropertyEvent<T> implements IEvent<T> {
+public class AnimatedPropertyEvent<T> implements IEvent {
     private final PointDefinition<T> property;
     private final AnimateTrack origin;
 
@@ -30,7 +30,6 @@ public class AnimatedPropertyEvent<T> implements IEvent<T> {
         return origin.getRepeatedDuration();
     }
 
-    @Override
     public T getEventData(float normalTime) {
         if (isRepeating()) {
             normalTime = (normalTime * origin.getRepeat()) % 1;

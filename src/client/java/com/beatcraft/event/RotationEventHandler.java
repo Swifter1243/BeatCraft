@@ -21,6 +21,6 @@ public class RotationEventHandler extends EventHandler<Float, RotationEvent> {
 
     @Override
     public void onEventPassed(RotationEvent event) {
-        state += event.getEventData(1);
+        state += event.getRotation();
     }
 }

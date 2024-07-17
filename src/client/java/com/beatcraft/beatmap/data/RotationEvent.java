@@ -5,7 +5,7 @@ import com.beatcraft.event.IEvent;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class RotationEvent extends BeatmapObject implements IEvent<Float> {
+public class RotationEvent extends BeatmapObject implements IEvent {
     private float rotation;
     private final boolean early;
 
@@ -29,11 +29,6 @@ public class RotationEvent extends BeatmapObject implements IEvent<Float> {
     @Override
     public float getEventDuration() {
         return 0;
-    }
-
-    @Override
-    public Float getEventData(float normalTime) {
-        return rotation;
     }
 
     private enum V2ROTATION {

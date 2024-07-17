@@ -1,7 +1,6 @@
 package com.beatcraft.event;
 
-public interface IEvent<D> {
+public interface IEvent {
     float getEventBeat();
     float getEventDuration();
-    D getEventData(float normalTime);
 }
