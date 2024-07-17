@@ -3,12 +3,14 @@ package com.beatcraft.beatmap.data;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.google.gson.JsonObject;
+import net.minecraft.util.JsonHelper;
 
 public class ColorNote extends GameplayObject {
     private float angleOffset;
     private CutDirection cutDirection;
     private NoteType noteType;
     private Color color;
+    private boolean disableNoteLook = false;
 
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
         if (getNoteType() == NoteType.RED) {
@@ -34,6 +36,7 @@ public class ColorNote extends GameplayObject {
             if (customData.has("_color")) {
                 color = Color.fromJsonArray(customData.get("_color").getAsJsonArray());
             }
+            disableNoteLook = JsonHelper.getBoolean(customData, "_disableNoteLook", false);
         }
 
         return this;
@@ -55,6 +58,7 @@ public class ColorNote extends GameplayObject {
             if (customData.has("color")) {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
             }
+            disableNoteLook = JsonHelper.getBoolean(customData, "disableNoteLook", false);
         }
 
         return this;
@@ -74,5 +78,9 @@ public class ColorNote extends GameplayObject {
 
     public Color getColor() {
         return color;
+    }
+
+    public boolean isNoteLookDisabled() {
+        return disableNoteLook;
     }
 }

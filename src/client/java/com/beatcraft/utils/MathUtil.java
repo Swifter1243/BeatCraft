@@ -20,7 +20,11 @@ public class MathUtil {
         return beats * (60 / bpm);
     }
     public static Quaternionf eulerToQuaternion(Vector3f euler) {
-        return new Quaternionf().rotateXYZ(euler.x * DEG2RAD, euler.y * DEG2RAD, euler.z * DEG2RAD);
+        Quaternionf q = new Quaternionf();
+        q.rotateY(euler.y * DEG2RAD);
+        q.rotateX(euler.x * DEG2RAD);
+        q.rotateZ(euler.z * DEG2RAD);
+        return q;
     }
     public static float normalizeAngle(float angle) {
         angle = angle % 360;
@@ -44,5 +48,10 @@ public class MathUtil {
         matrix.m20(matrix.m20() * -1);
         matrix.m01(matrix.m01() * -1);
         matrix.m02(matrix.m02() * -1);
+    }
+    public static Vector3f matrixTransformPoint3D(Matrix4f matrix, Vector3f point) {
+        Vector4f newPoint = new Vector4f(point, 1);
+        newPoint.mul(matrix);
+        return new Vector3f(newPoint.x, newPoint.y, newPoint.z);
     }
 }

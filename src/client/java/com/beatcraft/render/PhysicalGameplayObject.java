@@ -106,7 +106,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.rotate(getLaneRotation());
         }
 
-        m.mul(getSpawnMatrix(time));
+        applySpawnMatrix(time, m);
 
         if (data.getLocalRotation() != null) {
             m.rotate(data.getLocalRotation());
@@ -121,13 +121,30 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return m;
     }
 
-    protected Matrix4f getSpawnMatrix(float time) {
+    protected boolean doNoteLook() {
+        return false;
+    }
+
+    protected void applySpawnMatrix(float time, Matrix4f m) {
         float lifetime = getLifetime(time);
         float spawnLifetime = getSpawnLifetime(lifetime);
 
-        Matrix4f m = new Matrix4f();
+        Matrix4f jumpMatrix = new Matrix4f();
+
         Vector3f v = getJumpsPosition(spawnLifetime, time);
-        m.translate(v);
+        jumpMatrix.translate(v);
+
+        if (doNoteLook()) {
+            Vector3f headPosition = new Vector3f(0, 1, 0);
+            headPosition = MathUtil.matrixTransformPoint3D(new Matrix4f(m).invert(), headPosition);
+            headPosition = MathUtil.matrixTransformPoint3D(jumpMatrix, headPosition.mul(-1));
+            Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+            Matrix4f lookRotation = new Matrix4f().rotateTowards(headPosition, up);
+
+            m.mul(jumpMatrix).mul(lookRotation);
+        } else {
+            m.mul(jumpMatrix);
+        }
 
         if (lifetime < 0.5) {
             m.rotate(getJumpsRotation(spawnLifetime));
@@ -135,8 +152,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         else {
             m.rotate(baseRotation);
         }
-
-        return m;
     }
 
     protected Quaternionf getJumpsRotation(float spawnLifetime) {
@@ -148,7 +163,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         if (!shouldRender()) return;
-
 
         float beat = BeatmapPlayer.getCurrentBeat();
         AnimationState animationState = data.getTrackContainer().getAnimationState();

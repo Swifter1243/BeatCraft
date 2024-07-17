@@ -58,6 +58,11 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
         }
     }
 
+    @Override
+    protected boolean doNoteLook() {
+        return !data.isNoteLookDisabled();
+    }
+
     public void finalizeBaseRotation() {
         float radians = Math.toRadians(baseDegrees);
         this.baseRotation = new Quaternionf().rotateZ(radians);
