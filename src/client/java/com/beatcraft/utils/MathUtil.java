@@ -37,7 +37,9 @@ public class MathUtil {
         return (float) Math.toDegrees(radians);
     }
     public static void reflectMatrixAcrossX(Matrix4f matrix) {
+        // reflect position (x * -1)
         matrix.m30(matrix.m30() * -1);
+        // reflect rotation (R * M * R)
         matrix.m10(matrix.m10() * -1);
         matrix.m20(matrix.m20() * -1);
         matrix.m01(matrix.m01() * -1);
