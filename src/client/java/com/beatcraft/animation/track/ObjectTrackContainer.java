@@ -4,6 +4,7 @@ import com.beatcraft.animation.AnimationState;
 import com.google.gson.JsonElement;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class ObjectTrackContainer {
     private final ArrayList<Track> tracks;
@@ -16,17 +17,8 @@ public class ObjectTrackContainer {
     }
 
     private AnimationState getAnimationPropertyState() {
-        if (tracks.size() == 0) {
-            return new AnimationState();
-        } else if (tracks.size() == 1) {
-            return tracks.get(0).getAnimationProperties().getCurrentState();
-        } else {
-            AnimationState state = tracks.get(0).getAnimationProperties().getCurrentState();
-            for (int i = 1; i < tracks.size(); i++) {
-                state = AnimationState.combine(state, tracks.get(1).getAnimationProperties().getCurrentState());
-            }
-            return state;
-        }
+        Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimationProperties().getCurrentState()).reduce(AnimationState::combine);
+        return state.orElseGet(AnimationState::new);
     }
 
     public AnimationState getAnimationState() {
