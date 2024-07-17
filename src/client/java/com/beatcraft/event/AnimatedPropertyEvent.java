@@ -32,12 +32,12 @@ public class AnimatedPropertyEvent<T> implements IEvent<T> {
 
     @Override
     public T getEventData(float normalTime) {
-        if (hasEasing()) { // tbh idk if the easing is applied before or after the repeat. guess we'll find out!
-            normalTime = origin.getEasing().apply(normalTime);
-        }
-
         if (isRepeating()) {
             normalTime = (normalTime * origin.getRepeat()) % 1;
+        }
+
+        if (hasEasing()) {
+            normalTime = origin.getEasing().apply(normalTime);
         }
 
         return property.interpolate(normalTime);
