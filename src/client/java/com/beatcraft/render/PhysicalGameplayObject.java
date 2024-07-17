@@ -14,34 +14,62 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
+    private final float jumpBeats;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
     protected T data;
     protected NoteMath.Jumps jumps;
+    protected boolean despawned = false;
 
     PhysicalGameplayObject(T data) {
         this.data = data;
-        this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), BeatmapPlayer.currentInfo.getBpm());
+
+        float bpm = BeatmapPlayer.currentInfo.getBpm();
+        this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), bpm);
+        this.jumpBeats = MathUtil.secondsToBeats(JUMP_SECONDS, bpm);
     }
 
     public float getSpawnBeat() {
         return getData().getBeat() - jumps.halfDuration();
     }
 
-    public float getDespawnBeat() {
-        return getData().getBeat() + jumps.halfDuration();
-    }
     public float getJumpOutBeat() {
         return getData().getBeat() + jumps.halfDuration() * 0.5f;
     }
 
+    public float getDespawnBeat() {
+        return getData().getBeat() + jumps.halfDuration();
+    }
+
+    public float getSpawnPosition() {
+        return jumps.jumpDistance() / 2;
+    }
+
+    public float getJumpOutPosition() {
+        return jumps.jumpDistance() * -0.25f;
+    }
+
+    private void despawn() {
+        despawned = true;
+    }
+
+    public boolean isDespawned() {
+        return despawned;
+    }
+
+    public void reset() {
+        despawned = false;
+    }
+
     @Override
     public boolean shouldRender() {
+        if (isDespawned()) {
+            return false;
+        }
+
         float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
-        boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
-        boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat();
-        return isAboveSpawnBeat && isBelowDespawnBeat;
+        return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
     }
 
     protected Vector3f getJumpsPosition(float spawnLifetime, float time) {
@@ -57,8 +85,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     protected float getJumpsZ(float time) {
-        float spawnPosition = jumps.jumpDistance() / 2;
-        float jumpOutPosition = jumps.jumpDistance() * -0.25f;
+        float spawnPosition = getSpawnPosition();
+        float jumpOutPosition = getJumpOutPosition();
 
         float spawnBeat = getSpawnBeat();
         float jumpOutBeat = getJumpOutBeat();
@@ -66,8 +94,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         // jumps
         if (time < spawnBeat) {
             // jump in
-            float percent = (spawnBeat - time) / 2;
-            return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
+            float percent = MathUtil.inverseLerp(spawnBeat - jumpBeats, spawnBeat, time);
+            return Math.lerp(JUMP_FAR_Z, spawnPosition, percent);
         } else if (time < jumpOutBeat) {
             // in between
             float percent = MathUtil.inverseLerp(spawnBeat, jumpOutBeat, time);
@@ -169,10 +197,27 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
     }
 
+    protected boolean jumpEnded(float beat) {
+        return beat >= getDespawnBeat();
+    }
+
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         float beat = BeatmapPlayer.getCurrentBeat();
         AnimationState animationState = data.getTrackContainer().getAnimationState();
+
+        float spawnBeat = getSpawnBeat();
+        float despawnBeat = getDespawnBeat();
+        Float animationTime = animationState.getTime();
+        if (beat >= spawnBeat && animationTime != null) {
+            beat = Math.lerp(spawnBeat, despawnBeat, animationTime);
+        }
+
+        if (jumpEnded(beat)) {
+            despawn();
+            return;
+        }
+
         Matrix4f matrix = getMatrix(beat, animationState);
 
         Matrix3f normalMatrix = new Matrix3f();
