@@ -11,6 +11,7 @@ public class ColorNote extends GameplayObject {
     private NoteType noteType;
     private Color color;
     private boolean disableNoteLook = false;
+    private boolean disableNoteGravity = false;
 
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
         if (getNoteType() == NoteType.RED) {
@@ -37,6 +38,7 @@ public class ColorNote extends GameplayObject {
                 color = Color.fromJsonArray(customData.get("_color").getAsJsonArray());
             }
             disableNoteLook = JsonHelper.getBoolean(customData, "_disableNoteLook", false);
+            disableNoteGravity = JsonHelper.getBoolean(customData, "_disableNoteGravity", false);
         }
 
         return this;
@@ -59,6 +61,7 @@ public class ColorNote extends GameplayObject {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
             }
             disableNoteLook = JsonHelper.getBoolean(customData, "disableNoteLook", false);
+            disableNoteGravity = JsonHelper.getBoolean(customData, "disableNoteGravity", false);
         }
 
         return this;
@@ -82,5 +85,9 @@ public class ColorNote extends GameplayObject {
 
     public boolean isNoteLookDisabled() {
         return disableNoteLook;
+    }
+
+    public boolean isNoteGravityDisabled() {
+        return disableNoteGravity;
     }
 }

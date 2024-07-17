@@ -86,7 +86,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Vector2f getJumpsXY(float spawnLifetime) {
         float jumpTime = Easing.easeOutQuad(spawnLifetime);
         Vector2f grid = get2DPosition();
-        grid.y = Math.lerp(0, grid.y, jumpTime);
+        grid.y = Math.lerp(doNoteGravity() ? -0.2f: grid.y - 0.2f, grid.y, jumpTime);
         return grid;
     }
 
@@ -161,6 +161,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected boolean doNoteLook() {
         return false;
     }
+    protected boolean doNoteGravity() { return true; }
 
     protected void applySpawnMatrix(float time, Matrix4f m, AnimationState animationState) {
         float lifetime = getLifetime(time);
@@ -206,6 +207,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     protected Quaternionf getJumpsRotation(float spawnLifetime) {
         float rotationLifetime = MathUtil.clamp01(spawnLifetime / 0.3f);
+        if (spawnLifetime == 0) {
+            return baseRotation;
+        }
         float rotationTime = Easing.easeOutQuad(rotationLifetime);
         return new Quaternionf().set(spawnQuaternion).slerp(baseRotation, rotationTime);
     }
