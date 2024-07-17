@@ -78,15 +78,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
     }
 
-    protected Vector3f getJumpsPosition(float spawnLifetime, float time) {
-        Vector2f xy = getJumpsXY(spawnLifetime);
+    protected Vector3f getJumpsPosition(float lifetime, float time) {
+        Vector2f xy = getJumpsXY(lifetime);
         return new Vector3f(xy.x, xy.y, getJumpsZ(time));
     }
 
-    protected Vector2f getJumpsXY(float spawnLifetime) {
-        float jumpTime = Easing.easeOutQuad(spawnLifetime);
+    protected Vector2f getJumpsXY(float lifetime) {
+        float reverseSpawnTime = 1 - Math.abs(lifetime - 0.5f) * 2;
+        float jumpTime = Easing.easeOutQuad(reverseSpawnTime);
         Vector2f grid = get2DPosition();
-        grid.y = Math.lerp(doNoteGravity() ? -0.2f: grid.y - 0.2f, grid.y, jumpTime);
+        grid.y = Math.lerp(doNoteGravity() ? -0.3f: grid.y - 0.3f, grid.y, jumpTime);
         return grid;
     }
 
@@ -161,7 +162,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected boolean doNoteLook() {
         return false;
     }
-    protected boolean doNoteGravity() { return true; }
+    protected boolean doNoteGravity() {
+        return true;
+    }
 
     protected void applySpawnMatrix(float time, Matrix4f m, AnimationState animationState) {
         float lifetime = getLifetime(time);
@@ -169,7 +172,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         Matrix4f jumpMatrix = new Matrix4f();
 
-        Vector3f v = getJumpsPosition(spawnLifetime, time);
+        Vector3f v = getJumpsPosition(lifetime, time);
         jumpMatrix.translate(v);
 
         m.translate(WORLD_OFFSET);
