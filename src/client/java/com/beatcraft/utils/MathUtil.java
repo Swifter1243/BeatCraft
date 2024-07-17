@@ -1,9 +1,7 @@
 package com.beatcraft.utils;
 
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 public class MathUtil {
     public static final float DEG2RAD = (float)Math.PI / 180f;

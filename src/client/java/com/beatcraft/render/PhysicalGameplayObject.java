@@ -76,7 +76,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     protected Vector2f get2DPosition() {
-        float x = (this.getData().getX() - 1.5f) * 0.6f * -1;
+        float x = (this.getData().getX() - 1.5f) * 0.6f;
         float y = (this.getData().getY()) * 0.6f;
         return new Vector2f(x, y);
     }
@@ -90,8 +90,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return MathUtil.clamp01(lifetime * 2);
     }
 
-    protected Matrix4f getBaseMatrix(float time, AnimationState animationState) {
+    protected Matrix4f getMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
+
+        m.scale(-1, 1, 1); // Beat Saber's space is flipped on the X axis compared to Minecraft's space
 
         if (data.getWorldRotation() != null) {
             m.rotate(data.getWorldRotation());
@@ -134,12 +136,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
 
         return m;
-    }
-
-    protected Matrix4f getMatrix(float time, AnimationState animationState) {
-        Matrix4f baseMatrix = getBaseMatrix(time, animationState);
-
-        return baseMatrix;
     }
 
     protected Quaternionf getJumpsRotation(float spawnLifetime) {

@@ -24,12 +24,12 @@ public class NoteMath {
         return switch (cutDirection) {
             case UP -> 180;
             case DOWN, DOT -> 0;
-            case LEFT -> 90;
-            case RIGHT -> -90;
-            case UP_LEFT -> 135;
-            case UP_RIGHT -> -135;
-            case DOWN_LEFT -> 45;
-            case DOWN_RIGHT -> -45;
+            case LEFT -> -90;
+            case RIGHT -> 90;
+            case UP_LEFT -> -135;
+            case UP_RIGHT -> 135;
+            case DOWN_LEFT -> -45;
+            case DOWN_RIGHT -> 45;
         };
     }
 }
