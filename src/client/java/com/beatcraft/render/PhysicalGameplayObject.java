@@ -40,7 +40,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public boolean shouldRender() {
         float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
         boolean isAboveSpawnBeat = BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
-        boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat() + margin;
+        boolean isBelowDespawnBeat = BeatmapPlayer.getCurrentBeat() <= getDespawnBeat();
         return isAboveSpawnBeat && isBelowDespawnBeat;
     }
 
@@ -68,15 +68,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             // jump in
             float percent = (spawnBeat - time) / 2;
             return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
-        } else if (time > jumpOutBeat) {
-            // jump out
-            float percent = (time - jumpOutBeat) / 2;
-            percent *= percent; // bullshit parabola or something
-            return Math.lerp(jumpOutPosition, -JUMP_FAR_Z, percent);
-        } else {
+        } else if (time < jumpOutBeat) {
             // in between
             float percent = MathUtil.inverseLerp(spawnBeat, jumpOutBeat, time);
             return Math.lerp(spawnPosition, jumpOutPosition, percent);
+        } else {
+            // jump out
+            float percent = MathUtil.inverseLerp(jumpOutBeat, getDespawnBeat(), time);
+            percent *= percent; // bullshit parabola or something
+            return Math.lerp(jumpOutPosition, -JUMP_FAR_Z, percent);
         }
     }
 
