@@ -23,7 +23,7 @@ public class ObjectTrackContainer {
         } else {
             AnimationState state = tracks.get(0).getAnimationProperties().getCurrentState();
             for (int i = 1; i < tracks.size(); i++) {
-                state = state.combineWithOther(tracks.get(1).getAnimationProperties().getCurrentState());
+                state = AnimationState.combine(state, tracks.get(1).getAnimationProperties().getCurrentState());
             }
             return state;
         }

@@ -102,6 +102,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.rotate(animationState.getOffsetWorldRotation());
         }
 
+        if (animationState.getOffsetPosition() != null) {
+            m.translate(animationState.getOffsetPosition());
+        }
+
         if (getLaneRotation() != null) {
             m.rotate(getLaneRotation());
         }

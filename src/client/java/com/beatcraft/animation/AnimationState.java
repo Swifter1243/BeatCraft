@@ -34,22 +34,22 @@ public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, 
         applyOperation(properties, (handler) -> handler.update(beat));
     }
 
-    public AnimationState combineWithOther(AnimationState other) {
+    public static AnimationState combine(AnimationState a, AnimationState b) {
         AnimationState state = new AnimationState();
 
-        offsetPosition = combineProperties(getOffsetPosition(), other.getOffsetPosition(), AnimationState::add);
-        offsetWorldRotation = combineProperties(getOffsetWorldRotation(), other.getOffsetWorldRotation(), AnimationState::combineRotations);
-        localRotation = combineProperties(getLocalRotation(), other.getLocalRotation(), AnimationState::combineRotations);
-        localPosition = combineProperties(getLocalPosition(), other.getLocalPosition(), AnimationState::add);
-        definitePosition = combineProperties(getDefinitePosition(), other.getDefinitePosition(), AnimationState::add);
-        position = combineProperties(getPosition(), other.getPosition(), AnimationState::add);
-        rotation = combineProperties(getRotation(), other.getRotation(), AnimationState::combineRotations);
-        scale = combineProperties(getScale(), other.getScale(), AnimationState::multiply);
-        dissolve = combineProperties(getDissolve(), other.getDissolve(), AnimationState::multiply);
-        dissolveArrow = combineProperties(getDissolveArrow(), other.getDissolveArrow(), AnimationState::multiply);
-        interactable = combineProperties(getInteractable(), other.getInteractable(), AnimationState::multiply);
-        time = combineProperties(getTime(), other.getTime(), AnimationState::multiply);
-        color = combineProperties(getColor(), other.getColor(), AnimationState::multiply);
+        state.offsetPosition = combineProperties(a.getOffsetPosition(), b.getOffsetPosition(), AnimationState::add);
+        state.offsetWorldRotation = combineProperties(a.getOffsetWorldRotation(), b.getOffsetWorldRotation(), AnimationState::combineRotations);
+        state.localRotation = combineProperties(a.getLocalRotation(), b.getLocalRotation(), AnimationState::combineRotations);
+        state.localPosition = combineProperties(a.getLocalPosition(), b.getLocalPosition(), AnimationState::add);
+        state.definitePosition = combineProperties(a.getDefinitePosition(), b.getDefinitePosition(), AnimationState::add);
+        state.position = combineProperties(a.getPosition(), b.getPosition(), AnimationState::add);
+        state.rotation = combineProperties(a.getRotation(), b.getRotation(), AnimationState::combineRotations);
+        state.scale = combineProperties(a.getScale(), b.getScale(), AnimationState::multiply);
+        state.dissolve = combineProperties(a.getDissolve(), b.getDissolve(), AnimationState::multiply);
+        state.dissolveArrow = combineProperties(a.getDissolveArrow(), b.getDissolveArrow(), AnimationState::multiply);
+        state.interactable = combineProperties(a.getInteractable(), b.getInteractable(), AnimationState::multiply);
+        state.time = combineProperties(a.getTime(), b.getTime(), AnimationState::multiply);
+        state.color = combineProperties(a.getColor(), b.getColor(), AnimationState::multiply);
 
         return state;
     }
@@ -58,20 +58,19 @@ public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, 
         return a * b;
     }
     private static Vector4f multiply(Vector4f a, Vector4f b) {
-        return new Vector4f().set(a).mul(b);
+        return new Vector4f(a).mul(b);
     }
     private static Vector3f multiply(Vector3f a, Vector3f b) {
-        return new Vector3f().set(a).mul(b);
+        return new Vector3f(a).mul(b);
     }
     private static Vector3f add(Vector3f a, Vector3f b) {
-        return new Vector3f().set(a).add(b);
+        return new Vector3f(a).add(b);
     }
-
     private static Quaternionf combineRotations(Quaternionf a, Quaternionf b) {
-        return new Quaternionf().set(a).mul(b);
+        return new Quaternionf(a).mul(b);
     }
 
-    private <T> T combineProperties(T a, T b, BiFunction<T, T, T> operation) {
+    private static <T> T combineProperties(T a, T b, BiFunction<T, T, T> operation) {
         if (a == null && b == null) {
             return null;
         } else if (a == null) {
