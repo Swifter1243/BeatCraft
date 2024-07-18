@@ -31,3 +31,7 @@ I'm *currently* in the process of remaking it EXCLUSIVELY as a [Vivecraft](https
 This is quite an insane undertaking so wish me luck o7
 
 If you'd like to try out what I have at any point, clone the repo and run the project with [IntelliJ IDEA](https://www.jetbrains.com/idea/download/?section=windows) (scroll down to get community edition, which is free)
+
+# WHY DON'T YOU MAKE IT FOR FORGE TOO, ARE YOU A FUCKING *PUSSY*?
+
+ion wanna
