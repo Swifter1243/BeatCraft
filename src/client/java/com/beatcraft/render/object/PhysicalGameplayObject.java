@@ -19,7 +19,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
     protected static final Vector3f WORLD_OFFSET = new Vector3f(0, 0.8f, 1f);
-    private final float jumpBeats;
     private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
@@ -27,15 +26,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private Matrix4f matrix = new Matrix4f();
     private AnimationState animationState = new AnimationState();
     protected T data;
-    protected NoteMath.Jumps jumps;
     protected boolean despawned = false;
 
     public PhysicalGameplayObject(T data) {
         this.data = data;
-
-        float bpm = BeatmapPlayer.currentInfo.getBpm();
-        this.jumps = NoteMath.getJumps(data.getNjs(), data.getOffset(), bpm);
-        this.jumpBeats = MathUtil.secondsToBeats(JUMP_SECONDS, bpm);
     }
 
     private Vector3f getPlayerHeadPosition() {
@@ -43,23 +37,23 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public float getSpawnBeat() {
-        return getData().getBeat() - jumps.halfDuration();
+        return getData().getBeat() - data.getJumps().halfDuration();
     }
 
     public float getJumpOutBeat() {
-        return getData().getBeat() + jumps.halfDuration() * 0.5f;
+        return getData().getBeat() + data.getJumps().halfDuration() * 0.5f;
     }
 
     public float getDespawnBeat() {
-        return getData().getBeat() + jumps.halfDuration();
+        return getData().getBeat() + data.getJumps().halfDuration();
     }
 
     public float getSpawnPosition() {
-        return jumps.jumpDistance() / 2;
+        return data.getJumps().jumpDistance() / 2;
     }
 
     public float getJumpOutPosition() {
-        return jumps.jumpDistance() * -0.25f;
+        return data.getJumps().jumpDistance() * -0.25f;
     }
 
     private void despawn() {
@@ -133,8 +127,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         // jumps
         if (time < spawnBeat) {
             // jump in
-            float percent = MathUtil.inverseLerp(spawnBeat - jumpBeats, spawnBeat, time);
-            return Math.lerp(JUMP_FAR_Z, spawnPosition, percent);
+            float percent = (spawnBeat - time) / 2;
+            return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);
         } else if (time < jumpOutBeat) {
             // in between
             float percent = MathUtil.inverseLerp(spawnBeat, jumpOutBeat, time);

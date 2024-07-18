@@ -3,7 +3,9 @@ package com.beatcraft.beatmap.data.object;
 import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.track.ObjectTrackContainer;
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.JsonUtil;
+import com.beatcraft.utils.NoteMath;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
@@ -17,6 +19,7 @@ public abstract class GameplayObject extends BeatmapObject {
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
     private final Animation pathAnimation = new Animation();
+    private NoteMath.Jumps jumps;
 
     @Override
     public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
@@ -43,6 +46,8 @@ public abstract class GameplayObject extends BeatmapObject {
                 pathAnimation.loadV2(customData.get("_animation").getAsJsonObject(), difficulty);
             }
         }
+
+        loadJumps(difficulty.getInfo());
 
         return this;
     }
@@ -73,7 +78,13 @@ public abstract class GameplayObject extends BeatmapObject {
             }
         }
 
+        loadJumps(difficulty.getInfo());
+
         return this;
+    }
+
+    private void loadJumps(Info info) {
+        this.jumps = NoteMath.getJumps(njs, offset, info.getBpm());
     }
 
     public float getNjs() {
@@ -106,5 +117,9 @@ public abstract class GameplayObject extends BeatmapObject {
 
     public Animation getPathAnimation() {
         return pathAnimation;
+    }
+
+    public NoteMath.Jumps getJumps() {
+        return jumps;
     }
 }
