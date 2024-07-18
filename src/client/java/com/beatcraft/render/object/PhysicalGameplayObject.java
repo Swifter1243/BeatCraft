@@ -88,9 +88,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             return;
         }
 
+        float lifetime = getLifetime(beat);
         animationState = animatedPropertyState;
-        animationState = AnimationState.combine(animationState, getObjectPathAnimationState(beat));
-        animationState = AnimationState.combine(animationState, getTrackPathAnimationState(beat));
+        animationState = AnimationState.combine(animationState, getObjectPathAnimationState(lifetime));
+        animationState = AnimationState.combine(animationState, getTrackPathAnimationState(lifetime));
 
         matrix = getMatrix(beat, animationState);
     }
@@ -271,12 +272,12 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
     }
 
-    private AnimationState getObjectPathAnimationState(float beat) {
-        return data.getPathAnimation().toState(getLifetime(beat));
+    private AnimationState getObjectPathAnimationState(float lifetime) {
+        return data.getPathAnimation().toState(lifetime);
     }
 
-    private AnimationState getTrackPathAnimationState(float beat) {
-        return data.getTrackContainer().getAnimatedPathState(beat);
+    private AnimationState getTrackPathAnimationState(float lifetime) {
+        return data.getTrackContainer().getAnimatedPathState(lifetime);
     }
 
     @Override
