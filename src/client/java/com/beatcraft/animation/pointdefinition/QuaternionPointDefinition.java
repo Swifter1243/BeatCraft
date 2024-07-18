@@ -1,6 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.utils.JsonUtil;
+import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import org.joml.Quaternionf;
 
@@ -13,7 +14,7 @@ public class QuaternionPointDefinition extends PointDefinition<Quaternionf> {
     protected Quaternionf interpolatePoints(int a, int b, float time) {
         Quaternionf left = points.get(a).getValue();
         Quaternionf right = points.get(b).getValue();
-        return new Quaternionf(left).slerp(right, time);
+        return MathUtil.lerpQuaternion(left, right, time);
     }
 
     @Override

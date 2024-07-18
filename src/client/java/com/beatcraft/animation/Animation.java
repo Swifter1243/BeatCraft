@@ -1,10 +1,12 @@
 package com.beatcraft.animation;
 
+import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.animation.pointdefinition.*;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.IBeatmapData;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
+import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -67,6 +69,10 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
 
     public AnimatedPropertyEventContainer toAnimatedPropertyEvents(AnimateTrack animateTrack) {
         return new AnimatedPropertyEventContainer(this, animateTrack);
+    }
+
+    public AnimatedPathEventContainer toAnimatedPathEvents(AssignPathAnimation assignPathAnimation) {
+        return new AnimatedPathEventContainer(this, assignPathAnimation);
     }
 
     public AnimationState toState(float time) {

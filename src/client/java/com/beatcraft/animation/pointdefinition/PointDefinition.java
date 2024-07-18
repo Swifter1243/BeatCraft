@@ -1,8 +1,10 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.animation.Easing;
+import com.beatcraft.animation.event.AnimatedPathEvent;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.animation.event.AnimatedPropertyEvent;
+import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.minecraft.util.JsonHelper;
@@ -140,5 +142,9 @@ public abstract class PointDefinition<T> {
 
     public AnimatedPropertyEvent<T> toAnimatedPropertyEvent(AnimateTrack animateTrack) {
         return new AnimatedPropertyEvent<>(this, animateTrack);
+    }
+
+    public AnimatedPathEvent<T> toAnimatedPathEvent(AssignPathAnimation assignPathAnimation) {
+        return new AnimatedPathEvent<>(this, assignPathAnimation);
     }
 }

@@ -1,5 +1,7 @@
-package com.beatcraft.animation;
+package com.beatcraft.animation.track;
 
+import com.beatcraft.animation.AnimationPropertyContainer;
+import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.event.AnimatedPropertyEventHandler;
@@ -29,11 +31,11 @@ public class AnimatedProperties extends AnimationPropertyContainer<AnimatedPrope
     }
 
     public void seek(float beat) {
-        currentState.applySeek(beat, this);
+        currentState.seekFromProperties(beat, this);
     }
 
     public void update(float beat) {
-        currentState.applyUpdate(beat, this);
+        currentState.updateFromProperties(beat, this);
     }
 
     public void loadAnimatedPropertyEvents(AnimatedPropertyEventContainer eventContainer) {

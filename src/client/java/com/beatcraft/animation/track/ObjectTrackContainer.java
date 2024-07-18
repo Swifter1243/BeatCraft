@@ -13,9 +13,13 @@ public class ObjectTrackContainer {
         tracks.addAll(Track.getTracksAsList(trackElement, trackLibrary));
     }
 
-
     public AnimationState getAnimatedPropertyState() {
         Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimatedProperties().getCurrentState()).reduce(AnimationState::combine);
+        return state.orElseGet(AnimationState::new);
+    }
+
+    public AnimationState getAnimatedPathState(float time) {
+        Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimatedPath().getCurrentState().interpolate(time)).reduce(AnimationState::combine);
         return state.orElseGet(AnimationState::new);
     }
 }

@@ -105,7 +105,7 @@ public class BeatmapPlayer {
         // Progress time
         long deltaNanoSeconds = getNanoDeltaTime();
 
-        boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.ready();
+        boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.isReady();
         if (shouldMapPlay) {
             elapsedNanoTime += deltaNanoSeconds * playbackSpeed;
 

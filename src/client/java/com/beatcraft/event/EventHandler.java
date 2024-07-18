@@ -20,6 +20,7 @@ public abstract class EventHandler<D, E extends IEvent> {
         state = initialState;
         upcoming.clear();
         upcoming.addAll(events);
+        onReset();
     }
 
     public D seek(float beat) {
@@ -30,6 +31,7 @@ public abstract class EventHandler<D, E extends IEvent> {
     public abstract void onEventInterrupted(E event, float normalTime);
     public abstract void onInsideEvent(E event, float normalTime);
     public abstract void onEventPassed(E event);
+    protected void onReset() {}
 
     private void handleEventInterrupted(float startBeat, float endBeat, E currentEvent) {
         E interruptingEvent = upcoming.get(1);

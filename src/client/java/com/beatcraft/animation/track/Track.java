@@ -1,6 +1,6 @@
 package com.beatcraft.animation.track;
 
-import com.beatcraft.animation.AnimatedProperties;
+import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.google.gson.JsonElement;
 
@@ -8,9 +8,14 @@ import java.util.ArrayList;
 
 public class Track {
     private final AnimatedProperties animatedProperties = new AnimatedProperties();
+    private final AnimatedPath animatedPath = new AnimatedPath();
 
     public AnimatedProperties getAnimatedProperties() {
         return animatedProperties;
+    }
+
+    public AnimatedPath getAnimatedPath() {
+        return animatedPath;
     }
 
     public static ArrayList<Track> getTracksAsList(JsonElement trackElement, TrackLibrary trackLibrary) {
@@ -33,5 +38,9 @@ public class Track {
 
     public void loadAnimatedPropertyEvents(AnimatedPropertyEventContainer eventContainer) {
         animatedProperties.loadAnimatedPropertyEvents(eventContainer);
+    }
+
+    public void loadAnimatedPathEvents(AnimatedPathEventContainer eventContainer) {
+        animatedPath.loadAnimatedPropertyEvents(eventContainer);
     }
 }

@@ -27,4 +27,18 @@ public class TrackLibrary {
     public Set<String> getTrackNames() {
         return trackMap.keySet();
     }
+
+    public void seek(float beat) {
+        getTracks().forEach(track -> {
+            track.getAnimatedProperties().seek(beat);
+            track.getAnimatedPath().seek(beat);
+        });
+    }
+
+    public void update(float beat) {
+        getTracks().forEach(track -> {
+            track.getAnimatedProperties().update(beat);
+            track.getAnimatedPath().update(beat);
+        });
+    }
 }

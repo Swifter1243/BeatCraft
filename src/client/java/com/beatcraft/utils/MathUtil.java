@@ -54,4 +54,16 @@ public class MathUtil {
         newPoint.mul(matrix);
         return new Vector3f(newPoint.x, newPoint.y, newPoint.z);
     }
+
+    public static Vector3f lerpVector3(Vector3f a, Vector3f b, float time) {
+        return new Vector3f(a).lerp(b, time);
+    }
+
+    public static Vector4f lerpVector4(Vector4f a, Vector4f b, float time) {
+        return new Vector4f(a).lerp(b, time);
+    }
+
+    public static Quaternionf lerpQuaternion(Quaternionf a, Quaternionf b, float time) {
+        return new Quaternionf(a).slerp(b, time);
+    }
 }

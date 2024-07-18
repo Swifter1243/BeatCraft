@@ -1,6 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.utils.JsonUtil;
+import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import org.joml.Vector3f;
 
@@ -17,7 +18,7 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
             return splineInterpolation(a, b, time);
         } else {
             Point<Vector3f> left = points.get(a);
-            return new Vector3f(left.getValue()).lerp(right.getValue(), time);
+            return MathUtil.lerpVector3(left.getValue(), right.getValue(), time);
         }
     }
 

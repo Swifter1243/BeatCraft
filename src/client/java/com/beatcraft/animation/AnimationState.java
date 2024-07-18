@@ -1,37 +1,45 @@
 package com.beatcraft.animation;
 
-import com.beatcraft.animation.event.AnimatedPropertyEventHandler;
 import com.beatcraft.animation.pointdefinition.PointDefinition;
+import com.beatcraft.animation.track.AnimatedProperties;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, Vector4f, Quaternionf> {
-    private void applyEventHandlerOperation(AnimatedProperties properties, Function<AnimatedPropertyEventHandler<?>, ?> operation) {
-        offsetPosition = (Vector3f) operation.apply(properties.getOffsetPosition());
-        offsetWorldRotation = (Quaternionf) operation.apply(properties.getOffsetWorldRotation());
-        localRotation = (Quaternionf) operation.apply(properties.getLocalRotation());
-        localPosition = (Vector3f) operation.apply(properties.getLocalPosition());
-        definitePosition = (Vector3f) operation.apply(properties.getDefinitePosition());
-        position = (Vector3f) operation.apply(properties.getPosition());
-        rotation = (Quaternionf) operation.apply(properties.getRotation());
-        scale = (Vector3f) operation.apply(properties.getScale());
-        dissolve = (Float) operation.apply(properties.getDissolve());
-        dissolveArrow = (Float) operation.apply(properties.getDissolveArrow());
-        interactable = (Float) operation.apply(properties.getInteractable());
-        time = (Float) operation.apply(properties.getTime());
-        color = (Vector4f) operation.apply(properties.getColor());
+
+    public void seekFromProperties(float beat, AnimatedProperties properties) {
+        offsetPosition = properties.offsetPosition.seek(beat);
+        offsetWorldRotation = properties.offsetWorldRotation.seek(beat);
+        localRotation = properties.localRotation.seek(beat);
+        localPosition = properties.localPosition.seek(beat);
+        definitePosition = properties.definitePosition.seek(beat);
+        position = properties.position.seek(beat);
+        rotation = properties.rotation.seek(beat);
+        scale = properties.scale.seek(beat);
+        dissolve = properties.dissolve.seek(beat);
+        dissolveArrow = properties.dissolveArrow.seek(beat);
+        interactable = properties.interactable.seek(beat);
+        time = properties.time.seek(beat);
+        color = properties.color.seek(beat);
     }
 
-    public void applySeek(float beat, AnimatedProperties properties) {
-        applyEventHandlerOperation(properties, (handler) -> handler.seek(beat));
-    }
-
-    public void applyUpdate(float beat, AnimatedProperties properties) {
-        applyEventHandlerOperation(properties, (handler) -> handler.update(beat));
+    public void updateFromProperties(float beat, AnimatedProperties properties) {
+        offsetPosition = properties.offsetPosition.update(beat);
+        offsetWorldRotation = properties.offsetWorldRotation.update(beat);
+        localRotation = properties.localRotation.update(beat);
+        localPosition = properties.localPosition.update(beat);
+        definitePosition = properties.definitePosition.update(beat);
+        position = properties.position.update(beat);
+        rotation = properties.rotation.update(beat);
+        scale = properties.scale.update(beat);
+        dissolve = properties.dissolve.update(beat);
+        dissolveArrow = properties.dissolveArrow.update(beat);
+        interactable = properties.interactable.update(beat);
+        time = properties.time.update(beat);
+        color = properties.color.update(beat);
     }
 
     private static <T> T interpolateProperty(PointDefinition<T> pointDefinition, float time) {

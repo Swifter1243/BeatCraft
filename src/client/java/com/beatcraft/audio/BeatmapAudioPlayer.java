@@ -59,7 +59,7 @@ public class BeatmapAudioPlayer {
         goToSecond(BeatmapPlayer.getCurrentSeconds());
     }
 
-    public static boolean ready() {
+    public static boolean isReady() {
         // load request isn't active
         if (loadRequest == null) return false;
 

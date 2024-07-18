@@ -1,6 +1,8 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.RotationEvent;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.beatmap.data.object.GameplayObject;
@@ -33,6 +35,7 @@ public abstract class Difficulty {
     public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
+    public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
 
     public Difficulty(Info info, Info.SetDifficulty setDifficulty) {
@@ -56,6 +59,7 @@ public abstract class Difficulty {
         colorNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         rotationEvents.sort(this::compareObjects);
         animateTracks.sort(this::compareObjects);
+        assignPathAnimations.sort(this::compareObjects);
     }
 
     private void applyRotationEvents() {
@@ -103,6 +107,11 @@ public abstract class Difficulty {
             AnimatedPropertyEventContainer animatedPropertyEvents = event.toAnimatedPropertyEvents();
             event.getTracks().forEach(track -> track.loadAnimatedPropertyEvents(animatedPropertyEvents));
         });
+
+        assignPathAnimations.forEach(event -> {
+            AnimatedPathEventContainer animatedPathEvents = event.toAnimatedPathEvents();
+            event.getTracks().forEach(track -> track.loadAnimatedPathEvents(animatedPathEvents));
+        });
     }
 
     protected void doPostLoad() {
@@ -126,12 +135,12 @@ public abstract class Difficulty {
     }
 
     public void seek(float beat) {
-        trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().seek(beat));
+        trackLibrary.seek(beat);
         colorNotes.forEach(o -> o.seek(beat));
     }
 
     public void update(float beat) {
-        trackLibrary.getTracks().forEach(track -> track.getAnimatedProperties().update(beat));
+        trackLibrary.update(beat);
         colorNotes.forEach(o -> o.update(beat));
     }
 

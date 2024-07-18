@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
@@ -90,14 +91,8 @@ public class DifficultyV3 extends Difficulty {
     private void loadCustomEvent(JsonObject json) {
         String type = json.get("t").getAsString();
         switch (type) {
-            case "AnimateTrack" -> {
-                animateTracks.add(new AnimateTrack().loadV3(json, this));
-                return;
-            }
-            case "AssignPathAnimation" -> {
-                // TODO: Implement
-                return;
-            }
+            case "AnimateTrack" -> animateTracks.add(new AnimateTrack().loadV3(json, this));
+            case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV3(json, this));
         }
     }
 }

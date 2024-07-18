@@ -3,6 +3,7 @@ package com.beatcraft.render.object;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
@@ -88,7 +89,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
 
         animationState = animatedPropertyState;
-        animationState = AnimationState.combine(animationState, getPathAnimationState(beat));
+        animationState = AnimationState.combine(animationState, getObjectPathAnimationState(beat));
+        animationState = AnimationState.combine(animationState, getTrackPathAnimationState(beat));
 
         matrix = getMatrix(beat, animationState);
     }
@@ -99,7 +101,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public boolean isInWorld() {
-        return hasAppeared() && !isDespawned();
+        return hasAppeared() && !isDespawned() && BeatmapAudioPlayer.isReady();
     }
 
     @Override
@@ -269,8 +271,12 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
     }
 
-    private AnimationState getPathAnimationState(float beat) {
+    private AnimationState getObjectPathAnimationState(float beat) {
         return data.getPathAnimation().toState(getLifetime(beat));
+    }
+
+    private AnimationState getTrackPathAnimationState(float beat) {
+        return data.getTrackContainer().getAnimatedPathState(beat);
     }
 
     @Override

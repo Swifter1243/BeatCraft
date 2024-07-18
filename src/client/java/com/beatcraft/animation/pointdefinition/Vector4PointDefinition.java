@@ -1,6 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.utils.JsonUtil;
+import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -15,7 +16,7 @@ public class Vector4PointDefinition extends PointDefinition<Vector4f> {
     protected Vector4f interpolatePoints(int a, int b, float time) {
         Vector4f right = points.get(b).getValue();
         Vector4f left = points.get(a).getValue();
-        return new Vector4f(left).lerp(right, time);
+        return MathUtil.lerpVector4(left, right, time);
     }
 
     @Override
