@@ -126,7 +126,8 @@ public class BeatmapPlayer {
     public static void setupDifficultyFromFile(String path) throws IOException {
         Path p = Paths.get(path);
         String infoPath = p.getParent().toString() + "/Info.dat";
-        currentInfo = BeatmapLoader.getInfoFromFile(infoPath);
-        currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, currentInfo);
+        Info info = BeatmapLoader.getInfoFromFile(infoPath);
+        currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, info);
+        currentInfo = info;
     }
 }
