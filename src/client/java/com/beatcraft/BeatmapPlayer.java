@@ -21,9 +21,8 @@ public class BeatmapPlayer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
-    private static final GameOptions options = mc.options;
-    private static final double currentMusicVolume = options.getSoundVolume(SoundCategory.MUSIC);
-
+    public static final GameOptions options = MinecraftClient.getInstance().options;
+    public static final double currentMusicVolume = options.getSoundVolume(SoundCategory.MUSIC);
     private static long lastNanoTime = 0;
     private static long elapsedNanoTime = 0;
     private static float playbackSpeed = 1;
@@ -91,18 +90,17 @@ public class BeatmapPlayer {
 
     public static void play() {
         BeatmapAudioPlayer.syncTimeWithBeatmap();
-        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0.0);
         isPlaying = true;
     }
     public static void play(float beat) {
         setCurrentBeat(beat);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0.0);
         isPlaying = true;
     }
 
     public static void pause() {
         isPlaying = false;
-        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
     }
 
     public static void restart() {
