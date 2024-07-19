@@ -99,9 +99,18 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return hasAppeared() && !isDespawned() && BeatmapAudioPlayer.isReady();
     }
 
+    private boolean isDissolved() {
+        Float dissolve = animationState.getDissolve();
+        if (dissolve == null) {
+            return false;
+        } else {
+            return dissolve < 0.5;
+        }
+    }
+
     @Override
     public boolean shouldRender() {
-        return isInWorld();
+        return isInWorld() && !isDissolved();
     }
 
     protected Vector3f getJumpsPosition(float lifetime, float time) {
@@ -179,6 +188,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
 
         applySpawnMatrix(time, m, animationState);
+
+        Vector3f animatedScale = animationState.getScale();
+        if (animatedScale != null) {
+            m.scale(animatedScale);
+        }
 
         MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
