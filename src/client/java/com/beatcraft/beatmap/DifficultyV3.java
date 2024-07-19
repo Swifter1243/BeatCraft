@@ -2,9 +2,11 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
+import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -16,6 +18,7 @@ public class DifficultyV3 extends Difficulty {
 
     DifficultyV3 load(JsonObject json) {
         loadNotes(json);
+        loadBombs(json);
         loadBasicEvents(json);
         loadRotationEvents(json);
         loadPointDefinitions(json);
@@ -39,6 +42,24 @@ public class DifficultyV3 extends Difficulty {
             JsonObject obj = o.getAsJsonObject();
             ColorNote note = new ColorNote().loadV3(obj, this);
             colorNotes.add(new PhysicalColorNote(note));
+        });
+    }
+
+    void loadBombs(JsonObject json) {
+        JsonArray rawBombNotes = json.getAsJsonArray("bombNotes");
+
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+
+            if (customData.has("fakeBombNotes")) {
+                rawBombNotes.addAll(customData.getAsJsonArray("fakeBombNotes"));
+            }
+        }
+
+        rawBombNotes.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            BombNote note = new BombNote().loadV3(obj, this);
+            bombNotes.add(new PhysicalBombNote(note));
         });
     }
 
