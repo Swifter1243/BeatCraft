@@ -59,8 +59,8 @@ public abstract class EventHandler<D, E extends IEvent> {
 
     public D update(float beat) {
         // Check new events to process
-        while (!upcoming.isEmpty() && upcoming.getFirst().getEventBeat() < beat) {
-            E currentEvent = upcoming.getFirst();
+        while (!upcoming.isEmpty() && upcoming.get(0).getEventBeat() < beat) {
+            E currentEvent = upcoming.get(0);
             float startBeat = currentEvent.getEventBeat();
             float endBeat = startBeat + currentEvent.getEventDuration();
 
