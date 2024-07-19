@@ -101,7 +101,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     @Override
     public boolean shouldRender() {
-        return isInWorld();
+        var dissolve = animationState.getDissolve();
+        return isInWorld() && (dissolve == null || dissolve > 0.5f);
     }
 
     protected Vector3f getJumpsPosition(float lifetime, float time) {
@@ -179,6 +180,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
 
         applySpawnMatrix(time, m, animationState);
+
+        var scale = animationState.getScale();
+        if (scale != null) {
+            m.scale(scale.x, scale.y, scale.z);
+        }
 
         MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
