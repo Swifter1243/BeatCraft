@@ -99,7 +99,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return hasAppeared() && !isDespawned() && BeatmapAudioPlayer.isReady();
     }
 
-    private boolean isDissolved() {
+    protected boolean isBaseDissolved() {
         Float dissolve = animationState.getDissolve();
         if (dissolve == null) {
             return false;
@@ -108,9 +108,18 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
     }
 
+    protected boolean isArrowDissolved() {
+        Float dissolveArrow = animationState.getDissolveArrow();
+        if (dissolveArrow == null) {
+            return false;
+        } else {
+            return dissolveArrow < 0.5;
+        }
+    }
+
     @Override
     public boolean shouldRender() {
-        return isInWorld() && !isDissolved();
+        return isInWorld();
     }
 
     protected Vector3f getJumpsPosition(float lifetime, float time) {
