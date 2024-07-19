@@ -189,11 +189,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         applySpawnMatrix(time, m, animationState);
 
-        Vector3f animatedScale = animationState.getScale();
-        if (animatedScale != null) {
-            m.scale(animatedScale);
-        }
-
         MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
         return m;
@@ -230,6 +225,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.mul(jumpMatrix).rotate(lookRotation);
         } else {
             m.mul(jumpMatrix);
+        }
+
+        Vector3f animatedScale = animationState.getScale();
+        if (animatedScale != null) {
+            m.scale(animatedScale);
         }
 
         if (data.getLocalRotation() != null) {
