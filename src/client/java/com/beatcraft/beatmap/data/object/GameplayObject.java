@@ -6,6 +6,7 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.NoteMath;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
@@ -13,8 +14,8 @@ import org.joml.Quaternionf;
 public abstract class GameplayObject extends BeatmapObject {
     private float njs;
     private float offset;
-    private int x;
-    private int y;
+    private float x;
+    private float y;
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
@@ -37,6 +38,18 @@ public abstract class GameplayObject extends BeatmapObject {
             njs = JsonHelper.getFloat(customData, "_noteJumpMovementSpeed", njs);
             worldRotation = JsonUtil.getQuaternion(customData, "_rotation", null);
             localRotation = JsonUtil.getQuaternion(customData, "_localRotation", null);
+
+            if (customData.has("_coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("_coordinates");
+                x = coordinates.get(0).getAsInt() + 2.0f;
+                y = coordinates.get(1).getAsInt();
+            }
+
+            if (customData.has("_position")) {
+                JsonArray coordinates = customData.getAsJsonArray("_position");
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
+            }
 
             if (customData.has("_track")) {
                 trackContainer.loadTracks(customData.get("_track"), difficulty.getTrackLibrary());
@@ -69,6 +82,18 @@ public abstract class GameplayObject extends BeatmapObject {
             worldRotation = JsonUtil.getQuaternion(customData, "worldRotation", null);
             localRotation = JsonUtil.getQuaternion(customData, "localRotation", null);
 
+            if (customData.has("coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("coordinates");
+                x = coordinates.get(0).getAsInt() + 2.0f;
+                y = coordinates.get(1).getAsInt();
+            }
+
+            if (customData.has("position")) {
+                JsonArray coordinates = customData.getAsJsonArray("position");
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
+            }
+
             if (customData.has("track")) {
                 trackContainer.loadTracks(customData.get("track"), difficulty.getTrackLibrary());
             }
@@ -95,11 +120,11 @@ public abstract class GameplayObject extends BeatmapObject {
         return offset;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
