@@ -92,12 +92,12 @@ public abstract class PointDefinition<T> {
             return null;
         }
 
-        Point<T> lastPoint = points.getLast();
+        Point<T> lastPoint = points.get(points.size() - 1);
         if (lastPoint.getTime() <= time) {
             return lastPoint.getValue();
         }
 
-        Point<T> firstPoint = points.getFirst();
+        Point<T> firstPoint = points.get(0);
         if (firstPoint.getTime() >= time) {
             return firstPoint.getValue();
         }

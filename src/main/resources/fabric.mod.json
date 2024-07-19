@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "beatcraft",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "BeatCraft",
+	"description": "Beat Saber in Minecraft.",
 	"authors": [
 		"Swifter"
 	],
@@ -32,7 +32,7 @@
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "~1.20.4",
-		"java": ">=21",
+		"java": ">=17",
 		"fabric-api": "*"
 	},
 	"suggests": {

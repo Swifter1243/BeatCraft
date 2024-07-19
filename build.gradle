@@ -49,6 +49,10 @@ dependencies {
 	modImplementation "maven.modrinth:vivecraft:1.20.4-1.1.9-fabric"
 	include(implementation('com.electronwill.night-config:toml:3.6.6'))
 	include(implementation('com.electronwill.night-config:core:3.6.6'))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-linux"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-macos"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-windows"))
 }
 
 processResources {
@@ -60,7 +64,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 17
 }
 
 java {
@@ -69,8 +73,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
