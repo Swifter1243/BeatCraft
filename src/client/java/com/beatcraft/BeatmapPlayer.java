@@ -6,12 +6,13 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.sound.SoundCategory;
 import org.joml.Matrix4f;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,15 +21,20 @@ public class BeatmapPlayer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
+    private static final GameOptions options = mc.options;
+    private static final double currentMusicVolume = options.getSoundVolume(SoundCategory.MUSIC);
 
     private static long lastNanoTime = 0;
     private static long elapsedNanoTime = 0;
     private static float playbackSpeed = 1;
     private static boolean isPlaying = false;
 
+
+
     public static float getCurrentBeat() {
         if (currentInfo == null) return 0;
         return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+
     }
 
     public static float getCurrentSeconds() {
@@ -85,6 +91,7 @@ public class BeatmapPlayer {
 
     public static void play() {
         BeatmapAudioPlayer.syncTimeWithBeatmap();
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0.0);
         isPlaying = true;
     }
     public static void play(float beat) {
@@ -95,6 +102,7 @@ public class BeatmapPlayer {
 
     public static void pause() {
         isPlaying = false;
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
     }
 
     public static void restart() {
