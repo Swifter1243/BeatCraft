@@ -1,5 +1,6 @@
 package com.beatcraft.mixin.client;
 
+import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.render.model.ModelLoader;
@@ -29,5 +30,6 @@ public abstract class CustomModelLoader {
             CallbackInfo info) {
         this.addModel(PhysicalColorNote.colorNoteArrowModelID);
         this.addModel(PhysicalColorNote.colorNoteDotModelID);
+        this.addModel(PhysicalBombNote.bombNoteArrowModelID);
     }
 }

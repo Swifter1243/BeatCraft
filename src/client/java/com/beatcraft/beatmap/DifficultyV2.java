@@ -2,9 +2,11 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
+import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -32,7 +34,8 @@ public class DifficultyV2 extends Difficulty {
             JsonObject obj = o.getAsJsonObject();
             int type = obj.get("_type").getAsInt();
             if (type == 3) {
-                // TODO: Handle bombs
+                BombNote note = new BombNote().loadV2(obj, this);
+                bombNotes.add(new PhysicalBombNote(note));
             } else {
                 ColorNote note = new ColorNote().loadV2(obj, this);
                 colorNotes.add(new PhysicalColorNote(note));

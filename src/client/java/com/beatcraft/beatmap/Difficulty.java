@@ -11,6 +11,7 @@ import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.beatmap.data.event.RotationEventHandler;
+import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalGameplayObject;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.google.gson.JsonArray;
@@ -33,6 +34,7 @@ public abstract class Difficulty {
     private final Info.SetDifficulty setDifficulty;
     private final TrackLibrary trackLibrary = new TrackLibrary();
     public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
+    public final ArrayList<PhysicalBombNote> bombNotes = new ArrayList<>();
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
     public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
@@ -57,6 +59,7 @@ public abstract class Difficulty {
 
     private void sortObjectsByTime() {
         colorNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        bombNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         rotationEvents.sort(this::compareObjects);
         animateTracks.sort(this::compareObjects);
         assignPathAnimations.sort(this::compareObjects);
@@ -65,6 +68,7 @@ public abstract class Difficulty {
     private void applyRotationEvents() {
         EventHandler<Float, RotationEvent> eventHandler = new RotationEventHandler(rotationEvents);
         applyRotationOnArray(eventHandler, colorNotes);
+        applyRotationOnArray(eventHandler, bombNotes);
     }
 
     private <T extends PhysicalGameplayObject<K>, K extends GameplayObject> void applyRotationOnArray(EventHandler<Float, RotationEvent> eventHandler, ArrayList<T> array) {
@@ -132,16 +136,19 @@ public abstract class Difficulty {
 
     public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
         colorNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
+        bombNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
     }
 
     public void seek(float beat) {
         trackLibrary.seek(beat);
         colorNotes.forEach(o -> o.seek(beat));
+        bombNotes.forEach(o -> o.seek(beat));
     }
 
     public void update(float beat) {
         trackLibrary.update(beat);
         colorNotes.forEach(o -> o.update(beat));
+        bombNotes.forEach(o -> o.update(beat));
     }
 
     public TrackLibrary getTrackLibrary() {
