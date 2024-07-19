@@ -1,5 +1,6 @@
 package com.beatcraft.animation;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.animation.pointdefinition.*;
 import com.beatcraft.beatmap.Difficulty;
@@ -61,7 +62,12 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
         JsonElement element = json.get(property);
         if (JsonHelper.isString(element)) {
             String name = element.getAsString();
-            return factory.apply(difficulty.pointDefinitions.get(name));
+            if (difficulty.pointDefinitions.containsKey(name)) {
+                return factory.apply(difficulty.pointDefinitions.get(name));
+            } else {
+                BeatCraft.LOGGER.warn("Point Definition [" + name + "] does not exist! Skipping...");
+                return null;
+            }
         } else {
             return factory.apply(element.getAsJsonArray());
         }
