@@ -66,12 +66,11 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
                 return factory.apply(difficulty.pointDefinitions.get(name));
             } else {
                 BeatCraft.LOGGER.warn("Point Definition [" + name + "] does not exist! Skipping...");
+                return null;
             }
         } else {
             return factory.apply(element.getAsJsonArray());
         }
-
-        return null;
     }
 
     public AnimatedPropertyEventContainer toAnimatedPropertyEvents(AnimateTrack animateTrack) {
