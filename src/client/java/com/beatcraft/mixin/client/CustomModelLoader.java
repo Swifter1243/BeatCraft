@@ -28,8 +28,9 @@ public abstract class CustomModelLoader {
             Map<Identifier, JsonUnbakedModel> jsonUnbakedModels,
             Map<Identifier, List<ModelLoader.SourceTrackedData>> blockStates,
             CallbackInfo info) {
-        this.addModel(PhysicalColorNote.colorNoteArrowModelID);
-        this.addModel(PhysicalColorNote.colorNoteDotModelID);
+        this.addModel(PhysicalColorNote.noteDotModelID);
+        this.addModel(PhysicalColorNote.noteArrowModelID);
+        this.addModel(PhysicalColorNote.colorNoteBlockModelID);
         this.addModel(PhysicalBombNote.bombNoteArrowModelID);
     }
 }

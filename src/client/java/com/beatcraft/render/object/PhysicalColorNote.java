@@ -15,8 +15,9 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
-    public static final ModelIdentifier colorNoteArrowModelID = new ModelIdentifier("beatcraft", "color_note_arrow", "inventory");
-    public static final ModelIdentifier colorNoteDotModelID = new ModelIdentifier("beatcraft", "color_note_dot", "inventory");
+    public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier("beatcraft", "color_note", "inventory");
+    public static final ModelIdentifier noteArrowModelID = new ModelIdentifier("beatcraft", "note_arrow", "inventory");
+    public static final ModelIdentifier noteDotModelID = new ModelIdentifier("beatcraft", "note_dot", "inventory");
     private static final int overlay = OverlayTexture.getUv(0, false);
     private float baseDegrees;
 
@@ -77,12 +78,20 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel model;
+        BakedModel baseModel = mc.getBakedModelManager().getModel(colorNoteBlockModelID);
+        BakedModel arrowModel;
         if (getData().getCutDirection() == CutDirection.DOT) {
-            model = mc.getBakedModelManager().getModel(colorNoteDotModelID);
+            arrowModel = mc.getBakedModelManager().getModel(noteDotModelID);
         } else {
-            model = mc.getBakedModelManager().getModel(colorNoteArrowModelID);
+            arrowModel = mc.getBakedModelManager().getModel(noteArrowModelID);
         }
-        mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+
+        if (!isBaseDissolved()) {
+            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, baseModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+        }
+
+        if (!isArrowDissolved()) {
+            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+        }
     }
 }

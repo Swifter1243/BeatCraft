@@ -99,7 +99,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return hasAppeared() && !isDespawned() && BeatmapAudioPlayer.isReady();
     }
 
-    private boolean isDissolved() {
+    protected boolean isBaseDissolved() {
         Float dissolve = animationState.getDissolve();
         if (dissolve == null) {
             return false;
@@ -108,9 +108,18 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         }
     }
 
+    protected boolean isArrowDissolved() {
+        Float dissolveArrow = animationState.getDissolveArrow();
+        if (dissolveArrow == null) {
+            return false;
+        } else {
+            return dissolveArrow < 0.5;
+        }
+    }
+
     @Override
     public boolean shouldRender() {
-        return isInWorld() && !isDissolved();
+        return isInWorld();
     }
 
     protected Vector3f getJumpsPosition(float lifetime, float time) {
@@ -189,11 +198,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         applySpawnMatrix(time, m, animationState);
 
-        Vector3f animatedScale = animationState.getScale();
-        if (animatedScale != null) {
-            m.scale(animatedScale);
-        }
-
         MathUtil.reflectMatrixAcrossX(m); // Transform matrix from Beat Saber world space to Minecraft world space
 
         return m;
@@ -230,6 +234,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             m.mul(jumpMatrix).rotate(lookRotation);
         } else {
             m.mul(jumpMatrix);
+        }
+
+        Vector3f animatedScale = animationState.getScale();
+        if (animatedScale != null) {
+            m.scale(animatedScale);
         }
 
         if (data.getLocalRotation() != null) {
