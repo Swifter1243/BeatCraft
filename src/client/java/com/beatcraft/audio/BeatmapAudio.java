@@ -113,6 +113,7 @@ public class BeatmapAudio {
     public float getAudioLength() {
 
         if (isLoaded){
+            // this is stupid openAL doesnt have APIs for getting the audio length
             int sizeInBytes = AL10.alGetBufferi(buffer,AL10.AL_SIZE);
             int channels = AL10.alGetBufferi(buffer, AL10.AL_CHANNELS);
             int bits = AL10.alGetBufferi(buffer, AL10.AL_BITS);

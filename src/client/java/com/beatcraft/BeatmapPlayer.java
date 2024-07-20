@@ -6,13 +6,14 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.sound.SoundCategory;
 import org.joml.Matrix4f;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,12 +29,9 @@ public class BeatmapPlayer {
     private static float playbackSpeed = 1;
     private static boolean isPlaying = false;
 
-
-
     public static float getCurrentBeat() {
         if (currentInfo == null) return 0;
         return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
-
     }
 
     public static float getCurrentSeconds() {
@@ -95,7 +93,6 @@ public class BeatmapPlayer {
     public static void play(float beat) {
         setCurrentBeat(beat);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
-        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0.0);
         isPlaying = true;
     }
 
@@ -117,6 +114,17 @@ public class BeatmapPlayer {
 
             if (currentBeatmap != null) {
                 currentBeatmap.update(getCurrentBeat());
+                float Beats = ( BeatmapAudioPlayer.beatmapAudio.getAudioLength() /60) * currentInfo.getBpm();
+                float beatsLeft = Beats - getCurrentBeat();
+                if (beatsLeft <=0){
+                    BeatCraft.LOGGER.info("song should probably end idk ");
+                    // there is probably a way to do this better, but I don't want to access beatCraftClient here so :shrug:
+                    currentBeatmap = null;
+                    currentInfo = null;
+                    BeatmapAudioPlayer.unload();
+                    options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
+                }
+//                BeatCraft.LOGGER.info(String.valueOf(beatsLeft));
             }
         }
 
