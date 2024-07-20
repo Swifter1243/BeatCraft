@@ -1,5 +1,6 @@
 package com.beatcraft.utils;
 
+import com.beatcraft.BeatCraft;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,9 +14,10 @@ public class JsonUtil {
         return getVector3(array);
     }
     public static Vector3f getVector3(JsonArray array) {
-        float x = array.get(0).getAsFloat();
-        float y = array.get(1).getAsFloat();
-        float z = array.get(2).getAsFloat();
+        BeatCraft.LOGGER.info(String.valueOf(array.size()));
+        float x = array.get(0).isJsonNull() ? 0f : array.get(0).getAsFloat();
+        float y = array.get(1).isJsonNull() ? 0f : array.get(1).getAsFloat();
+        float z = array.get(2).isJsonNull() ? 0f : array.get(2).getAsFloat();
         return new Vector3f(x, y, z);
     }
 
