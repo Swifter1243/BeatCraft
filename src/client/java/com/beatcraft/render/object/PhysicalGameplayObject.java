@@ -8,7 +8,6 @@ import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
 import com.beatcraft.utils.MathUtil;
-import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.*;
@@ -177,6 +176,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     // Converts world space to the object's local space
     protected Matrix4f getMatrix(float time, AnimationState animationState) {
         Matrix4f m = new Matrix4f();
+
+        Matrix4f parentMatrix = data.getTrackContainer().tryGetParentMatrix();
+        if (parentMatrix != null) {
+            m.mul(parentMatrix);
+        }
 
         m.translate(getPlayerHeadPosition().x, 0, getPlayerHeadPosition().z);
 

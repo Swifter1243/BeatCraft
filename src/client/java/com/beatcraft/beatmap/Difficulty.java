@@ -1,16 +1,13 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.animation.event.AnimatedPathEventContainer;
-import com.beatcraft.beatmap.data.event.AnimateTrack;
-import com.beatcraft.beatmap.data.event.AssignPathAnimation;
-import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.beatmap.data.event.*;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.beatmap.data.event.RotationEventHandler;
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalGameplayObject;
 import com.beatcraft.render.object.PhysicalColorNote;
@@ -38,6 +35,8 @@ public abstract class Difficulty {
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
     public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
+    public final ArrayList<AssignTrackParent> assignTrackParents = new ArrayList<>();
+    public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
 
     public Difficulty(Info info, Info.SetDifficulty setDifficulty) {
@@ -141,12 +140,14 @@ public abstract class Difficulty {
 
     public void seek(float beat) {
         trackLibrary.seek(beat);
+        parentHandler.seek(beat);
         colorNotes.forEach(o -> o.seek(beat));
         bombNotes.forEach(o -> o.seek(beat));
     }
 
     public void update(float beat) {
         trackLibrary.update(beat);
+        parentHandler.update(beat);
         colorNotes.forEach(o -> o.update(beat));
         bombNotes.forEach(o -> o.update(beat));
     }

@@ -4,27 +4,23 @@ import com.beatcraft.utils.MathUtil;
 
 import java.util.ArrayList;
 
-public abstract class EventHandler<D, E extends IEvent> {
+public abstract class VoidEventHandler<E extends IEvent> {
     private final ArrayList<E> events;
     private final ArrayList<E> upcoming = new ArrayList<>();
-    protected final D initialState;
-    protected D state;
 
-    public EventHandler(ArrayList<E> events, D initialState) {
+    public VoidEventHandler(ArrayList<E> events) {
         this.events = events;
-        this.initialState = initialState;
         reset();
     }
 
     public void reset() {
-        state = initialState;
         upcoming.clear();
         upcoming.addAll(events);
     }
 
-    public D seek(float beat) {
+    public void seek(float beat) {
         reset();
-        return update(beat);
+        update(beat);
     }
 
     public abstract void onEventInterrupted(E event, float normalTime);
@@ -55,7 +51,7 @@ public abstract class EventHandler<D, E extends IEvent> {
         return true;
     }
 
-    public D update(float beat) {
+    public void update(float beat) {
         // Check new events to process
         while (!upcoming.isEmpty() && upcoming.get(0).getEventBeat() < beat) {
             E currentEvent = upcoming.get(0);
@@ -71,8 +67,6 @@ public abstract class EventHandler<D, E extends IEvent> {
                 handleEventPassed(currentEvent);
             }
         }
-
-        return state;
     }
 
     public ArrayList<E> getEvents() {
