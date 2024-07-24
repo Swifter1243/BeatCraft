@@ -5,7 +5,7 @@ import com.beatcraft.beatmap.data.IBeatmapData;
 import com.google.gson.JsonObject;
 
 public abstract class BeatmapObject implements IBeatmapData<BeatmapObject> {
-    private float beat = 0;
+    protected float beat = 0;
 
     @Override
     public BeatmapObject loadV2(JsonObject json, Difficulty difficulty) {

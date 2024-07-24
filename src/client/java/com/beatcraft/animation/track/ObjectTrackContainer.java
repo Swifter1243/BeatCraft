@@ -2,6 +2,7 @@ package com.beatcraft.animation.track;
 
 import com.beatcraft.animation.AnimationState;
 import com.google.gson.JsonElement;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -21,5 +22,10 @@ public class ObjectTrackContainer {
     public AnimationState getAnimatedPathState(float time) {
         Optional<AnimationState> state = tracks.stream().map(track -> track.getAnimatedPath().getCurrentState().interpolate(time)).reduce(AnimationState::combine);
         return state.orElseGet(AnimationState::new);
+    }
+
+    public Matrix4f tryGetParentMatrix() {
+        Optional<Track> parentTrack = tracks.stream().filter(Track::isParented).findFirst();
+        return parentTrack.map(Track::tryGetParentMatrix).orElse(null);
     }
 }

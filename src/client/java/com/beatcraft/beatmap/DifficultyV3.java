@@ -2,6 +2,7 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
+import com.beatcraft.beatmap.data.event.AssignTrackParent;
 import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
@@ -114,6 +115,7 @@ public class DifficultyV3 extends Difficulty {
         switch (type) {
             case "AnimateTrack" -> animateTracks.add(new AnimateTrack().loadV3(json, this));
             case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV3(json, this));
+            case "AssignTrackParent" -> assignTrackParents.add(new AssignTrackParent().loadV3(json, this));
         }
     }
 }

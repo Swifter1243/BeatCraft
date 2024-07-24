@@ -13,7 +13,8 @@ public class AnimatedPathEventHandler<T> extends EventHandler<Path<T>, AnimatedP
     }
 
     @Override
-    protected void onReset() {
+    public void reset() {
+        super.reset();
         previousProperty = null;
     }
 
