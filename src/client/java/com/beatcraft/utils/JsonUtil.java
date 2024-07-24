@@ -8,14 +8,18 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class JsonUtil {
+    public static float getFloatArray(JsonArray array, int index, float defaultValue) {
+        return array.get(index).isJsonNull() ? defaultValue : array.get(index).getAsFloat();
+    }
+
     public static Vector3f getVector3(JsonElement element) {
         JsonArray array = element.getAsJsonArray();
         return getVector3(array);
     }
     public static Vector3f getVector3(JsonArray array) {
-        float x = array.get(0).getAsFloat();
-        float y = array.get(1).getAsFloat();
-        float z = array.get(2).getAsFloat();
+        float x = getFloatArray(array, 0, 0f);
+        float y = getFloatArray(array, 1, 0f);
+        float z = getFloatArray(array, 2, 0f);
         return new Vector3f(x, y, z);
     }
 
