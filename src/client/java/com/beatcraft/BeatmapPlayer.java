@@ -10,6 +10,8 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.sound.SoundCategory;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
@@ -20,7 +22,8 @@ public class BeatmapPlayer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
-
+    public static final GameOptions options = MinecraftClient.getInstance().options;
+    public static final double currentMusicVolume = options.getSoundVolume(SoundCategory.MUSIC);
     private static long lastNanoTime = 0;
     private static long elapsedNanoTime = 0;
     private static float playbackSpeed = 1;
@@ -111,6 +114,17 @@ public class BeatmapPlayer {
 
             if (currentBeatmap != null) {
                 currentBeatmap.update(getCurrentBeat());
+                float Beats = ( BeatmapAudioPlayer.beatmapAudio.getAudioLength() /60) * currentInfo.getBpm();
+                float beatsLeft = Beats - getCurrentBeat();
+                if (beatsLeft <=0){
+                    BeatCraft.LOGGER.info("song should probably end idk ");
+                    // there is probably a way to do this better, but I don't want to access beatCraftClient here so :shrug:
+                    currentBeatmap = null;
+                    currentInfo = null;
+                    BeatmapAudioPlayer.unload();
+                    options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
+                }
+//                BeatCraft.LOGGER.info(String.valueOf(beatsLeft));
             }
         }
 
