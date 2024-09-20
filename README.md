@@ -2,7 +2,7 @@
 
 About 3 years ago (2021) I made a [reddit post](https://www.reddit.com/r/Minecraft/comments/l4w7of/working_on_making_beat_saber_in_minecraft) showing off my attempt at making Beat Saber in Minecraft. It got all sorts of attention and people really wanted to play it. There was only one problem..
 
-# IT FUCKING SUCKED _DICK_
+# IT _SUCKED_
 
 It was using:
 - A scuffed dev build of Vivecraft
@@ -32,6 +32,6 @@ This is quite an insane undertaking so wish me luck o7
 
 If you'd like to try out what I have at any point, clone the repo and run the project with [IntelliJ IDEA](https://www.jetbrains.com/idea/download/?section=windows) (scroll down to get community edition, which is free)
 
-# WHY DON'T YOU MAKE IT FOR FORGE TOO? ARE YOU A FUCKING *PUSSY*?
+# WHY DON'T YOU MAKE IT FOR FORGE TOO? ARE YOU A LITTLE *BITCH*?
 
 ion wanna
