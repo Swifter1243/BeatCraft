@@ -110,7 +110,19 @@ public class BeatmapAudio {
         inputStream.close();
         oggAudioStream.close();
     }
+    public float getAudioLength() {
 
+        if (isLoaded){
+            // this is stupid openAL doesnt have APIs for getting the audio length
+            int sizeInBytes = AL10.alGetBufferi(buffer,AL10.AL_SIZE);
+            int channels = AL10.alGetBufferi(buffer, AL10.AL_CHANNELS);
+            int bits = AL10.alGetBufferi(buffer, AL10.AL_BITS);
+            int frequency = AL10.alGetBufferi(buffer, AL10.AL_FREQUENCY);
+            int lengthInSamples = sizeInBytes * 8 / (channels * bits);
+            return  (float) lengthInSamples / (float) frequency;
+        }
+        return 0;
+    }
     public void closeBuffer() {
         if (isLoaded) {
             stop();

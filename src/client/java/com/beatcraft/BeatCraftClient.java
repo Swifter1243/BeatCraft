@@ -8,11 +8,12 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
-
 import java.io.IOException;
-
+import static com.beatcraft.BeatmapPlayer.currentMusicVolume;
+import static com.beatcraft.BeatmapPlayer.options;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
@@ -20,10 +21,13 @@ public class BeatCraftClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         registerCommands();
+
     }
+
 
     private int songPlay(CommandContext<FabricClientCommandSource> context) {
         BeatmapPlayer.play();
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0.0);
         context.getSource().sendFeedback(Text.literal("Song played"));
         return 1;
     }
@@ -38,6 +42,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     private int songPause(CommandContext<FabricClientCommandSource> context) {
         BeatmapPlayer.pause();
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
         context.getSource().sendFeedback(Text.literal("Song paused"));
         return 1;
     }
@@ -65,6 +70,7 @@ public class BeatCraftClient implements ClientModInitializer {
         BeatmapPlayer.currentBeatmap = null;
         BeatmapPlayer.currentInfo = null;
         BeatmapAudioPlayer.unload();
+        options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
         context.getSource().sendFeedback(Text.literal("Song unloaded!"));
         return 1;
     }
