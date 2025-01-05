@@ -1,5 +1,7 @@
 package com.beatcraft.beatmap.data;
 
+import com.beatcraft.data.types.Color;
+
 public class ColorScheme {
     private Color noteLeftColor = new Color(0.75294f, 0.188f, 0.188f);
     private Color noteRightColor = new Color(0.1254f, 0.3921f, 0.6588f);

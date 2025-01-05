@@ -11,6 +11,11 @@ base {
 }
 
 repositories {
+
+	maven {
+		url = "https://maven.bawnorton.com/releases"
+	}
+
     exclusiveContent {
         forRepository {
             maven {
@@ -22,6 +27,14 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
+
+	maven {
+		name = 'GeckoLib'
+		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroup("software.bernie.geckolib")
+		}
+	}
 }
 
 loom {
@@ -53,7 +66,16 @@ dependencies {
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-linux"))
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-macos"))
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-windows"))
+
+	// Geckolib
+	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+
+	// MixinSquared (for mixing into vivecraft's rendering)
+	// (until we can get vivecraft to move their render code out of their mixin classes)
+	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
+
 }
+
 
 processResources {
 	inputs.property "version", project.version

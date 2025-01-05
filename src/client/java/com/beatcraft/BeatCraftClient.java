@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.render.item.GeckolibRenderInit;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -20,6 +21,8 @@ public class BeatCraftClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         registerCommands();
+
+        GeckolibRenderInit.init();
     }
 
     private int songPlay(CommandContext<FabricClientCommandSource> context) {
@@ -96,11 +99,13 @@ public class BeatCraftClient implements ClientModInitializer {
             BeatmapPlayer.setupDifficultyFromFile(path);
         } catch (UnrecognizedFormatException e) {
             context.getSource().sendError(Text.literal("That jawn is an unsupported version!"));
-            e.printStackTrace();
+            //e.printStackTrace();
+            BeatCraft.LOGGER.error("That map is an unsupported version! ", e);
             return -1;
         } catch (IOException e) {
             context.getSource().sendError(Text.literal("That path didn't exist or something!"));
-            e.printStackTrace();
+            //e.printStackTrace();
+            BeatCraft.LOGGER.error("File could not be found! ", e);
             return -1;
         }
 

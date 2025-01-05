@@ -1,4 +1,4 @@
-package com.beatcraft.beatmap.data;
+package com.beatcraft.data.types;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -61,4 +61,20 @@ public class Color {
         this.green = green;
         this.blue = blue;
     }
+
+    public int toARGB() {
+        return toARGB(1.0f);
+    }
+
+    public int toARGB(float alpha) {
+        int color = (int) (alpha * 255);
+        color <<= 8;
+        color += (int) (red * 255);
+        color <<= 8;
+        color += (int) (green * 255);
+        color <<= 8;
+        color += (int) (blue * 255);
+        return color;
+    }
+
 }

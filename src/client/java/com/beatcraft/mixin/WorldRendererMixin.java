@@ -1,7 +1,8 @@
-package com.beatcraft.mixin.client;
+package com.beatcraft.mixin;
 
 
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.effect.SaberTrailRenderer;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,4 +19,16 @@ public class WorldRendererMixin {
     ) {
         BeatcraftRenderer.onRender(new MatrixStack(), camera);
     }
+
+    @Inject(
+        method = "render",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/render/Camera;)V"
+        )
+    )
+    public void saberTrailRenderInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+        SaberTrailRenderer.renderAll();
+    }
+
 }

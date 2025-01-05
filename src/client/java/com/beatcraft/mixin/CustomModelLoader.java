@@ -1,4 +1,4 @@
-package com.beatcraft.mixin.client;
+package com.beatcraft.mixin;
 
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;

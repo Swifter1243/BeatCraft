@@ -1,5 +1,7 @@
 package com.beatcraft;
 
+import com.beatcraft.data.components.ModComponents;
+import com.beatcraft.items.ModItems;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -12,5 +14,9 @@ public class BeatCraft implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("hi :3");
+
+		ModComponents.init();
+		ModItems.init();
+
 	}
 }

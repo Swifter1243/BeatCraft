@@ -1,6 +1,6 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.beatmap.data.Color;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.ColorScheme;
 import com.google.gson.JsonObject;
 
