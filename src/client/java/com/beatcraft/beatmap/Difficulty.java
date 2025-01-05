@@ -133,9 +133,9 @@ public abstract class Difficulty {
         return setDifficulty;
     }
 
-    public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
-        colorNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
-        bombNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
+    public void render(MatrixStack matrices, Camera camera) {
+        colorNotes.forEach(o -> o.render(matrices, camera));
+        bombNotes.forEach(o -> o.render(matrices, camera));
     }
 
     public void seek(float beat) {

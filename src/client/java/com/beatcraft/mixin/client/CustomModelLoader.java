@@ -3,6 +3,7 @@ package com.beatcraft.mixin.client;
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.render.model.BlockStatesLoader;
 import net.minecraft.client.render.model.ModelLoader;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.util.ModelIdentifier;
@@ -19,18 +20,19 @@ import java.util.Map;
 
 @Mixin(ModelLoader.class)
 public abstract class CustomModelLoader {
-    @Shadow protected abstract void addModel(ModelIdentifier modelId);
+    @Shadow protected abstract void loadItemModel(ModelIdentifier modelId);
 
     @Inject(method = "<init>", at = @At(value = "CONSTANT", args = "stringValue=special"))
     private void loadModels(
             BlockColors blockColors,
             Profiler profiler,
             Map<Identifier, JsonUnbakedModel> jsonUnbakedModels,
-            Map<Identifier, List<ModelLoader.SourceTrackedData>> blockStates,
-            CallbackInfo info) {
-        this.addModel(PhysicalColorNote.noteDotModelID);
-        this.addModel(PhysicalColorNote.noteArrowModelID);
-        this.addModel(PhysicalColorNote.colorNoteBlockModelID);
-        this.addModel(PhysicalBombNote.bombNoteArrowModelID);
+            Map<Identifier, List<BlockStatesLoader.SourceTrackedData>> blockStates,
+            CallbackInfo info
+    ) {
+        this.loadItemModel(PhysicalColorNote.noteDotModelID);
+        this.loadItemModel(PhysicalColorNote.noteArrowModelID);
+        this.loadItemModel(PhysicalColorNote.colorNoteBlockModelID);
+        this.loadItemModel(PhysicalBombNote.bombNoteArrowModelID);
     }
 }

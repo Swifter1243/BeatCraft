@@ -1,5 +1,6 @@
 package com.beatcraft.render.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
@@ -10,14 +11,15 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
-    public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier("beatcraft", "color_note", "inventory");
-    public static final ModelIdentifier noteArrowModelID = new ModelIdentifier("beatcraft", "note_arrow", "inventory");
-    public static final ModelIdentifier noteDotModelID = new ModelIdentifier("beatcraft", "note_dot", "inventory");
+    public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
+    public static final ModelIdentifier noteArrowModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID,  "note_arrow"), "inventory");
+    public static final ModelIdentifier noteDotModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID,  "note_dot"), "inventory");
     private static final int overlay = OverlayTexture.getUv(0, false);
     private float baseDegrees;
 

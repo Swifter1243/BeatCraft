@@ -102,7 +102,7 @@ public class BeatmapAudio {
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
 
-        ByteBuffer audioData = oggAudioStream.getBuffer();
+        ByteBuffer audioData = oggAudioStream.readAll();
         AL10.alBufferData(buffer, formatID, audioData, sampleRate);
         AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
 

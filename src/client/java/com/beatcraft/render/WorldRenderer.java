@@ -9,7 +9,7 @@ import org.joml.Matrix4f;
 public abstract class WorldRenderer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
 
-    public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
+    public void render(MatrixStack matrices, Camera camera) {
         if (!shouldRender()) return;
 
         VertexConsumerProvider provider = mc.getBufferBuilders().getEntityVertexConsumers();

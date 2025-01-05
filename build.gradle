@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.7-SNAPSHOT'
+	id 'fabric-loom' version '1.9-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -28,7 +28,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"modid" {
+		"beatcraft" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
@@ -46,25 +46,30 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
 	// Vivecraft
-	modImplementation "maven.modrinth:vivecraft:1.20.4-1.1.9-fabric"
+	modImplementation "maven.modrinth:vivecraft:${project.vivecraft_version}"
 	include(implementation('com.electronwill.night-config:toml:3.6.6'))
 	include(implementation('com.electronwill.night-config:core:3.6.6'))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-linux"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-macos"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-windows"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-linux"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-macos"))
+	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-windows"))
 }
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "minecraft_version", project.minecraft_version
+	inputs.property "loader_version", project.loader_version
+	filteringCharset "UTF-8"
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.version,
+				"minecraft_version": project.minecraft_version,
+				"loader_version": project.loader_version
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -73,8 +78,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {

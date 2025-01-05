@@ -101,7 +101,7 @@ public class BeatmapPlayer {
         play(0);
     }
 
-    public static void onRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
+    public static void onRender(MatrixStack matrices, Camera camera) {
         // Progress time
         long deltaNanoSeconds = getNanoDeltaTime();
 
@@ -119,7 +119,7 @@ public class BeatmapPlayer {
 
         // Render beatmap
         if (currentBeatmap != null) {
-            currentBeatmap.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix);
+            currentBeatmap.render(matrices, camera);
         }
     }
 
