@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -22,6 +23,7 @@ public class BeatCraftClient implements ClientModInitializer {
     public void onInitializeClient() {
         registerCommands();
 
+        BlockRenderSettings.init();
         GeckolibRenderInit.init();
     }
 

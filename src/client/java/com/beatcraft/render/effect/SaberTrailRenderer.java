@@ -53,13 +53,12 @@ public class SaberTrailRenderer {
             bakedModel.getTransformation().getTransformation(ModelTransformationMode.GROUND).apply(false, matrix);
 
             matrix.push();
-            matrix.translate(0, (6/8f) * 0.6, 0);
-
+            matrix.translate(0, (7/8f) * 0.6, 0);
             Vector3f blade_base = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
             matrix.pop();
 
             matrix.push();
-            matrix.translate(0, (28/8f) * 0.6, 0);
+            matrix.translate(0, (38/8f) * 0.6, 0);
             Vector3f blade_tip = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
             matrix.pop();
 
@@ -76,9 +75,7 @@ public class SaberTrailRenderer {
     }
 
     public static void queueRender(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col) {
-        render_calls.add(() -> {
-            SaberTrailRenderer.render(blade_base, blade_tip, stash, col);
-        });
+        render_calls.add(() -> SaberTrailRenderer.render(blade_base, blade_tip, stash, col));
     }
 
     public static void renderAll() {

@@ -1,0 +1,104 @@
+{
+  "variants": {
+    "face=down,rotation=north": {
+      "model": "beatcraft:block/column_light_panel"
+    },
+    "face=down,rotation=east": {
+      "model": "beatcraft:block/column_light_panel",
+      "y": 90
+    },
+    "face=down,rotation=south": {
+      "model": "beatcraft:block/column_light_panel",
+      "y": 180
+    },
+    "face=down,rotation=west": {
+      "model": "beatcraft:block/column_light_panel",
+      "y": -90
+    },
+
+    "face=up,rotation=north": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 180, "y": 180
+    },
+    "face=up,rotation=east": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 180, "y": -90
+    },
+    "face=up,rotation=south": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 180
+    },
+    "face=up,rotation=west": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 180, "y": 90
+    },
+
+    "face=north,rotation=up": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": -90
+    },
+    "face=north,rotation=east": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": -90
+    },
+    "face=north,rotation=down": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 90, "y": 180
+    },
+    "face=north,rotation=west": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": 90, "y": 180
+    },
+
+    "face=south,rotation=up": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": -90, "y": 180
+    },
+    "face=south,rotation=west": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": -90, "y": 180
+    },
+    "face=south,rotation=down": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 90
+    },
+    "face=south,rotation=east": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": 90
+    },
+
+    "face=east,rotation=up": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": -90, "y": 90
+    },
+    "face=east,rotation=south": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": -90, "y": 90
+    },
+    "face=east,rotation=down": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 90, "y": -90
+    },
+    "face=east,rotation=north": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": 90, "y": -90
+    },
+
+    "face=west,rotation=north": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": -90, "y": -90
+    },
+    "face=west,rotation=up": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": -90, "y": -90
+    },
+    "face=west,rotation=south": {
+      "model": "beatcraft:block/column_light_panel_sideways",
+      "x": 90, "y": 90
+    },
+    "face=west,rotation=down": {
+      "model": "beatcraft:block/column_light_panel",
+      "x": 90, "y": 90
+    }
+  }
+}

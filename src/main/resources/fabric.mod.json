@@ -5,7 +5,8 @@
 	"name": "BeatCraft",
 	"description": "Beat Saber in Minecraft.",
 	"authors": [
-		"Swifter"
+		"Swifter",
+		"Westbot"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",

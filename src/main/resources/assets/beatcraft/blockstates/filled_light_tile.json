@@ -1,0 +1,75 @@
+{
+  "variants": {
+    "face=down,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel"
+    },
+    "face=up,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel",
+      "x": 180
+    },
+    "face=north,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel",
+      "x": -90
+    },
+    "face=south,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel",
+      "x": 90
+    },
+    "face=east,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel",
+      "x": 90, "y": -90
+    },
+    "face=west,pattern=0": {
+      "model": "beatcraft:block/cell_light_panel",
+      "x": -90, "y": -90
+    },
+
+    "face=down,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel"
+    },
+    "face=up,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel",
+      "x": 180
+    },
+    "face=north,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel",
+      "x": -90
+    },
+    "face=south,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel",
+      "x": 90
+    },
+    "face=east,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel",
+      "x": 90, "y": -90
+    },
+    "face=west,pattern=1": {
+      "model": "beatcraft:block/filled_light_panel",
+      "x": -90, "y": -90
+    },
+
+    "face=down,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel"
+    },
+    "face=up,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel",
+      "x": 180
+    },
+    "face=north,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel",
+      "x": -90
+    },
+    "face=south,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel",
+      "x": 90
+    },
+    "face=east,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel",
+      "x": 90, "y": -90
+    },
+    "face=west,pattern=2": {
+      "model": "beatcraft:block/quad_light_panel",
+      "x": -90, "y": -90
+    }
+  }
+}

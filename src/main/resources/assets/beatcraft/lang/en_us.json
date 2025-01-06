@@ -1,4 +1,14 @@
 {
   "itemGroup.beatcraft.group": "BeatCraft",
-  "item.beatcraft.saber": "Saber"
+
+  "item.beatcraft.saber": "Saber",
+
+  "block.beatcraft.black_mirror_block": "Black Mirror Block",
+
+  "block.beatcraft.filled_light_tile": "Full Light Tile",
+  "block.beatcraft.edge_light_tile": "Edge Light Tile",
+  "block.beatcraft.corner_light_tile": "Corner Light Tile",
+  "block.beatcraft.column_light_tile": "Column Light Tile",
+  "block.beatcraft.end_light_tile": "End Light Tile",
+  "block.beatcraft.stripe_light_tile": "Stripe Light Tile"
 }

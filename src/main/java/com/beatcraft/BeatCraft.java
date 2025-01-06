@@ -1,7 +1,9 @@
 package com.beatcraft;
 
+import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.items.ModItems;
+import com.beatcraft.items.group.ModItemGroup;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ public class BeatCraft implements ModInitializer {
 
 		ModComponents.init();
 		ModItems.init();
+		ModBlocks.init();
+		ModItemGroup.init();
 
 	}
 }

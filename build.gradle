@@ -12,10 +12,6 @@ base {
 
 repositories {
 
-	maven {
-		url = "https://maven.bawnorton.com/releases"
-	}
-
     exclusiveContent {
         forRepository {
             maven {
@@ -69,10 +65,6 @@ dependencies {
 
 	// Geckolib
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
-
-	// MixinSquared (for mixing into vivecraft's rendering)
-	// (until we can get vivecraft to move their render code out of their mixin classes)
-	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
 
 }
 
