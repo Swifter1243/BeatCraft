@@ -10,6 +10,7 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -121,7 +122,9 @@ public class SaberTrailRenderer {
 
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
-            BufferRenderer.drawWithGlobalProgram(trail_buffer.end());
+            BuiltBuffer buffer = trail_buffer.end();
+
+            BufferRenderer.drawWithGlobalProgram(buffer);
             RenderSystem.setShader(() -> oldShader);
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();

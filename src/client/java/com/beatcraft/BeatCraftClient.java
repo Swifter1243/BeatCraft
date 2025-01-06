@@ -6,6 +6,7 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
@@ -128,42 +129,156 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int colorFromFloats(CommandContext<FabricClientCommandSource> context) {
+        float fr = FloatArgumentType.getFloat(context, "R");
+        float fg = FloatArgumentType.getFloat(context, "G");
+        float fb = FloatArgumentType.getFloat(context, "B");
+
+        int r = (int) (fr * 255);
+        int g = (int) (fg * 255);
+        int b = (int) (fb * 255);
+
+        int hex = r;
+        hex <<= 8;
+        hex += g;
+        hex <<= 8;
+        hex += b;
+
+        String hexStr = Integer.toHexString(hex);
+
+        context.getSource().sendFeedback(Text.literal(
+                String.format(
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                        r, g, b,
+                        fr, fg, fb,
+                        hex, hexStr
+                )
+        ));
+
+        return 1;
+    }
+
+    private int colorFromIntegers(CommandContext<FabricClientCommandSource> context) {
+        int r = IntegerArgumentType.getInteger(context, "R");
+        int g = IntegerArgumentType.getInteger(context, "G");
+        int b = IntegerArgumentType.getInteger(context, "B");
+
+        float fr = r / 255.0f;
+        float fg = g / 255.0f;
+        float fb = b / 255.0f;
+
+        int hex = r;
+        hex <<= 8;
+        hex += g;
+        hex <<= 8;
+        hex += b;
+
+        String hexStr = Integer.toHexString(hex);
+
+        context.getSource().sendFeedback(Text.literal(
+                String.format(
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                        r, g, b,
+                        fr, fg, fb,
+                        hex, hexStr
+                )
+        ));
+
+        return 1;
+    }
+
+    private int colorFromHex(CommandContext<FabricClientCommandSource> context) {
+
+        String hexStr = StringArgumentType.getString(context, "hex_code");
+
+        try {
+            int hex = Integer.parseInt(hexStr, 16);
+
+            int r = (hex >> 16) & 0xFF;
+            int g = (hex >> 8) & 0xFF;
+            int b = hex & 0xFF;
+
+            float fr = r / 255.0f;
+            float fg = g / 255.0f;
+            float fb = b / 255.0f;
+
+            context.getSource().sendFeedback(Text.literal(
+                    String.format(
+                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                            r, g, b,
+                            fr, fg, fb,
+                            hex, hexStr
+                    )
+            ));
+
+        } catch (NumberFormatException e) {
+            context.getSource().sendError(Text.literal("Invalid hex: " + e.getMessage()));
+        }
+        return 1;
+    }
+
     private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) ->
-                dispatcher.register(literal("song")
-                        .then(literal("play")
-                                .executes(this::songPlay)
-                                .then(argument("beat", FloatArgumentType.floatArg(0))
-                                        .executes(this::songPlayBeat)
-                                )
-                        )
-                        .then(literal("pause")
-                                .executes(this::songPause)
-                        )
-                        .then(literal("restart")
-                                .executes(this::songRestart)
-                        )
-                        .then(literal("speed")
-                                .then(literal("reset")
-                                        .executes(this::songSpeedReset)
-                                )
-                                .then(argument("scalar", FloatArgumentType.floatArg(0.0001f, 5))
-                                        .executes(this::songSpeedScalar)
-                                )
-                        )
-                        .then(literal("unload")
-                                .executes(this::songUnload)
-                        )
-                        .then(literal("load")
-                                .then(argument("path", StringArgumentType.greedyString())
-                                        .executes(this::songLoad)
-                                )
-                        )
-                        .then(literal("scrub")
-                                .then(argument("beats", FloatArgumentType.floatArg())
-                                        .executes(this::songScrub)
-                                )
-                        )
-                )));
+        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
+            dispatcher.register(literal("song")
+                    .then(literal("play")
+                            .executes(this::songPlay)
+                            .then(argument("beat", FloatArgumentType.floatArg(0))
+                                    .executes(this::songPlayBeat)
+                            )
+                    )
+                    .then(literal("pause")
+                            .executes(this::songPause)
+                    )
+                    .then(literal("restart")
+                            .executes(this::songRestart)
+                    )
+                    .then(literal("speed")
+                            .then(literal("reset")
+                                    .executes(this::songSpeedReset)
+                            )
+                            .then(argument("scalar", FloatArgumentType.floatArg(0.0001f, 5))
+                                    .executes(this::songSpeedScalar)
+                            )
+                    )
+                    .then(literal("unload")
+                            .executes(this::songUnload)
+                    )
+                    .then(literal("load")
+                            .then(argument("path", StringArgumentType.greedyString())
+                                    .executes(this::songLoad)
+                            )
+                    )
+                    .then(literal("scrub")
+                            .then(argument("beats", FloatArgumentType.floatArg())
+                                    .executes(this::songScrub)
+                            )
+                    )
+            );
+            dispatcher.register(literal("color_helper")
+                    .then(literal("hex")
+                            .then(argument("hex_code", StringArgumentType.word())
+                                    .executes(this::colorFromHex)
+                            )
+                    )
+                    .then(literal("intRGB")
+                            .then(argument("R", IntegerArgumentType.integer(0, 255))
+                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
+                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                                                    .executes(this::colorFromIntegers)
+                                            )
+                                    )
+                            )
+                    )
+                    .then(literal("floatRGB")
+                            .then(argument("R", IntegerArgumentType.integer(0, 255))
+                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
+                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                                                    .executes(this::colorFromFloats)
+                                            )
+                                    )
+                            )
+                    )
+            );
+        }));
     }
 }
