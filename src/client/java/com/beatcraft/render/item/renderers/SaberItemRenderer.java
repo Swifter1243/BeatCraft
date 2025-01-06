@@ -20,7 +20,7 @@ public class SaberItemRenderer extends DynamicGeoItemRenderer<SaberItem> {
         int color = currentItemStack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT, 0);
 
         super.renderCubesOfBone(
-            poseStack, bone, buffer, packedLight, packedOverlay,
+            poseStack, bone, buffer, 255, packedOverlay,
             (bone.getName().equals("colored"))
                 ? color + 0xFF000000
                 : 0xFFFFFFFF
