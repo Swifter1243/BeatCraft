@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -19,6 +20,9 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.arg
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class BeatCraftClient implements ClientModInitializer {
+
+    public static PlayerConfig playerConfig = new PlayerConfig();
+
     @Override
     public void onInitializeClient() {
         registerCommands();
