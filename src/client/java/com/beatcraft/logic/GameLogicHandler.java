@@ -34,14 +34,10 @@ wall dimensions and positioning
  */
 
 
-import com.beatcraft.BeatmapPlayer;
-import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.render.object.PhysicalGameplayObject;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.particle.ParticleTypes;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -78,7 +74,7 @@ public class GameLogicHandler {
 
     }
 
-    private static Vector3f toLocalSpace(Vector3f point, Vector3f notePos, Quaternionf noteOrientation) {
+    private static Vector3f transformPointToLocalSpace(Vector3f point, Vector3f notePos, Quaternionf noteOrientation) {
         Vector3f translatedPoint = point.sub(notePos, new Vector3f());
         Quaternionf inverted = noteOrientation.invert(new Quaternionf());
         Vector3f local = new Vector3f();
@@ -96,9 +92,9 @@ public class GameLogicHandler {
     public static<T extends GameplayObject> void checkNote(PhysicalGameplayObject<T> note) {
 
         // right saber
-        if (rightSaberPos.distance(note.getWorldPos()) <= 1.5) {
+        if (rightSaberPos.distance(note.getWorldPos()) <= 1.2 + note.getCollisionDistance()) {
 
-            Vector3f localSaberPos = toLocalSpace(rightSaberPos, note.getWorldPos(), note.getWorldRot());
+            Vector3f localSaberPos = transformPointToLocalSpace(rightSaberPos, note.getWorldPos(), note.getWorldRot());
 
             renderParticle(localSaberPos);
             renderParticle(rightSaberPos);
@@ -107,7 +103,7 @@ public class GameLogicHandler {
         }
 
         // left saber
-        if (leftSaberPos.distance(note.getWorldPos()) <= 1.5) {
+        if (leftSaberPos.distance(note.getWorldPos()) <= 1.2 + note.getCollisionDistance()) {
 
         }
 
