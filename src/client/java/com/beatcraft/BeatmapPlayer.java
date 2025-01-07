@@ -4,6 +4,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;

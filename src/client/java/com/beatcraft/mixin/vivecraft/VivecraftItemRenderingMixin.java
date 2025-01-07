@@ -6,6 +6,7 @@ import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.render.effect.SaberTrailRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -55,7 +56,7 @@ public abstract class VivecraftItemRenderingMixin {
 
 
     @Unique
-    private static void renderTrailCommon(boolean renderTrail, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack, CallbackInfo ci) {
+    private static void renderTrailCommon(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack, CallbackInfo ci) {
         if (stack.isOf(ModItems.SABER_ITEM)) {
 
             // Step 1: initial transform to get saber into the default position.
@@ -67,14 +68,17 @@ public abstract class VivecraftItemRenderingMixin {
             Vector3f translation;
             Quaternionf rotation;
             ControllerProfile profile = BeatCraftClient.playerConfig.getActiveControllerProfile();
+            boolean rightHand;
             if ((player.getMainArm() == Arm.RIGHT && mainHand) || (player.getMainArm() == Arm.LEFT && !mainHand)) {
                 // right hand
                 translation = profile.getRightTranslation();
                 rotation = profile.getRightRotation();
+                rightHand = true;
             } else {
                 // left hand
                 translation = profile.getLeftTranslation();
                 rotation = profile.getLeftRotation();
+                rightHand = false;
             }
 
             matrix.translate(translation.x, translation.y, translation.z);
@@ -82,8 +86,9 @@ public abstract class VivecraftItemRenderingMixin {
 
             // Step 2.5: use result to do collisions
 
+
             // Step 3: use result to also render trail
-            if (renderTrail) {
+            if (doCollisionCheck) {
                 matrix.push();
                 matrix.translate(0, (7 / 8f) * 0.6, 0);
                 Vector3f blade_base = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
@@ -93,6 +98,17 @@ public abstract class VivecraftItemRenderingMixin {
                 matrix.translate(0, (38 / 8f) * 0.6, 0);
                 Vector3f blade_tip = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
                 matrix.pop();
+
+                MatrixStack.Entry entry = matrix.peek();
+
+                Vector3f saberPos = entry.getPositionMatrix().getTranslation(new Vector3f());
+                Quaternionf saberRot = entry.getNormalMatrix().getNormalizedRotation(new Quaternionf());
+
+                if (rightHand) {
+                    GameLogicHandler.updateRightSaber(saberPos, saberRot);
+                } else {
+                    GameLogicHandler.updateLeftSaber(saberPos, saberRot);
+                }
 
                 Vec3d playerPos = player.getLerpedPos(tickDelta);
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);

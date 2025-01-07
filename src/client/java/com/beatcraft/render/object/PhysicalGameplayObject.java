@@ -5,11 +5,16 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
 import com.beatcraft.utils.MathUtil;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.command.argument.ParticleEffectArgumentType;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import org.joml.*;
 import org.joml.Math;
 
@@ -22,6 +27,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
     private Quaternionf lookRotation = new Quaternionf();
+    private Vector3f worldPos = new Vector3f();
+    private Quaternionf worldRot = new Quaternionf();
     private Matrix4f matrix = new Matrix4f();
     private AnimationState animationState = new AnimationState();
     protected T data;
@@ -305,8 +312,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         applyMatrixToRender(matrix, matrices);
 
+
+
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
+
+        worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos);
+        worldRot = matrices.peek().getNormalMatrix().getNormalizedRotation(worldRot);
+
+        GameLogicHandler.checkNote(this);
 
         objectRender(matrices, vertexConsumer, animationState);
     }
@@ -324,4 +338,17 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public void setLaneRotation(Quaternionf laneRotation) {
         this.laneRotation = laneRotation;
     }
+
+    public float getCollisionDistance() {
+        return 0;
+    }
+
+    public Vector3f getWorldPos() {
+        return worldPos;
+    }
+
+    public Quaternionf getWorldRot() {
+        return worldRot;
+    }
+
 }

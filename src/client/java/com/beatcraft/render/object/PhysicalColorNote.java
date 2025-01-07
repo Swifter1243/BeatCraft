@@ -96,4 +96,9 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
             mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
         }
     }
+
+    @Override
+    public float getCollisionDistance() {
+        return 0.688f;
+    }
 }

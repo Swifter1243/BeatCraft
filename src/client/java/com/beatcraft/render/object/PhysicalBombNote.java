@@ -32,4 +32,9 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
         BakedModel model = mc.getBakedModelManager().getModel(bombNoteArrowModelID);
         mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
     }
+
+    @Override
+    public float getCollisionDistance() {
+        return 0.607f;
+    }
 }
