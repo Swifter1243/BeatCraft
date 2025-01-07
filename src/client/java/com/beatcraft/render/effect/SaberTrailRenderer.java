@@ -4,7 +4,9 @@ import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
+import com.beatcraft.mixin_utils.BufferBuilderAccessible;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
@@ -21,10 +23,12 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 public class SaberTrailRenderer {
 
-    private static final ArrayList<Runnable> render_calls = new ArrayList<>();
+    private static final ArrayList<Function<BufferBuilder, Void>> render_calls = new ArrayList<>();
 
     // Called from ItemEntityRendererMixin
     public static void renderItemEntityTrail(ItemEntity entity, float tickDelta, BakedModel bakedModel) {
@@ -76,27 +80,55 @@ public class SaberTrailRenderer {
     }
 
     public static void queueRender(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col) {
-        render_calls.add(() -> SaberTrailRenderer.render(blade_base, blade_tip, stash, col));
+        Function<BufferBuilder, Void> callable = (trail_buffer) -> {
+            SaberTrailRenderer.render(blade_base, blade_tip, stash, col, trail_buffer);
+            return null;
+        };
+        render_calls.add(callable);
     }
 
     public static void renderAll() {
 
-        for (Runnable runnable : render_calls) {
-            runnable.run();
+        if (render_calls.isEmpty()) return;
+
+        var tessellator = Tessellator.getInstance();
+        var trail_buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (Function<BufferBuilder, Void> runnable : render_calls) {
+            runnable.apply(trail_buffer);
         }
+
+        BuiltBuffer buffer = trail_buffer.endNullable();
+
+        if (buffer == null) return;
+
+        ShaderProgram oldShader = RenderSystem.getShader();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        buffer.sortQuads(((BufferBuilderAccessible) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+        BufferRenderer.drawWithGlobalProgram(buffer);
+        RenderSystem.setShader(() -> oldShader);
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+
         render_calls.clear();
 
     }
 
-    public static void render(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col) {
+    public static void render(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col, BufferBuilder trail_buffer) {
 
         Vector3f current_base = blade_base;
         Vector3f current_tip = blade_tip;
         Vec3d cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
 
         if (!stash.isEmpty()) {
-            var tessellator = Tessellator.getInstance();
-            var trail_buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+            //
             int opacity = 0;
             float step = 0x7F / (float) stash.getSize();
             for (Pair<Vector3f, Vector3f> ab : stash) {
@@ -115,21 +147,7 @@ public class SaberTrailRenderer {
                 current_tip = b;
 
             }
-            ShaderProgram oldShader = RenderSystem.getShader();
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
 
-            RenderSystem.disableCull();
-            RenderSystem.enableDepthTest();
-            BuiltBuffer buffer = trail_buffer.end();
-
-            BufferRenderer.drawWithGlobalProgram(buffer);
-            RenderSystem.setShader(() -> oldShader);
-            RenderSystem.enableDepthTest();
-            RenderSystem.enableCull();
-            RenderSystem.disableBlend();
-            RenderSystem.depthMask(true);
         }
 
         stash.push(new Pair<>(blade_base, blade_tip));

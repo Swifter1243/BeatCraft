@@ -3,6 +3,7 @@
   "package": "com.beatcraft.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BufferBuilderMixin",
     "CustomModelLoader",
     "ItemEntityRendererMixin",
     "WorldRendererMixin"

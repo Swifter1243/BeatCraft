@@ -80,6 +80,8 @@ public abstract class VivecraftItemRenderingMixin {
             matrix.translate(translation.x, translation.y, translation.z);
             matrix.multiply(rotation);
 
+            // Step 2.5: use result to do collisions
+
             // Step 3: use result to also render trail
             if (renderTrail) {
                 matrix.push();
