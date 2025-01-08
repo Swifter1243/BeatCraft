@@ -34,10 +34,13 @@ wall dimensions and positioning
  */
 
 
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.render.object.PhysicalColorNote;
 import com.beatcraft.render.object.PhysicalGameplayObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.particle.ParticleTypes;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -74,31 +77,78 @@ public class GameLogicHandler {
 
     }
 
-    private static Vector3f transformPointToLocalSpace(Vector3f point, Vector3f notePos, Quaternionf noteOrientation) {
-        Vector3f translatedPoint = point.sub(notePos, new Vector3f());
-        Quaternionf inverted = noteOrientation.invert(new Quaternionf());
-        Vector3f local = new Vector3f();
-        inverted.transform(translatedPoint, local);
-        return local;
-    }
-
-    private static void renderParticle(Vector3f point) {
+    private static void renderParticle(Vector3f point, int p) {
         MinecraftClient.getInstance().world.addParticle(
-            ParticleTypes.END_ROD,
+            p == 0 ? ParticleTypes.END_ROD : p == 1 ? ParticleTypes.ELECTRIC_SPARK : ParticleTypes.PORTAL,
             point.x, point.y, point.z, 0, 0, 0
         );
     }
 
     public static<T extends GameplayObject> void checkNote(PhysicalGameplayObject<T> note) {
 
+        // Debug renderers:
+        //renderParticle(note.getWorldPos(), 3);
+        //
+        //Vector3f pos = note.getWorldRot().transform(new Vector3f(0, 0.5f, 0));
+        //
+        //renderParticle(pos.add(note.getWorldPos()), 2);
+
+
         // right saber
         if (rightSaberPos.distance(note.getWorldPos()) <= 1.2 + note.getCollisionDistance()) {
 
-            Vector3f localSaberPos = transformPointToLocalSpace(rightSaberPos, note.getWorldPos(), note.getWorldRot());
+            Vector3f notePos = note.getWorldPos();
 
-            renderParticle(localSaberPos);
-            renderParticle(rightSaberPos);
-            renderParticle(note.getWorldPos());
+            Quaternionf inverted = new Quaternionf();
+            note.getWorldRot().invert(inverted);
+
+            Vector3f endpoint = new Matrix4f().rotate(rightSaberRotation).translate(0, 1, 0).getTranslation(new Vector3f()).add(rightSaberPos);
+            Vector3f oldEndpoint = new Matrix4f().rotate(previousRightSaberRotation).translate(0, 1, 0).getTranslation(new Vector3f()).add(previousRightSaberPos);
+
+            Vector3f local_hand = (new Vector3f(rightSaberPos)).sub(notePos).rotate(inverted).add(notePos);
+            endpoint.sub(notePos).rotate(inverted).add(notePos);
+            oldEndpoint.sub(notePos).rotate(inverted).add(notePos);
+
+            Vector3f diff = endpoint.sub(oldEndpoint, new Vector3f());
+
+            Hitbox goodCutHitbox = note.getGoodCutBounds();
+
+            if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
+
+                Hitbox badCutHitbox = note.getBadCutBounds();
+                if (note instanceof PhysicalColorNote colorNote) {
+                    if (colorNote.getData().getNoteType() == NoteType.BLUE) {
+
+                        if (badCutHitbox.checkCollision(local_hand, endpoint)) {
+                            // check slice direction
+                        } else {
+                            // good cut
+                        }
+
+                        note.cutNote();
+
+                    } else {
+                        if (badCutHitbox.checkCollision(local_hand, endpoint)) {
+                            // bad cut
+                            note.cutNote();
+                        }
+                        // no hit
+                    }
+                } else {
+                    if (badCutHitbox.checkCollision(local_hand, endpoint)) {
+                        // bad cut
+                        note.cutNote();
+                    }
+                }
+
+
+
+            } else {
+                // not hit yet / miss
+            }
+
+
+
 
         }
 

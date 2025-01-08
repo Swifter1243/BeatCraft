@@ -6,15 +6,12 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
 import com.beatcraft.utils.MathUtil;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.command.argument.ParticleEffectArgumentType;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import org.joml.*;
 import org.joml.Math;
 
@@ -313,12 +310,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         applyMatrixToRender(matrix, matrices);
 
 
+        worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos)
+            .add(mc.gameRenderer.getCamera().getPos().toVector3f())
+            .sub(0, 1, 0);
+        worldRot = matrices.peek().getPositionMatrix().getNormalizedRotation(worldRot);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
 
-        worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos);
-        worldRot = matrices.peek().getNormalMatrix().getNormalizedRotation(worldRot);
 
         GameLogicHandler.checkNote(this);
 
@@ -349,6 +348,18 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public Quaternionf getWorldRot() {
         return worldRot;
+    }
+
+    public Hitbox getGoodCutBounds() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public Hitbox getBadCutBounds() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public void cutNote() {
+        this.despawn();
     }
 
 }

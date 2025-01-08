@@ -61,7 +61,7 @@ public abstract class VivecraftItemRenderingMixin {
 
             // Step 1: initial transform to get saber into the default position.
             matrix.scale(0.3333f, 0.3333f, 0.3333f);
-            matrix.translate(0, -2/8f, 2/8f);
+            matrix.translate(0, -0.25, 0.25);
             matrix.multiply((new Quaternionf()).rotationXYZ(-38 * MathHelper.RADIANS_PER_DEGREE, 0, 0));
 
             // Step 2: modify rotation and translation based on user settings
@@ -99,10 +99,15 @@ public abstract class VivecraftItemRenderingMixin {
                 Vector3f blade_tip = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
                 matrix.pop();
 
+                matrix.push();
+                matrix.translate(0, 0.25 * 0.6, 0);
                 MatrixStack.Entry entry = matrix.peek();
+                matrix.pop();
 
+                Vec3d playerPos = player.getLerpedPos(tickDelta);
                 Vector3f saberPos = entry.getPositionMatrix().getTranslation(new Vector3f());
-                Quaternionf saberRot = entry.getNormalMatrix().getNormalizedRotation(new Quaternionf());
+                saberPos.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
+                Quaternionf saberRot = entry.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
 
                 if (rightHand) {
                     GameLogicHandler.updateRightSaber(saberPos, saberRot);
@@ -110,7 +115,6 @@ public abstract class VivecraftItemRenderingMixin {
                     GameLogicHandler.updateLeftSaber(saberPos, saberRot);
                 }
 
-                Vec3d playerPos = player.getLerpedPos(tickDelta);
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();

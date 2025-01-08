@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
+import com.beatcraft.logic.Hitbox;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.OverlayTexture;
@@ -15,6 +16,7 @@ import net.minecraft.util.Identifier;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
@@ -100,5 +102,29 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     @Override
     public float getCollisionDistance() {
         return 0.688f;
+    }
+
+    @Override
+    public Hitbox getGoodCutBounds() {
+        if (getData().getCutDirection() == CutDirection.DOT) {
+            // this may be wrong...
+            return new Hitbox(
+                new Vector3f(-0.4f, -0.4f, -0.25f),
+                new Vector3f(0.4f, 0.4f, 0.75f)
+            );
+        } else {
+            return new Hitbox(
+                new Vector3f(-0.4f, -0.25f, -0.25f),
+                new Vector3f(0.4f, 0.25f, 0.75f)
+            );
+        }
+    }
+
+    @Override
+    public Hitbox getBadCutBounds() {
+        return new Hitbox(
+            new Vector3f(-0.175f, -0.175f, -0.175f),
+            new Vector3f(0.175f, 0.175f, 0.175f)
+        );
     }
 }
