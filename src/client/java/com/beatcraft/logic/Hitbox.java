@@ -2,15 +2,7 @@ package com.beatcraft.logic;
 
 import org.joml.Vector3f;
 
-public class Hitbox {
-
-    private Vector3f min;
-    private Vector3f max;
-
-    public Hitbox(Vector3f min, Vector3f max) {
-        this.min = min;
-        this.max = max;
-    }
+public record Hitbox(Vector3f min, Vector3f max) {
 
     public boolean checkCollision(Vector3f pointA, Vector3f pointB) {
         Vector3f direction = new Vector3f(pointB).sub(pointA);

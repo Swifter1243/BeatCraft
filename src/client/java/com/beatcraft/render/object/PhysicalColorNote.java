@@ -109,13 +109,13 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
         if (getData().getCutDirection() == CutDirection.DOT) {
             // this may be wrong...
             return new Hitbox(
-                new Vector3f(-0.4f, -0.4f, -0.25f),
-                new Vector3f(0.4f, 0.4f, 0.75f)
+                new Vector3f(-0.4f, -0.4f, -0.75f),
+                new Vector3f(0.4f, 0.4f, 0.25f)
             );
         } else {
             return new Hitbox(
-                new Vector3f(-0.4f, -0.25f, -0.25f),
-                new Vector3f(0.4f, 0.25f, 0.75f)
+                new Vector3f(-0.4f, -0.25f, -0.75f),
+                new Vector3f(0.4f, 0.25f, 0.25f)
             );
         }
     }

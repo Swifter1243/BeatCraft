@@ -30,6 +30,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private AnimationState animationState = new AnimationState();
     protected T data;
     protected boolean despawned = false;
+    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.NO_HIT;
 
     public PhysicalGameplayObject(T data) {
         this.data = data;
@@ -311,8 +312,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
 
         worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos)
-            .add(mc.gameRenderer.getCamera().getPos().toVector3f())
-            .sub(0, 1, 0);
+            .add(mc.gameRenderer.getCamera().getPos().toVector3f());
         worldRot = matrices.peek().getPositionMatrix().getNormalizedRotation(worldRot);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
@@ -360,6 +360,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void cutNote() {
         this.despawn();
+    }
+
+    public GameLogicHandler.CutResult getCutResult() {
+        return cutResult;
+    }
+
+    public void setCutResult(GameLogicHandler.CutResult cutResult) {
+        this.cutResult = cutResult;
     }
 
 }
