@@ -8,7 +8,6 @@ import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.render.effect.SaberTrailRenderer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
@@ -41,19 +40,6 @@ public abstract class VivecraftItemRenderingMixin {
     private static void saberTrailRenderInject(MatrixStack matrix, VivecraftItemRendering.VivecraftItemTransformType renderType, boolean mainHand, AbstractClientPlayerEntity player, float equippedProgress, float tickDelta, ItemStack stack, Hand hand, CallbackInfo ci) {
         renderTrailCommon(true, matrix, mainHand, player, tickDelta, stack, ci);
     }
-
-    @Inject(
-        method = "applyThirdPersonItemTransforms",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/util/math/MatrixStack;translate(DDD)V"
-        ),
-        cancellable = true
-    )
-    private static void saberTrailRenderInjectThirdPerson(MatrixStack matrix, VivecraftItemRendering.VivecraftItemTransformType renderType, boolean mainHand, AbstractClientPlayerEntity player, float equippedProgress, float tickDelta, ItemStack stack, Hand hand, CallbackInfo ci) {
-        renderTrailCommon((MinecraftClient.getInstance().player != player), matrix, mainHand, player, tickDelta, stack, ci);
-    }
-
 
     @Unique
     private static void renderTrailCommon(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack, CallbackInfo ci) {

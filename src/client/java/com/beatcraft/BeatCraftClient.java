@@ -148,7 +148,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         context.getSource().sendFeedback(Text.literal(
                 String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
                         r, g, b,
                         fr, fg, fb,
                         hex, hexStr
@@ -177,7 +177,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         context.getSource().sendFeedback(Text.literal(
                 String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
                         r, g, b,
                         fr, fg, fb,
                         hex, hexStr
@@ -204,7 +204,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
             context.getSource().sendFeedback(Text.literal(
                     String.format(
-                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\nhex int: %s\nhex code: %s",
+                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
                             r, g, b,
                             fr, fg, fb,
                             hex, hexStr
@@ -270,9 +270,9 @@ public class BeatCraftClient implements ClientModInitializer {
                             )
                     )
                     .then(literal("floatRGB")
-                            .then(argument("R", IntegerArgumentType.integer(0, 255))
-                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
-                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                            .then(argument("R", FloatArgumentType.floatArg(0, 1))
+                                    .then(argument("G", FloatArgumentType.floatArg(0, 1))
+                                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
                                                     .executes(this::colorFromFloats)
                                             )
                                     )

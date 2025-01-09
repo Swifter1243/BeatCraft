@@ -4,6 +4,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
@@ -12,6 +13,7 @@ import com.beatcraft.render.WorldRenderer;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
 
@@ -31,6 +33,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected T data;
     protected boolean despawned = false;
     private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.NO_HIT;
+    private NoteType contactColor = null;
 
     public PhysicalGameplayObject(T data) {
         this.data = data;
@@ -368,6 +371,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void setCutResult(GameLogicHandler.CutResult cutResult) {
         this.cutResult = cutResult;
+    }
+
+    @Nullable
+    public NoteType getContactColor() {
+        return this.contactColor;
+    }
+
+    public void setContactColor(NoteType color) {
+        contactColor = color;
     }
 
 }

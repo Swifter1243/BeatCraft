@@ -35,3 +35,26 @@ If you'd like to try out what I have at any point, clone the repo and run the pr
 # WHY DON'T YOU MAKE IT FOR FORGE TOO? ARE YOU A LITTLE *BITCH*?
 
 ion wanna
+
+# How do I actually *play?*
+
+go to `X: 0, Y: 0, Z: 0`. Face towards `positive Z`  
+
+get blue saber:
+`/give @s beatcraft:saber[beatcraft:saber_color=2122920]`  
+and red saber:
+`/give @s beatcraft:saber[beatcraft:saber_color=12595248]`  
+
+The `/song` command:  
+
+`/song load <PATH>` loads a beatmap difficulty (V2 or V3)  
+example: `/song load "C:/full/path/to/beatmap/folder/ExpertStandard.dat"`  
+
+`/song play [beat]`  
+`/song pause`  
+`/song speed reset|<fraction greater than 0>`  
+`/song unload`  
+
+for custom sabers:
+`/give @s beatcraft:saber[beatcraft:saber_color=<PACKED_COLOR>]`  
+currently, you can use `/color_helper` to convert from rgb, normalized rgb, or hex, to a packed color int  

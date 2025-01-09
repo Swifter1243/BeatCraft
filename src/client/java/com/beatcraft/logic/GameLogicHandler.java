@@ -34,7 +34,6 @@ wall dimensions and positioning
  */
 
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
@@ -43,9 +42,7 @@ import com.beatcraft.render.object.PhysicalGameplayObject;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -134,8 +131,9 @@ public class GameLogicHandler {
         PhysicalGameplayObject<T> note,
         Quaternionf saberRotation, Quaternionf previousSaberRotation,
         Vector3f saberPos, Vector3f previousSaberPos,
-        NoteType correctNote
+        NoteType saberColor
     ) {
+        if (note.getContactColor() == saberColor.opposite()) return;
         Vector3f notePos = note.getWorldPos();
 
         Quaternionf inverted = new Quaternionf();
@@ -165,8 +163,8 @@ public class GameLogicHandler {
 
             Hitbox badCutHitbox = note.getBadCutBounds();
             if (note instanceof PhysicalColorNote colorNote) {
-                if (colorNote.getData().getNoteType() == correctNote) {
-
+                if (colorNote.getData().getNoteType() == saberColor) {
+                    colorNote.setContactColor(saberColor);
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
                         //BeatCraft.LOGGER.info("SLICE DIRECTION: {}", angle);
@@ -206,6 +204,7 @@ public class GameLogicHandler {
 
                 } else {
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
+                        note.setContactColor(saberColor.opposite());
                         // bad cut
                         //BeatCraft.LOGGER.info("wrong color; bad cut");
                         //MinecraftClient.getInstance().player.sendMessage(Text.literal("wrong color; bad cut"));

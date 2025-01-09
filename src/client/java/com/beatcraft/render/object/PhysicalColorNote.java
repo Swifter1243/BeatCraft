@@ -25,6 +25,21 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     private static final int overlay = OverlayTexture.getUv(0, false);
     private float baseDegrees;
 
+    private static final Hitbox NORMAL_GOOD_CUT_BOUNDS = new Hitbox(
+                new Vector3f(-0.4f, -0.25f, -0.75f),
+                new Vector3f(0.4f, 0.25f, 0.25f)
+            );
+
+    private static final Hitbox DOT_GOOD_CUT_BOUNDS = new Hitbox(
+                new Vector3f(-0.4f, -0.4f, -0.75f),
+                new Vector3f(0.4f, 0.4f, 0.25f)
+            );
+
+    private static final Hitbox BAD_CUT_BOUNDS = new Hitbox(
+        new Vector3f(-0.175f, -0.175f, -0.175f),
+        new Vector3f(0.175f, 0.175f, 0.175f)
+    );
+
     public PhysicalColorNote(ColorNote data) {
         super(data);
 
@@ -107,24 +122,15 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     @Override
     public Hitbox getGoodCutBounds() {
         if (getData().getCutDirection() == CutDirection.DOT) {
-            // this may be wrong...
-            return new Hitbox(
-                new Vector3f(-0.4f, -0.4f, -0.75f),
-                new Vector3f(0.4f, 0.4f, 0.25f)
-            );
+            // this hitbox may just need to be the normal one
+            return DOT_GOOD_CUT_BOUNDS;
         } else {
-            return new Hitbox(
-                new Vector3f(-0.4f, -0.25f, -0.75f),
-                new Vector3f(0.4f, 0.25f, 0.25f)
-            );
+            return NORMAL_GOOD_CUT_BOUNDS;
         }
     }
 
     @Override
     public Hitbox getBadCutBounds() {
-        return new Hitbox(
-            new Vector3f(-0.175f, -0.175f, -0.175f),
-            new Vector3f(0.175f, 0.175f, 0.175f)
-        );
+        return BAD_CUT_BOUNDS;
     }
 }
