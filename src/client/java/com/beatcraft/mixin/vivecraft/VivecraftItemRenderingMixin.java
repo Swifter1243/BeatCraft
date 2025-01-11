@@ -81,7 +81,7 @@ public abstract class VivecraftItemRenderingMixin {
                 matrix.pop();
 
                 matrix.push();
-                matrix.translate(0, (38 / 8f) * 0.6, 0);
+                matrix.translate(0, (41 / 8f) * 0.6, 0);
                 Vector3f blade_tip = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
                 matrix.pop();
 

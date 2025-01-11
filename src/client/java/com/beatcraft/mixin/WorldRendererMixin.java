@@ -2,6 +2,7 @@ package com.beatcraft.mixin;
 
 
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.effect.SaberTrailRenderer;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
@@ -29,6 +30,7 @@ public class WorldRendererMixin {
     )
     public void saberTrailRenderInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         SaberTrailRenderer.renderAll();
+        DebugRenderer.render();
     }
 
 }

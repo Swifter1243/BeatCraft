@@ -108,7 +108,7 @@ public class BeatmapPlayer {
 
         boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.isReady();
         if (shouldMapPlay) {
-            elapsedNanoTime += deltaNanoSeconds * playbackSpeed;
+            elapsedNanoTime += (long) (deltaNanoSeconds * playbackSpeed);
 
             if (currentBeatmap != null) {
                 currentBeatmap.update(getCurrentBeat());
@@ -121,6 +121,7 @@ public class BeatmapPlayer {
         // Render beatmap
         if (currentBeatmap != null) {
             currentBeatmap.render(matrices, camera);
+            GameLogicHandler.update((double) deltaNanoSeconds / 1_000_000_000d);
         }
     }
 

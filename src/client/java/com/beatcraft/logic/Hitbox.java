@@ -5,6 +5,11 @@ import org.joml.Vector3f;
 public record Hitbox(Vector3f min, Vector3f max) {
 
     public boolean checkCollision(Vector3f pointA, Vector3f pointB) {
+
+        if (isPointInHitbox(pointA) || isPointInHitbox(pointB)) {
+            return true;
+        }
+
         Vector3f direction = new Vector3f(pointB).sub(pointA);
         Vector3f inverted = new Vector3f(1 / direction.x, 1 / direction.y, 1 / direction.z);
 
@@ -22,5 +27,10 @@ public record Hitbox(Vector3f min, Vector3f max) {
 
     }
 
+    private boolean isPointInHitbox(Vector3f point) {
+        return min.x <= point.x && point.x <= max.x &&
+            min.y <= point.y && point.y <= max.y &&
+            min.z <= point.z && point.z <= max.z;
+    }
 
 }

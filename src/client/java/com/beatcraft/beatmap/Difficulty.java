@@ -13,11 +13,8 @@ import com.beatcraft.render.object.PhysicalGameplayObject;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;

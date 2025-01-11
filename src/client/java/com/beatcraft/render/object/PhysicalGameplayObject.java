@@ -73,6 +73,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void seek(float beat) {
         despawned = false;
+        cutResult = GameLogicHandler.CutResult.NO_HIT;
         update(beat);
     }
 
