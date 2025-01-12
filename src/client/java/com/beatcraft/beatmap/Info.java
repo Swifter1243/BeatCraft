@@ -48,10 +48,16 @@ public class Info {
 
         info.mapDirectory = Path.of(path).getParent().toString();
 
-        info.bpm = json.get("_beatsPerMinute").getAsFloat();
-        info.environmentName = json.get("_environmentName").getAsString();
-        info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
-
+        if (json.has("audio")) {
+            JsonObject audio = json.get("audio").getAsJsonObject();
+            info.bpm = audio.get("bpm").getAsFloat();
+            info.environmentName = json.get("environmentNames").getAsJsonArray().get(0).getAsString();
+            info.songFilename = info.attachPathToMapDirectory(audio.get("songFilename").getAsString());
+        } else {
+            info.bpm = json.get("_beatsPerMinute").getAsFloat();
+            info.environmentName = json.get("_environmentName").getAsString();
+            info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
+        }
         return info;
     }
 
@@ -63,8 +69,14 @@ public class Info {
         public static SetDifficulty from(JsonObject json, Info info) {
             SetDifficulty setDifficulty = new SetDifficulty();
 
-            setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
-            setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+            if (json.has("noteJumpMovementSpeed")) {
+                setDifficulty.njs = json.get("noteJumpMovementSpeed").getAsFloat();
+                setDifficulty.offset = json.get("noteJumpStartBeatOffset").getAsFloat();
+            }
+            else {
+                setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
+                setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+            }
             setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
 
             if (json.has("_customData")) {

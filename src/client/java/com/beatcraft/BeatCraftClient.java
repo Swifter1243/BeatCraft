@@ -22,7 +22,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 
 public class BeatCraftClient implements ClientModInitializer {
 
-    public static PlayerConfig playerConfig = new PlayerConfig();
+    public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
 
     @Override
     public void onInitializeClient() {

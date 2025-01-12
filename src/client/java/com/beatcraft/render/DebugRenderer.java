@@ -27,9 +27,9 @@ public class DebugRenderer {
     public static final ParticleEffect MAGENTA_DUST = new DustParticleEffect(new Vector3f(1, 0, 1), 0.5f);
 
 
-    public static boolean doDebugRendering = true;
+    public static boolean doDebugRendering = false;
     public static boolean debugSaberRendering = false;
-    public static boolean renderHitboxes = true;
+    public static boolean renderHitboxes = false;
 
     private static List<Vector3f[]> getCuboidEdges(Vector3f minPos, Vector3f maxPos) {
         List<Vector3f[]> edges = new ArrayList<>();

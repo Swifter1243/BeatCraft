@@ -175,8 +175,8 @@ public class GameLogicHandler {
         Quaternionf inverted = new Quaternionf();
         note.getWorldRot().invert(inverted);
 
-        Vector3f endpoint = new Matrix4f().rotate(saberRotation).translate(0, 1, 0).getTranslation(new Vector3f()).add(saberPos);
-        Vector3f oldEndpoint = new Matrix4f().rotate(previousSaberRotation).translate(0, 1, 0).getTranslation(new Vector3f()).add(previousSaberPos);
+        Vector3f endpoint = new Vector3f(0, 1, 0).rotate(saberRotation).add(saberPos);
+        Vector3f oldEndpoint = new Vector3f(0, 1, 0).rotate(previousSaberRotation).add(previousSaberPos);
 
         Vector3f local_hand = (new Vector3f(saberPos)).sub(notePos).rotate(inverted);
         endpoint.sub(notePos).rotate(inverted);

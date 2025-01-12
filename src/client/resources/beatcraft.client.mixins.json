@@ -6,6 +6,7 @@
     "BufferBuilderMixin",
     "CustomModelLoader",
     "ItemEntityRendererMixin",
+    "OptionsScreenMixin",
     "WorldRendererMixin"
   ],
   "injectors": {

@@ -5,6 +5,9 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 
@@ -69,6 +72,23 @@ public class ColorNote extends GameplayObject {
 
         return this;
     }
+
+    @Override
+    public ColorNote loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
+        super.loadV4(json, metaData, difficulty);
+
+        int i = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+        JsonObject noteData = metaData.get(i).getAsJsonObject();
+
+        angleOffset = JsonUtil.getOrDefault(noteData, "a", JsonElement::getAsInt, 0);
+        cutDirection = CutDirection.values()[JsonUtil.getOrDefault(noteData, "d", JsonElement::getAsInt, 0)];
+        noteType = NoteType.values()[JsonUtil.getOrDefault(noteData, "c", JsonElement::getAsInt, 0)];
+
+        applyColorScheme(difficulty.getSetDifficulty());
+
+        return this;
+    }
+
 
     public float getAngleOffset() {
         return angleOffset;

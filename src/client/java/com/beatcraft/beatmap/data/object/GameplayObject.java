@@ -7,6 +7,7 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.NoteMath;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
@@ -102,6 +103,24 @@ public abstract class GameplayObject extends BeatmapObject {
                 pathAnimation.loadV3(customData.get("animation").getAsJsonObject(), difficulty);
             }
         }
+
+        loadJumps(difficulty.getInfo());
+
+        return this;
+    }
+
+    public GameplayObject loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        int index = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+        JsonObject noteData = metaData.get(index).getAsJsonObject();
+        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsInt, 0);
+        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsInt, 0);
+
+        offset =  difficulty.getSetDifficulty().getOffset();
+        njs =  difficulty.getSetDifficulty().getNjs();
+
+        // TODO: read customData
 
         loadJumps(difficulty.getInfo());
 

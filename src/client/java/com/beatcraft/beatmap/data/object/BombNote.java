@@ -2,6 +2,7 @@ package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class BombNote extends GameplayObject {
@@ -33,6 +34,15 @@ public class BombNote extends GameplayObject {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
             }
         }
+
+        return this;
+    }
+
+    @Override
+    public BombNote loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
+        super.loadV4(json, metaData, difficulty);
+
+        // customData?
 
         return this;
     }
