@@ -47,7 +47,8 @@ public class BeatmapAudioPlayer {
     }
 
     public static void goToBeat(float beat) {
-        float time = MathUtil.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
+        //float time = MathUtil.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
+        float time = BeatmapPlayer.currentInfo.getTime(beat, 1f);
         beatmapAudio.seek(time);
     }
 

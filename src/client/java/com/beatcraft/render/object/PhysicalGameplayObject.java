@@ -99,7 +99,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public boolean hasAppeared() {
-        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        //float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        float margin = BeatmapPlayer.currentInfo.getBeat(JUMP_SECONDS, 1f);
         return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
     }
 

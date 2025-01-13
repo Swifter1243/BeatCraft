@@ -215,23 +215,23 @@ public class GameLogicHandler {
                         // check slice direction
                         if (colorNote.getData().getCutDirection() == CutDirection.DOT) {
                             colorNote.setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle())));
-                            MinecraftClient.getInstance().player.playSound(
-                                NoteBlockInstrument.PLING.getSound().value(),
-                                1, 1
-                            );
+                            //MinecraftClient.getInstance().player.playSound(
+                            //    NoteBlockInstrument.PLING.getSound().value(),
+                            //    1, 1
+                            //);
                         } else {
                             if (matchAngle(angle, colorNote.getData().getCutDirection())) {
                                 colorNote.setCutResult(CutResult.goodCut(2, 0));
-                                MinecraftClient.getInstance().player.playSound(
-                                    NoteBlockInstrument.PLING.getSound().value(),
-                                    1, 1
-                                );
+                                //MinecraftClient.getInstance().player.playSound(
+                                //    NoteBlockInstrument.PLING.getSound().value(),
+                                //    1, 1
+                                //);
                             } else {
                                 colorNote.setCutResult(CutResult.BAD_CUT);
-                                MinecraftClient.getInstance().player.playSound(
-                                    NoteBlockInstrument.SNARE.getSound().value(),
-                                    1, 1
-                                );
+                                //MinecraftClient.getInstance().player.playSound(
+                                //    NoteBlockInstrument.SNARE.getSound().value(),
+                                //    1, 1
+                                //);
                             }
                         }
 
@@ -239,10 +239,10 @@ public class GameLogicHandler {
 
                     } else {
                         // good cut
-                        MinecraftClient.getInstance().player.playSound(
-                            NoteBlockInstrument.CHIME.getSound().value(),
-                            1, 1
-                        );
+                        //MinecraftClient.getInstance().player.playSound(
+                        //    NoteBlockInstrument.CHIME.getSound().value(),
+                        //    1, 1
+                        //);
                         // can't trigger a cut yet because saber needs a chance to potentially hit the bad-cut hitbox
                         note.setCutResult(CutResult.HIT);
                     }
@@ -253,20 +253,20 @@ public class GameLogicHandler {
                         // bad cut
                         note.setCutResult(CutResult.BAD_CUT);
                         note.cutNote();
-                        MinecraftClient.getInstance().player.playSound(
-                            NoteBlockInstrument.SNARE.getSound().value(),
-                            1, 1
-                        );
+                        //MinecraftClient.getInstance().player.playSound(
+                        //    NoteBlockInstrument.SNARE.getSound().value(),
+                        //    1, 1
+                        //);
                     }
                     // no hit
                 }
             } else {
                 if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                     // bad cut
-                     MinecraftClient.getInstance().player.playSound(
-                        NoteBlockInstrument.SNARE.getSound().value(),
-                        1, 1
-                    );
+                    // MinecraftClient.getInstance().player.playSound(
+                    //    NoteBlockInstrument.SNARE.getSound().value(),
+                    //    1, 1
+                    //);
                     note.cutNote();
                 }
             }

@@ -99,6 +99,18 @@
     "face=west,rotation=down": {
       "model": "beatcraft:block/end_light_panel",
       "x": 90, "y": 90
-    }
+    },
+    "face=south,rotation=north": {"model": "beatcraft:block/end_light_panel"},
+    "face=down,rotation=up": {"model": "beatcraft:block/end_light_panel"},
+    "face=east,rotation=east": {"model": "beatcraft:block/end_light_panel"},
+    "face=south,rotation=south": {"model": "beatcraft:block/end_light_panel"},
+    "face=west,rotation=west": {"model": "beatcraft:block/end_light_panel"},
+    "face=west,rotation=east": {"model": "beatcraft:block/end_light_panel"},
+    "face=up,rotation=up": {"model": "beatcraft:block/end_light_panel"},
+    "face=down,rotation=down": {"model": "beatcraft:block/end_light_panel"},
+    "face=up,rotation=down": {"model": "beatcraft:block/end_light_panel"},
+    "face=north,rotation=south": {"model": "beatcraft:block/end_light_panel"},
+    "face=north,rotation=north": {"model": "beatcraft:block/end_light_panel"},
+    "face=east,rotation=west": {"model": "beatcraft:block/end_light_panel"}
   }
 }

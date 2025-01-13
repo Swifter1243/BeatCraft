@@ -5,6 +5,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.screen.SettingsScreen;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -12,8 +13,13 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 
@@ -24,12 +30,23 @@ public class BeatCraftClient implements ClientModInitializer {
 
     public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
 
+    public static final KeyBinding keyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
+
     @Override
     public void onInitializeClient() {
         registerCommands();
 
         BlockRenderSettings.init();
         GeckolibRenderInit.init();
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (keyBind.wasPressed()) {
+                var screen = new SettingsScreen(null);
+                client.setScreen(screen);
+                while (keyBind.wasPressed());
+            }
+        });
+
     }
 
     private int songPlay(CommandContext<FabricClientCommandSource> context) {

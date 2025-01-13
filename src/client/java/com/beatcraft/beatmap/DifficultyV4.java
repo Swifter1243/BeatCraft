@@ -15,6 +15,7 @@ public class DifficultyV4 extends Difficulty {
     DifficultyV4 load(JsonObject json) {
         loadNotes(json);
         loadBombs(json);
+        loadObstacles(json);
         loadChains(json);
         loadArcs(json);
         //loadBasicEvents(json);
@@ -53,6 +54,17 @@ public class DifficultyV4 extends Difficulty {
 
     }
 
+    void loadObstacles(JsonObject json) {
+        JsonArray obstacleMetaData = json.getAsJsonArray("obstaclesData");
+
+        JsonArray obstacles = json.getAsJsonArray("obstacles");
+
+        obstacles.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+
+        });
+    }
+
     void loadChains(JsonObject json) {
         JsonArray noteMetaData = json.getAsJsonArray("colorNotesData");
         JsonArray chainMetaData = json.getAsJsonArray("chainsData");
@@ -67,7 +79,15 @@ public class DifficultyV4 extends Difficulty {
     }
 
     void loadArcs(JsonObject json) {
+        JsonArray arcMetaData = json.getAsJsonArray("arcsData");
+        JsonArray noteMetaData = json.getAsJsonArray("colorNotesData");
 
+        JsonArray arcs = json.getAsJsonArray("arcs");
+
+        arcs.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+
+        });
     }
 
     //void loadBasicEvents(JsonObject json) {

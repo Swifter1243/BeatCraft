@@ -29,7 +29,8 @@ public class BeatmapPlayer {
 
     public static float getCurrentBeat() {
         if (currentInfo == null) return 0;
-        return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+        //return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+        return currentInfo.getBeat(getCurrentSeconds(), 1f);
     }
 
     public static float getCurrentSeconds() {
@@ -43,7 +44,8 @@ public class BeatmapPlayer {
     private static void setCurrentBeat(float beat) {
         if (currentInfo == null) return;
         currentBeatmap.seek(beat);
-        float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());
+        //float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());
+        float seconds = currentInfo.getTime(beat, 0);
         elapsedNanoTime = secondsToNano(seconds);
     }
 

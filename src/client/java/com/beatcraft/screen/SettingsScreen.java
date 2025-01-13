@@ -1,15 +1,12 @@
 package com.beatcraft.screen;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.render.DebugRenderer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.client.gui.widget.TextWidget;
-import net.minecraft.client.option.GameOptions;
 import net.minecraft.text.Text;
 
 /*
@@ -47,12 +44,10 @@ public class SettingsScreen extends Screen {
 
     private int page = 0;
     private final Screen parent;
-    private GameOptions options;
 
     public SettingsScreen(Screen parent) {
         super(Text.translatable("screen.beatcraft.settings"));
         this.parent = parent;
-        options = new GameOptions(MinecraftClient.getInstance(), BeatCraftClient.playerConfig.configFolder);
     }
 
 
@@ -275,7 +270,6 @@ public class SettingsScreen extends Screen {
         button.setMessage(Text.translatable("setting.beatcraft.quality.burn_mark_trails", marks ? "OFF" : "ON"));
 
     }
-
 
     public void toggleDebugRendering(ButtonWidget button) {
         DebugRenderer.doDebugRendering = !DebugRenderer.doDebugRendering;
