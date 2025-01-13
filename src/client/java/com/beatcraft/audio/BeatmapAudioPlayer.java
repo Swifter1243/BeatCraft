@@ -1,6 +1,5 @@
 package com.beatcraft.audio;
 
-import com.beatcraft.utils.MathUtil;
 import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 

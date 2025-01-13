@@ -11,8 +11,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.function.Consumer;
 
-// Some changes to models/item/saber.json are needed to get 1st person rendering to look correct.
-// Scale will need fine-tuning and the length of the saber is likely incorrect.
 public class SaberItem extends Item implements GeoItem {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);

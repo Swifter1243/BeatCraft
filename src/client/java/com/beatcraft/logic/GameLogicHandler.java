@@ -42,7 +42,6 @@ import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.beatcraft.render.object.PhysicalGameplayObject;
 import com.beatcraft.utils.MathUtil;
-import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.client.MinecraftClient;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;

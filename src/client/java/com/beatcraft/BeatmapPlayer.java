@@ -5,13 +5,9 @@ import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.logic.GameLogicHandler;
-import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
 
 import java.io.IOException;
 import java.nio.file.Path;

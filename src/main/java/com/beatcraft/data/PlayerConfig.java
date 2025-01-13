@@ -2,31 +2,15 @@ package com.beatcraft.data;
 
 
 import com.beatcraft.BeatCraft;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-/* Settings that are a good idea to have implemented:
-audio.volume=1
-audio.ambient_volume_scale=0.8
-audio.latency=0
-audio.override_latency=0
-
-quality.smoke_graphics=true
-quality.burn_mark_trails=true
-quality.max_cut_sounds=24
-
-controller.selectedProfile.index=0
-
-*/
 public class PlayerConfig {
 
     public final File configFile = new File("./config/beatcraft/config.json");

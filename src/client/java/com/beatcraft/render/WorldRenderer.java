@@ -4,7 +4,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
 
 public abstract class WorldRenderer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
