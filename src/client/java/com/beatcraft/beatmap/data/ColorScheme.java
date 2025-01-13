@@ -37,6 +37,25 @@ public class ColorScheme {
             case "BillieEnvironment" -> getBillieEnvironment();
             case "HalloweenEnvironment" -> getHalloweenEnvironment();
             case "GagaEnvironment" -> getGagaEnvironment();
+            case "WeaveEnvironment" -> getWeaveEnvironment();
+            case "PyroEnvironment" -> getPyroEnvironment();
+            case "EDMEnvironment" -> getEdmEnvironment();
+            case "TheSecondEnvironment" -> getTheSecondEnvironment();
+            case "LizzoEnvironment" -> getLizzoEnvironment();
+            case "TheWeekndEnvironment" -> getTheWeekndEnvironment();
+            case "RockMixtapeEnvironment" -> getRockMixtapeEnvironment();
+            case "Dragons2Environment" -> getDragons2Environment();
+            case "Panic2Environment" -> getPanic2Environment();
+            case "QueenEnvironment" -> getQueenEnvironment();
+            case "LinkinPark2Environment" -> getLinkinPark2Environment();
+            case "TheRollingStonesEnvironment" -> getTheRollingStonesEnvironment();
+            case "LatticeEnvironment" -> getLatticeEnvironment();
+            case "DaftPunkEnvironment" -> getDaftPunkEnvironment();
+            case "HipHopEnvironment" -> getHipHopEnvironment();
+            case "ColliderEnvironment" -> getColliderEnvironment();
+            case "BritneyEnvironment" -> getBritneyEnvironment();
+            case "Monstercat2Environment" -> getMonstercat2Environment();
+            case "MetallicaEnvironment" -> getMetallicaEnvironment();
             default -> new ColorScheme();
         };
     }
@@ -277,6 +296,226 @@ public class ColorScheme {
         return colorScheme;
     }
 
+    public static ColorScheme getWeaveEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xc81414, 0x288ed2,
+            0xd91616, 0x30acff,
+            0xff3030,
+            0xd216d9, 0xa1a1a1
+        );
+        return cs;
+    }
+
+    public static ColorScheme getPyroEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0x93000a, 0xffab00,
+            0xff1c34, 0xe2bc43,
+            0xd9b36d,
+            0xff002d, 0xc3c3c3
+        );
+        return cs;
+    }
+
+    public static ColorScheme getEdmEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xa1a1a1, 0x2db2e0,
+            0x15b700, 0x005eb7,
+            0x2db2e0,
+            0xbc002d, 0x6d00c0
+        );
+        return cs;
+    }
+
+    public static ColorScheme getTheSecondEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xc81414, 0x288ed2,
+            0xd91616, 0x30acff,
+            0xff3030,
+            0xd216d9, 0x00ffa5
+        );
+        return cs;
+    }
+
+    public static ColorScheme getLizzoEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xffcf60, 0xab41e5,
+            0xd6a537, 0xd13de0,
+            0xff8030,
+            0xff668d, 0x5ecbff
+        );
+        return cs;
+    }
+
+    public static ColorScheme getTheWeekndEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0x952121, 0x394a54,
+            0xff4c24, 0x2b60b4,
+            0xea4c02,
+            0xf49a1f, 0x86d3fd
+        );
+        cs.setEnvironmentWhiteColor(new Color(0xe0e0e0));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xfaeddc));
+        return cs;
+    }
+
+    public static ColorScheme getRockMixtapeEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0x996c0b, 0x99bec7,
+            0xbf1f29, 0xf29429,
+            0xffffff,
+            0xf522ea, 0x60cfe6
+        );
+        return cs;
+    }
+
+    public static ColorScheme getDragons2Environment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xb9a848, 0x40c367,
+            0x05fe11, 0x000eff,
+            0x8d3fff,
+            0xf90805, 0xffd33a
+        );
+        return cs;
+    }
+
+    public static ColorScheme getPanic2Environment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xe65591, 0x278e7c,
+            0xb21d5f, 0x309e9f,
+            0xf76146,
+            0xe67211, 0xa270db
+        );
+        cs.setEnvironmentWhiteColor(new Color(0xd4e6ec));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xe0d4ec));
+        return cs;
+    }
+
+    public static ColorScheme getQueenEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0x94918e, 0x8622ad,
+            0xeea31f, 0x0bb7e5,
+            0xeea31f,
+            0xc42513, 0x6602b9
+        );
+        return cs;
+    }
+
+    public static ColorScheme getLinkinPark2Environment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xa92a2b, 0x63848e,
+            0xa92a2c, 0x9fb0b5,
+            0xa92a2c,
+            0xeb9841, 0x48759f
+        );
+        cs.setEnvironmentWhiteColor(new Color(0xc0ac97));
+        return cs;
+    }
+
+    public static ColorScheme getTheRollingStonesEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xe5001d, 0x8622ad,
+            0xf30367, 0x7a67ff,
+            0xf30367,
+            0x907600, 0x01a3ab
+        );
+        return cs;
+    }
+
+    public static ColorScheme getLatticeEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xd62c8b, 0x00abfa,
+            0xe429bf, 0x3295cb,
+            0x77b5ff,
+            0x8b22d0, 0x67eaea
+        );
+        return cs;
+    }
+
+    public static ColorScheme getDaftPunkEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xb83a2e, 0x1fb2b0,
+            0xffb340, 0x8554d1,
+            0x9b00ff,
+            0xdb007a, 0x00d1cd
+        );
+        cs.setEnvironmentWhiteColor(new Color(0x7acfff));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xffd57c));
+        return cs;
+    }
+
+    public static ColorScheme getHipHopEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xff9550, 0x049c96,
+            0xe97e00, 0x0fcd2f,
+            0xff508d,
+            0x24fff7, 0x3a46ff
+        );
+        cs.setEnvironmentWhiteColor(new Color(0xccc1b4));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xe0e0e0));
+        return cs;
+    }
+
+    public static ColorScheme getColliderEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xf67e26, 0x2b99db,
+            0xf66800, 0x2b64db,
+            0xd61900,
+            0xe50906, 0xda69f8
+        );
+        return cs;
+    }
+
+    public static ColorScheme getBritneyEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xe92499, 0x3f94ff,
+            0xfd03fc, 0x3181e7,
+            0xd61900,
+            0xff7582, 0x7bedcb
+        );
+        return cs;
+    }
+
+    public static ColorScheme getMonstercat2Environment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0xdf5885, 0x634d9c,
+            0x9e0dd3, 0x56b61c,
+            0x3b26a3,
+            0xb61c1c, 0x168ca5
+        );
+        return cs;
+    }
+
+    public static ColorScheme getMetallicaEnvironment() {
+        ColorScheme cs = new ColorScheme();
+        cs.setColors(
+            0x485567, 0x93b7d2,
+            0xdd7e61, 0x4174dd,
+            0xd61900,
+            0xdb6419, 0x00bfa1
+        );
+        cs.setEnvironmentWhiteColor(new Color(0x839bad));
+        cs.setEnvironmentWhiteColorBoost(new Color(0x839bad));
+        return cs;
+    }
+
     public Color getNoteLeftColor() {
         return noteLeftColor;
     }
@@ -348,4 +587,20 @@ public class ColorScheme {
     public void setEnvironmentWhiteColorBoost(Color environmentWhiteColorBoost) {
         this.environmentWhiteColorBoost = environmentWhiteColorBoost;
     }
+
+    public void setColors(
+        int leftNote, int rightNote,
+        int leftEnv, int rightEnv,
+        int obstacleColor,
+        int leftBoost, int rightBoost
+    ) {
+        this.setNoteLeftColor(new Color(leftNote));
+        this.setNoteRightColor(new Color(rightNote));
+        this.setEnvironmentLeftColor(new Color(leftEnv));
+        this.setEnvironmentRightColor(new Color(rightEnv));
+        this.setObstacleColor(new Color(obstacleColor));
+        this.setEnvironmentLeftColorBoost(new Color(leftBoost));
+        this.setEnvironmentRightColorBoost(new Color(rightBoost));
+    }
+
 }

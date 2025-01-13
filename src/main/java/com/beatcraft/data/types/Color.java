@@ -14,6 +14,18 @@ public class Color {
         this.setBlue(blue);
     }
 
+    public Color(int hex) {
+        int r = (hex >> 16) & 0xFF;
+        int g = (hex >> 8) & 0xFF;
+        int b = hex & 0xFF;
+        float fr = r / 255.0f;
+        float fg = g / 255.0f;
+        float fb = b / 255.0f;
+        this.setRed(fr);
+        this.setGreen(fg);
+        this.setBlue(fb);
+    }
+
     public Color() {}
 
     public static Color fromJsonObject(JsonObject json) {
