@@ -40,11 +40,17 @@ ion wanna
 
 go to `X: 0, Y: 0, Z: 0`. Face towards `positive Z`  
 
+---
 get blue saber:
-`/give @s beatcraft:saber[beatcraft:saber_color=2122920]`  
+`/give @s beatcraft:saber[beatcraft:saber_color=2122920,beatcraft:sync_color=1]`  
 and red saber:
-`/give @s beatcraft:saber[beatcraft:saber_color=12595248]`  
+`/give @s beatcraft:saber[beatcraft:saber_color=12595248,beatcraft:sync_color=0]`  
 
+These sabers will default to the original red/blue of beat saber, but will also
+automatically switch to the appropriate colors for whatever beatmap is currently
+playing.  
+
+---
 The `/song` command:  
 
 `/song load <PATH>` loads a beatmap difficulty (V2 or V3)  
