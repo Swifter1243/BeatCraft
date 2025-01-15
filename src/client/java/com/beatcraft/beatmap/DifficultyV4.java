@@ -1,11 +1,22 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.BombNote;
+import com.beatcraft.beatmap.data.object.ChainNoteHead;
+import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.render.object.PhysicalBombNote;
+import com.beatcraft.render.object.PhysicalChainNoteHead;
+import com.beatcraft.render.object.PhysicalChainNoteLink;
 import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.util.Pair;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DifficultyV4 extends Difficulty {
     public DifficultyV4(Info info, Info.SetDifficulty setDifficulty) {
@@ -13,10 +24,10 @@ public class DifficultyV4 extends Difficulty {
     }
 
     DifficultyV4 load(JsonObject json) {
+        loadChains(json);
         loadNotes(json);
         loadBombs(json);
         loadObstacles(json);
-        loadChains(json);
         loadArcs(json);
         //loadBasicEvents(json);
         //loadRotationEvents(json);
@@ -36,7 +47,20 @@ public class DifficultyV4 extends Difficulty {
         noteData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
             ColorNote note = new ColorNote().loadV4(obj, noteMetaData, this);
-            colorNotes.add(new PhysicalColorNote(note));
+            AtomicBoolean canAdd = new AtomicBoolean(true);
+            chainHeadNotes.forEach(c -> {
+                if (
+                    note.getBeat() == c.getData().getBeat() &&
+                    note.getX() == c.getData().getX() &&
+                    note.getY() == c.getData().getY()
+                ) {
+                    canAdd.set(false);
+                }
+            });
+
+            if (canAdd.get()) {
+                colorNotes.add(new PhysicalColorNote(note));
+            }
         });
 
     }
@@ -73,7 +97,11 @@ public class DifficultyV4 extends Difficulty {
 
         chainData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-
+            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV4(obj, noteMetaData, chainMetaData, this);
+            chainHeadNotes.add(new PhysicalChainNoteHead(chain.getLeft()));
+            chain.getRight().forEach(c -> {
+                chainLinkNotes.add(new PhysicalChainNoteLink(c));
+            });
         });
 
     }

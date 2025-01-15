@@ -25,7 +25,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     private static final int overlay = OverlayTexture.getUv(0, false);
     private float baseDegrees;
 
-    private static final Hitbox NORMAL_GOOD_CUT_BOUNDS = new Hitbox(
+    public static final Hitbox NORMAL_GOOD_CUT_BOUNDS = new Hitbox(
                 new Vector3f(-0.4f, -0.25f, -0.75f),
                 new Vector3f(0.4f, 0.25f, 0.25f)
             );
@@ -35,7 +35,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
                 new Vector3f(0.4f, 0.4f, 0.25f)
             );
 
-    private static final Hitbox BAD_CUT_BOUNDS = new Hitbox(
+    public static final Hitbox BAD_CUT_BOUNDS = new Hitbox(
         new Vector3f(-0.175f, -0.175f, -0.175f),
         new Vector3f(0.175f, 0.175f, 0.175f)
     );

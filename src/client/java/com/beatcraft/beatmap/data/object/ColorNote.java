@@ -74,11 +74,11 @@ public class ColorNote extends GameplayObject {
     }
 
     @Override
-    public ColorNote loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
-        super.loadV4(json, metaData, difficulty);
+    public ColorNote loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV4(json, colorNoteData, difficulty);
 
         int i = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
-        JsonObject noteData = metaData.get(i).getAsJsonObject();
+        JsonObject noteData = colorNoteData.get(i).getAsJsonObject();
 
         angleOffset = JsonUtil.getOrDefault(noteData, "a", JsonElement::getAsInt, 0);
         cutDirection = CutDirection.values()[JsonUtil.getOrDefault(noteData, "d", JsonElement::getAsInt, 0)];

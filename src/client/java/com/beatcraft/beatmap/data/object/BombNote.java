@@ -39,8 +39,8 @@ public class BombNote extends GameplayObject {
     }
 
     @Override
-    public BombNote loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
-        super.loadV4(json, metaData, difficulty);
+    public BombNote loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV4(json, colorNoteData, difficulty);
 
         // customData?
 

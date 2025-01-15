@@ -1,6 +1,8 @@
 package com.beatcraft.mixin;
 
 import com.beatcraft.render.object.PhysicalBombNote;
+import com.beatcraft.render.object.PhysicalChainNoteHead;
+import com.beatcraft.render.object.PhysicalChainNoteLink;
 import com.beatcraft.render.object.PhysicalColorNote;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.render.model.BlockStatesLoader;
@@ -34,5 +36,8 @@ public abstract class CustomModelLoader {
         this.loadItemModel(PhysicalColorNote.noteArrowModelID);
         this.loadItemModel(PhysicalColorNote.colorNoteBlockModelID);
         this.loadItemModel(PhysicalBombNote.bombNoteArrowModelID);
+        this.loadItemModel(PhysicalChainNoteHead.chainHeadModelID);
+        this.loadItemModel(PhysicalChainNoteLink.chainLinkModelID);
+        this.loadItemModel(PhysicalChainNoteLink.chainDotModelID);
     }
 }

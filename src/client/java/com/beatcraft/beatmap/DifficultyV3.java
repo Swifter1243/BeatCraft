@@ -4,22 +4,35 @@ import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
 import com.beatcraft.beatmap.data.object.BombNote;
+import com.beatcraft.beatmap.data.object.ChainNoteHead;
+import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
 import com.beatcraft.render.object.PhysicalBombNote;
+import com.beatcraft.render.object.PhysicalChainNoteHead;
+import com.beatcraft.render.object.PhysicalChainNoteLink;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.util.Pair;
+import org.joml.Vector2f;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DifficultyV3 extends Difficulty {
+
     public DifficultyV3(Info info, Info.SetDifficulty setDifficulty) {
         super(info, setDifficulty);
     }
 
     DifficultyV3 load(JsonObject json) {
+        loadChains(json);
         loadNotes(json);
         loadBombs(json);
+        loadArcs(json);
         loadBasicEvents(json);
         loadRotationEvents(json);
         loadPointDefinitions(json);
@@ -42,7 +55,20 @@ public class DifficultyV3 extends Difficulty {
         rawColorNotes.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
             ColorNote note = new ColorNote().loadV3(obj, this);
-            colorNotes.add(new PhysicalColorNote(note));
+            AtomicBoolean canAdd = new AtomicBoolean(true);
+            chainHeadNotes.forEach(c -> {
+                if (
+                    note.getBeat() == c.getData().getBeat() &&
+                        note.getX() == c.getData().getX() &&
+                        note.getY() == c.getData().getY()
+                ) {
+                    canAdd.set(false);
+                }
+            });
+
+            if (canAdd.get()) {
+                colorNotes.add(new PhysicalColorNote(note));
+            }
         });
     }
 
@@ -62,6 +88,24 @@ public class DifficultyV3 extends Difficulty {
             BombNote note = new BombNote().loadV3(obj, this);
             bombNotes.add(new PhysicalBombNote(note));
         });
+    }
+
+    void loadChains(JsonObject json) {
+        JsonArray rawChainsData = json.getAsJsonArray("burstSliders");
+
+        rawChainsData.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV3(obj, this);
+            chainHeadNotes.add(new PhysicalChainNoteHead(chain.getLeft()));
+            chain.getRight().forEach(c -> {
+                chainLinkNotes.add(new PhysicalChainNoteLink(c));
+            });
+        });
+
+    }
+
+    void loadArcs(JsonObject json) {
+
     }
 
     void loadBasicEvents(JsonObject json) {

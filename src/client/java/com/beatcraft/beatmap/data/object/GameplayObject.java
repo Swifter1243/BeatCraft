@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap.data.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.track.ObjectTrackContainer;
 import com.beatcraft.beatmap.Difficulty;
@@ -13,10 +14,10 @@ import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
 
 public abstract class GameplayObject extends BeatmapObject {
-    private float njs;
-    private float offset;
-    private float x;
-    private float y;
+    protected float njs;
+    protected float offset;
+    protected float x;
+    protected float y;
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
@@ -70,8 +71,8 @@ public abstract class GameplayObject extends BeatmapObject {
     public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
         super.loadV3(json, difficulty);
 
-        x = json.get("x").getAsInt();
-        y = json.get("y").getAsInt();
+        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsInt, 0);
+        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
         offset =  difficulty.getSetDifficulty().getOffset();
         njs =  difficulty.getSetDifficulty().getNjs();
 
@@ -109,13 +110,10 @@ public abstract class GameplayObject extends BeatmapObject {
         return this;
     }
 
-    public GameplayObject loadV4(JsonObject json, JsonArray metaData, Difficulty difficulty) {
+    public GameplayObject loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
         super.loadV3(json, difficulty);
 
         int index = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
-        JsonObject noteData = metaData.get(index).getAsJsonObject();
-        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsInt, 0);
-        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsInt, 0);
 
         offset =  difficulty.getSetDifficulty().getOffset();
         njs =  difficulty.getSetDifficulty().getNjs();
@@ -124,10 +122,19 @@ public abstract class GameplayObject extends BeatmapObject {
 
         loadJumps(difficulty.getInfo());
 
+        if (index >= colorNoteData.size()) {
+            BeatCraft.LOGGER.info("index > size");
+            return this;
+        }
+
+        JsonObject noteData = colorNoteData.get(index).getAsJsonObject();
+        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsInt, 0);
+        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsInt, 0);
+
         return this;
     }
 
-    private void loadJumps(Info info) {
+    protected void loadJumps(Info info) {
         this.jumps = NoteMath.getJumps(njs, offset, info.getBpm());
     }
 
