@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ChainNoteHead extends GameplayObject {
+public class ChainNoteHead extends GameplayObject implements ScorableObject {
     private float angleOffset = 0;
     private CutDirection cutDirection;
     private NoteType noteType;
@@ -192,4 +192,13 @@ public class ChainNoteHead extends GameplayObject {
         return disableNoteGravity;
     }
 
+    @Override
+    public NoteType score$getNoteType() {
+        return getNoteType();
+    }
+
+    @Override
+    public CutDirection score$getCutDirection() {
+        return getCutDirection();
+    }
 }

@@ -9,7 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.joml.Vector3f;
 
-public class ChainNoteLink extends GameplayObject {
+public class ChainNoteLink extends GameplayObject implements ScorableObject {
     private float angleOffset = 0;
     private NoteType noteType;
     private Color color;
@@ -82,4 +82,13 @@ public class ChainNoteLink extends GameplayObject {
         return disableNoteGravity;
     }
 
+    @Override
+    public NoteType score$getNoteType() {
+        return getNoteType();
+    }
+
+    @Override
+    public CutDirection score$getCutDirection() {
+        return getCutDirection();
+    }
 }

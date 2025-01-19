@@ -102,6 +102,9 @@ public class Info {
             else {
                 setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
                 setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+                if (setDifficulty.njs == 0) { // This fixes some old maps such as OST 1 songs
+                    setDifficulty.njs = 16.0f;
+                }
             }
             setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
 

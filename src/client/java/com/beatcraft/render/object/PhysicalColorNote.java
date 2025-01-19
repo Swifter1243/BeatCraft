@@ -2,8 +2,11 @@ package com.beatcraft.render.object;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
+import com.beatcraft.beatmap.data.object.ScorableObject;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
@@ -18,7 +21,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
+public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> implements PhysicalScorableObject {
     public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
     public static final ModelIdentifier noteArrowModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID,  "note_arrow"), "inventory");
     public static final ModelIdentifier noteDotModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID,  "note_dot"), "inventory");
@@ -132,5 +135,30 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> {
     @Override
     public Hitbox getBadCutBounds() {
         return BAD_CUT_BOUNDS;
+    }
+
+    @Override
+    public ColorNote getData() {
+        return super.getData();
+    }
+
+    @Override
+    public ScorableObject score$getData() {
+        return getData();
+    }
+
+    @Override
+    public void score$setContactColor(NoteType type) {
+        setContactColor(type);
+    }
+
+    @Override
+    public void score$setCutResult(GameLogicHandler.CutResult cut) {
+        setCutResult(cut);
+    }
+
+    @Override
+    public void score$cutNote() {
+        cutNote();
     }
 }

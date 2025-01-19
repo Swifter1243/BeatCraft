@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 
-public class ColorNote extends GameplayObject {
+public class ColorNote extends GameplayObject implements ScorableObject {
     private float angleOffset;
     private CutDirection cutDirection;
     private NoteType noteType;
@@ -112,5 +112,15 @@ public class ColorNote extends GameplayObject {
 
     public boolean isNoteGravityDisabled() {
         return disableNoteGravity;
+    }
+
+    @Override
+    public NoteType score$getNoteType() {
+        return getNoteType();
+    }
+
+    @Override
+    public CutDirection score$getCutDirection() {
+        return getCutDirection();
     }
 }

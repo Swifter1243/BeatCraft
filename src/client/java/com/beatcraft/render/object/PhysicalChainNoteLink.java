@@ -2,7 +2,10 @@ package com.beatcraft.render.object;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ChainNoteLink;
+import com.beatcraft.beatmap.data.object.ScorableObject;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.utils.NoteMath;
 import net.minecraft.client.render.OverlayTexture;
@@ -15,7 +18,7 @@ import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink> {
+public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink> implements PhysicalScorableObject {
 
     public static final ModelIdentifier chainLinkModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note_chain_link"), "inventory");
     public static final ModelIdentifier chainDotModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "chain_note_dot"), "inventory");
@@ -86,4 +89,23 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return BAD_CUT_BOUNDS;
     }
 
+    @Override
+    public ScorableObject score$getData() {
+        return getData();
+    }
+
+    @Override
+    public void score$setContactColor(NoteType type) {
+        setContactColor(type);
+    }
+
+    @Override
+    public void score$setCutResult(GameLogicHandler.CutResult cut) {
+        setCutResult(cut);
+    }
+
+    @Override
+    public void score$cutNote() {
+        cutNote();
+    }
 }

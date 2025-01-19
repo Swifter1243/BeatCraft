@@ -38,9 +38,12 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.object.PhysicalChainNoteHead;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.beatcraft.render.object.PhysicalGameplayObject;
+import com.beatcraft.render.object.PhysicalScorableObject;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import org.joml.Matrix4f;
@@ -207,26 +210,26 @@ public class GameLogicHandler {
         assert MinecraftClient.getInstance().player != null;
         if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
 
-            if (note instanceof PhysicalColorNote colorNote) {
-                if (colorNote.getData().getNoteType() == saberColor) {
-                    colorNote.setContactColor(saberColor);
+            if (note instanceof PhysicalScorableObject colorNote) {
+                if (colorNote.score$getData().score$getNoteType() == saberColor) {
+                    colorNote.score$setContactColor(saberColor);
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
-                        if (colorNote.getData().getCutDirection() == CutDirection.DOT) {
-                            colorNote.setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle())));
+                        if (colorNote.score$getData().score$getCutDirection() == CutDirection.DOT) {
+                            colorNote.score$setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle())));
                             //MinecraftClient.getInstance().player.playSound(
                             //    NoteBlockInstrument.PLING.getSound().value(),
                             //    1, 1
                             //);
                         } else {
-                            if (matchAngle(angle, colorNote.getData().getCutDirection())) {
-                                colorNote.setCutResult(CutResult.goodCut(2, 0));
+                            if (matchAngle(angle, colorNote.score$getData().score$getCutDirection())) {
+                                colorNote.score$setCutResult(CutResult.goodCut(2, 0));
                                 //MinecraftClient.getInstance().player.playSound(
                                 //    NoteBlockInstrument.PLING.getSound().value(),
                                 //    1, 1
                                 //);
                             } else {
-                                colorNote.setCutResult(CutResult.BAD_CUT);
+                                colorNote.score$setCutResult(CutResult.BAD_CUT);
                                 //MinecraftClient.getInstance().player.playSound(
                                 //    NoteBlockInstrument.SNARE.getSound().value(),
                                 //    1, 1
@@ -234,7 +237,7 @@ public class GameLogicHandler {
                             }
                         }
 
-                        colorNote.cutNote();
+                        colorNote.score$cutNote();
 
                     } else {
                         // good cut
