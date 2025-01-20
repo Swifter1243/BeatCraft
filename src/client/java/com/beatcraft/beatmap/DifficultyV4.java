@@ -1,14 +1,8 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.beatmap.data.object.BombNote;
-import com.beatcraft.beatmap.data.object.ChainNoteHead;
-import com.beatcraft.beatmap.data.object.ChainNoteLink;
-import com.beatcraft.beatmap.data.object.ColorNote;
-import com.beatcraft.render.object.PhysicalBombNote;
-import com.beatcraft.render.object.PhysicalChainNoteHead;
-import com.beatcraft.render.object.PhysicalChainNoteLink;
-import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.beatmap.data.object.*;
+import com.beatcraft.render.object.*;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -85,7 +79,8 @@ public class DifficultyV4 extends Difficulty {
 
         obstacles.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-
+            Obstacle obstacle = new Obstacle().loadV4(obj, obstacleMetaData, this);
+            this.obstacles.add(new PhysicalObstacle(obstacle));
         });
     }
 

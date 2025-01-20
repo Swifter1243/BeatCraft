@@ -66,18 +66,23 @@ public class DebugRenderer {
         );
     }
 
-    public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color) {
+    public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest) {
         renderCalls.add(() -> {
 
-            _renderHitbox(hitbox, position, orientation, color);
+            _renderHitbox(hitbox, position, orientation, color, doDepthTest);
 
             return null;
         });
+
     }
 
-    private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color) {
+    public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color) {
+        renderHitbox(hitbox, position, orientation, color, false);
+    }
 
-        var edges = getCuboidEdges(hitbox.min(), hitbox.max());
+    private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest) {
+
+        var edges = getCuboidEdges(hitbox.min, hitbox.max);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -101,15 +106,17 @@ public class DebugRenderer {
         if (buff == null) return;
 
         var oldShader = RenderSystem.getShader();
+
         RenderSystem.disableCull();
-        RenderSystem.depthMask(false);
+        RenderSystem.depthMask(doDepthTest);
+        if (doDepthTest) RenderSystem.enableDepthTest();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         var oldLineWidth = RenderSystem.getShaderLineWidth();
         RenderSystem.lineWidth(2);
 
         BufferRenderer.drawWithGlobalProgram(buff);
 
-
+        RenderSystem.disableDepthTest();
         RenderSystem.lineWidth(oldLineWidth);
         RenderSystem.setShader(() -> oldShader);
         RenderSystem.enableCull();

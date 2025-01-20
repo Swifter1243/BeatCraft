@@ -3,16 +3,10 @@ package com.beatcraft.beatmap;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
-import com.beatcraft.beatmap.data.object.BombNote;
-import com.beatcraft.beatmap.data.object.ChainNoteHead;
-import com.beatcraft.beatmap.data.object.ChainNoteLink;
-import com.beatcraft.beatmap.data.object.ColorNote;
+import com.beatcraft.beatmap.data.object.*;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
-import com.beatcraft.render.object.PhysicalBombNote;
-import com.beatcraft.render.object.PhysicalChainNoteHead;
-import com.beatcraft.render.object.PhysicalChainNoteLink;
-import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.render.object.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Pair;
@@ -33,6 +27,7 @@ public class DifficultyV3 extends Difficulty {
         loadNotes(json);
         loadBombs(json);
         loadArcs(json);
+        loadObstacles(json);
         loadBasicEvents(json);
         loadRotationEvents(json);
         loadPointDefinitions(json);
@@ -106,6 +101,16 @@ public class DifficultyV3 extends Difficulty {
 
     void loadArcs(JsonObject json) {
 
+    }
+
+    void loadObstacles(JsonObject json) {
+        JsonArray rawObstacles = json.getAsJsonArray("obstacles");
+
+        rawObstacles.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            Obstacle obstacle = new Obstacle().loadV2(obj, this);
+            obstacles.add(new PhysicalObstacle(obstacle));
+        });
     }
 
     void loadBasicEvents(JsonObject json) {

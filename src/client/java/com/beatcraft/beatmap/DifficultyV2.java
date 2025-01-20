@@ -7,8 +7,10 @@ import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.render.object.PhysicalObstacle;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
@@ -21,6 +23,7 @@ public class DifficultyV2 extends Difficulty {
 
     DifficultyV2 load(JsonObject json) {
         loadNotesAndBombs(json);
+        loadObstacles(json);
         loadEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
@@ -41,6 +44,16 @@ public class DifficultyV2 extends Difficulty {
                 ColorNote note = new ColorNote().loadV2(obj, this);
                 colorNotes.add(new PhysicalColorNote(note));
             }
+        });
+    }
+
+    void loadObstacles(JsonObject json) {
+        JsonArray rawObstacles = json.getAsJsonArray("_obstacles");
+
+        rawObstacles.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            Obstacle obstacle = new Obstacle().loadV2(obj, this);
+            obstacles.add(new PhysicalObstacle(obstacle));
         });
     }
 
