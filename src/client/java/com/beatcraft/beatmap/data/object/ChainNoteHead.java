@@ -1,12 +1,10 @@
 package com.beatcraft.beatmap.data.object;
 
-import com.beatcraft.BeatCraft;
-import com.beatcraft.BeatCraftClient;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.beatmap.data.CutDirection;
-import com.beatcraft.beatmap.data.HermiteSpline;
 import com.beatcraft.beatmap.data.NoteType;
+import com.beatcraft.data.types.BezierCurve;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
@@ -115,15 +113,12 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
         if (sliceCount == 0) return List.of();
 
         Vector3f headPos = new Vector3f(headPosition.x, headPosition.y, 0);
-        Vector3f tailPos = new Vector3f(tailPosition.x, tailPosition.y, 0);
+        Vector3f tailOffset = new Vector3f(tailPosition.x, tailPosition.y, 0).sub(headPos);
+        float magnitude = tailOffset.length();
+        float f = (NoteMath.degreesFromCut(headDirection) - 90f) * MathHelper.RADIANS_PER_DEGREE;
+        Vector3f control = new Vector3f(((float) Math.cos(f)) * 0.5f * magnitude, ((float) Math.sin(f)) * 0.5f * magnitude, 0);
 
-        float d = headPos.distance(tailPos);
-
-        Vector3f splineMagnitude = new Vector3f(0, -d, 0);
-        splineMagnitude.rotateZ(NoteMath.degreesFromCut(headDirection) * MathHelper.RADIANS_PER_DEGREE);
-
-
-        HermiteSpline spline = new HermiteSpline(headPos, tailPos, splineMagnitude);
+        BezierCurve spline = new BezierCurve(new Vector3f(0, 0, 0), control, tailOffset);
 
         float gap = squishFactor / (float) sliceCount;
 
@@ -133,7 +128,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
 
         for (int i = 1; i <= sliceCount; i++) {
 
-            Vector3f pos = spline.evaluate(gap * (float) i);
+            Vector3f pos = spline.evaluate(gap * (float) i).add(headPos);
             Vector3f tangent = spline.getTangent(gap * (float) i);
             float angleDegrees = MathUtil.getVectorAngleDegrees(new Vector2f(tangent.x, tangent.y)) - 90;
 
