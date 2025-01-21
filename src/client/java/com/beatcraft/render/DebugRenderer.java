@@ -1,12 +1,15 @@
 package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
+import com.beatcraft.data.types.ISplinePath;
 import com.beatcraft.logic.Hitbox;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -76,6 +79,58 @@ public class DebugRenderer {
 
     }
 
+    public static void renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
+        renderCalls.add(() -> {
+
+            _renderPath(path, offset, segments, color);
+
+            return null;
+        });
+    }
+
+    public static void _renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+
+        Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+
+        for (int i = 0; i < segments; i++) {
+            float f = ((float) i) / ((float) segments);
+            float f2 = ((float) (i + 1)) / ((float) segments);
+            Vector3f p = path.evaluate(f).add(offset).sub(cam);
+            Vector3f p2 = path.evaluate(f2).add(offset).sub(cam);
+
+            //renderParticle(p.add(cam, new Vector3f()), ParticleTypes.BUBBLE);
+
+            Vector3f normal = p2.sub(p, new Vector3f()).normalize();
+
+            buffer.vertex(p.x, p.y, p.z).color(color).normal(normal.x, normal.y, normal.z);
+            buffer.vertex(p2.x, p2.y, p2.z).color(color).normal(normal.x, normal.y, normal.z);
+
+        }
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
+
+        var oldShader = RenderSystem.getShader();
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        var oldLineWidth = RenderSystem.getShaderLineWidth();
+        RenderSystem.lineWidth(2);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.lineWidth(oldLineWidth);
+        RenderSystem.setShader(() -> oldShader);
+        RenderSystem.enableCull();
+        RenderSystem.disableDepthTest();
+
+    }
+
     public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color) {
         renderHitbox(hitbox, position, orientation, color, false);
     }
@@ -127,6 +182,8 @@ public class DebugRenderer {
 
 
     public static void render() {
+
+        //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
 
         for (Callable<Void> renderCall : renderCalls) {
             try {

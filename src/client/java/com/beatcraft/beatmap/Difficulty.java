@@ -30,6 +30,7 @@ public abstract class Difficulty {
     public final ArrayList<PhysicalChainNoteHead> chainHeadNotes = new ArrayList<>();
     public final ArrayList<PhysicalChainNoteLink> chainLinkNotes = new ArrayList<>();
     public final ArrayList<PhysicalObstacle> obstacles = new ArrayList<>();
+    public final ArrayList<PhysicalArc> arcs = new ArrayList<>();
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
     public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
@@ -60,6 +61,7 @@ public abstract class Difficulty {
         chainHeadNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         chainLinkNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         obstacles.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        arcs.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         rotationEvents.sort(this::compareObjects);
         animateTracks.sort(this::compareObjects);
         assignPathAnimations.sort(this::compareObjects);
@@ -72,6 +74,7 @@ public abstract class Difficulty {
         applyRotationOnArray(eventHandler, chainHeadNotes);
         applyRotationOnArray(eventHandler, chainLinkNotes);
         applyRotationOnArray(eventHandler, obstacles);
+        applyRotationOnArray(eventHandler, arcs);
     }
 
     private <T extends PhysicalGameplayObject<K>, K extends GameplayObject> void applyRotationOnArray(EventHandler<Float, RotationEvent> eventHandler, ArrayList<T> array) {
@@ -145,6 +148,7 @@ public abstract class Difficulty {
         chainHeadNotes.forEach(o -> o.render(matrices, camera));
         chainLinkNotes.forEach(o -> o.render(matrices, camera));
         obstacles.forEach(o -> o.render(matrices, camera));
+        arcs.forEach(o -> o.render(matrices, camera));
     }
 
     public void seek(float beat) {
@@ -155,6 +159,7 @@ public abstract class Difficulty {
         chainHeadNotes.forEach(o -> o.seek(beat));
         chainLinkNotes.forEach(o -> o.seek(beat));
         obstacles.forEach(o -> o.seek(beat));
+        arcs.forEach(o -> o.seek(beat));
     }
 
     public void update(float beat) {
@@ -165,6 +170,7 @@ public abstract class Difficulty {
         chainHeadNotes.forEach(o -> o.update(beat));
         chainLinkNotes.forEach(o -> o.update(beat));
         obstacles.forEach(o -> o.update(beat));
+        arcs.forEach(o -> o.update(beat));
     }
 
     public TrackLibrary getTrackLibrary() {

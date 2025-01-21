@@ -2,7 +2,7 @@ package com.beatcraft.data.types;
 
 import org.joml.Vector3f;
 
-public class BezierCurve {
+public class BezierCurve implements ISplinePath {
 
     private Vector3f p0;
     private Vector3f p1;

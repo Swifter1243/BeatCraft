@@ -66,4 +66,26 @@ public class MathUtil {
     public static Quaternionf lerpQuaternion(Quaternionf a, Quaternionf b, float time) {
         return new Quaternionf(a).slerp(b, time);
     }
+
+    public static Vector3f[] generateCircle(Vector3f normal, float radius, int pointsCount) {
+        normal.normalize();
+
+        Vector3f startPoint = new Vector3f(1, 0, 0);
+        if (startPoint.dot(normal) > 0.99f) {
+            startPoint.set(0, 1, 0);
+        }
+        startPoint.cross(normal).normalize().mul(radius);
+
+        Vector3f[] points = new Vector3f[pointsCount];
+        Quaternionf rotation = new Quaternionf();
+
+        for (int i = 0; i < pointsCount; i++) {
+            float angle = (float) (2 * Math.PI * i / pointsCount);
+            rotation.fromAxisAngleRad(normal.x, normal.y, normal.z, angle);
+            points[i] = new Vector3f(startPoint).rotate(rotation);
+        }
+
+        return points;
+    }
+
 }

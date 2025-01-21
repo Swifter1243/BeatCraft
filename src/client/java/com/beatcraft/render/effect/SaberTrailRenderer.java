@@ -1,5 +1,6 @@
 package com.beatcraft.render.effect;
 
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.items.ModItems;
@@ -69,10 +70,20 @@ public class SaberTrailRenderer {
             blade_base = blade_base.add((float) pos.x, (float) pos.y, (float) pos.z);
             blade_tip = blade_tip.add((float) pos.x, (float) pos.y, (float) pos.z);
             Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
-            var col = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT, 0);
+            int color;
+
+            int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
+
+            if (sync == -1 || BeatmapPlayer.currentBeatmap == null) {
+                color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT, 0) + 0xFF000000;
+            } else if (sync == 0) {
+                color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+            } else {
+                color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+            }
 
             if (stash != null) {
-                SaberTrailRenderer.queueRender(blade_base, blade_tip, stash, col);
+                SaberTrailRenderer.queueRender(blade_base, blade_tip, stash, color);
             }
         }
     }

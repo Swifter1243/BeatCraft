@@ -3,6 +3,7 @@ package com.beatcraft;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.PlayerConfig;
+import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.screen.SettingsScreen;
@@ -19,9 +20,11 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
+import java.util.List;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
@@ -31,6 +34,14 @@ public class BeatCraftClient implements ClientModInitializer {
     public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
 
     public static final KeyBinding keyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
+
+    public static final BezierPath TEST = new BezierPath(List.of(
+        new Vector3f(0, 0, 0),
+        new Vector3f(-0.7071f, -0.7071f, -1.0E-5f),
+        new Vector3f(0, 0, 0.5f),
+        new Vector3f(-0.7071f, -0.7071f, 1-1.0E-5f),
+        new Vector3f(0, 0, 1)
+    ));
 
     @Override
     public void onInitializeClient() {

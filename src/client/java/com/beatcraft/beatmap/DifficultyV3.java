@@ -100,7 +100,13 @@ public class DifficultyV3 extends Difficulty {
     }
 
     void loadArcs(JsonObject json) {
+        JsonArray rawArcs = json.getAsJsonArray("sliders");
 
+        rawArcs.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            Arc arc = new Arc().loadV3(obj, this);
+            arcs.add(new PhysicalArc(arc));
+        });
     }
 
     void loadObstacles(JsonObject json) {

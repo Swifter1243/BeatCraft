@@ -3,11 +3,13 @@ package com.beatcraft.beatmap;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
+import com.beatcraft.beatmap.data.object.Arc;
 import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
 import com.beatcraft.beatmap.data.object.Obstacle;
+import com.beatcraft.render.object.PhysicalArc;
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.beatcraft.render.object.PhysicalObstacle;
@@ -24,6 +26,7 @@ public class DifficultyV2 extends Difficulty {
     DifficultyV2 load(JsonObject json) {
         loadNotesAndBombs(json);
         loadObstacles(json);
+        loadArcs(json);
         loadEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
@@ -55,6 +58,22 @@ public class DifficultyV2 extends Difficulty {
             Obstacle obstacle = new Obstacle().loadV2(obj, this);
             obstacles.add(new PhysicalObstacle(obstacle));
         });
+    }
+
+    void loadArcs(JsonObject json) {
+
+        if (json.has("_sliders")) {
+            JsonArray rawArcs = json.getAsJsonArray("_sliders");
+
+
+            rawArcs.forEach(o -> {
+                JsonObject obj = o.getAsJsonObject();
+                Arc arc = new Arc().loadV2(obj, this);
+                arcs.add(new PhysicalArc(arc));
+            });
+
+        }
+
     }
 
     private void loadEvents(JsonObject json) {

@@ -24,18 +24,15 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
-        //localPos.x = localPos.x * 2;
         var camPos = mc.gameRenderer.getCamera().getPos();
         localPos.x = (-data.getX()) * 0.6f + 0.9f;
-        localPos.y = (data.getY() * 0.6f);
+        localPos.y = (data.getY() * 0.6f + 0.25f);
         updateBounds();
         DebugRenderer.renderHitbox(bounds, localPos.add(0, 0, (float) camPos.z), new Quaternionf(), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB(), true);
     }
 
     private void updateBounds() {
         bounds.min.x = -((data.getWidth() * 0.6f) - 0.3f);
-        //bounds.max.x = (data.getWidth() * 0.6f)/2f;
-        //bounds.min.y = -0.3f;
         bounds.max.y = (data.getHeight() * 0.6f);
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
@@ -46,10 +43,8 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     public float getJumpOutPosition() {
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
-
         return -(length * data.getDuration());
     }
-
 
     @Override
     public float getJumpOutBeat() {

@@ -1,11 +1,8 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.*;
 import com.beatcraft.render.object.*;
-import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Pair;
 
@@ -103,13 +100,14 @@ public class DifficultyV4 extends Difficulty {
 
     void loadArcs(JsonObject json) {
         JsonArray arcMetaData = json.getAsJsonArray("arcsData");
-        JsonArray noteMetaData = json.getAsJsonArray("colorNotesData");
+        JsonArray colorNotesData = json.getAsJsonArray("colorNotesData");
 
-        JsonArray arcs = json.getAsJsonArray("arcs");
+        JsonArray rawArcs = json.getAsJsonArray("arcs");
 
-        arcs.forEach(o -> {
+        rawArcs.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-
+            Arc arc = new Arc().loadV4(obj, arcMetaData, colorNotesData, this);
+            arcs.add(new PhysicalArc(arc));
         });
     }
 
