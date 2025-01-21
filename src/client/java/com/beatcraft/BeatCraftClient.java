@@ -35,14 +35,6 @@ public class BeatCraftClient implements ClientModInitializer {
 
     public static final KeyBinding keyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
 
-    public static final BezierPath TEST = new BezierPath(List.of(
-        new Vector3f(0, 0, 0),
-        new Vector3f(-0.7071f, -0.7071f, -1.0E-5f),
-        new Vector3f(0, 0, 0.5f),
-        new Vector3f(-0.7071f, -0.7071f, 1-1.0E-5f),
-        new Vector3f(0, 0, 1)
-    ));
-
     @Override
     public void onInitializeClient() {
         registerCommands();
