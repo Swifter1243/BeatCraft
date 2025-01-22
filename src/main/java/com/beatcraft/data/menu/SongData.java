@@ -19,10 +19,18 @@ import java.util.List;
 public class SongData {
 
     public record BeatmapInfo(String mapFile, String lightshowFile, List<String> mappers, List<String> lighters) {
-
+        @Override
+        public String toString() {
+            return "BeatmapInfo{" +
+                    "mapFile='" + mapFile + '\'' +
+                    ", lightshowFile='" + lightshowFile + '\'' +
+                    ", mappers=" + mappers +
+                    ", lighters=" + lighters +
+                    '}';
+        }
     }
 
-    private Path songFolder;
+    private final Path songFolder;
 
     private String title;
     private String subtitle;
@@ -42,7 +50,7 @@ public class SongData {
     //      "Expert+": "ExpertPlusStandard.dat"
     //    }
     // }
-    private HashMap<String, HashMap<String, BeatmapInfo>> beatmaps;
+    private final HashMap<String, HashMap<String, BeatmapInfo>> beatmaps = new HashMap<>();
 
     public SongData(String songFolder) throws IOException {
         File folder = new File(songFolder);
@@ -109,6 +117,24 @@ public class SongData {
 
         difficultySets.forEach(rawSet -> {
             JsonObject set = rawSet.getAsJsonObject();
+
+            String setName = set.get("_beatmapCharacteristicName").getAsString();
+
+            beatmaps.put(setName, new HashMap<>());
+
+            JsonArray difficulties = set.getAsJsonArray("_difficultyBeatmaps");
+
+            difficulties.forEach(o -> {
+                JsonObject obj = o.getAsJsonObject();
+                String diff = obj.get("_difficulty").getAsString();
+                String fileName = obj.get("_beatmapFilename").getAsString();
+
+                BeatmapInfo info = new BeatmapInfo(fileName, fileName, List.of(mapper), List.of(mapper));
+
+                beatmaps.get(setName).put(diff, info);
+
+            });
+
         });
 
     }
@@ -124,10 +150,10 @@ public class SongData {
 
         JsonObject rawAudioFileJson = JsonParser.parseString(rawAudioFileData).getAsJsonObject();
 
-        int samples = rawAudioFileJson.get("songSampleCount").getAsInt();
-        int frequency = rawAudioFileJson.get("songFrequency").getAsInt();
+        float samples = rawAudioFileJson.get("songSampleCount").getAsFloat();
+        float frequency = rawAudioFileJson.get("songFrequency").getAsFloat();
 
-        length = ((float) samples) / ((float) frequency);
+        length = samples / frequency;
 
         JsonArray beatmapInfo = json.getAsJsonArray("difficultyBeatmaps");
 
@@ -180,6 +206,10 @@ public class SongData {
         return title;
     }
 
+    public String getSubtitle() {
+        return subtitle;
+    }
+
     public String getAuthor() {
         return author;
     }
@@ -220,4 +250,21 @@ public class SongData {
         return beatmaps.get(difficultySet).get(difficulty);
     }
 
+
+    @Override
+    public String toString() {
+        return "SongData{" +
+                "songFolder=" + songFolder +
+                ", title='" + title + '\'' +
+                ", subtitle='" + subtitle + '\'' +
+                ", author='" + author + '\'' +
+                ", bpm=" + bpm +
+                ", length=" + length +
+                ", coverImageFilename='" + coverImageFilename + '\'' +
+                ", previewStartTime=" + previewStartTime +
+                ", previewDuration=" + previewDuration +
+                ", previewFilename='" + previewFilename + '\'' +
+                ", beatmaps=" + beatmaps +
+                '}';
+    }
 }

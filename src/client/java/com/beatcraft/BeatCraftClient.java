@@ -3,7 +3,6 @@ package com.beatcraft;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.PlayerConfig;
-import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.screen.SettingsScreen;
@@ -20,11 +19,9 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
-import java.util.List;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
