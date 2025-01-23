@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SongData {
 
-    public record BeatmapInfo(String mapFile, String lightshowFile, List<String> mappers, List<String> lighters) {
+    public record BeatmapInfo(SongData parent, String mapFile, String lightshowFile, List<String> mappers, List<String> lighters) {
         @Override
         public String toString() {
             return "BeatmapInfo{" +
@@ -27,6 +27,10 @@ public class SongData {
                     ", mappers=" + mappers +
                     ", lighters=" + lighters +
                     '}';
+        }
+
+        public Path getBeatmapLocation() {
+            return Path.of(parent.songFolder.toAbsolutePath() + "/" + mapFile);
         }
     }
 
@@ -129,7 +133,7 @@ public class SongData {
                 String diff = obj.get("_difficulty").getAsString();
                 String fileName = obj.get("_beatmapFilename").getAsString();
 
-                BeatmapInfo info = new BeatmapInfo(fileName, fileName, List.of(mapper), List.of(mapper));
+                BeatmapInfo info = new BeatmapInfo(this, fileName, fileName, List.of(mapper), List.of(mapper));
 
                 beatmaps.get(setName).put(diff, info);
 
@@ -189,7 +193,7 @@ public class SongData {
             rawMappers.forEach(m -> mappers.add(m.getAsString()));
             rawLighters.forEach(l -> lighters.add(l.getAsString()));
 
-            BeatmapInfo info = new BeatmapInfo(mapFile, lightFile, mappers, lighters);
+            BeatmapInfo info = new BeatmapInfo(this, mapFile, lightFile, mappers, lighters);
 
             if (!beatmaps.containsKey(set)) {
                 beatmaps.put(set, new HashMap<>());
