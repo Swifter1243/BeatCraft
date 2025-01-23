@@ -38,17 +38,10 @@ ion wanna
 
 # How do I actually *play?*
 
-go to `X: 0, Y: 0, Z: 0`. Face towards `negative Z`  
+go to `X: 0, Y: 0, Z: 0`. Face towards `positive Z (south)`  
 
 ---
-get right saber:
-`/give @s beatcraft:saber[beatcraft:saber_color=2122920,beatcraft:sync_color=1]`  
-and left saber:
-`/give @s beatcraft:saber[beatcraft:saber_color=12595248,beatcraft:sync_color=0]`  
-
-These sabers will default to the original red/blue of beat saber, but will also
-automatically switch to the appropriate colors for whatever beatmap is currently
-playing.  
+get sabers: `/sabers`  
 
 ---
 The `/song` command:  
