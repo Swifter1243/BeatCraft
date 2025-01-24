@@ -35,7 +35,9 @@
 		"minecraft": "~${minecraft_version}",
 		"fabric": "*",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"vivecraft": ">=${vivecraft_version}",
+		"geckolib": ">=${geckolib_version}"
 	},
 	"suggests": {
 		"another-mod": "*"

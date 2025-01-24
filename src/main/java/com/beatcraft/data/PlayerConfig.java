@@ -87,6 +87,18 @@ public class PlayerConfig {
         return 0;
     }
 
+    public void setOverrideLatency(boolean enabled) {
+        audio_overrideLatency = enabled;
+    }
+
+    public boolean getOverrideLatency() {
+        return audio_overrideLatency;
+    }
+
+    public void setLatency(long nanos) {
+        audio_latency = (int) (nanos * 1_000_000);
+    }
+
     public void setSmokeRendering(boolean value) {
         quality_smokeGraphics = value;
     }

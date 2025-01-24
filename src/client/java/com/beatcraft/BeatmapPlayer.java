@@ -46,11 +46,11 @@ public class BeatmapPlayer {
     }
 
     private static float nanoToSeconds(long nanoseconds) {
-        return nanoseconds / 1000000000F;
+        return nanoseconds / 1_000_000_000F;
     }
 
     private static long secondsToNano(float seconds) {
-        return (long)(seconds * 1000000000);
+        return (long)(seconds * 1_000_000_000);
     }
 
     private static void updateLastNanoTime() {
@@ -62,7 +62,7 @@ public class BeatmapPlayer {
         updateLastNanoTime();
 
         // Prevent lag spikes that are too big.
-        if (nanoDeltaTime > 1000000000) {
+        if (nanoDeltaTime > 1_000_000_000) {
             return 0;
         }
 

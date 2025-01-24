@@ -17,6 +17,7 @@ public class BeatmapAudioPlayer {
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
                 beatmapAudio.loadAudioFromFile(path);
+                beatmapAudio.seek(0); // seek auto-compensates for the player's latency setting
                 beatmapAudio.play();
             } catch (IOException e) {
                 throw new RuntimeException("Something FUCKED happened.", e);

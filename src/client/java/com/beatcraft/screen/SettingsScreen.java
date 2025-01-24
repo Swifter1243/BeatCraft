@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 
@@ -216,7 +217,33 @@ public class SettingsScreen extends Screen {
                 }
             };
 
+//            var latency_label = new TextWidget(Text.translatable("setting.beatcraft.audio.latency"), this.textRenderer);
+//            latency_label.setDimensionsAndPosition(
+//                    left_width, button_height,
+//                    left_column, menu_y + 25
+//            );
+
+            var latency_label = ButtonWidget.builder(Text.translatable("setting.beatcraft.audio.latency", BeatCraftClient.playerConfig.getOverrideLatency() ? "ON" : "OFF"), this::toggleAudioLatencyOverride)
+                    .dimensions(left_column, menu_y + 25, left_width, button_height)
+                    .build();
+
+            var latency_field = new TextFieldWidget(this.textRenderer, right_width, button_height, Text.literal("0"));
+            latency_field.setPosition(right_column, menu_y + 25);
+            latency_field.setTextPredicate(s -> {
+                try {
+                    int ignored = Integer.parseInt(s);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            });
+
+            latency_field.setChangedListener(this::updateLatency);
+
             addDrawableChild(volumeSlider);
+            addDrawableChild(latency_label);
+            addDrawableChild(latency_field);
+
 
         }
         else if (page == 3) { // Controllers
@@ -256,6 +283,24 @@ public class SettingsScreen extends Screen {
 
     public void updateVolume(double volume) {
 
+    }
+
+    public void toggleAudioLatencyOverride(ButtonWidget button) {
+        boolean do_latency = !BeatCraftClient.playerConfig.getOverrideLatency();
+        BeatCraftClient.playerConfig.setOverrideLatency(do_latency);
+
+        button.setMessage(Text.translatable("setting.beatcraft.audio.latency", do_latency ? "ON" : "OFF"));
+
+    }
+
+    public void updateLatency(String rawValue) {
+        try {
+            int latency = Integer.parseInt(rawValue);
+
+            BeatCraftClient.playerConfig.setLatency(latency);
+        } catch (NumberFormatException ignored) {
+
+        }
     }
 
     public void toggleSmokeGraphics(ButtonWidget button) {

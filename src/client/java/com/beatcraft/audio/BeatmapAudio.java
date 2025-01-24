@@ -1,5 +1,6 @@
 package com.beatcraft.audio;
 
+import com.beatcraft.BeatCraftClient;
 import net.minecraft.client.sound.OggAudioStream;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -56,7 +57,7 @@ public class BeatmapAudio {
 
     public void seek(float time) {
         if (isLoaded) {
-            AL11.alSourcef(source, AL11.AL_SEC_OFFSET, time);
+            AL11.alSourcef(source, AL11.AL_SEC_OFFSET, time + (BeatCraftClient.playerConfig.getLatency() / 1_000_000_000f));
         }
     }
 
