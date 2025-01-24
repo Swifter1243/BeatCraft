@@ -31,5 +31,9 @@
   "block.beatcraft.corner_light_tile": "Corner Light Tile",
   "block.beatcraft.column_light_tile": "Column Light Tile",
   "block.beatcraft.end_light_tile": "End Light Tile",
-  "block.beatcraft.stripe_light_tile": "Stripe Light Tile"
+  "block.beatcraft.stripe_light_tile": "Stripe Light Tile",
+
+  "command.beatcraft.error.song_not_found": "Song not found",
+  "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
+  "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set"
 }
