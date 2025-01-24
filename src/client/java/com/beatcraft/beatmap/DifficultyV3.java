@@ -114,7 +114,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawObstacles.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Obstacle obstacle = new Obstacle().loadV2(obj, this);
+            Obstacle obstacle = new Obstacle().loadV3(obj, this);
             obstacles.add(new PhysicalObstacle(obstacle));
         });
     }

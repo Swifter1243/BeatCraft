@@ -3,6 +3,8 @@ package com.beatcraft;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.PlayerConfig;
+import com.beatcraft.data.menu.SongData;
+import com.beatcraft.menu.SongList;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.screen.SettingsScreen;
@@ -10,11 +12,14 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
@@ -22,6 +27,9 @@ import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
@@ -29,6 +37,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 public class BeatCraftClient implements ClientModInitializer {
 
     public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
+    public static final SongList songs = new SongList();
 
     public static final KeyBinding keyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
 
@@ -45,6 +54,10 @@ public class BeatCraftClient implements ClientModInitializer {
                 client.setScreen(screen);
                 while (keyBind.wasPressed());
             }
+        });
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            songs.loadSongs();
         });
 
     }
@@ -96,7 +109,7 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
-    private int songLoad(CommandContext<FabricClientCommandSource> context) {
+    private int songLoadFile(CommandContext<FabricClientCommandSource> context) {
         String path = StringArgumentType.getString(context, "path");
         path = trimPathQuotes(path);
 
@@ -107,6 +120,12 @@ public class BeatCraftClient implements ClientModInitializer {
         } else {
             return -1;
         }
+    }
+
+    private int songList(CommandContext<FabricClientCommandSource> context) {
+
+
+        return 1;
     }
 
     private String trimPathQuotes(String path) {
@@ -234,6 +253,131 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int songLoad(CommandContext<FabricClientCommandSource> context) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = StringArgumentType.getString(context, "difficulty_set");
+        String diff = StringArgumentType.getString(context, "difficulty");
+
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return -1;
+        }
+
+        SongData song = filtered.getFirst();
+
+        if (!song.getDifficultySets().contains(diffSet)) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return -1;
+        }
+
+        if (!song.getDifficulties(diffSet).contains(diff)) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
+            return -1;
+        }
+
+        SongData.BeatmapInfo beatmapInfo = song.getBeatMapInfo(diffSet, diff);
+
+        if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
+            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
+            BeatmapPlayer.restart();
+            return 1;
+        } else {
+            return -1;
+        }
+
+    }
+
+    private CompletableFuture<Suggestions> songDifficultySuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = StringArgumentType.getString(context, "difficulty_set");
+        String diffName = suggestionsBuilder.getRemaining();
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        SongData data = filtered.getFirst();
+        List<String> sets = data.getDifficultySets();
+        ArrayList<String> filteredSets = new ArrayList<>();
+
+        for (String set : sets) {
+            if (set.contains(diffSet)) {
+                filteredSets.add(set);
+            }
+        }
+
+        if (filteredSets.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        String set = filteredSets.getFirst();
+
+        List<String> diffs = data.getDifficulties(set);
+        ArrayList<String> suggests = new ArrayList<>();
+        for (String diff : diffs) {
+            if (diff.contains(diffName)) {
+                suggests.add(diff.contains(" ") ? "\"" + diff + "\"" : diff);
+            }
+        }
+
+        if (suggests.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        suggests.forEach(suggestionsBuilder::suggest);
+        return suggestionsBuilder.buildFuture();
+
+    }
+
+    private CompletableFuture<Suggestions> songDifficultySetSuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = suggestionsBuilder.getRemaining();
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        SongData data = filtered.getFirst();
+        List<String> sets = data.getDifficultySets();
+        ArrayList<String> suggest = new ArrayList<>();
+
+        for (String set : sets) {
+            if (set.contains(diffSet)) {
+                suggest.add(set.contains(" ") ? "\"" + set + "\"" : set);
+            }
+        }
+
+        if (suggest.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        suggest.forEach(suggestionsBuilder::suggest);
+        return suggestionsBuilder.buildFuture();
+
+    }
+
+    private CompletableFuture<Suggestions> songSuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+
+        String songName = suggestionsBuilder.getRemaining();
+
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        for (SongData song : filtered) {
+            suggestionsBuilder.suggest(song.getTitle().contains(" ") ? "\"" + song.getTitle() + "\"" : song.getTitle());
+        }
+
+        return suggestionsBuilder.buildFuture();
+    }
+
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
             dispatcher.register(literal("song")
@@ -260,14 +404,29 @@ public class BeatCraftClient implements ClientModInitializer {
                     .then(literal("unload")
                             .executes(this::songUnload)
                     )
-                    .then(literal("load")
+                    .then(literal("loadFile")
                             .then(argument("path", StringArgumentType.greedyString())
-                                    .executes(this::songLoad)
+                                    .executes(this::songLoadFile)
                             )
                     )
                     .then(literal("scrub")
                             .then(argument("beats", FloatArgumentType.floatArg())
                                     .executes(this::songScrub)
+                            )
+                    )
+                    .then(literal("list")
+                            .then(argument("filter", StringArgumentType.greedyString())
+                                .executes(this::songList)
+                            )
+                            .executes(this::songList)
+                    )
+                    .then(literal("load")
+                            .then(argument("song", StringArgumentType.string()).suggests(this::songSuggestor)
+                                    .then(argument("difficulty_set", StringArgumentType.string()).suggests(this::songDifficultySetSuggestor)
+                                            .then(argument("difficulty", StringArgumentType.string()).suggests(this::songDifficultySuggestor)
+                                                    .executes(this::songLoad)
+                                            )
+                                    )
                             )
                     )
             );
@@ -298,4 +457,8 @@ public class BeatCraftClient implements ClientModInitializer {
             );
         }));
     }
+
+
+
+
 }
