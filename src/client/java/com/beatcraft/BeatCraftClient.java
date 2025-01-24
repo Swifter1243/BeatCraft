@@ -58,8 +58,6 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             songs.loadSongs();
-
-            BeatCraft.LOGGER.info("Loaded songs: {}", songs.getSongs());
         });
 
     }

@@ -47,13 +47,14 @@ get sabers: `/sabers`
 The `/song` command:  
 
 `/song load <PATH>` loads a beatmap difficulty (V2 or V3)  
-example: `/song load "C:/full/path/to/beatmap/folder/ExpertStandard.dat"`  
+example: `/song load <song> <difficulty_set> <difficulty>`  
 
 `/song play [beat]`  
 `/song pause`  
 `/song speed reset|<fraction greater than 0>`  
 `/song unload`  
+`/song loadFile <path_to_difficulty_dat_file>`
 
 for custom sabers:
 `/give @s beatcraft:saber[beatcraft:saber_color=<PACKED_COLOR>]`  
-currently, you can use `/color_helper` to convert from rgb, normalized rgb, or hex, to a packed color int  
+you can use `/color_helper` to convert from rgb, normalized rgb, or hex, to a packed color int  
