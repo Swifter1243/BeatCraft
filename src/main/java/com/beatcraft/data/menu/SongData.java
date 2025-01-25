@@ -92,7 +92,7 @@ public class SongData {
         assert files != null;
         File infoFile = null;
         for (File file : files) {
-            if (file.getName().equals("Info.dat")) {
+            if (file.getName().equals("Info.dat") || file.getName().equals("info.dat")) {
                 infoFile = file;
             }
         }
