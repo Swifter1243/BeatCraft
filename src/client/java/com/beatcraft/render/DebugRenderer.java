@@ -12,6 +12,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.concurrent.Callable;
 
 public class DebugRenderer {
 
-    private static final ArrayList<Callable<Void>> renderCalls = new ArrayList<>();
+    private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
 
     public static final ParticleEffect RED_DUST = new DustParticleEffect(new Vector3f(1, 0, 0), 0.5f);
     public static final ParticleEffect ORANGE_DUST = new DustParticleEffect(new Vector3f(1, 0.5f, 0), 0.5f);
@@ -33,6 +34,7 @@ public class DebugRenderer {
     public static boolean doDebugRendering = false;
     public static boolean debugSaberRendering = false;
     public static boolean renderHitboxes = false;
+    public static boolean renderArcDebugLines = false;
 
     private static List<Vector3f[]> getCuboidEdges(Vector3f minPos, Vector3f maxPos) {
         List<Vector3f[]> edges = new ArrayList<>();
@@ -70,22 +72,12 @@ public class DebugRenderer {
     }
 
     public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest) {
-        renderCalls.add(() -> {
-
-            _renderHitbox(hitbox, position, orientation, color, doDepthTest);
-
-            return null;
-        });
+        renderCalls.add(() -> _renderHitbox(hitbox, position, orientation, color, doDepthTest));
 
     }
 
     public static void renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
-        renderCalls.add(() -> {
-
-            _renderPath(path, offset, segments, color);
-
-            return null;
-        });
+        renderCalls.add(() -> _renderPath(path, offset, segments, color));
     }
 
     public static void _renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
@@ -109,6 +101,21 @@ public class DebugRenderer {
             buffer.vertex(p.x, p.y, p.z).color(color).normal(normal.x, normal.y, normal.z);
             buffer.vertex(p2.x, p2.y, p2.z).color(color).normal(normal.x, normal.y, normal.z);
 
+        }
+
+        List<Vector3f> controlPoints = path.getControlPoints();
+
+        if (controlPoints.size() >= 2) {
+            for (int i = 0; i < controlPoints.size()-1; i++) {
+                Vector3f p = controlPoints.get(i).add(offset, new Vector3f()).sub(cam);
+                Vector3f p2 = controlPoints.get(i+1).add(offset, new Vector3f()).sub(cam);
+
+                Vector3f normal = p2.sub(p, new Vector3f()).normalize();
+
+                buffer.vertex(p.x, p.y, p.z).color(0xFF0000).normal(normal.x, normal.y, normal.z);
+                buffer.vertex(p2.x, p2.y, p2.z).color(0xFF0000).normal(normal.x, normal.y, normal.z);
+
+            }
         }
 
         BuiltBuffer buff = buffer.endNullable();
@@ -185,9 +192,9 @@ public class DebugRenderer {
 
         //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
 
-        for (Callable<Void> renderCall : renderCalls) {
+        for (Runnable renderCall : renderCalls) {
             try {
-                renderCall.call();
+                renderCall.run();
             } catch (Exception e) {
                 BeatCraft.LOGGER.error("Render call failed! ", e);
             }

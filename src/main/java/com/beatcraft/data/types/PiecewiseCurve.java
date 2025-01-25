@@ -3,6 +3,7 @@ package com.beatcraft.data.types;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PiecewiseCurve implements ISplinePath {
 
@@ -51,5 +52,10 @@ public class PiecewiseCurve implements ISplinePath {
             }
         }
         return new Vector3f(0, 0, 0);
+    }
+
+    @Override
+    public List<Vector3f> getControlPoints() {
+        return List.of();
     }
 }

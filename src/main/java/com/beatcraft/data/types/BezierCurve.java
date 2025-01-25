@@ -2,11 +2,13 @@ package com.beatcraft.data.types;
 
 import org.joml.Vector3f;
 
+import java.util.List;
+
 public class BezierCurve implements ISplinePath {
 
-    private Vector3f p0;
-    private Vector3f p1;
-    private Vector3f p2;
+    private final Vector3f p0;
+    private final Vector3f p1;
+    private final Vector3f p2;
 
     public BezierCurve(Vector3f p0, Vector3f p1, Vector3f p2) {
         this.p0 = p0;
@@ -33,4 +35,8 @@ public class BezierCurve implements ISplinePath {
         return new Vector3f(x, y, z);
     }
 
+    @Override
+    public List<Vector3f> getControlPoints() {
+        return List.of(p0, p1, p2);
+    }
 }

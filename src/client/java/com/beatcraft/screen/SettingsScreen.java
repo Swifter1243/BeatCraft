@@ -269,6 +269,13 @@ public class SettingsScreen extends Screen {
 
             addDrawableChild(hitboxToggle);
 
+            var arcLinesToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF"), this::toggleArcLines)
+                .dimensions(left_column_alt, menu_y + 50, common_width, button_height)
+                .tooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF")))
+                .build();
+
+            addDrawableChild(arcLinesToggle);
+
         }
 
     }
@@ -325,6 +332,12 @@ public class SettingsScreen extends Screen {
         DebugRenderer.debugSaberRendering = !DebugRenderer.debugSaberRendering;
         button.setMessage(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF"));
         button.setTooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF")));
+    }
+
+    public void toggleArcLines(ButtonWidget button) {
+        DebugRenderer.renderArcDebugLines = !DebugRenderer.renderArcDebugLines;
+        button.setMessage(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF"));
+        button.setTooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF")));
     }
 
     public void toggleHitboxes(ButtonWidget button) {

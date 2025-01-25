@@ -296,7 +296,7 @@ public class BeatCraftClient implements ClientModInitializer {
         List<SongData> filtered = songs.getFiltered(songName);
 
         if (filtered.isEmpty()) {
-            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
             return suggestionsBuilder.buildFuture();
         }
 
@@ -311,7 +311,7 @@ public class BeatCraftClient implements ClientModInitializer {
         }
 
         if (filteredSets.isEmpty()) {
-            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
             return suggestionsBuilder.buildFuture();
         }
 
@@ -326,7 +326,7 @@ public class BeatCraftClient implements ClientModInitializer {
         }
 
         if (suggests.isEmpty()) {
-            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
             return suggestionsBuilder.buildFuture();
         }
 
@@ -341,7 +341,7 @@ public class BeatCraftClient implements ClientModInitializer {
         List<SongData> filtered = songs.getFiltered(songName);
 
         if (filtered.isEmpty()) {
-            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
             return suggestionsBuilder.buildFuture();
         }
 
@@ -356,7 +356,7 @@ public class BeatCraftClient implements ClientModInitializer {
         }
 
         if (suggest.isEmpty()) {
-            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
             return suggestionsBuilder.buildFuture();
         }
 

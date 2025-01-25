@@ -19,6 +19,7 @@
   "setting.beatcraft.debug.main_renderer": "Debug Rendering: %s",
   "setting.beatcraft.debug.saber_renderer": "Saber Debug Renderer: %s",
   "setting.beatcraft.debug.hitboxes": "Show Hitboxes: %s",
+  "setting.beatcraft.debug.arc_lines": "Arc Debug Lines: %s",
 
   "itemGroup.beatcraft.group": "BeatCraft",
 

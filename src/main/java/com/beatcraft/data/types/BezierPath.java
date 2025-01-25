@@ -63,4 +63,8 @@ public class BezierPath implements ISplinePath {
         return new Vector3f(x, y, z);
     }
 
+    @Override
+    public List<Vector3f> getControlPoints() {
+        return points;
+    }
 }

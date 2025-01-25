@@ -6,12 +6,16 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Arc;
 import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.data.types.ISplinePath;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.utils.MathUtil;
+import com.beatcraft.utils.NoteMath;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.MathHelper;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -35,7 +39,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             0
         );
 
-        Vector3f startC = Arc.cutDirectionToControlPoint(data.getHeadCutDirection()).mul(data.getHeadMagnitude()).add(start);
+        Vector3f startC = Arc.cutDirectionToControlPoint(data.getHeadCutDirection()).mul(data.getHeadMagnitude()).mul(2).add(start);
 
         Vector3f end = new Vector3f(
             (-data.getTailX()) * 0.6f + 0.9f,
@@ -43,10 +47,31 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             -(data.getTailBeat() - data.getBeat())
         );
 
-        Vector3f endC = Arc.cutDirectionToControlPoint(data.getTailCutDirection()).mul(data.getTailMagnitude()).mul(-1, -1, -1).add(end);
+        Vector3f endC = Arc.cutDirectionToControlPoint(data.getTailCutDirection()).mul(data.getTailMagnitude()).mul(-2, -2, -2).add(end);
 
-        Vector3f midpoint = MathUtil.lerpVector3(start, end, 0.5f);
+        Vector3f midpoint = MathUtil.lerpVector3(startC, endC, 0.5f);
 
+        boolean inline = data.getX() == data.getTailX() &&
+            data.getY() == data.getTailY() &&
+            (
+                data.getHeadCutDirection() == data.getTailCutDirection() ||
+                    data.getHeadCutDirection() == data.getTailCutDirection().opposite()
+            );
+
+        float radians = 0;
+        if (inline) {
+            if (data.getMidAnchorMode() == Arc.MidAnchorMode.CLOCKWISE) {
+                radians = (float) (-Math.PI / 2d);
+            } else if (data.getMidAnchorMode() == Arc.MidAnchorMode.COUNTER_CLOCKWISE) {
+                radians = (float) (Math.PI / 2d);
+            }
+        }
+
+        float deg = -NoteMath.degreesFromCut(data.getHeadCutDirection());
+
+        Vector3f midpointRotation = new Vector3f(0, -1, 0).rotateZ((deg * MathHelper.RADIANS_PER_DEGREE) + radians);
+
+        midpoint.add(midpointRotation.mul(1.2f));
 
         start.mul(modifier);
         startC.mul(modifier);
@@ -80,9 +105,11 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         localPos.x = 0;
         localPos.y = 0;
 
-        //render(basePath, localPos.add(0, 0, camPos.z + 0.25f), data.getColor().toARGB());
-        DebugRenderer.renderPath(basePath, localPos.add(0, 0, camPos.z + 0.25f), 50, data.getColor().toARGB());
+        render(basePath, localPos.add(0, 0, camPos.z + 0.25f, new Vector3f()), data.getColor().toARGB());
 
+        if (DebugRenderer.renderArcDebugLines) {
+            DebugRenderer.renderPath(basePath, localPos.add(0, 0, camPos.z + 0.25f, new Vector3f()), 50, data.getColor().toARGB());
+        }
     }
 
     @Override
@@ -103,9 +130,13 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     public void render(ISplinePath path, Vector3f origin, int color) {
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        BeatcraftRenderer.recordRenderCall(() -> _render(path, origin, color));
 
+    }
+
+    public void _render(ISplinePath path, Vector3f origin, int color) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
@@ -119,8 +150,8 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             Vector3f t = path.getTangent(f);
             Vector3f t2 = path.getTangent(f2);
 
-            var h1 = MathUtil.generateCircle(t, 0.1f, 6);
-            var h2 = MathUtil.generateCircle(t, 0.1f, 6);
+            var h1 = MathUtil.generateCircle(t, 0.075f, 6, p);
+            var h2 = MathUtil.generateCircle(t2, 0.075f, 6, p2);
 
             Vector3f[] q1 = new Vector3f[]{
                 h1[0], h1[3],
@@ -137,11 +168,46 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
                 h2[5], h2[2]
             };
 
+            float dist = p.add(cam, new Vector3f()).length();
 
-            //buffer.vertex(q1[0].x, q1[0].y, q1[0].z).texture()
+            int fade = (int) (Math.clamp((12f - dist) / 9f, 0f, 1f) * 127f) << 24;
 
+            if (fade == 0) {
+                continue;
+            }
+
+            int col = (color + fade);
+
+            buffer.vertex(q1[0].x, q1[0].y, q1[0].z).color(col);
+            buffer.vertex(q1[1].x, q1[1].y, q1[1].z).color(col);
+            buffer.vertex(q1[2].x, q1[2].y, q1[2].z).color(col);
+            buffer.vertex(q1[3].x, q1[3].y, q1[3].z).color(col);
+
+            buffer.vertex(q2[0].x, q2[0].y, q2[0].z).color(col);
+            buffer.vertex(q2[1].x, q2[1].y, q2[1].z).color(col);
+            buffer.vertex(q2[2].x, q2[2].y, q2[2].z).color(col);
+            buffer.vertex(q2[3].x, q2[3].y, q2[3].z).color(col);
+
+            buffer.vertex(q3[0].x, q3[0].y, q3[0].z).color(col);
+            buffer.vertex(q3[1].x, q3[1].y, q3[1].z).color(col);
+            buffer.vertex(q3[2].x, q3[2].y, q3[2].z).color(col);
+            buffer.vertex(q3[3].x, q3[3].y, q3[3].z).color(col);
 
         }
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.disableDepthTest();
 
     }
 
