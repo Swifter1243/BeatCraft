@@ -88,4 +88,56 @@ public class MathUtil {
         return points;
     }
 
+    public static float getLineDistance(Vector3f startA, Vector3f endA, Vector3f startB, Vector3f endB) {
+        Vector3f distA = new Vector3f(endA).sub(startA);
+        Vector3f distB = new Vector3f(endB).sub(startB);
+        Vector3f startDiff = new Vector3f(startA).sub(startB);
+
+        float distA2 = distA.dot(distA);
+        float distB2 = distB.dot(distB);
+        float f = distB.dot(startDiff);
+
+        float modA;
+        float modB;
+
+        if (distA2 <= Float.MIN_VALUE && distB2 <= Float.MIN_VALUE) {
+            return startDiff.length();
+        }
+
+        if (distA2 <= Float.MIN_VALUE) {
+            modA = 0.0f;
+            modB = Math.max(0.0f, Math.min(1.0f, f / distB2));
+        } else {
+            float dotA = distA.dot(startDiff);
+            if (distB2 <= Float.MIN_VALUE) {
+                modB = 0.0f;
+                modA = Math.max(0.0f, Math.min(1.0f, -dotA / distA2));
+            } else {
+                float dotAB = distA.dot(distB);
+                float denominator = distA2 * distB2 - dotAB * dotAB;
+
+                if (denominator != 0.0f) {
+                    modA = Math.max(0.0f, Math.min(1.0f, (dotAB * f - dotA * distB2) / denominator));
+                } else {
+                    modA = 0.0f;
+                }
+
+                modB = (dotAB * modA + f) / distB2;
+
+                if (modB < 0.0f) {
+                    modB = 0.0f;
+                    modA = Math.max(0.0f, Math.min(1.0f, -dotA / distA2));
+                } else if (modB > 1.0f) {
+                    modB = 1.0f;
+                    modA = Math.max(0.0f, Math.min(1.0f, (dotAB - dotA) / distA2));
+                }
+            }
+        }
+
+        Vector3f closestA = new Vector3f(distA).mul(modA).add(startA);
+        Vector3f closestB = new Vector3f(distB).mul(modB).add(startB);
+
+        return closestA.distance(closestB);
+    }
+
 }

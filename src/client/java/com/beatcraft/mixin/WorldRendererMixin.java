@@ -1,6 +1,7 @@
 package com.beatcraft.mixin;
 
 
+import com.beatcraft.logic.HapticsHandler;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.effect.SaberTrailRenderer;
@@ -28,10 +29,11 @@ public class WorldRendererMixin {
             target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/render/Camera;)V"
         )
     )
-    public void saberTrailRenderInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+    public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         DebugRenderer.render();
         BeatcraftRenderer.render();
         SaberTrailRenderer.renderAll();
+        HapticsHandler.endFrame();
     }
 
 }

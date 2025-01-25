@@ -38,12 +38,8 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
-import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.render.DebugRenderer;
-import com.beatcraft.render.object.PhysicalChainNoteHead;
-import com.beatcraft.render.object.PhysicalColorNote;
-import com.beatcraft.render.object.PhysicalGameplayObject;
-import com.beatcraft.render.object.PhysicalScorableObject;
+import com.beatcraft.render.object.*;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import org.joml.Matrix4f;
@@ -95,6 +91,14 @@ public class GameLogicHandler {
     public static void update(double deltaTime) {
         rightSwingState.updateSaber(rightSaberPos, rightSaberRotation, deltaTime);
         leftSwingState.updateSaber(leftSaberPos, leftSaberRotation, deltaTime);
+
+        Vector3f leftEndpoint = new Vector3f(0, 1, 0).rotate(leftSaberRotation).add(leftSaberPos);
+        Vector3f rightEndpoint = new Vector3f(0, 1, 0).rotate(rightSaberRotation).add(rightSaberPos);
+
+        if (MathUtil.getLineDistance(leftSaberPos, leftEndpoint, rightSaberPos, rightEndpoint) <= 0.05) {
+            HapticsHandler.vibrateLeft(0.2f, 1.0f);
+            HapticsHandler.vibrateRight(0.2f, 1.0f);
+        }
     }
 
     public enum CutResult {
@@ -212,6 +216,11 @@ public class GameLogicHandler {
 
             if (note instanceof PhysicalScorableObject colorNote) {
                 if (colorNote.score$getData().score$getNoteType() == saberColor) {
+                    if (saberColor == NoteType.RED) {
+                        HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+                    } else {
+                        HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+                    }
                     colorNote.score$setContactColor(saberColor);
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
@@ -301,6 +310,33 @@ public class GameLogicHandler {
             );
         }
 
+
+    }
+
+    private static void checkSaberAgainstObstacle(Hitbox hitbox, Vector3f position, Quaternionf inverted, Vector3f saberPos, Quaternionf saberRotation, NoteType saber) {
+        Vector3f endpoint = new Vector3f(0, 1, 0).rotate(saberRotation).add(saberPos);
+
+        Vector3f local_hand = (new Vector3f(saberPos)).sub(position).rotate(inverted);
+        endpoint.sub(position).rotate(inverted);
+
+        if (hitbox.checkCollision(local_hand, endpoint)) {
+            if (saber == NoteType.BLUE) {
+                HapticsHandler.vibrateRight(0.25f, 1.0f);
+            } else {
+                HapticsHandler.vibrateLeft(0.25f, 1.0f);
+            }
+        }
+
+    }
+
+    public static void checkObstacle(PhysicalObstacle obstacle, Vector3f position, Quaternionf orientation) {
+        Hitbox hitbox = obstacle.getBounds();
+
+        Quaternionf inverted = new Quaternionf();
+        orientation.invert(inverted);
+
+        checkSaberAgainstObstacle(hitbox, position, inverted, rightSaberPos, rightSaberRotation, NoteType.BLUE);
+        checkSaberAgainstObstacle(hitbox, position, inverted, leftSaberPos, leftSaberRotation, NoteType.RED);
 
     }
 

@@ -1,6 +1,5 @@
 package com.beatcraft.render.object;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Arc;
@@ -15,7 +14,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -23,6 +21,7 @@ import java.util.ArrayList;
 public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     BezierPath basePath;
+    private int segments = 50;
 
     public PhysicalArc(Arc data) {
         super(data);
@@ -86,6 +85,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         points.add(end);
 
         basePath = new BezierPath(points);
+        segments = (int) (start.distance(end) * 5);
 
     }
 
@@ -104,11 +104,12 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
         localPos.x = 0;
         localPos.y = 0;
+        localPos.add(0, 0, camPos.z + 0.25f);
 
-        render(basePath, localPos.add(0, 0, camPos.z + 0.25f, new Vector3f()), data.getColor().toARGB());
+        render(basePath, localPos, data.getColor().toARGB());
 
-        if (DebugRenderer.renderArcDebugLines) {
-            DebugRenderer.renderPath(basePath, localPos.add(0, 0, camPos.z + 0.25f, new Vector3f()), 50, data.getColor().toARGB());
+        if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
+            DebugRenderer.renderPath(basePath, localPos, segments, data.getColor().toARGB());
         }
     }
 
@@ -211,4 +212,8 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     }
 
+    @Override
+    public void seek(float beat) {
+        super.seek(beat);
+    }
 }

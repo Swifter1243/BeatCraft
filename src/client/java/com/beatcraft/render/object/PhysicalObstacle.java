@@ -3,6 +3,7 @@ package com.beatcraft.render.object;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Obstacle;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.DebugRenderer;
 import net.minecraft.client.render.VertexConsumer;
@@ -27,8 +28,10 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         var camPos = mc.gameRenderer.getCamera().getPos();
         localPos.x = (-data.getX()) * 0.6f + 0.9f;
         localPos.y = (data.getY() * 0.6f + 0.25f);
+        localPos.add(0, 0, (float) camPos.z);
         updateBounds();
-        DebugRenderer.renderHitbox(bounds, localPos.add(0, 0, (float) camPos.z), new Quaternionf(), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB(), true);
+        GameLogicHandler.checkObstacle(this, localPos, new Quaternionf());
+        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB(), true);
     }
 
     private void updateBounds() {
@@ -54,5 +57,9 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     public float getDespawnBeat() {
         return super.getDespawnBeat() + data.getDuration();
+    }
+
+    public Hitbox getBounds() {
+        return bounds;
     }
 }

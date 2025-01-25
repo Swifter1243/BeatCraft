@@ -5,6 +5,7 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.types.Color;
+import com.beatcraft.render.object.PhysicalColorNote;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,6 +34,9 @@ public class Arc extends GameplayObject {
     private boolean _hasHeadNote = false;
     private boolean _hasTailNote = false;
 
+    private PhysicalColorNote headNote = null;
+    private PhysicalColorNote tailNote = null;
+
     private NoteType noteType;
     private Color color;
 
@@ -48,9 +52,11 @@ public class Arc extends GameplayObject {
         difficulty.colorNotes.forEach(c -> {
             if (c.getData().getBeat() == b && c.getData().getX() == x && c.getData().getY() == y) {
                 _hasHeadNote = true;
+                headNote = c;
             }
             if (c.getData().getBeat() == tb && c.getData().getX() == tx && c.getData().getY() == ty) {
                 _hasTailNote = true;
+                tailNote = c;
             }
         });
     }
@@ -204,6 +210,18 @@ public class Arc extends GameplayObject {
 
     public boolean hasTailNote() {
         return _hasTailNote;
+    }
+
+    public PhysicalColorNote getHeadNote() {
+        return headNote;
+    }
+
+    public PhysicalColorNote getTailNote() {
+        return tailNote;
+    }
+
+    public NoteType getNoteType() {
+        return noteType;
     }
 
     public MidAnchorMode getMidAnchorMode() {
