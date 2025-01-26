@@ -1,5 +1,6 @@
 package com.beatcraft.utils;
 
+import net.minecraft.util.Pair;
 import org.joml.*;
 import org.joml.Math;
 
@@ -88,7 +89,7 @@ public class MathUtil {
         return points;
     }
 
-    public static float getLineDistance(Vector3f startA, Vector3f endA, Vector3f startB, Vector3f endB) {
+    public static Pair<Float, Vector3f> getLineDistance(Vector3f startA, Vector3f endA, Vector3f startB, Vector3f endB) {
         Vector3f distA = new Vector3f(endA).sub(startA);
         Vector3f distB = new Vector3f(endB).sub(startB);
         Vector3f startDiff = new Vector3f(startA).sub(startB);
@@ -101,7 +102,7 @@ public class MathUtil {
         float modB;
 
         if (distA2 <= Float.MIN_VALUE && distB2 <= Float.MIN_VALUE) {
-            return startDiff.length();
+            return new Pair<>(startDiff.length(), new Vector3f());
         }
 
         if (distA2 <= Float.MIN_VALUE) {
@@ -137,7 +138,7 @@ public class MathUtil {
         Vector3f closestA = new Vector3f(distA).mul(modA).add(startA);
         Vector3f closestB = new Vector3f(distB).mul(modB).add(startB);
 
-        return closestA.distance(closestB);
+        return new Pair<>(closestA.distance(closestB), lerpVector3(closestA, closestB, 0.5f));
     }
 
 }

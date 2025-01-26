@@ -111,16 +111,14 @@ public class SaberTrailRenderer {
 
         if (buffer == null) return;
 
-        ShaderProgram oldShader = RenderSystem.getShader();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        buffer.sortQuads(((BufferBuilderAccessible) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+        buffer.sortQuads(((BufferBuilderAccessible) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
         BufferRenderer.drawWithGlobalProgram(buffer);
-        RenderSystem.setShader(() -> oldShader);
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
@@ -145,11 +143,12 @@ public class SaberTrailRenderer {
                 Vector3f b = ab.getRight();
 
                 int op = (0x7F - ((int)(step * opacity))) << 24;
+                int op2 = (0x7F - ((int)(step * (opacity+1)))) << 24;
                 opacity++;
 
                 trail_buffer.vertex((float) (current_base.x - cam.x), (float) (current_base.y - cam.y), (float) (current_base.z - cam.z)).color(col + op);
-                trail_buffer.vertex((float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z)).color(col + op);
-                trail_buffer.vertex((float) (b.x - cam.x), (float) (b.y - cam.y), (float) (b.z - cam.z)).color(col + op);
+                trail_buffer.vertex((float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z)).color(col + op2);
+                trail_buffer.vertex((float) (b.x - cam.x), (float) (b.y - cam.y), (float) (b.z - cam.z)).color(col + op2);
                 trail_buffer.vertex((float) (current_tip.x - cam.x), (float) (current_tip.y - cam.y), (float) (current_tip.z - cam.z)).color(col + op);
 
                 current_base = a;

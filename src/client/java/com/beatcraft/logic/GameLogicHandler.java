@@ -35,17 +35,22 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Pair;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+
+import java.util.Random;
 
 
 public class GameLogicHandler {
@@ -58,6 +63,8 @@ public class GameLogicHandler {
     private static int score = 0;
     private static int maxHealth;
     private static int health;
+
+    private static final Random random = new Random();
 
     private static Vector3f rightSaberPos = new Vector3f();
     private static Vector3f leftSaberPos = new Vector3f();
@@ -95,9 +102,12 @@ public class GameLogicHandler {
         Vector3f leftEndpoint = new Vector3f(0, 1, 0).rotate(leftSaberRotation).add(leftSaberPos);
         Vector3f rightEndpoint = new Vector3f(0, 1, 0).rotate(rightSaberRotation).add(rightSaberPos);
 
-        if (MathUtil.getLineDistance(leftSaberPos, leftEndpoint, rightSaberPos, rightEndpoint) <= 0.05) {
+        Pair<Float, Vector3f> res = MathUtil.getLineDistance(leftSaberPos, leftEndpoint, rightSaberPos, rightEndpoint);
+
+        if (res.getLeft() <= 0.05) {
             HapticsHandler.vibrateLeft(0.2f, 1.0f);
             HapticsHandler.vibrateRight(0.2f, 1.0f);
+            BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFFFF, 0.02f);
         }
     }
 
@@ -184,13 +194,13 @@ public class GameLogicHandler {
         Vector3f endpoint = new Vector3f(0, 1, 0).rotate(saberRotation).add(saberPos);
         Vector3f oldEndpoint = new Vector3f(0, 1, 0).rotate(previousSaberRotation).add(previousSaberPos);
 
+        Vector3f trueDiff = endpoint.sub(oldEndpoint, new Vector3f());
+
         Vector3f local_hand = (new Vector3f(saberPos)).sub(notePos).rotate(inverted);
         endpoint.sub(notePos).rotate(inverted);
         oldEndpoint.sub(notePos).rotate(inverted);
 
-        Vector3f diff = endpoint.sub(oldEndpoint, new Vector3f());
-
-        float angle = MathUtil.getVectorAngleDegrees(new Vector2f(diff.x, diff.y));
+        float angle = MathUtil.getVectorAngleDegrees(new Vector2f(trueDiff.x, trueDiff.y));
 
         Hitbox goodCutHitbox = note.getGoodCutBounds();
         Hitbox badCutHitbox = note.getBadCutBounds();
@@ -218,8 +228,10 @@ public class GameLogicHandler {
                 if (colorNote.score$getData().score$getNoteType() == saberColor) {
                     if (saberColor == NoteType.RED) {
                         HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+
                     } else {
                         HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+
                     }
                     colorNote.score$setContactColor(saberColor);
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
@@ -247,6 +259,7 @@ public class GameLogicHandler {
                         }
 
                         colorNote.score$cutNote();
+                        createSparks(notePos, trueDiff, saberColor);
 
                     } else {
                         // good cut
@@ -283,8 +296,16 @@ public class GameLogicHandler {
             }
         } else if (note.getCutResult() != CutResult.NO_HIT) {
             note.cutNote();
+            createSparks(notePos, trueDiff, saberColor);
         }
+    }
 
+    private static void createSparks(Vector3f pos, Vector3f velocity, NoteType noteColor) {
+        if (noteColor == NoteType.BLUE) {
+            BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.05f, new Vector3f()), 0.2f, 0.05f, random.nextInt(15, 30), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB(), 0.02f);
+        } else {
+            BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.05f, new Vector3f()), 0.2f, 0.05f, random.nextInt(15, 30), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB(), 0.02f);
+        }
     }
 
     public static<T extends GameplayObject> void checkNote(PhysicalGameplayObject<T> note) {
@@ -340,35 +361,35 @@ public class GameLogicHandler {
 
     }
 
-    public int getGoodCuts() {
+    public static int getGoodCuts() {
         return goodCuts;
     }
 
-    public int getCombo() {
+    public static int getCombo() {
         return combo;
     }
 
-    public int getMaxCombo() {
+    public static int getMaxCombo() {
         return maxCombo;
     }
 
-    public int getBonusModifier() {
+    public static int getBonusModifier() {
         return bonusModifier;
     }
 
-    public int getScore() {
+    public static int getScore() {
         return score;
     }
 
-    public int getMaxPossibleScore() {
+    public static int getMaxPossibleScore() {
         return maxPossibleScore;
     }
 
-    public void addGoodCut() {
+    public static void addGoodCut() {
         goodCuts++;
     }
 
-    public void incrementCombo() {
+    public static void incrementCombo() {
         combo++;
         maxCombo = Math.max(combo, maxCombo);
         if (bonusModifier < 8) {
@@ -376,19 +397,19 @@ public class GameLogicHandler {
         }
     }
 
-    public void breakCombo() {
+    public static void breakCombo() {
         combo = 0;
         if (bonusModifier > 1) {
             bonusModifier /= 2;
         }
     }
 
-    public void addScore(int actual, int max) {
+    public static void addScore(int actual, int max) {
         score += actual;
         maxPossibleScore += max;
     }
 
-    public Rank getRank() {
+    public static Rank getRank() {
         if (maxPossibleScore == 0) {
             return Rank.SS;
         }
@@ -412,7 +433,7 @@ public class GameLogicHandler {
 
     }
 
-    public void reset() {
+    public static void reset() {
         score = 0;
         maxPossibleScore = 0;
         combo = 0;

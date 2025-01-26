@@ -4,9 +4,10 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.List;
 
 public class BeatcraftRenderer {
 
@@ -30,4 +31,73 @@ public class BeatcraftRenderer {
         }
         renderCalls.clear();
     }
+
+    public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {
+        List<Vector3f[]> edges = new ArrayList<>();
+
+        Vector3f[] corners = new Vector3f[] {
+            new Vector3f(minPos.x, minPos.y, minPos.z),
+            new Vector3f(maxPos.x, minPos.y, minPos.z),
+            new Vector3f(maxPos.x, maxPos.y, minPos.z),
+            new Vector3f(minPos.x, maxPos.y, minPos.z),
+            new Vector3f(minPos.x, minPos.y, maxPos.z),
+            new Vector3f(maxPos.x, minPos.y, maxPos.z),
+            new Vector3f(maxPos.x, maxPos.y, maxPos.z),
+            new Vector3f(minPos.x, maxPos.y, maxPos.z)
+        };
+
+        int[][] edgeIndices = new int[][] {
+            {0, 1}, {1, 2}, {2, 3}, {3, 0},
+            {4, 5}, {5, 6}, {6, 7}, {7, 4},
+            {0, 4}, {1, 5}, {2, 6}, {3, 7}
+        };
+
+        for (int[] pair : edgeIndices) {
+            edges.add(new Vector3f[]{
+                corners[pair[0]],
+                corners[pair[1]]
+            });
+        }
+
+        return edges;
+    }
+
+
+    public static List<Vector3f[]> getCubeFaces(Vector3f minPos, Vector3f maxPos) {
+        List<Vector3f[]> faces = new ArrayList<>();
+
+        Vector3f[] corners = new Vector3f[] {
+            new Vector3f(minPos.x, minPos.y, minPos.z),
+            new Vector3f(maxPos.x, minPos.y, minPos.z),
+            new Vector3f(maxPos.x, maxPos.y, minPos.z),
+            new Vector3f(minPos.x, maxPos.y, minPos.z),
+            new Vector3f(minPos.x, minPos.y, maxPos.z),
+            new Vector3f(maxPos.x, minPos.y, maxPos.z),
+            new Vector3f(maxPos.x, maxPos.y, maxPos.z),
+            new Vector3f(minPos.x, maxPos.y, maxPos.z)
+        };
+
+
+        int[][] faceIndices = new int[][] {
+            {0, 1, 2, 3}, // F
+            {4, 5, 6, 7}, // B
+            {0, 3, 7, 4}, // L
+            {1, 5, 6, 2}, // R
+            {3, 2, 6, 7}, // T
+            {0, 4, 5, 1}  // D
+        };
+
+        for (int[] pair : faceIndices) {
+            faces.add(new Vector3f[]{
+                corners[pair[0]],
+                corners[pair[1]],
+                corners[pair[2]],
+                corners[pair[3]]
+            });
+        }
+
+        return faces;
+    }
+
+
 }

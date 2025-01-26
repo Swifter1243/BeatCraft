@@ -5,11 +5,18 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
-import net.minecraft.client.render.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.util.List;
 
 public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
@@ -31,7 +38,62 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         localPos.add(0, 0, (float) camPos.z);
         updateBounds();
         GameLogicHandler.checkObstacle(this, localPos, new Quaternionf());
-        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB(), true);
+
+        render(localPos, new Quaternionf());
+
+        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
+
+        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), color, true, 6);
+        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), 0xFFFFFF, true);
+    }
+
+    private void render(Vector3f pos, Quaternionf orientation) {
+        BeatcraftRenderer.recordRenderCall(
+            () -> _render(pos, orientation)
+        );
+    }
+    private void _render(Vector3f pos, Quaternionf orientation) {
+        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
+            .getColorScheme().getObstacleColor().toARGB(0.15f);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        List<Vector3f[]> faces = BeatcraftRenderer.getCubeFaces(bounds.min, bounds.max);
+
+        for (Vector3f[] face : faces) {
+            var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);
+            var c2 = face[1].rotate(orientation, new Vector3f()).add(pos).sub(cam);
+            var c3 = face[2].rotate(orientation, new Vector3f()).add(pos).sub(cam);
+            var c4 = face[3].rotate(orientation, new Vector3f()).add(pos).sub(cam);
+
+            buffer.vertex(c1.x, c1.y, c1.z).color(color);
+            buffer.vertex(c2.x, c2.y, c2.z).color(color);
+            buffer.vertex(c3.x, c3.y, c3.z).color(color);
+            buffer.vertex(c4.x, c4.y, c4.z).color(color);
+
+        }
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.depthMask(true);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
+        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.disableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+
     }
 
     private void updateBounds() {

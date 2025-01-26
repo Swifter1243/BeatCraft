@@ -1,7 +1,6 @@
 package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.BeatCraftClient;
 import com.beatcraft.data.types.ISplinePath;
 import com.beatcraft.logic.Hitbox;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,15 +8,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class DebugRenderer {
 
@@ -36,32 +32,7 @@ public class DebugRenderer {
     public static boolean renderHitboxes = false;
     public static boolean renderArcDebugLines = false;
 
-    private static List<Vector3f[]> getCuboidEdges(Vector3f minPos, Vector3f maxPos) {
-        List<Vector3f[]> edges = new ArrayList<>();
 
-        Vector3f[] corners = new Vector3f[] {
-            new Vector3f(minPos.x, minPos.y, minPos.z),
-            new Vector3f(maxPos.x, minPos.y, minPos.z),
-            new Vector3f(maxPos.x, maxPos.y, minPos.z),
-            new Vector3f(minPos.x, maxPos.y, minPos.z),
-            new Vector3f(minPos.x, minPos.y, maxPos.z),
-            new Vector3f(maxPos.x, minPos.y, maxPos.z),
-            new Vector3f(maxPos.x, maxPos.y, maxPos.z),
-            new Vector3f(minPos.x, maxPos.y, maxPos.z)
-        };
-
-        int[][] edgeIndices = new int[][] {
-            {0, 1}, {1, 2}, {2, 3}, {3, 0},
-            {4, 5}, {5, 6}, {6, 7}, {7, 4},
-            {0, 4}, {1, 5}, {2, 6}, {3, 7}
-        };
-
-        for (int[] pair : edgeIndices) {
-            edges.add(new Vector3f[] { corners[pair[0]], corners[pair[1]] });
-        }
-
-        return edges;
-    }
 
     public static void renderParticle(Vector3f point, ParticleEffect particle) {
 
@@ -72,8 +43,11 @@ public class DebugRenderer {
     }
 
     public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest) {
-        renderCalls.add(() -> _renderHitbox(hitbox, position, orientation, color, doDepthTest));
+        renderCalls.add(() -> _renderHitbox(hitbox, position, orientation, color, doDepthTest, 2));
+    }
 
+    public static void renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest, int lineWidth) {
+        renderCalls.add(() -> _renderHitbox(hitbox, position, orientation, color, doDepthTest, lineWidth));
     }
 
     public static void renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
@@ -142,9 +116,26 @@ public class DebugRenderer {
         renderHitbox(hitbox, position, orientation, color, false);
     }
 
-    private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest) {
+    private static List<Vector3f[]> chopEdge(Vector3f a, Vector3f b) {
+        ArrayList<Vector3f[]> segments = new ArrayList<>();
 
-        var edges = getCuboidEdges(hitbox.min, hitbox.max);
+        Vector3f direction = b.sub(a, new Vector3f());
+        direction.normalize();
+        direction.mul(5);
+        Vector3f c = a;
+        while (a.distance(b) > 5) {
+            c = new Vector3f(a).add(direction);
+            segments.add(new Vector3f[]{a, c});
+            a = c;
+        }
+        segments.add(new Vector3f[]{c, b});
+
+        return segments;
+    }
+
+    private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest, int lineWidth) {
+
+        var edges = BeatcraftRenderer.getCubeEdges(hitbox.min, hitbox.max);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -159,8 +150,11 @@ public class DebugRenderer {
 
             var normal = c2.sub(c1, new Vector3f()).normalize();
 
-            buffer.vertex((float) (c1.x - cam.x), (float) (c1.y - cam.y), (float) (c1.z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
-            buffer.vertex((float) (c2.x - cam.x), (float) (c2.y - cam.y), (float) (c2.z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
+            for (Vector3f[] segments : chopEdge(c1, c2)) {
+                buffer.vertex((float) (segments[0].x - cam.x), (float) (segments[0].y - cam.y), (float) (segments[0].z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
+                buffer.vertex((float) (segments[1].x - cam.x), (float) (segments[1].y - cam.y), (float) (segments[1].z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
+            }
+
 
         }
 
@@ -174,7 +168,7 @@ public class DebugRenderer {
         if (doDepthTest) RenderSystem.enableDepthTest();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         var oldLineWidth = RenderSystem.getShaderLineWidth();
-        RenderSystem.lineWidth(2);
+        RenderSystem.lineWidth(lineWidth);
 
         BufferRenderer.drawWithGlobalProgram(buff);
 
