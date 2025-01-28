@@ -11,6 +11,9 @@ public class MathUtil {
     public static float inverseLerp(float a, float b, float t) {
         return (t - a) / (b - a);
     }
+    public static double inverseLerp(double a, double b, double t) {
+        return (t - a) / (b - a);
+    }
     public static float clamp01(float x) {
         return Math.clamp(0, 1, x);
     }

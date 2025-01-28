@@ -4,6 +4,7 @@ package com.beatcraft.mixin;
 import com.beatcraft.logic.HapticsHandler;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberTrailRenderer;
 import net.minecraft.client.render.*;
@@ -33,6 +34,7 @@ public class WorldRendererMixin {
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         DebugRenderer.render();
         BeatcraftRenderer.render();
+        HUDRenderer.render();
         BeatcraftParticleRenderer.renderParticles();
         SaberTrailRenderer.renderAll();
         HapticsHandler.endFrame();

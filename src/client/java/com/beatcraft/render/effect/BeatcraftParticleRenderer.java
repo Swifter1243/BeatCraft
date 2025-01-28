@@ -11,11 +11,6 @@ import java.util.Random;
 
 public class BeatcraftParticleRenderer {
 
-    private interface Particle {
-        void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos);
-        boolean shouldRemove();
-    }
-
     public static double normalize(double a, double b, double t) {
         return (t - a) / (b - a);
     }
@@ -123,6 +118,10 @@ public class BeatcraftParticleRenderer {
             SparkParticle particle = new SparkParticle(new Vector3f(position), applyVariance(velocity.mul(0.075f), velocityVariance, magnitudeVariance), color, size, random.nextFloat(0.15f, 0.45f), 0.92f);
             particles.add(particle);
         }
+    }
+
+    public static void addParticle(Particle particle) {
+        particles.add(particle);
     }
 
     public static void renderParticles() {
