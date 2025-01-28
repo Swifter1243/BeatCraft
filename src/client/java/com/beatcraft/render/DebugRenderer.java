@@ -32,7 +32,9 @@ public class DebugRenderer {
     public static boolean renderHitboxes = false;
     public static boolean renderArcDebugLines = false;
 
-
+    public static void renderLine(Vector3f origin, Vector3f end, int colorA, int colorB) {
+        renderCalls.add(() -> _renderLine(origin, end, colorA, colorB));
+    }
 
     public static void renderParticle(Vector3f point, ParticleEffect particle) {
 
@@ -52,6 +54,39 @@ public class DebugRenderer {
 
     public static void renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
         renderCalls.add(() -> _renderPath(path, offset, segments, color));
+    }
+
+    public static void _renderLine(Vector3f origin, Vector3f endPoint, int colorA, int colorB) {
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+
+        Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        Vector3f normal = endPoint.sub(origin, new Vector3f());
+
+        origin = origin.sub(cam, new Vector3f());
+        endPoint = endPoint.sub(cam, new Vector3f());
+
+        buffer.vertex(origin.x, origin.y, origin.z).color(colorA).normal(normal.x, normal.y, normal.z);
+        buffer.vertex(endPoint.x, endPoint.y, endPoint.z).color(colorB).normal(normal.x, normal.y, normal.z);
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        var oldLineWidth = RenderSystem.getShaderLineWidth();
+        RenderSystem.lineWidth(2);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.lineWidth(oldLineWidth);
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+
     }
 
     public static void _renderPath(ISplinePath path, Vector3f offset, int segments, int color) {

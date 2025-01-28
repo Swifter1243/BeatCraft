@@ -1,5 +1,6 @@
 package com.beatcraft.render.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Obstacle;
@@ -8,12 +9,14 @@ import com.beatcraft.logic.Hitbox;
 import com.beatcraft.mixin_utils.BufferBuilderAccessible;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.SpawnQuaternionPool;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -30,21 +33,40 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     @Override
+    protected Quaternionf getJumpsRotation(float spawnLifetime) {
+        return new Quaternionf();
+    }
+
+    @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
-        var camPos = mc.gameRenderer.getCamera().getPos();
-        localPos.x = (-data.getX()) * 0.6f + 0.9f;
-        localPos.y = (data.getY() * 0.6f + 0.25f);
-        localPos.add(0, 0, (float) camPos.z);
-        updateBounds();
-        GameLogicHandler.checkObstacle(this, localPos, new Quaternionf());
+        var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
 
-        render(localPos, new Quaternionf());
+
+        var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
+        //localPos.x = (-data.getX()) * 0.6f + 0.9f;
+        //localPos.y = (data.getY() * 0.6f + 0.25f);
+        //localPos.add(0, 0, camPos.z);
+        localPos.add(camPos);//.add(0.2f, 0, 0);
+        updateBounds();
+        GameLogicHandler.checkObstacle(this, localPos, rotation);
+
+        render(localPos, rotation);
 
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
-        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), color, true, 6);
-        DebugRenderer.renderHitbox(bounds, localPos, new Quaternionf(), 0xFFFFFF, true);
+        DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
+        DebugRenderer.renderHitbox(bounds, localPos, rotation, 0xFFFFFF, true);
+    }
+
+    @Override
+    protected boolean doNoteLook() {
+        return false;
+    }
+
+    @Override
+    protected boolean doNoteGravity() {
+        return false;
     }
 
     private void render(Vector3f pos, Quaternionf orientation) {
@@ -96,9 +118,17 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
     }
 
+    @Override
+    protected Vector2f get2DPosition() {
+        return new Vector2f(
+            data.getX() * 0.6f - 1.1f,
+            data.getY() * 0.6f - 0.3f
+        );
+    }
+
     private void updateBounds() {
         bounds.min.x = -((data.getWidth() * 0.6f) - 0.3f);
-        bounds.max.y = (data.getHeight() * 0.6f);
+        bounds.max.y = (data.getHeight() * 0.6f) + 0.3f;
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
 

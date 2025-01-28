@@ -22,7 +22,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
     protected static final Vector3f WORLD_OFFSET = new Vector3f(0, 0.8f, 1f);
-    private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
+    protected final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation;
     private Quaternionf lookRotation = new Quaternionf();
@@ -360,6 +360,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public Hitbox getBadCutBounds() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public Hitbox getAccurateHitbox() {
         return new Hitbox(new Vector3f(), new Vector3f());
     }
 

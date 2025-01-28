@@ -16,6 +16,10 @@ public class BeatcraftParticleRenderer {
         boolean shouldRemove();
     }
 
+    public static double normalize(double a, double b, double t) {
+        return (t - a) / (b - a);
+    }
+
     private static class SparkParticle implements Particle {
 
         public Vector3f position;
@@ -44,8 +48,14 @@ public class BeatcraftParticleRenderer {
             velocity.mul(decay);
             velocity.y -= 0.000002f;
 
+            velocity = applyVariance(velocity, 0.1f, 0.01f);
+
+            int opacity = (int) ((1 - normalize(this.spawnTime, this.spawnTime+this.lifetime, System.nanoTime() / 1_000_000_000d)) * 255) << 24;
+
+            if (opacity <= 0) return;
+
             for (Vector3f vert : vertices) {
-                buffer.vertex(vert.x, vert.y, vert.z).color(color);
+                buffer.vertex(vert.x, vert.y, vert.z).color(color + opacity);
             }
 
         }
@@ -64,13 +74,17 @@ public class BeatcraftParticleRenderer {
 
     public static Vector3f applyVariance(Vector3f velocity, float variance, float magnitudeVariance) {
 
+        magnitudeVariance = Math.abs(magnitudeVariance);
+
+        float var = magnitudeVariance == 0 ? 0 : random.nextFloat(-magnitudeVariance, magnitudeVariance);
+
         if (velocity.equals(0, 0, 0)) {
-            velocity = new Vector3f(0, random.nextFloat(-magnitudeVariance, magnitudeVariance), 0);
+            velocity = new Vector3f(0, var, 0);
             variance = 1.0f;
         }
 
         if (variance <= 0.0f) {
-            return new Vector3f(velocity).normalize().mul(velocity.length() + random.nextFloat(-magnitudeVariance, magnitudeVariance));
+            return new Vector3f(velocity).normalize().mul(velocity.length() * (1+var));
         }
 
         if (variance >= 1.0f) {
@@ -86,7 +100,7 @@ public class BeatcraftParticleRenderer {
 
         Vector3f result = new Vector3f(normalized).rotateAxis(randomAngle, randomAxis.x, randomAxis.y, randomAxis.z);
 
-        result.mul(velocity.length());
+        result.mul(velocity.length() * (1f + var));
 
         return result;
     }
@@ -106,7 +120,7 @@ public class BeatcraftParticleRenderer {
     public static void spawnSparkParticles(Vector3f position, Vector3f velocity, float velocityVariance, float magnitudeVariance, int particleCount, int color, float size) {
         for (int i = 0; i < particleCount; i++) {
 
-            SparkParticle particle = new SparkParticle(new Vector3f(position), applyVariance(velocity, velocityVariance, magnitudeVariance), color, size, random.nextFloat(0.05f, 0.20f), 0.92f);
+            SparkParticle particle = new SparkParticle(new Vector3f(position), applyVariance(velocity.mul(0.075f), velocityVariance, magnitudeVariance), color, size, random.nextFloat(0.15f, 0.45f), 0.92f);
             particles.add(particle);
         }
     }

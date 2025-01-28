@@ -1,5 +1,8 @@
 package com.beatcraft.logic;
 
+import com.beatcraft.BeatCraft;
+import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.PhysicalColorNote;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
@@ -19,8 +22,12 @@ public class SwingState {
     private final Vector3f lastPosition = new Vector3f();
     private final Quaternionf lastRotation = new Quaternionf();
 
+    private final Vector3f endPoint = new Vector3f(0, 1, 0);
     private final Vector3f lastVelocity = new Vector3f();
     private float swingAngle = 0f;
+
+    private double cutTime = 0f;
+    private boolean recentCut = false;
 
     public SwingState() {
 
@@ -28,9 +35,16 @@ public class SwingState {
 
     public Vector3f getVelocity(Vector3f currentPosition, Quaternionf currentRotation, double deltaTime) {
         Vector3f a = new Vector3f(0, 1, 0).rotate(currentRotation).add(currentPosition);
+        endPoint.set(a);
         Vector3f b = new Vector3f(0, 1, 0).rotate(lastRotation).add(lastPosition);
 
-        return new Vector3f(a).sub(b).mul(1/(float) deltaTime).normalize();
+        Vector3f velocity = new Vector3f(a).sub(b).mul((float) deltaTime);
+
+        if (DebugRenderer.doDebugRendering && DebugRenderer.debugSaberRendering) {
+            DebugRenderer.renderLine(a, a.add(velocity, new Vector3f()), 0xFFFF0000, 0xFF0000FF);
+        }
+
+        return velocity;
     }
 
     private void processFollowThrough() {
@@ -56,8 +70,22 @@ public class SwingState {
 
     }
 
+    private static void createSparks(Vector3f pos, Vector3f velocity) {
+        //BeatCraft.LOGGER.info("Making sparks at {} {}", pos, velocity);
+        BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.1f, new Vector3f()), 0.2f, 0.03f, GameLogicHandler.random.nextInt(5, 15), 0xFFFFFF, 0.02f);
+    }
+
     public void updateSaber(Vector3f position, Quaternionf orientation, double deltaTime) {
         Vector3f currentVelocity = getVelocity(position, orientation, deltaTime);
+
+        if (recentCut) {
+            double t = System.nanoTime() / 1_000_000_000d;
+            if (t-0.15 < cutTime) {
+                createSparks(endPoint, currentVelocity);
+            } else {
+                recentCut = false;
+            }
+        }
 
         Quaternionf cv = new Quaternionf().lookAlong(currentVelocity, new Vector3f(0, 0, 1)).normalize();
         Quaternionf lv = new Quaternionf().lookAlong(lastVelocity, new Vector3f(0, 0, 1)).normalize();
@@ -71,9 +99,16 @@ public class SwingState {
         }
 
         lastVelocity.set(currentVelocity);
+        lastPosition.set(position);
+        lastRotation.set(orientation);
 
         processFollowThrough();
 
+    }
+
+    public void startSparkEffect() {
+        cutTime = System.nanoTime() / 1_000_000_000d;
+        recentCut = true;
     }
 
     // returns the swing angle in degrees

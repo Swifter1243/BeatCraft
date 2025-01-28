@@ -64,7 +64,7 @@ public class GameLogicHandler {
     private static int maxHealth;
     private static int health;
 
-    private static final Random random = new Random();
+    public static final Random random = new Random();
 
     private static Vector3f rightSaberPos = new Vector3f();
     private static Vector3f leftSaberPos = new Vector3f();
@@ -107,7 +107,7 @@ public class GameLogicHandler {
         if (res.getLeft() <= 0.05) {
             HapticsHandler.vibrateLeft(0.2f, 1.0f);
             HapticsHandler.vibrateRight(0.2f, 1.0f);
-            BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFFFF, 0.02f);
+            BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFF, 0.02f);
         }
     }
 
@@ -204,7 +204,7 @@ public class GameLogicHandler {
 
         Hitbox goodCutHitbox = note.getGoodCutBounds();
         Hitbox badCutHitbox = note.getBadCutBounds();
-
+        Hitbox accurateHitbox = note.getAccurateHitbox();
 
         if (DebugRenderer.doDebugRendering) {
             if (DebugRenderer.debugSaberRendering) {
@@ -218,22 +218,30 @@ public class GameLogicHandler {
             if (DebugRenderer.renderHitboxes) {
                 DebugRenderer.renderHitbox(goodCutHitbox, note.getWorldPos(), note.getWorldRot(), 0x00FF00);
                 DebugRenderer.renderHitbox(badCutHitbox, note.getWorldPos(), note.getWorldRot(), 0xFF0000);
+                DebugRenderer.renderHitbox(accurateHitbox, note.getWorldPos(), note.getWorldRot(), 0xFFFF00);
             }
         }
 
         assert MinecraftClient.getInstance().player != null;
-        if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
 
+
+
+        if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
+            note.cutNote();
+            if (saberColor == NoteType.RED) {
+                leftSwingState.startSparkEffect();
+            } else {
+                rightSwingState.startSparkEffect();
+            }
             if (note instanceof PhysicalScorableObject colorNote) {
                 if (colorNote.score$getData().score$getNoteType() == saberColor) {
                     if (saberColor == NoteType.RED) {
                         HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
-
                     } else {
                         HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
-
                     }
                     colorNote.score$setContactColor(saberColor);
+
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
                         if (colorNote.score$getData().score$getCutDirection() == CutDirection.DOT) {
@@ -259,7 +267,6 @@ public class GameLogicHandler {
                         }
 
                         colorNote.score$cutNote();
-                        createSparks(notePos, trueDiff, saberColor);
 
                     } else {
                         // good cut
@@ -295,18 +302,11 @@ public class GameLogicHandler {
                 }
             }
         } else if (note.getCutResult() != CutResult.NO_HIT) {
-            note.cutNote();
-            createSparks(notePos, trueDiff, saberColor);
+
         }
     }
 
-    private static void createSparks(Vector3f pos, Vector3f velocity, NoteType noteColor) {
-        if (noteColor == NoteType.BLUE) {
-            BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.05f, new Vector3f()), 0.2f, 0.05f, random.nextInt(15, 30), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB(), 0.02f);
-        } else {
-            BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.05f, new Vector3f()), 0.2f, 0.05f, random.nextInt(15, 30), BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB(), 0.02f);
-        }
-    }
+
 
     public static<T extends GameplayObject> void checkNote(PhysicalGameplayObject<T> note) {
 

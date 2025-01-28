@@ -14,6 +14,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -32,17 +33,20 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         ArrayList<Vector3f> points = new ArrayList<>();
 
+        float startX = (-data.getX()) * 0.6f + 0.9f;
+        float startY = data.getY() * 0.6f + 0.8f;
+
         Vector3f start = new Vector3f(
-            (-data.getX()) * 0.6f + 0.9f,
-            data.getY() * 0.6f + 0.8f,
+            0,
+            0,
             0
         );
 
         Vector3f startC = Arc.cutDirectionToControlPoint(data.getHeadCutDirection()).mul(data.getHeadMagnitude()).mul(2).add(start);
 
         Vector3f end = new Vector3f(
-            (-data.getTailX()) * 0.6f + 0.9f,
-            data.getTailY() * 0.6f + 0.8f,
+            ((-data.getTailX()) * 0.6f + 0.9f) - startX,
+            (data.getTailY() * 0.6f + 0.8f) - startY,
             -(data.getTailBeat() - data.getBeat())
         );
 
@@ -96,20 +100,36 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
     }
 
     @Override
+    protected boolean doNoteLook() {
+        return false;
+    }
+
+    @Override
+    protected boolean doNoteGravity() {
+        return false;
+    }
+
+    @Override
+    protected Quaternionf getJumpsRotation(float spawnLifetime) {
+        return new Quaternionf();
+    }
+
+    @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
 
         updateCurve();
 
         var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
         var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
-        localPos.x = 0;
-        localPos.y = 0;
-        localPos.add(0, 0, camPos.z + 0.25f);
+        //localPos.x = 0;
+        //localPos.y = 0;
+        //localPos.add(0, 0, camPos.z + 0.25f);
+        localPos.add(0.2f, 0.3f, 0.25f);
 
         render(basePath, localPos, data.getColor().toARGB());
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
-            DebugRenderer.renderPath(basePath, localPos, segments, data.getColor().toARGB());
+            DebugRenderer.renderPath(basePath, localPos.add(camPos, new Vector3f()), segments, data.getColor().toARGB());
         }
     }
 
@@ -139,15 +159,15 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        //Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         int segments = 50;
 
         for (int i = 0; i < segments; i++) {
             float f = ((float) i) / ((float) segments);
             float f2 = ((float) (i + 1)) / ((float) segments);
-            Vector3f p = path.evaluate(f).add(origin).sub(cam);
-            Vector3f p2 = path.evaluate(f2).add(origin).sub(cam);
+            Vector3f p = path.evaluate(f).add(origin);
+            Vector3f p2 = path.evaluate(f2).add(origin);
             Vector3f t = path.getTangent(f);
             Vector3f t2 = path.getTangent(f2);
 
@@ -169,7 +189,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
                 h2[5], h2[2]
             };
 
-            float dist = p.add(cam, new Vector3f()).length();
+            float dist = p.length();
 
             int fade = (int) (Math.clamp((12f - dist) / 9f, 0f, 1f) * 127f) << 24;
 

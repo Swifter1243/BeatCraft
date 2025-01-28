@@ -43,6 +43,11 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
         new Vector3f(0.175f, 0.175f, 0.175f)
     );
 
+    public static final Hitbox ACCURATE_HITBOX = new Hitbox(
+        new Vector3f(-0.25f, -0.25f, -0.25f),
+        new Vector3f(0.25f, 0.25f, 0.25f)
+    );
+
     public PhysicalColorNote(ColorNote data) {
         super(data);
 
@@ -135,6 +140,11 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     @Override
     public Hitbox getBadCutBounds() {
         return BAD_CUT_BOUNDS;
+    }
+
+    @Override
+    public Hitbox getAccurateHitbox() {
+        return ACCURATE_HITBOX;
     }
 
     @Override

@@ -16,12 +16,18 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Math;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead> implements PhysicalScorableObject {
 
     public static final ModelIdentifier chainHeadModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note_chain_head"), "inventory");
     private static final int overlay = OverlayTexture.getUv(0, false);
     private float baseDegrees;
+
+    public static final Hitbox ACCURATE_HITBOX = new Hitbox(
+        new Vector3f(-0.25f, 0f, -0.25f),
+        new Vector3f(0.25f, 0.25f, 0.25f)
+    );
 
     public PhysicalChainNoteHead(ChainNoteHead data) {
         super(data);
@@ -75,6 +81,11 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     @Override
     public Hitbox getBadCutBounds() {
         return PhysicalColorNote.BAD_CUT_BOUNDS;
+    }
+
+    @Override
+    public Hitbox getAccurateHitbox() {
+        return ACCURATE_HITBOX;
     }
 
     @Override

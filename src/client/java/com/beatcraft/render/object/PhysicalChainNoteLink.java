@@ -35,6 +35,11 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         new Vector3f(0.175f, 0.05f, 0.175f)
     );
 
+    public static final Hitbox ACCURATE_HITBOX = new Hitbox(
+        new Vector3f(-0.25f, -0.046875f, -0.25f),
+        new Vector3f(0.25f, 0.046875f, 0.25f)
+    );
+
     public PhysicalChainNoteLink(ChainNoteLink data) {
         super(data);
 
@@ -87,6 +92,11 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
     @Override
     public Hitbox getBadCutBounds() {
         return BAD_CUT_BOUNDS;
+    }
+
+    @Override
+    public Hitbox getAccurateHitbox() {
+        return ACCURATE_HITBOX;
     }
 
     @Override
