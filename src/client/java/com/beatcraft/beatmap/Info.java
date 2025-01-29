@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.audio.AudioInfo;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.ColorScheme;
 import com.google.gson.JsonObject;
@@ -33,6 +34,14 @@ public class Info {
             return beat * (60 / bpm);
         } else {
             return audioInfo.getTime(beat, speedModifier);
+        }
+    }
+
+    public float getSongDuration() {
+        if (audioInfo == null) {
+            return BeatmapAudioPlayer.beatmapAudio.getSongDuration();
+        } else {
+            return audioInfo.getSongDuration();
         }
     }
 

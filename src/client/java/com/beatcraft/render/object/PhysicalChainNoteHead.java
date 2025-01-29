@@ -107,4 +107,9 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     public void score$cutNote() {
         cutNote();
     }
+
+    @Override
+    public GameLogicHandler.CutResult score$getCutResult() {
+        return getCutResult();
+    }
 }

@@ -4,6 +4,7 @@ package com.beatcraft;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
@@ -116,6 +117,7 @@ public class BeatCraftClient implements ClientModInitializer {
         if (handleDifficultySetup(context, path) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
+            GameLogicHandler.reset();
             return 1;
         } else {
             return -1;
@@ -282,6 +284,7 @@ public class BeatCraftClient implements ClientModInitializer {
         if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
+            GameLogicHandler.reset();
             return 1;
         } else {
             return -1;

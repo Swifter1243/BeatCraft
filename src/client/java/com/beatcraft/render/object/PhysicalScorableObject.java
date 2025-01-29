@@ -9,4 +9,5 @@ public interface PhysicalScorableObject {
     void score$setContactColor(NoteType type);
     void score$setCutResult(GameLogicHandler.CutResult cut);
     void score$cutNote();
+    GameLogicHandler.CutResult score$getCutResult();
 }

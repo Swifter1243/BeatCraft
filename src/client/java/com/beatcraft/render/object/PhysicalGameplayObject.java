@@ -32,7 +32,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private AnimationState animationState = new AnimationState();
     protected T data;
     protected boolean despawned = false;
-    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.NO_HIT;
+    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit();
     private NoteType contactColor = null;
 
     public PhysicalGameplayObject(T data) {
@@ -73,7 +73,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void seek(float beat) {
         despawned = false;
-        cutResult = GameLogicHandler.CutResult.NO_HIT;
+        cutResult = GameLogicHandler.CutResult.noHit();
         update(beat);
     }
 
@@ -88,6 +88,13 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (jumpEnded(beat)) {
             despawn();
             return;
+        }
+
+        if (pastBeat(beat)) {
+            if (this instanceof PhysicalScorableObject scorable) {
+                scorable.score$getCutResult().setContactPosition(this.getWorldPos());
+                scorable.score$getCutResult().finalizeScore();
+            }
         }
 
         float lifetime = getLifetime(beat);
@@ -282,6 +289,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     protected boolean jumpEnded(float beat) {
         return beat >= getDespawnBeat();
+    }
+
+    protected boolean pastBeat(float beat) {
+        return beat > getData().getBeat()+0.25f;
     }
 
     private void applyMatrixToRender(Matrix4f matrix, MatrixStack matrices) {

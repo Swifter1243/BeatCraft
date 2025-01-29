@@ -144,4 +144,11 @@ public class MathUtil {
         return new Pair<>(closestA.distance(closestB), lerpVector3(closestA, closestB, 0.5f));
     }
 
+    public static String timeToString(int t) {
+        int minutes = t / 60;
+        int seconds = t % 60;
+
+        return String.format("%s:%02d", minutes, seconds);
+    }
+
 }

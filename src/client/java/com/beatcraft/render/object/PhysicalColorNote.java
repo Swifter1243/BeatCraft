@@ -171,4 +171,9 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     public void score$cutNote() {
         cutNote();
     }
+
+    @Override
+    public GameLogicHandler.CutResult score$getCutResult() {
+        return getCutResult();
+    }
 }

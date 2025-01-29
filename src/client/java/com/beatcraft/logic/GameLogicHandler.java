@@ -35,6 +35,7 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
@@ -50,6 +51,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -114,48 +116,62 @@ public class GameLogicHandler {
         }
     }
 
-    public enum CutResult {
-        NO_HIT,   // note was never hit
-        HIT,      // note was hit but not with precise calculations
-        GOOD_CUT, // note was cut in the correct direction
-        BAD_CUT;  // note was hit with wrong color or in wrong direction
+    public static class CutResult {
 
-        private int points = 0;
-        private int preSwingAngle = 0;
+        private int type;
+
+        private static final int GOOD_CUT = 1;
+        private static final int BAD_CUT = 2;
+        private static final int NO_HIT = 3;
+        private static final int HIT = 4;
+
+        private int preSwingAngle;
         private int followThroughAngle = 0;
-        private int sliceScore = 0;
-        private Vector3f contactPosition = new Vector3f();
-        CutResult() {
+        private int sliceScore;
+        private Vector3f contactPosition;
+        private boolean finalized = false;
 
+        public static final CutResult NOHIT = noHit();
+
+        private CutResult(int preSwing, int sliceScore, Vector3f pos, int type) {
+            preSwingAngle = preSwing;
+            this.sliceScore = sliceScore;
+            contactPosition = new Vector3f(pos);
+            this.type = type;
         }
 
-        public static CutResult goodCut(int points, int preSwingAngle, Vector3f contactPosition) {
-            CutResult cut = CutResult.GOOD_CUT;
-            cut.points = points;
-            cut.preSwingAngle = preSwingAngle;
-            cut.followThroughAngle = 0;
-            cut.contactPosition = new Vector3f(contactPosition);
-            cut.finalizeScore();
-            return cut;
+        public static CutResult goodCut(int sliceScore, int preSwingAngle, Vector3f pos) {
+            return new CutResult(preSwingAngle, sliceScore, pos, GOOD_CUT);
+        }
+
+        public static CutResult badCut(Vector3f pos) {
+            return new CutResult(0, 0, pos, BAD_CUT);
+        }
+
+        public static CutResult noHit() {
+            return new CutResult(0, 0, new Vector3f(), NO_HIT);
+        }
+
+        public static CutResult hit(int sliceScore, int preSwingAngle, Vector3f pos) {
+            return new CutResult(preSwingAngle, sliceScore, pos, HIT);
         }
 
         public void setFollowThroughAngle(int angle) {
             followThroughAngle = angle;
+            finalizeScore();
+        }
+
+        public void setContactPosition(Vector3f pos) {
+            this.contactPosition = new Vector3f(pos);
         }
 
         public int getPreSwingAngle() {
             return preSwingAngle;
         }
 
-        public void setSliceScore(int score) {
-            sliceScore = score;
-        }
-
-        public void setContactPosition(Vector3f position) {
-            contactPosition = new Vector3f(position);
-        }
-
         public void finalizeScore() {
+            if (finalized) return;
+            finalized = true;
             GameLogicHandler.process(this);
         }
 
@@ -264,21 +280,21 @@ public class GameLogicHandler {
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
                         if (colorNote.score$getData().score$getCutDirection() == CutDirection.DOT) {
-                            colorNote.score$setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
+                            colorNote.score$setCutResult(CutResult.goodCut(15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
                             //MinecraftClient.getInstance().player.playSound(
                             //    NoteBlockInstrument.PLING.getSound().value(),
                             //    1, 1
                             //);
                         } else {
                             if (matchAngle(angle, colorNote.score$getData().score$getCutDirection())) {
-                                colorNote.score$setCutResult(CutResult.goodCut(2, 0, notePos));
+                                colorNote.score$setCutResult(CutResult.goodCut(15, 0, notePos));
                                 //MinecraftClient.getInstance().player.playSound(
                                 //    NoteBlockInstrument.PLING.getSound().value(),
                                 //    1, 1
                                 //);
                             } else {
-                                colorNote.score$setCutResult(CutResult.BAD_CUT);
-                                process(CutResult.BAD_CUT);
+                                colorNote.score$setCutResult(CutResult.badCut(notePos));
+                                process(CutResult.badCut(notePos));
                             }
                         }
 
@@ -291,15 +307,15 @@ public class GameLogicHandler {
                         //    1, 1
                         //);
                         // can't trigger a cut yet because saber needs a chance to potentially hit the bad-cut hitbox
-                        note.setCutResult(CutResult.HIT);
+                        note.setCutResult(CutResult.hit(15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
                     }
 
                 } else {
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         note.setContactColor(saberColor.opposite());
                         // bad cut
-                        note.setCutResult(CutResult.BAD_CUT);
-                        process(CutResult.BAD_CUT);
+                        note.setCutResult(CutResult.badCut(notePos));
+                        process(CutResult.badCut(notePos));
                         note.cutNote();
                         //MinecraftClient.getInstance().player.playSound(
                         //    NoteBlockInstrument.SNARE.getSound().value(),
@@ -315,12 +331,13 @@ public class GameLogicHandler {
                     //    NoteBlockInstrument.SNARE.getSound().value(),
                     //    1, 1
                     //);
-                    process(CutResult.BAD_CUT);
-                    note.cutNote();
+                    process(CutResult.badCut(notePos));
+
                 }
             }
-        } else if (note.getCutResult() != CutResult.NO_HIT) {
+        } else if (note.getCutResult().type != CutResult.NO_HIT) {
             note.getCutResult().finalizeScore();
+            note.cutNote();
         }
     }
 
@@ -380,16 +397,16 @@ public class GameLogicHandler {
     }
 
     public static void process(CutResult cut) {
-        BeatCraft.LOGGER.info("Process cut: {}", cut);
-        switch (cut) {
-            case NO_HIT -> {
+        switch (cut.type) {
+            case CutResult.NO_HIT -> {
                 if (misses == 0 && badCuts == 0) {
                     loseFCTime = System.nanoTime() / 1_000_000_000d;
                 }
                 misses++;
                 breakCombo();
+                HUDRenderer.postScore(-1, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
             }
-            case HIT, GOOD_CUT -> {
+            case CutResult.HIT, CutResult.GOOD_CUT -> {
                 int pre_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 100, cut.preSwingAngle), 0, 1) * 70);
                 int post_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 60, cut.followThroughAngle), 0, 1) * 30);
                 int finalScore = pre_swing + post_swing + cut.sliceScore;
@@ -397,16 +414,24 @@ public class GameLogicHandler {
                 addGoodCut();
                 addScore(finalScore, 115);
                 incrementCombo();
-                HUDRenderer.postScore(finalScore, cut.contactPosition.mul(1, 0, 1), cut.contactPosition.mul(1, 0, 0).add(0, 0.5f, 8));
+                HUDRenderer.postScore(finalScore, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
             }
-            case BAD_CUT -> {
+            case CutResult.BAD_CUT -> {
                 if (misses == 0 && badCuts == 0) {
                     loseFCTime = System.nanoTime() / 1_000_000_000d;
                 }
                 badCuts++;
                 breakCombo();
+                HUDRenderer.postScore(0, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
             }
         }
+    }
+
+    public static float getComboBarOpacity() {
+        if (badCuts == 0 && misses == 0) {
+            return 1;
+        }
+        return 1 - (float) Math.clamp(MathUtil.inverseLerp(loseFCTime, loseFCTime+0.3, System.nanoTime() / 1_000_000_000d), 0, 1);
     }
 
     public static int getGoodCuts() {
@@ -458,14 +483,12 @@ public class GameLogicHandler {
     }
 
     public static float getAccuracy() {
-        return (float) score / (float) maxPossibleScore;
+        float acc = (float) score / (float) maxPossibleScore;
+        return Float.isNaN(acc) ? 100 : acc;
     }
 
     public static Rank getRank() {
-        if (maxPossibleScore == 0) {
-            return Rank.SS;
-        }
-        float acc = (float) score / (float) maxPossibleScore;
+        float acc = getAccuracy();
 
         if (acc < 20) {
             return Rank.E;
@@ -492,6 +515,9 @@ public class GameLogicHandler {
         maxCombo = 0;
         bonusModifier = 1;
         goodCuts = 0;
+        loseFCTime = 0;
+        badCuts = 0;
+        misses = 0;
     }
 
 }

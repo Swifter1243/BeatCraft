@@ -1,11 +1,13 @@
 package com.beatcraft.audio;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import net.minecraft.client.sound.OggAudioStream;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 
-import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -17,6 +19,7 @@ public class BeatmapAudio {
     private final int source;
     private boolean isPlaying = false;
     private boolean isLoaded = false;
+    private float songDuration = 0;
 
     public BeatmapAudio() {
         source = AL10.alGenSources();
@@ -94,14 +97,33 @@ public class BeatmapAudio {
     public void loadAudioFromFile(String path) throws IOException {
         closeBuffer();
 
+        //try {
+        //    File audioFile = new File(path);
+        //    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioFile);
+        //    songDuration = (float) audioInputStream.getFrameLength() / audioInputStream.getFormat().getFrameRate();
+        //
+        //} catch (UnsupportedAudioFileException | IOException e) {
+        //    songDuration = 0;
+        //    BeatCraft.LOGGER.error("Failed to get song duration ", e);
+        //}
+
         InputStream inputStream = Files.newInputStream(Path.of(path));
         OggAudioStream oggAudioStream = new OggAudioStream(inputStream);
-
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
 
+        try {
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(path));
+            songDuration = (float) ((double) audioStream.getFrameLength() / format.getFrameRate());
+        } catch (UnsupportedAudioFileException e) {
+            BeatCraft.LOGGER.error("Failed to get audio file length", e);
+            songDuration = 0;
+        }
+
+
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
+
 
         ByteBuffer audioData = oggAudioStream.readAll();
         AL10.alBufferData(buffer, formatID, audioData, sampleRate);
@@ -110,6 +132,10 @@ public class BeatmapAudio {
         isLoaded = true;
         inputStream.close();
         oggAudioStream.close();
+    }
+
+    public float getSongDuration() {
+        return songDuration;
     }
 
     public void closeBuffer() {
