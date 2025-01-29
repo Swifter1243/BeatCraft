@@ -3,6 +3,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessible;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.Particle;
@@ -29,9 +30,9 @@ public class HUDRenderer {
     private static Vector3f rightHudPosition = new Vector3f(-3, 1, 0);
     private static Vector3f healthBarPosition = new Vector3f(0, -2, 0);
 
-    private static Quaternionf leftHudOrientation = new Quaternionf();
-    private static Quaternionf rightHudOrientation = new Quaternionf();
-    private static Quaternionf healthBarOrientation = new Quaternionf();
+    private static Quaternionf leftHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
+    private static Quaternionf rightHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
+    private static Quaternionf healthBarOrientation = new Quaternionf().rotateZ((float) Math.PI);
 
     private static class ScoreDisplay implements Particle {
 
@@ -71,9 +72,7 @@ public class HUDRenderer {
         BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint));
     }
 
-    public static void render() {
-
-
+    public static void render(VertexConsumerProvider immediate) {
 
         if (!showHUD) return;
 
@@ -85,37 +84,32 @@ public class HUDRenderer {
         MatrixStack matrices = new MatrixStack();
 
 
-        matrices.translate(0, 0, 6);
+        matrices.translate(0, 0, 8);
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-//        matrices.scale(0.1f, 0.1f, 0.1f);
-
-        Vector3f pos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
-
-        BeatCraft.LOGGER.info("POSITION: {}", pos);
 
         matrices.push();
         matrices.translate(leftHudPosition.x, leftHudPosition.y, leftHudPosition.z);
         matrices.multiply(leftHudOrientation);
-        renderRank(matrices, textRenderer, buffer, cameraPos);
-        renderCombo(matrices, textRenderer, buffer, cameraPos);
-        renderScore(matrices, textRenderer, buffer, cameraPos);
-        renderAccuracy(matrices, textRenderer, buffer, cameraPos);
+        matrices.scale(1f/32f, 1f/32f, 1f/32f);
+        renderRank(matrices, textRenderer, buffer, cameraPos, immediate);
+        renderCombo(matrices, textRenderer, buffer, cameraPos, immediate);
+        renderScore(matrices, textRenderer, buffer, cameraPos, immediate);
+        renderAccuracy(matrices, textRenderer, buffer, cameraPos, immediate);
         matrices.pop();
 
         matrices.push();
         matrices.translate(rightHudPosition.x, rightHudPosition.y, rightHudPosition.z);
-        matrices.multiply(new Quaternionf().rotateY((float) Math.PI / 2f));
         matrices.multiply(rightHudOrientation);
-        renderModifier(matrices, textRenderer, buffer, cameraPos);
-        renderTime(matrices, textRenderer, buffer, cameraPos);
+        matrices.scale(1f/32f, 1f/32f, 1f/32f);
+        renderModifier(matrices, textRenderer, buffer, cameraPos, immediate);
+        renderTime(matrices, textRenderer, buffer, cameraPos, immediate);
         matrices.pop();
 
         matrices.push();
         matrices.translate(healthBarPosition.x, healthBarPosition.y, healthBarPosition.z);
-        matrices.multiply(new Quaternionf().rotateY((float) Math.PI / 2f));
         matrices.multiply(healthBarOrientation);
-        renderPlayerHealth(matrices, textRenderer, buffer, cameraPos);
+        matrices.scale(1f/32f, 1f/32f, 1f/32f);
+        renderPlayerHealth(matrices, textRenderer, buffer, cameraPos, immediate);
         matrices.pop();
 
         BuiltBuffer buff = buffer.endNullable();
@@ -138,35 +132,127 @@ public class HUDRenderer {
     }
 
 
-    private static void renderRank(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
+    private static void renderRank(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
-        Vector3f pos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f()).add(cameraPos);
+        String rank = GameLogicHandler.getRank().toString();
 
-        DebugRenderer.renderParticle(pos, ParticleTypes.BUBBLE);
+        int w = textRenderer.getWidth(rank);
 
-    }
+        matrices.push();
+        matrices.scale(2, 2, 2);
 
-    private static void renderCombo(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
+        textRenderer.draw(
+            Text.literal(rank),
+            -w/2f, 12, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
 
-    }
-
-    private static void renderScore(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
-
-    }
-
-    private static void renderAccuracy(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
-
-    }
-
-    private static void renderModifier(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
+        matrices.pop();
 
     }
 
-    private static void renderTime(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
+    private static void renderCombo(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+
+        int w = textRenderer.getWidth("COMBO");
+
+        textRenderer.draw(
+            Text.literal("COMBO"),
+            -w/2f, -28, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+        matrices.push();
+        matrices.scale(1.5f, 1.5f, 1.5f);
+
+        String combo = String.valueOf(GameLogicHandler.getCombo());
+        w = textRenderer.getWidth(combo);
+
+        textRenderer.draw(
+            Text.literal(combo),
+            -w/2f, -12, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+        matrices.pop();
+    }
+
+    private static void renderScore(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+
+        String score = String.valueOf(GameLogicHandler.getScore());
+
+        int w = textRenderer.getWidth(score);
+
+        matrices.push();
+
+        matrices.scale(1.2f, 1.2f, 1.2f);
+        textRenderer.draw(
+            Text.literal(score),
+            -w/2f, 2, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+
+        matrices.pop();
 
     }
 
-    private static void renderPlayerHealth(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
+    private static void renderAccuracy(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+
+        String accuracy = String.format("%.1f", GameLogicHandler.getAccuracy()) + "%";
+
+
+        int w = textRenderer.getWidth(accuracy);
+
+        matrices.push();
+
+        matrices.scale(0.8f, 0.8f, 0.8f);
+        textRenderer.draw(
+            Text.literal(accuracy),
+            -w/2f, 18, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+
+        matrices.pop();
+
+    }
+
+    private static void renderModifier(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+
+        String mod = String.valueOf(GameLogicHandler.getBonusModifier());
+
+        //int w = textRenderer.getWidth(mod);
+
+        textRenderer.draw(
+            Text.literal("x"),
+            -6, -20, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+        matrices.push();
+        matrices.scale(2.5f, 2.5f, 2.5f);
+
+        textRenderer.draw(
+            Text.literal(mod),
+            0, -8, 0xFFFFFFFF, false,
+            matrices.peek().getPositionMatrix(), immediate,
+            TextRenderer.TextLayerType.NORMAL, 0, 0xFFFFFF
+        );
+
+        matrices.pop();
+    }
+
+    private static void renderTime(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+
+    }
+
+    private static void renderPlayerHealth(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
     }
 

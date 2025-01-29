@@ -35,11 +35,11 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.utils.MathUtil;
@@ -56,6 +56,9 @@ import java.util.Random;
 public class GameLogicHandler {
 
     private static int goodCuts = 0;
+    private static int badCuts = 0;
+    private static int misses = 0;
+    private static double loseFCTime = 0;
     private static int combo = 0;
     private static int maxCombo = 0;
     private static int bonusModifier = 1;
@@ -120,15 +123,19 @@ public class GameLogicHandler {
         private int points = 0;
         private int preSwingAngle = 0;
         private int followThroughAngle = 0;
+        private int sliceScore = 0;
+        private Vector3f contactPosition = new Vector3f();
         CutResult() {
 
         }
 
-        public static CutResult goodCut(int points, int preSwingAngle) {
+        public static CutResult goodCut(int points, int preSwingAngle, Vector3f contactPosition) {
             CutResult cut = CutResult.GOOD_CUT;
             cut.points = points;
             cut.preSwingAngle = preSwingAngle;
             cut.followThroughAngle = 0;
+            cut.contactPosition = new Vector3f(contactPosition);
+            cut.finalizeScore();
             return cut;
         }
 
@@ -138,6 +145,18 @@ public class GameLogicHandler {
 
         public int getPreSwingAngle() {
             return preSwingAngle;
+        }
+
+        public void setSliceScore(int score) {
+            sliceScore = score;
+        }
+
+        public void setContactPosition(Vector3f position) {
+            contactPosition = new Vector3f(position);
+        }
+
+        public void finalizeScore() {
+            GameLogicHandler.process(this);
         }
 
     }
@@ -227,7 +246,7 @@ public class GameLogicHandler {
 
 
         if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
-            note.cutNote();
+
             if (saberColor == NoteType.RED) {
                 leftSwingState.startSparkEffect();
             } else {
@@ -245,24 +264,21 @@ public class GameLogicHandler {
                     if (badCutHitbox.checkCollision(local_hand, endpoint)) {
                         // check slice direction
                         if (colorNote.score$getData().score$getCutDirection() == CutDirection.DOT) {
-                            colorNote.score$setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle())));
+                            colorNote.score$setCutResult(CutResult.goodCut(1, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
                             //MinecraftClient.getInstance().player.playSound(
                             //    NoteBlockInstrument.PLING.getSound().value(),
                             //    1, 1
                             //);
                         } else {
                             if (matchAngle(angle, colorNote.score$getData().score$getCutDirection())) {
-                                colorNote.score$setCutResult(CutResult.goodCut(2, 0));
+                                colorNote.score$setCutResult(CutResult.goodCut(2, 0, notePos));
                                 //MinecraftClient.getInstance().player.playSound(
                                 //    NoteBlockInstrument.PLING.getSound().value(),
                                 //    1, 1
                                 //);
                             } else {
                                 colorNote.score$setCutResult(CutResult.BAD_CUT);
-                                //MinecraftClient.getInstance().player.playSound(
-                                //    NoteBlockInstrument.SNARE.getSound().value(),
-                                //    1, 1
-                                //);
+                                process(CutResult.BAD_CUT);
                             }
                         }
 
@@ -283,6 +299,7 @@ public class GameLogicHandler {
                         note.setContactColor(saberColor.opposite());
                         // bad cut
                         note.setCutResult(CutResult.BAD_CUT);
+                        process(CutResult.BAD_CUT);
                         note.cutNote();
                         //MinecraftClient.getInstance().player.playSound(
                         //    NoteBlockInstrument.SNARE.getSound().value(),
@@ -298,11 +315,12 @@ public class GameLogicHandler {
                     //    NoteBlockInstrument.SNARE.getSound().value(),
                     //    1, 1
                     //);
+                    process(CutResult.BAD_CUT);
                     note.cutNote();
                 }
             }
         } else if (note.getCutResult() != CutResult.NO_HIT) {
-
+            note.getCutResult().finalizeScore();
         }
     }
 
@@ -361,6 +379,36 @@ public class GameLogicHandler {
 
     }
 
+    public static void process(CutResult cut) {
+        BeatCraft.LOGGER.info("Process cut: {}", cut);
+        switch (cut) {
+            case NO_HIT -> {
+                if (misses == 0 && badCuts == 0) {
+                    loseFCTime = System.nanoTime() / 1_000_000_000d;
+                }
+                misses++;
+                breakCombo();
+            }
+            case HIT, GOOD_CUT -> {
+                int pre_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 100, cut.preSwingAngle), 0, 1) * 70);
+                int post_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 60, cut.followThroughAngle), 0, 1) * 30);
+                int finalScore = pre_swing + post_swing + cut.sliceScore;
+
+                addGoodCut();
+                addScore(finalScore, 115);
+                incrementCombo();
+                HUDRenderer.postScore(finalScore, cut.contactPosition.mul(1, 0, 1), cut.contactPosition.mul(1, 0, 0).add(0, 0.5f, 8));
+            }
+            case BAD_CUT -> {
+                if (misses == 0 && badCuts == 0) {
+                    loseFCTime = System.nanoTime() / 1_000_000_000d;
+                }
+                badCuts++;
+                breakCombo();
+            }
+        }
+    }
+
     public static int getGoodCuts() {
         return goodCuts;
     }
@@ -407,6 +455,10 @@ public class GameLogicHandler {
     public static void addScore(int actual, int max) {
         score += actual;
         maxPossibleScore += max;
+    }
+
+    public static float getAccuracy() {
+        return (float) score / (float) maxPossibleScore;
     }
 
     public static Rank getRank() {

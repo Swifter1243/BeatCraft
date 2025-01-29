@@ -7,6 +7,7 @@ import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberTrailRenderer;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,10 +32,10 @@ public class WorldRendererMixin {
             target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/render/Camera;)V"
         )
     )
-    public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+    public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
         DebugRenderer.render();
         BeatcraftRenderer.render();
-        HUDRenderer.render();
+        HUDRenderer.render(immediate);
         BeatcraftParticleRenderer.renderParticles();
         SaberTrailRenderer.renderAll();
         HapticsHandler.endFrame();

@@ -11,10 +11,6 @@ import java.util.Random;
 
 public class BeatcraftParticleRenderer {
 
-    public static double normalize(double a, double b, double t) {
-        return (t - a) / (b - a);
-    }
-
     private static class SparkParticle implements Particle {
 
         public Vector3f position;
@@ -45,7 +41,7 @@ public class BeatcraftParticleRenderer {
 
             velocity = applyVariance(velocity, 0.1f, 0.01f);
 
-            int opacity = (int) ((1 - normalize(this.spawnTime, this.spawnTime+this.lifetime, System.nanoTime() / 1_000_000_000d)) * 255) << 24;
+            int opacity = (int) ((1 - MathUtil.inverseLerp(this.spawnTime, this.spawnTime+this.lifetime, System.nanoTime() / 1_000_000_000d)) * 255) << 24;
 
             if (opacity <= 0) return;
 
