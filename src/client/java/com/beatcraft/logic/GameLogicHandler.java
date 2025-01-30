@@ -35,7 +35,8 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.BeatCraftClient;
+import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
@@ -45,13 +46,13 @@ import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.util.Objects;
 import java.util.Random;
 
 
@@ -83,8 +84,8 @@ public class GameLogicHandler {
     private static Quaternionf previousLeftSaberRotation = new Quaternionf();
     private static Quaternionf previousRightSaberRotation = new Quaternionf();
 
-    private static final SwingState leftSwingState = new SwingState();
-    private static final SwingState rightSwingState = new SwingState();
+    private static final SwingState leftSwingState = new SwingState(NoteType.RED);
+    private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
 
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
         previousLeftSaberPos = leftSaberPos;
@@ -114,24 +115,24 @@ public class GameLogicHandler {
             HapticsHandler.vibrateRight(0.2f, 1.0f);
             BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFF, 0.02f);
         }
+
+
     }
 
     public static class CutResult {
 
-        private int type;
+        private final int type;
 
         private static final int GOOD_CUT = 1;
         private static final int BAD_CUT = 2;
         private static final int NO_HIT = 3;
         private static final int HIT = 4;
 
-        private int preSwingAngle;
+        private final int preSwingAngle;
         private int followThroughAngle = 0;
-        private int sliceScore;
+        private final int sliceScore;
         private Vector3f contactPosition;
         private boolean finalized = false;
-
-        public static final CutResult NOHIT = noHit();
 
         private CutResult(int preSwing, int sliceScore, Vector3f pos, int type) {
             preSwingAngle = preSwing;
@@ -285,6 +286,11 @@ public class GameLogicHandler {
                             //    NoteBlockInstrument.PLING.getSound().value(),
                             //    1, 1
                             //);
+                            if (saberColor == NoteType.BLUE) {
+                                rightSwingState.followThrough(colorNote);
+                            } else {
+                                leftSwingState.followThrough(colorNote);
+                            }
                         } else {
                             if (matchAngle(angle, colorNote.score$getData().score$getCutDirection())) {
                                 colorNote.score$setCutResult(CutResult.goodCut(15, 0, notePos));
@@ -292,13 +298,18 @@ public class GameLogicHandler {
                                 //    NoteBlockInstrument.PLING.getSound().value(),
                                 //    1, 1
                                 //);
+                                if (saberColor == NoteType.BLUE) {
+                                    rightSwingState.followThrough(colorNote);
+                                } else {
+                                    leftSwingState.followThrough(colorNote);
+                                }
                             } else {
                                 colorNote.score$setCutResult(CutResult.badCut(notePos));
                                 process(CutResult.badCut(notePos));
+                                colorNote.score$cutNote();
                             }
                         }
 
-                        colorNote.score$cutNote();
 
                     } else {
                         // good cut
@@ -335,7 +346,7 @@ public class GameLogicHandler {
 
                 }
             }
-        } else if (note.getCutResult().type != CutResult.NO_HIT) {
+        } else if (note.getCutResult().type != CutResult.NO_HIT && note.getCutResult().type != CutResult.GOOD_CUT) {
             note.getCutResult().finalizeScore();
             note.cutNote();
         }
@@ -478,8 +489,8 @@ public class GameLogicHandler {
     }
 
     public static void addScore(int actual, int max) {
-        score += actual;
-        maxPossibleScore += max;
+        score += actual * bonusModifier;
+        maxPossibleScore += max * bonusModifier;
     }
 
     public static float getAccuracy() {
@@ -518,6 +529,25 @@ public class GameLogicHandler {
         loseFCTime = 0;
         badCuts = 0;
         misses = 0;
+    }
+
+
+    public static void triggerSongEnd() {
+
+        assert MinecraftClient.getInstance().player != null;
+        MinecraftClient.getInstance().player.sendMessage(
+            Text.literal(String.format(
+                "%s - %.1f%% - %s\nmax combo: %s\ngood cuts: %s\nbad cuts: %s\nmisses: %s",
+                getRank(), getAccuracy(), getScore(), getMaxCombo(),
+                goodCuts, badCuts, misses
+            ))
+        );
+
+        BeatmapPlayer.currentBeatmap = null;
+        BeatmapPlayer.currentInfo = null;
+        BeatmapAudioPlayer.unload();
+        reset();
+
     }
 
 }

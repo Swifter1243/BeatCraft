@@ -104,7 +104,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
-        RenderSystem.depthMask(true);
+        RenderSystem.depthMask(false);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);

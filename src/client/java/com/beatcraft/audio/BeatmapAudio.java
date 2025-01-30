@@ -94,40 +94,31 @@ public class BeatmapAudio {
         throw new IllegalArgumentException("Invalid audio format: " + format);
     }
 
+    public static float getDuration(int bufferId) {
+        int size = AL10.alGetBufferi(bufferId, AL10.AL_SIZE);
+        int frequency = AL10.alGetBufferi(bufferId, AL10.AL_FREQUENCY);
+        int channels = AL10.alGetBufferi(bufferId, AL10.AL_CHANNELS);
+        int bits = AL10.alGetBufferi(bufferId, AL10.AL_BITS);
+        int bytesPerSample = bits / 8;
+        return (float) size / (frequency * channels * bytesPerSample);
+    }
+
     public void loadAudioFromFile(String path) throws IOException {
         closeBuffer();
-
-        //try {
-        //    File audioFile = new File(path);
-        //    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioFile);
-        //    songDuration = (float) audioInputStream.getFrameLength() / audioInputStream.getFormat().getFrameRate();
-        //
-        //} catch (UnsupportedAudioFileException | IOException e) {
-        //    songDuration = 0;
-        //    BeatCraft.LOGGER.error("Failed to get song duration ", e);
-        //}
 
         InputStream inputStream = Files.newInputStream(Path.of(path));
         OggAudioStream oggAudioStream = new OggAudioStream(inputStream);
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
 
-        try {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(path));
-            songDuration = (float) ((double) audioStream.getFrameLength() / format.getFrameRate());
-        } catch (UnsupportedAudioFileException e) {
-            BeatCraft.LOGGER.error("Failed to get audio file length", e);
-            songDuration = 0;
-        }
-
-
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
-
 
         ByteBuffer audioData = oggAudioStream.readAll();
         AL10.alBufferData(buffer, formatID, audioData, sampleRate);
         AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
+
+        songDuration = getDuration(buffer);
 
         isLoaded = true;
         inputStream.close();

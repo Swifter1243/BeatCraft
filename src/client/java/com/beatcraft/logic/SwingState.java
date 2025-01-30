@@ -1,9 +1,12 @@
 package com.beatcraft.logic;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.render.object.PhysicalScorableObject;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
@@ -16,8 +19,8 @@ import java.util.Deque;
 
 public class SwingState {
 
-    private final Deque<Pair<Float, PhysicalColorNote>> followThroughNotes = new ArrayDeque<>();
-    private final Deque<Pair<Float, PhysicalColorNote>> followThoughTemp = new ArrayDeque<>();
+    private final Deque<Pair<Float, PhysicalScorableObject>> followThroughNotes = new ArrayDeque<>();
+    private final Deque<Pair<Float, PhysicalScorableObject>> followThoughTemp = new ArrayDeque<>();
 
     private final Vector3f lastPosition = new Vector3f();
     private final Quaternionf lastRotation = new Quaternionf();
@@ -29,8 +32,10 @@ public class SwingState {
     private double cutTime = 0f;
     private boolean recentCut = false;
 
-    public SwingState() {
+    private NoteType color;
 
+    public SwingState(NoteType color) {
+        this.color = color;
     }
 
     public Vector3f getVelocity(Vector3f currentPosition, Quaternionf currentRotation, double deltaTime) {
@@ -54,12 +59,16 @@ public class SwingState {
             var pair = followThroughNotes.pop();
 
             if (t - pair.getLeft() > 0.3 ) {
-                pair.getRight().getCutResult().setFollowThroughAngle((int) swingAngle - pair.getRight().getCutResult().getPreSwingAngle());
+                pair.getRight().score$getCutResult().setFollowThroughAngle((int) swingAngle - pair.getRight().score$getCutResult().getPreSwingAngle());
+                pair.getRight().score$getCutResult().finalizeScore();
+                pair.getRight().score$cutNote();
                 continue;
             }
 
-            if (swingAngle - pair.getRight().getCutResult().getPreSwingAngle() >= 60) {
-                pair.getRight().getCutResult().setFollowThroughAngle(60);
+            if (swingAngle - pair.getRight().score$getCutResult().getPreSwingAngle() >= 60) {
+                pair.getRight().score$getCutResult().setFollowThroughAngle(60);
+                pair.getRight().score$getCutResult().finalizeScore();
+                pair.getRight().score$cutNote();
             }
 
             followThoughTemp.add(pair);
@@ -70,9 +79,10 @@ public class SwingState {
 
     }
 
-    private static void createSparks(Vector3f pos, Vector3f velocity) {
+    private void createSparks(Vector3f pos, Vector3f velocity) {
         //BeatCraft.LOGGER.info("Making sparks at {} {}", pos, velocity);
-        BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.1f, new Vector3f()), 0.2f, 0.03f, GameLogicHandler.random.nextInt(5, 15), 0xFFFFFF, 0.02f);
+        int col = this.color == NoteType.RED ? BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB() : BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+        BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.1f, new Vector3f()), 0.2f, 0.03f, GameLogicHandler.random.nextInt(5, 15), col, 0.02f);
     }
 
     public void updateSaber(Vector3f position, Quaternionf orientation, double deltaTime) {
@@ -121,7 +131,7 @@ public class SwingState {
         return swingAngle;
     }
 
-    public void followThrough(PhysicalColorNote colorNote) {
+    public void followThrough(PhysicalScorableObject colorNote) {
         followThroughNotes.add(new Pair<>((float) System.nanoTime()/1_000_000_000f, colorNote));
     }
 

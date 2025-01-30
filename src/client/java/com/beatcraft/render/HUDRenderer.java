@@ -116,6 +116,10 @@ public class HUDRenderer {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
         MatrixStack matrices = new MatrixStack();
 
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
 
         matrices.translate(0, 0, 8);
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
@@ -151,12 +155,11 @@ public class HUDRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         BufferRenderer.drawWithGlobalProgram(buff);
-        RenderSystem.enableDepthTest();
+        RenderSystem.disableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
@@ -178,7 +181,7 @@ public class HUDRenderer {
             Text.literal(rank),
             -w/2f, 12, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -193,7 +196,7 @@ public class HUDRenderer {
             Text.literal("COMBO"),
             -w/2f, -28, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.push();
@@ -235,7 +238,7 @@ public class HUDRenderer {
             Text.literal(combo),
             -w/2f, -12, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -254,7 +257,7 @@ public class HUDRenderer {
             Text.literal(score),
             -w/2f, 2, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
 
@@ -276,7 +279,7 @@ public class HUDRenderer {
             Text.literal(accuracy),
             -w/2f, 18, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
 
@@ -294,7 +297,7 @@ public class HUDRenderer {
             Text.literal("x"),
             -6, -20, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.push();
@@ -304,7 +307,7 @@ public class HUDRenderer {
             Text.literal(mod),
             0, -8, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL, 0, TEXT_LIGHT
+            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -321,6 +324,10 @@ public class HUDRenderer {
         String length = MathUtil.timeToString((int) songDuration);
 
         float progress = MathUtil.inverseLerp(0, songDuration, t);
+
+        if (progress > 1 && BeatmapPlayer.currentInfo != null) {
+            GameLogicHandler.triggerSongEnd();
+        }
 
         String display = currentTime + " | " + length;
 
@@ -348,7 +355,7 @@ public class HUDRenderer {
             Text.literal(display),
             -w/2f, 32, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.NORMAL,
+            TextRenderer.TextLayerType.SEE_THROUGH,
             0, TEXT_LIGHT
         );
 
