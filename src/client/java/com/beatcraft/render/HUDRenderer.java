@@ -21,6 +21,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.function.Function;
 
 public class HUDRenderer {
@@ -287,6 +288,23 @@ public class HUDRenderer {
 
     }
 
+    private static void drawArc(Vector3f center, Vector3f[] innerArc, BufferBuilder buffer, Vector3f cameraPos, int color) {
+//        ArrayList<Vector3f[]> quads = new ArrayList<>();
+
+        for (int i = 0; i < innerArc.length-1; i++) {
+            Vector3f a = innerArc[i];
+            Vector3f b = innerArc[i+1];
+            Vector3f c = a.sub(center, new Vector3f()).normalize().mul(0.05f).add(a);
+            Vector3f d = b.sub(center, new Vector3f()).normalize().mul(0.05f).add(b);
+
+            buffer.vertex(a.x, a.y, a.z).color(color);
+            buffer.vertex(b.x, b.y, b.z).color(color);
+            buffer.vertex(d.x, d.y, d.z).color(color);
+            buffer.vertex(c.x, c.y, c.z).color(color);
+        }
+
+    }
+
     private static void renderModifier(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
         String mod = String.valueOf(GameLogicHandler.getBonusModifier());
@@ -295,7 +313,7 @@ public class HUDRenderer {
 
         textRenderer.draw(
             Text.literal("x"),
-            -6, -20, TEXT_COLOR, false,
+            -8.5f, -20, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
             TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
@@ -305,12 +323,33 @@ public class HUDRenderer {
 
         textRenderer.draw(
             Text.literal(mod),
-            0, -8, TEXT_COLOR, false,
+            -1, -8, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
             TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
         );
 
         matrices.pop();
+
+        Vector3f center = matrices.peek().getPositionMatrix().getTranslation(new Vector3f()).add(0, 0.375f, 0);
+
+        Vector3f normal = new Vector3f(0, 0, 1);
+        float radius = 0.5f;
+
+        float circleProgress = GameLogicHandler.getModifierPercentage();
+
+        if (circleProgress > 0) {
+
+            Vector3f[] arcPoints = MathUtil.generateCircle(normal, radius, 2 + (int) (circleProgress * 20), center, 360*circleProgress, 180);
+
+            drawArc(center, arcPoints, buffer, cameraPos, 0xFFFFFFFF);
+        }
+
+        if (circleProgress < 1) {
+            Vector3f[] arcPoints = MathUtil.generateCircle(normal, radius, 2 + (int) ((1-circleProgress) * 20), center, 360*(1-circleProgress), 180+360*circleProgress);
+
+            drawArc(center, arcPoints, buffer, cameraPos, 0x7F7F7F7F);
+        }
+
     }
 
     private static void renderTime(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {

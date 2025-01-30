@@ -1,6 +1,7 @@
 package com.beatcraft.utils;
 
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.MathHelper;
 import org.joml.*;
 import org.joml.Math;
 
@@ -72,6 +73,10 @@ public class MathUtil {
     }
 
     public static Vector3f[] generateCircle(Vector3f normal, float radius, int pointsCount, Vector3f offset) {
+        return generateCircle(normal, radius, pointsCount, offset, 360f, 0);
+    }
+
+    public static Vector3f[] generateCircle(Vector3f normal, float radius, int pointsCount, Vector3f offset, float arcDegrees, float angleOffset) {
         normal.normalize();
 
         Vector3f startPoint = new Vector3f(1, 0, 0);
@@ -80,11 +85,11 @@ public class MathUtil {
         }
         startPoint.cross(normal).normalize().mul(radius);
 
-        Vector3f[] points = new Vector3f[pointsCount];
+        Vector3f[] points = new Vector3f[pointsCount+1];
         Quaternionf rotation = new Quaternionf();
 
-        for (int i = 0; i < pointsCount; i++) {
-            float angle = (float) (2 * Math.PI * i / pointsCount);
+        for (int i = 0; i <= pointsCount; i++) {
+            float angle = ((arcDegrees * MathHelper.RADIANS_PER_DEGREE) * i / pointsCount) + (angleOffset * MathHelper.RADIANS_PER_DEGREE);
             rotation.fromAxisAngleRad(normal.x, normal.y, normal.z, angle);
             points[i] = new Vector3f(startPoint).rotate(rotation).add(offset);
         }

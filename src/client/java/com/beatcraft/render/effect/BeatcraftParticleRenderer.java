@@ -34,7 +34,7 @@ public class BeatcraftParticleRenderer {
         public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
             Vector3f normal = new Vector3f(position).sub(cameraPos).normalize();
 
-            Vector3f[] vertices = MathUtil.generateCircle(normal, size/2f, 4, position.sub(cameraPos, new Vector3f()));
+            Vector3f[] vertices = MathUtil.generateCircle(normal, size/2f, 3, position.sub(cameraPos, new Vector3f()), 270, 0);
             position.add(velocity);
             velocity.mul(decay);
             velocity.y -= 0.000002f;

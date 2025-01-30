@@ -65,6 +65,7 @@ public class GameLogicHandler {
     private static int combo = 0;
     private static int maxCombo = 0;
     private static int bonusModifier = 1;
+    private static int modifierProgress = 0;
     private static int maxPossibleScore = 0;
     private static int score = 0;
     private static int maxHealth;
@@ -477,12 +478,21 @@ public class GameLogicHandler {
         combo++;
         maxCombo = Math.max(combo, maxCombo);
         if (bonusModifier < 8) {
-            bonusModifier *= 2;
+            modifierProgress++;
+            if (modifierProgress == bonusModifier) {
+                bonusModifier *= 2;
+                modifierProgress = 0;
+            }
         }
+    }
+
+    public static float getModifierPercentage() {
+        return (float) modifierProgress / (float) bonusModifier;
     }
 
     public static void breakCombo() {
         combo = 0;
+        modifierProgress = 0;
         if (bonusModifier > 1) {
             bonusModifier /= 2;
         }
