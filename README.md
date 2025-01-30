@@ -17,16 +17,16 @@ God knows where any of that stuff is anymore. I definitely don't wanna upload it
 # RUN THAT BACK
 
 I'm *currently* in the process of remaking it EXCLUSIVELY as a [Vivecraft](https://modrinth.com/mod/vivecraft) dependant mod for Fabric. The current roadmap is:
--[X] Load Beatmap V2, V3, and V4
--[X] Color notes, bombs, chains, arcs, walls
--[X] Accurate spawning animations
--[ ] Accurate scoring
--[ ] AnimateTrack, AssignPathAnimation, AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
--[ ] V2 lightshow, MAAAAAAAAYBE V3 (and maybe V4)
--[ ] Chroma coloring features
--[ ] Ingame song selection menu
--[ ] Ingame Beatsaver downloader
--[ ] Level modifiers (song speed, ghost notes, etc.)
+- Load Beatmap V2, V3, and V4
+- Color notes, bombs, chains, arcs, walls
+- Accurate spawning animations
+- Accurate scoring
+- AnimateTrack, AssignPathAnimation, AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
+- V2 lightshow, MAAAAAAAAYBE V3 (and maybe V4)
+- Chroma coloring features
+- Ingame song selection menu
+- Ingame Beatsaver downloader
+- Level modifiers (song speed, ghost notes, etc.)
 
 This is quite an insane undertaking so wish me luck o7
 
