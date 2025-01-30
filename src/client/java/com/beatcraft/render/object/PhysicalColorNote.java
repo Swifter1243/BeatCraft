@@ -21,6 +21,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.util.List;
+
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> implements PhysicalScorableObject {
     public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
     public static final ModelIdentifier noteArrowModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID,  "note_arrow"), "inventory");
@@ -46,6 +48,60 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     public static final Hitbox ACCURATE_HITBOX = new Hitbox(
         new Vector3f(-0.25f, -0.25f, -0.25f),
         new Vector3f(0.25f, 0.25f, 0.25f)
+    );
+
+    private static float CORNER_POS = 14/32f;
+    private static float WALL_THICKNESS = 1/32f;
+
+    public static final List<Vector3f[]> MESH = List.of(
+
+            // Bottom cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+
+            // left cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+
+            // back cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+
+            // right cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+
+            // front cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+
+            // top cube
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()}
     );
 
     public PhysicalColorNote(ColorNote data) {
@@ -175,5 +231,30 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     @Override
     public GameLogicHandler.CutResult score$getCutResult() {
         return getCutResult();
+    }
+
+    @Override
+    public int score$getMaxCutPositionScore() {
+        return 15;
+    }
+
+    @Override
+    public int score$getMaxFollowThroughScore() {
+        return 30;
+    }
+
+    @Override
+    public int score$getMaxFollowThroughAngle() {
+        return 60;
+    }
+
+    @Override
+    public int score$getMaxSwingInScore() {
+        return 70;
+    }
+
+    @Override
+    public int score$getMaxSwingInAngle() {
+        return 100;
     }
 }

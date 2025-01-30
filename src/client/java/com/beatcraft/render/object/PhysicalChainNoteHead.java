@@ -112,4 +112,29 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     public GameLogicHandler.CutResult score$getCutResult() {
         return getCutResult();
     }
+
+    @Override
+    public int score$getMaxCutPositionScore() {
+        return 15;
+    }
+
+    @Override
+    public int score$getMaxFollowThroughScore() {
+        return 30;
+    }
+
+    @Override
+    public int score$getMaxFollowThroughAngle() {
+        return 60;
+    }
+
+    @Override
+    public int score$getMaxSwingInScore() {
+        return 70;
+    }
+
+    @Override
+    public int score$getMaxSwingInAngle() {
+        return 100;
+    }
 }

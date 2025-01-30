@@ -3,11 +3,16 @@ package com.beatcraft.render;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.ISplinePath;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.utils.MathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -215,11 +220,60 @@ public class DebugRenderer {
 
     }
 
+    public static void renderSimpleQuads(List<Vector3f[]> quads, int color, Vector3f position, Quaternionf orientation) {
+        renderCalls.add(() -> _renderSimpleQuads(quads, color, position, orientation));
+    }
+
+    private static void _renderSimpleQuads(List<Vector3f[]> quads, int color, Vector3f position, Quaternionf orientation) {
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        for (Vector3f[] quad : quads) {
+            Vector3f a = quad[0].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
+            Vector3f b = quad[1].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
+            Vector3f c = quad[2].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
+            Vector3f d = quad[3].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
+
+            buffer.vertex(a.x, a.y, a.z).color(color);
+            buffer.vertex(b.x, b.y, b.z).color(color);
+            buffer.vertex(c.x, c.y, c.z).color(color);
+            buffer.vertex(d.x, d.y, d.z).color(color);
+
+        }
+
+        BuiltBuffer buff = buffer.endNullable();
+
+        if (buff == null) return;
+
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
+        BufferRenderer.drawWithGlobalProgram(buff);
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+
+    }
+
 
 
     public static void render() {
 
         //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
+
+        Pair<List<Vector3f[]>, List<Vector3f[]>> slicedMeshes = MathUtil.sliceMesh(new Vector3f(), new Vector3f(1, -0.1f, 0).normalize(), PhysicalColorNote.MESH);
+
+        renderSimpleQuads(slicedMeshes.getLeft(), 0xFFFF0000, new Vector3f(1, 0, 0), new Quaternionf());
+        renderSimpleQuads(slicedMeshes.getRight(), 0xFF0000FF, new Vector3f(-1, 0, 0), new Quaternionf());
+
 
         for (Runnable renderCall : renderCalls) {
             try {

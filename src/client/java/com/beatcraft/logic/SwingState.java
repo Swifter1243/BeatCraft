@@ -19,8 +19,8 @@ import java.util.Deque;
 
 public class SwingState {
 
-    private final Deque<Pair<Float, PhysicalScorableObject>> followThroughNotes = new ArrayDeque<>();
-    private final Deque<Pair<Float, PhysicalScorableObject>> followThoughTemp = new ArrayDeque<>();
+    private final Deque<Pair<Double, PhysicalScorableObject>> followThroughNotes = new ArrayDeque<>();
+    private final Deque<Pair<Double, PhysicalScorableObject>> followThoughTemp = new ArrayDeque<>();
 
     private final Vector3f lastPosition = new Vector3f();
     private final Quaternionf lastRotation = new Quaternionf();
@@ -53,7 +53,7 @@ public class SwingState {
     }
 
     private void processFollowThrough() {
-        float t = (float) System.nanoTime() / 1_000_000_000f;
+        double t = (double) System.nanoTime() / 1_000_000_000d;
 
         while (!followThroughNotes.isEmpty()) {
             var pair = followThroughNotes.pop();
@@ -132,7 +132,7 @@ public class SwingState {
     }
 
     public void followThrough(PhysicalScorableObject colorNote) {
-        followThroughNotes.add(new Pair<>((float) System.nanoTime()/1_000_000_000f, colorNote));
+        followThroughNotes.add(new Pair<>((double) System.nanoTime()/1_000_000_000d, colorNote));
     }
 
 }

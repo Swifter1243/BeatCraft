@@ -10,4 +10,9 @@ public interface PhysicalScorableObject {
     void score$setCutResult(GameLogicHandler.CutResult cut);
     void score$cutNote();
     GameLogicHandler.CutResult score$getCutResult();
+    int score$getMaxSwingInScore();
+    int score$getMaxFollowThroughScore();
+    int score$getMaxCutPositionScore();
+    int score$getMaxSwingInAngle();
+    int score$getMaxFollowThroughAngle();
 }
