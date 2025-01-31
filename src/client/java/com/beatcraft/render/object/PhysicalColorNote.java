@@ -6,6 +6,7 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.object.ScorableObject;
+import com.beatcraft.data.types.Mesh;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.utils.MathUtil;
@@ -53,55 +54,106 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     private static float CORNER_POS = 14/32f;
     private static float WALL_THICKNESS = 1/32f;
 
-    public static final List<Vector3f[]> MESH = List.of(
+    public static final Mesh CUBE_MESH = new Mesh(
+        List.of(
+            // bottom of center cube
+  /*   0 */ new Vector3f(-CORNER_POS, -CORNER_POS, -CORNER_POS),
+  /*   1 */ new Vector3f( CORNER_POS, -CORNER_POS, -CORNER_POS),
+  /*   2 */ new Vector3f( CORNER_POS, -CORNER_POS,  CORNER_POS),
+  /*   3 */ new Vector3f(-CORNER_POS, -CORNER_POS,  CORNER_POS),
 
+            // top of center cube
+  /*   4 */ new Vector3f(-CORNER_POS,  CORNER_POS, -CORNER_POS),
+  /*   5 */ new Vector3f( CORNER_POS,  CORNER_POS, -CORNER_POS),
+  /*   6 */ new Vector3f( CORNER_POS,  CORNER_POS,  CORNER_POS),
+  /*   7 */ new Vector3f(-CORNER_POS,  CORNER_POS,  CORNER_POS),
+
+            // bottom face
+  /*   8 */ new Vector3f(-CORNER_POS, -CORNER_POS-WALL_THICKNESS, -CORNER_POS),
+  /*   9 */ new Vector3f( CORNER_POS, -CORNER_POS-WALL_THICKNESS, -CORNER_POS),
+  /*  10 */ new Vector3f( CORNER_POS, -CORNER_POS-WALL_THICKNESS,  CORNER_POS),
+  /*  11 */ new Vector3f(-CORNER_POS, -CORNER_POS-WALL_THICKNESS,  CORNER_POS),
+
+            // top face
+  /*  12 */ new Vector3f(-CORNER_POS,  CORNER_POS+WALL_THICKNESS, -CORNER_POS),
+  /*  13 */ new Vector3f( CORNER_POS,  CORNER_POS+WALL_THICKNESS, -CORNER_POS),
+  /*  14 */ new Vector3f( CORNER_POS,  CORNER_POS+WALL_THICKNESS,  CORNER_POS),
+  /*  15 */ new Vector3f(-CORNER_POS,  CORNER_POS+WALL_THICKNESS,  CORNER_POS),
+
+            // left face
+  /*  16 */ new Vector3f( CORNER_POS+WALL_THICKNESS,  CORNER_POS, -CORNER_POS),
+  /*  17 */ new Vector3f( CORNER_POS+WALL_THICKNESS,  CORNER_POS,  CORNER_POS),
+  /*  18 */ new Vector3f( CORNER_POS+WALL_THICKNESS, -CORNER_POS,  CORNER_POS),
+  /*  19 */ new Vector3f( CORNER_POS+WALL_THICKNESS, -CORNER_POS, -CORNER_POS),
+
+            // right face
+  /*  20 */ new Vector3f(-CORNER_POS-WALL_THICKNESS,  CORNER_POS, -CORNER_POS),
+  /*  21 */ new Vector3f(-CORNER_POS-WALL_THICKNESS,  CORNER_POS,  CORNER_POS),
+  /*  22 */ new Vector3f(-CORNER_POS-WALL_THICKNESS, -CORNER_POS,  CORNER_POS),
+  /*  23 */ new Vector3f(-CORNER_POS-WALL_THICKNESS, -CORNER_POS, -CORNER_POS),
+
+            // back face
+  /*  24 */ new Vector3f( CORNER_POS, -CORNER_POS,  CORNER_POS+WALL_THICKNESS),
+  /*  25 */ new Vector3f(-CORNER_POS, -CORNER_POS,  CORNER_POS+WALL_THICKNESS),
+  /*  26 */ new Vector3f(-CORNER_POS,  CORNER_POS,  CORNER_POS+WALL_THICKNESS),
+  /*  27 */ new Vector3f( CORNER_POS,  CORNER_POS,  CORNER_POS+WALL_THICKNESS),
+
+            // front face
+  /*  28 */ new Vector3f( CORNER_POS, -CORNER_POS, -CORNER_POS-WALL_THICKNESS),
+  /*  29 */ new Vector3f(-CORNER_POS, -CORNER_POS, -CORNER_POS-WALL_THICKNESS),
+  /*  30 */ new Vector3f(-CORNER_POS,  CORNER_POS, -CORNER_POS-WALL_THICKNESS),
+  /*  31 */ new Vector3f( CORNER_POS,  CORNER_POS, -CORNER_POS-WALL_THICKNESS)
+        ),
+        List.of(
             // Bottom cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            new int[]{8, 9, 10, 11}, // Bottom face
+            new int[]{0, 1, 2, 3}, // Top face
+            new int[]{1, 2, 10, 9}, // Left face
+            new int[]{0, 3, 11, 8}, // Right face
+            new int[]{2, 3, 11, 10}, // Back face
+            new int[]{0, 1, 9, 8}, // Front face
 
-            // left cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            // Top cube
+            new int[]{12, 13, 14, 15}, // Top face
+            new int[]{4, 5, 6, 7}, // Bottom face
+            new int[]{13, 14, 6, 5}, // Left face
+            new int[]{4, 7, 15, 12}, // Right face
+            new int[]{6, 7, 15, 14}, // Back face
+            new int[]{4, 5, 13, 12}, // Front face
 
-            // back cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            // Left cube
+            new int[]{16, 17, 18, 19}, // Left face
+            new int[]{16, 17, 6, 5}, // Top face
+            new int[]{18, 19, 1, 2}, // Bottom face
+            new int[]{17, 18, 2, 6}, // Back face
+            new int[]{16, 19, 1, 5}, // Front face
+            new int[]{5, 6, 2, 1}, // Right face
 
-            // right cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            // Right cube
+            new int[]{20, 21, 22, 23}, // Right face
+            new int[]{20, 21, 7, 4}, // Top face
+            new int[]{22, 23, 0, 3}, // Bottom face
+            new int[]{21, 22, 3, 7}, // Back face
+            new int[]{20, 23, 0, 4}, // Front face
+            new int[]{4, 7, 3, 0}, // Left face
 
-            // front cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+            // Back cube
+            new int[]{24, 25, 26, 27}, // Back face
+            new int[]{24, 25, 3, 2}, // Top face
+            new int[]{26, 27, 6, 7}, // Bottom face
+            new int[]{25, 26, 7, 3}, // Left face
+            new int[]{24, 27, 6, 2}, // Right face
+            new int[]{2, 3, 7, 6}, // Front face
 
-            // top cube
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
-            new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()}
+            // Front cube
+            new int[]{28, 29, 30, 31}, // Front face
+            new int[]{28, 29, 0, 1}, // Top face
+            new int[]{30, 31, 5, 4}, // Bottom face
+            new int[]{28, 31, 5, 1}, // Left face
+            new int[]{29, 30, 4, 0}, // Right face
+            new int[]{1, 0, 4, 5}  // Back face
+            //*/
+        )
     );
 
     public PhysicalColorNote(ColorNote data) {

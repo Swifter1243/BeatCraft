@@ -32,7 +32,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private AnimationState animationState = new AnimationState();
     protected T data;
     protected boolean despawned = false;
-    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit();
+    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit((PhysicalScorableObject) this);
     private NoteType contactColor = null;
 
     public PhysicalGameplayObject(T data) {
@@ -73,7 +73,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void seek(float beat) {
         despawned = false;
-        cutResult = GameLogicHandler.CutResult.noHit();
+        cutResult = GameLogicHandler.CutResult.noHit((PhysicalScorableObject) this);
         update(beat);
     }
 

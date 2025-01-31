@@ -2,6 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.ISplinePath;
+import com.beatcraft.data.types.MeshSlicer;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.mixin_utils.BufferBuilderAccessible;
 import com.beatcraft.render.object.PhysicalColorNote;
@@ -254,7 +255,7 @@ public class DebugRenderer {
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
+        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         BufferRenderer.drawWithGlobalProgram(buff);
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
@@ -269,11 +270,12 @@ public class DebugRenderer {
 
         //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
 
-        Pair<List<Vector3f[]>, List<Vector3f[]>> slicedMeshes = MathUtil.sliceMesh(new Vector3f(), new Vector3f(1, -0.1f, 0).normalize(), PhysicalColorNote.MESH);
-
-        renderSimpleQuads(slicedMeshes.getLeft(), 0xFFFF0000, new Vector3f(1, 0, 0), new Quaternionf());
-        renderSimpleQuads(slicedMeshes.getRight(), 0xFF0000FF, new Vector3f(-1, 0, 0), new Quaternionf());
-
+        //if (MinecraftClient.getInstance().player != null) {
+        //    Pair<List<Vector3f[]>, List<Vector3f[]>> slicedMeshes = MeshSlicer.sliceMesh(new Vector3f(), MinecraftClient.getInstance().player.getPos().toVector3f().normalize(), PhysicalColorNote.CUBE_MESH.getPositionedQuads());
+        //
+        //    renderSimpleQuads(slicedMeshes.getLeft(), 0x9FAA0000, new Vector3f(0, 0, 0), new Quaternionf());
+        //    renderSimpleQuads(slicedMeshes.getRight(), 0x9F0000AA, new Vector3f(0, 0, 0), new Quaternionf());
+        //}
 
         for (Runnable renderCall : renderCalls) {
             try {
