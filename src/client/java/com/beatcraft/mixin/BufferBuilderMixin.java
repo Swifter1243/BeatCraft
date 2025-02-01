@@ -1,6 +1,6 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.BufferAllocator;
 import org.spongepowered.asm.mixin.Final;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(BufferBuilder.class)
-public class BufferBuilderMixin implements BufferBuilderAccessible {
+public class BufferBuilderMixin implements BufferBuilderAccessor {
 
     @Shadow @Final private BufferAllocator allocator;
 

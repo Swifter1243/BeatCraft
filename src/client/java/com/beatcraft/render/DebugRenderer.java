@@ -2,17 +2,19 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.ISplinePath;
-import com.beatcraft.data.types.MeshSlicer;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.mesh.MeshSlicer;
+import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.render.object.PhysicalColorNote;
-import com.beatcraft.utils.MathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
@@ -255,7 +257,7 @@ public class DebugRenderer {
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         BufferRenderer.drawWithGlobalProgram(buff);
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
@@ -271,10 +273,27 @@ public class DebugRenderer {
         //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
 
         //if (MinecraftClient.getInstance().player != null) {
-        //    Pair<List<Vector3f[]>, List<Vector3f[]>> slicedMeshes = MeshSlicer.sliceMesh(new Vector3f(), MinecraftClient.getInstance().player.getPos().toVector3f().normalize(), PhysicalColorNote.CUBE_MESH.getPositionedQuads());
+        //    Pair<TriangleMesh, TriangleMesh> slicedMeshes = MeshSlicer.sliceMesh(new Vector3f(), MinecraftClient.getInstance().player.getPos().toVector3f().normalize(), MeshLoader.COLOR_NOTE_MESH);
         //
-        //    renderSimpleQuads(slicedMeshes.getLeft(), 0x9FAA0000, new Vector3f(0, 0, 0), new Quaternionf());
-        //    renderSimpleQuads(slicedMeshes.getRight(), 0x9F0000AA, new Vector3f(0, 0, 0), new Quaternionf());
+        //    TriangleMesh left = slicedMeshes.getLeft();
+        //    TriangleMesh right = slicedMeshes.getRight();
+        //
+        //    left.color = 0xFFFF0000;
+        //    right.color = 0xFF0000FF;
+        //    left.texture = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
+        //    right.texture = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
+        //
+        //    RenderSystem.enableBlend();
+        //    RenderSystem.defaultBlendFunc();
+        //
+        //    RenderSystem.disableCull();
+        //    RenderSystem.enableDepthTest();
+        //    left.render(new Vector3f(0, 0, 0), new Quaternionf(), false);
+        //    right.render(new Vector3f(0, 0, 0), new Quaternionf(), false);
+        //    RenderSystem.enableCull();
+        //    RenderSystem.disableBlend();
+        //    RenderSystem.depthMask(true);
+        //
         //}
 
         for (Runnable renderCall : renderCalls) {

@@ -5,11 +5,10 @@ import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
-import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -117,7 +116,7 @@ public class SaberTrailRenderer {
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        buffer.sortQuads(((BufferBuilderAccessible) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
+        buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
         BufferRenderer.drawWithGlobalProgram(buffer);
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();

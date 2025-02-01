@@ -7,7 +7,11 @@ import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.model.BakedModel;
@@ -42,7 +46,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
 
     public PhysicalChainNoteLink(ChainNoteLink data) {
         super(data);
-
+        cutResult = GameLogicHandler.CutResult.noHit(this);
         baseDegrees = NoteMath.degreesFromCut(data.getCutDirection());
         baseDegrees = (baseDegrees + data.getAngleOffset()) % 360;
     }
@@ -61,12 +65,15 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel baseModel = mc.getBakedModelManager().getModel(chainLinkModelID);
         BakedModel arrowModel = mc.getBakedModelManager().getModel(chainDotModelID);
 
         if (!isBaseDissolved()) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, baseModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            BeatcraftRenderer.recordNoteRenderCall(() -> {
+                MeshLoader.CHAIN_LINK_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_LINK_MESH.render(localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), true);
+            });
         }
+
 
         if (!isArrowDissolved()) {
             mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
@@ -150,4 +157,8 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return 100;
     }
 
+    @Override
+    public QuadMesh getMesh() {
+        return MeshLoader.CHAIN_LINK_MESH;
+    }
 }

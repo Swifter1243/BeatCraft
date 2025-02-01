@@ -1,11 +1,10 @@
 package com.beatcraft.render;
 
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.logic.GameLogicHandler;
-import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.Particle;
 import com.beatcraft.utils.MathUtil;
@@ -15,13 +14,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
 public class HUDRenderer {
@@ -158,7 +155,7 @@ public class HUDRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         BufferRenderer.drawWithGlobalProgram(buff);
         RenderSystem.disableDepthTest();
         RenderSystem.enableCull();

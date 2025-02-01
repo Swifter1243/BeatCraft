@@ -9,6 +9,8 @@ import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.render.object.*;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.Replayer;
 import com.google.gson.JsonArray;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -160,6 +162,8 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.seek(beat));
         obstacles.forEach(o -> o.seek(beat));
         arcs.forEach(o -> o.seek(beat));
+        PlayRecorder.seek(beat);
+        Replayer.seek(beat);
     }
 
     public void update(float beat) {
@@ -171,6 +175,8 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.update(beat));
         obstacles.forEach(o -> o.update(beat));
         arcs.forEach(o -> o.update(beat));
+        PlayRecorder.update(beat);
+        Replayer.update(beat);
     }
 
     public TrackLibrary getTrackLibrary() {

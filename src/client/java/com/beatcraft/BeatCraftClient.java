@@ -8,6 +8,8 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -130,6 +132,24 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int songRecord(CommandContext<FabricClientCommandSource> context) {
+        PlayRecorder.outputFile = StringArgumentType.getString(context, "output_file");
+        Replayer.runReplay = false;
+        return 1;
+    }
+
+    private int songReplay(CommandContext<FabricClientCommandSource> context) {
+        String file = StringArgumentType.getString(context, "replay_file");
+        try {
+            Replayer.loadReplay(file);
+            return 1;
+        } catch (IOException e) {
+            context.getSource().sendError(Text.literal("Failed to load replay"));
+            BeatCraft.LOGGER.error("Failed to load replay", e);
+            return -1;
+        }
+    }
+
     private String trimPathQuotes(String path) {
         if (path.startsWith("\"") && path.endsWith("\"")) {
             return path.substring(1, path.length() - 1);
@@ -139,7 +159,7 @@ public class BeatCraftClient implements ClientModInitializer {
         }
     }
 
-    private int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
+    public static int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
         try {
             BeatmapPlayer.setupDifficultyFromFile(path);
         } catch (UnrecognizedFormatException e) {
@@ -280,6 +300,12 @@ public class BeatCraftClient implements ClientModInitializer {
         }
 
         SongData.BeatmapInfo beatmapInfo = song.getBeatMapInfo(diffSet, diff);
+
+        if (PlayRecorder.outputFile != null) {
+            PlayRecorder.songName = songName;
+            PlayRecorder.difficultySet = diffSet;
+            PlayRecorder.difficulty = diff;
+        }
 
         if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
@@ -430,6 +456,16 @@ public class BeatCraftClient implements ClientModInitializer {
                                                     .executes(this::songLoad)
                                             )
                                     )
+                            )
+                    )
+                    .then(literal("record")
+                            .then(argument("output_file", StringArgumentType.string())
+                                    .executes(this::songRecord)
+                            )
+                    )
+                    .then(literal("replay")
+                            .then(argument("replay_file", StringArgumentType.string())
+                                    .executes(this::songReplay)
                             )
                     )
             );

@@ -10,9 +10,16 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
+import com.beatcraft.render.effect.BeatcraftParticleRenderer;
+import com.beatcraft.render.effect.Debris;
+import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.mesh.MeshSlicer;
+import com.beatcraft.render.mesh.QuadMesh;
+import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
@@ -32,7 +39,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private AnimationState animationState = new AnimationState();
     protected T data;
     protected boolean despawned = false;
-    private GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit((PhysicalScorableObject) this);
+    protected GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit(null);
     private NoteType contactColor = null;
 
     public PhysicalGameplayObject(T data) {
@@ -73,7 +80,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void seek(float beat) {
         despawned = false;
-        cutResult = GameLogicHandler.CutResult.noHit((PhysicalScorableObject) this);
+        if (this instanceof PhysicalScorableObject scorable) {
+            cutResult = GameLogicHandler.CutResult.noHit(scorable);
+        }
         update(beat);
     }
 
@@ -329,7 +338,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos)
             .add(mc.gameRenderer.getCamera().getPos().toVector3f());
-        worldRot = matrices.peek().getPositionMatrix().getNormalizedRotation(worldRot);
+        worldRot = matrices.peek().getPositionMatrix().getUnnormalizedRotation(worldRot);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
@@ -397,6 +406,47 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void setContactColor(NoteType color) {
         contactColor = color;
+    }
+
+    public QuadMesh getMesh() {
+        return null;
+    }
+
+    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
+        QuadMesh mesh = getMesh();
+        if (mesh == null) return;
+        Pair<TriangleMesh, TriangleMesh> meshes = MeshSlicer.sliceMesh(planeIncident, planeNormal, mesh);
+
+        if (color == NoteType.RED) {
+            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+        } else {
+            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+        }
+
+        meshes.getLeft().texture = MeshLoader.NOTE_TEXTURE;
+        meshes.getRight().texture = MeshLoader.NOTE_TEXTURE;
+
+        Debris left = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, -10f).add(planeNormal.mul(2f, new Vector3f())),
+            new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
+            meshes.getLeft()
+        );
+
+        Debris right = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, -10f).add(planeNormal.mul(-2f, new Vector3f())),
+            new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
+            meshes.getRight()
+        );
+
+        BeatcraftParticleRenderer.addParticle(left);
+        BeatcraftParticleRenderer.addParticle(right);
+
     }
 
 }

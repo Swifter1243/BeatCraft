@@ -40,10 +40,12 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.data.types.Stash;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
+import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -53,6 +55,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -73,11 +77,11 @@ public class GameLogicHandler {
 
     public static final Random random = new Random();
 
-    private static Vector3f rightSaberPos = new Vector3f();
-    private static Vector3f leftSaberPos = new Vector3f();
+    public static Vector3f rightSaberPos = new Vector3f();
+    public static Vector3f leftSaberPos = new Vector3f();
 
-    private static Quaternionf leftSaberRotation = new Quaternionf();
-    private static Quaternionf rightSaberRotation = new Quaternionf();
+    public static Quaternionf leftSaberRotation = new Quaternionf();
+    public static Quaternionf rightSaberRotation = new Quaternionf();
 
     private static Vector3f previousLeftSaberPos = new Vector3f();
     private static Vector3f previousRightSaberPos = new Vector3f();
@@ -88,7 +92,11 @@ public class GameLogicHandler {
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
 
+    private static final Stash<Vector3f> previousLeftEndpoints = new Stash<>(10);
+    private static final Stash<Vector3f> previousRightEndpoints = new Stash<>(10);
+
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
+        previousLeftEndpoints.push(new Vector3f(0, 1, 0).rotate(previousLeftSaberRotation).add(previousLeftSaberPos));
         previousLeftSaberPos = leftSaberPos;
         previousLeftSaberRotation = leftSaberRotation;
         leftSaberPos = position;
@@ -96,6 +104,7 @@ public class GameLogicHandler {
     }
 
     public static void updateRightSaber(Vector3f position, Quaternionf rotation) {
+        previousRightEndpoints.push(new Vector3f(0, 1, 0).rotate(previousRightSaberRotation).add(previousRightSaberPos));
         previousRightSaberPos = rightSaberPos;
         previousRightSaberRotation = rightSaberRotation;
         rightSaberPos = position;
@@ -127,7 +136,6 @@ public class GameLogicHandler {
         private static final int GOOD_CUT = 1;
         private static final int BAD_CUT = 2;
         private static final int NO_HIT = 3;
-        private static final int HIT = 4;
 
         private final int preSwingAngle;
         private int followThroughAngle = 0;
@@ -157,9 +165,6 @@ public class GameLogicHandler {
             return new CutResult(note, 0, 0, new Vector3f(), NO_HIT);
         }
 
-        public static CutResult hit(PhysicalScorableObject note, int sliceScore, int preSwingAngle, Vector3f pos) {
-            return new CutResult(note, preSwingAngle, sliceScore, pos, HIT);
-        }
 
         public void setFollowThroughAngle(int angle) {
             followThroughAngle = angle;
@@ -182,11 +187,26 @@ public class GameLogicHandler {
 
     }
 
-    private static boolean matchAngle(float angle, CutDirection direction) {
+    private static boolean matchAngle(float angle) {
         angle = angle % 360;
         if (angle < 0) angle += 360;
-        BeatCraft.LOGGER.info("check angle/dir: {} {}", angle, direction);
         return (45 > angle || angle > 315);
+    }
+
+    public static Vector3f getPlaneNormal(Vector3f start, Vector3f end, Vector3f velocity) {
+        Vector3f segment = new Vector3f(start);
+        segment.sub(end);
+        Vector3f normal = new Vector3f(velocity);
+        normal.cross(segment);
+        if (normal.length() == 0) {
+            Vector3f defaultVelocity = new Vector3f(0, 0, 1);
+            normal.cross(segment, defaultVelocity);
+            if (normal.length() == 0) {
+                normal.cross(defaultVelocity, new Vector3f(1, 0, 0));
+            }
+        }
+        normal.normalize();
+        return normal;
     }
 
     private static<T extends GameplayObject> void checkSaber(
@@ -199,12 +219,13 @@ public class GameLogicHandler {
         Vector3f notePos = note.getWorldPos();
 
         Quaternionf inverted = new Quaternionf();
-        note.getWorldRot().invert(inverted);
+        note.getWorldRot().conjugate(inverted);
 
         Vector3f endpoint = new Vector3f(0, 1, 0).rotate(saberRotation).add(saberPos);
         Vector3f oldEndpoint = new Vector3f(0, 1, 0).rotate(previousSaberRotation).add(previousSaberPos);
 
-        // Vector3f trueDiff = endpoint.sub(oldEndpoint, new Vector3f());
+        Vector3f trueDiff = endpoint.sub(oldEndpoint, new Vector3f());
+        Vector3f trueEndpoint = new Vector3f(endpoint);
 
         Vector3f local_hand = (new Vector3f(saberPos)).sub(notePos).rotate(inverted);
         endpoint.sub(notePos).rotate(inverted);
@@ -212,7 +233,25 @@ public class GameLogicHandler {
 
         Vector3f diff = endpoint.sub(oldEndpoint, new Vector3f());
 
-        float angle = MathUtil.getVectorAngleDegrees(new Vector2f(diff.x, diff.y));
+        int count = 1;
+        if (saberColor == NoteType.BLUE) {
+            for (Vector3f ep : previousRightEndpoints) {
+                Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
+                diff.add(vec);
+                oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
+                count++;
+            }
+        } else {
+            for (Vector3f ep : previousLeftEndpoints) {
+                Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
+                diff.add(vec);
+                oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
+                count++;
+            }
+        }
+        diff.div(count);
+
+        float angle = MathUtil.getVectorAngleDegrees(new Vector2f(diff.x, diff.y).normalize());
 
         Hitbox goodCutHitbox = note.getGoodCutBounds();
         Hitbox badCutHitbox = note.getBadCutBounds();
@@ -221,110 +260,64 @@ public class GameLogicHandler {
         if (DebugRenderer.doDebugRendering) {
             if (DebugRenderer.debugSaberRendering) {
                 DebugRenderer.renderParticle(saberPos, DebugRenderer.GREEN_DUST);
-                DebugRenderer.renderParticle(local_hand, DebugRenderer.RED_DUST);
-                DebugRenderer.renderParticle(endpoint, DebugRenderer.YELLOW_DUST);
                 DebugRenderer.renderParticle(notePos, DebugRenderer.ORANGE_DUST);
-                var ep = new Matrix4f().rotate(saberRotation).translate(0, 1, 0).getTranslation(new Vector3f()).add(saberPos);
-                DebugRenderer.renderParticle(ep, DebugRenderer.MAGENTA_DUST);
+                DebugRenderer.renderParticle(trueEndpoint, DebugRenderer.MAGENTA_DUST);
+                DebugRenderer.renderLine(trueEndpoint, trueEndpoint.add(trueDiff, new Vector3f()), 0xFF00FF00, 0x7FFF0000);
+                DebugRenderer.renderLine(endpoint, endpoint.add(diff, new Vector3f()), 0x7F00FF00, 0x27FF0000);
+                int c = 0x7F000000 + (saberColor == NoteType.BLUE ? 0x0000FF : 0xFF0000);
+                DebugRenderer.renderLine(local_hand, endpoint, c, 0x7FFFFFFF);
+                DebugRenderer.renderHitbox(goodCutHitbox, new Vector3f(), new Quaternionf(), 0x00FF00);
+                DebugRenderer.renderHitbox(badCutHitbox, new Vector3f(), new Quaternionf(), 0xFF0000);
             }
             if (DebugRenderer.renderHitboxes) {
-                DebugRenderer.renderHitbox(goodCutHitbox, note.getWorldPos(), note.getWorldRot(), 0x00FF00);
-                DebugRenderer.renderHitbox(badCutHitbox, note.getWorldPos(), note.getWorldRot(), 0xFF0000);
-                DebugRenderer.renderHitbox(accurateHitbox, note.getWorldPos(), note.getWorldRot(), 0xFFFF00);
+                DebugRenderer.renderHitbox(goodCutHitbox, notePos, note.getWorldRot(), 0x00FF00);
+                DebugRenderer.renderHitbox(badCutHitbox, notePos, note.getWorldRot(), 0xFF0000);
+                DebugRenderer.renderHitbox(accurateHitbox, notePos, note.getWorldRot(), 0xFFFF00);
             }
         }
 
         assert MinecraftClient.getInstance().player != null;
 
-
-
-        if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
-
-            if (saberColor == NoteType.RED) {
-                leftSwingState.startSparkEffect();
-            } else {
-                rightSwingState.startSparkEffect();
-            }
-            if (note instanceof PhysicalScorableObject colorNote) {
-                if (colorNote.score$getData().score$getNoteType() == saberColor) {
+        if (note instanceof PhysicalScorableObject scorable) {
+            if (scorable.score$getData().score$getNoteType() == saberColor) {
+                if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
                     if (saberColor == NoteType.RED) {
+                        leftSwingState.startSparkEffect();
                         HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
                     } else {
+                        rightSwingState.startSparkEffect();
                         HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
                     }
-                    colorNote.score$setContactColor(saberColor);
 
-                    if (badCutHitbox.checkCollision(local_hand, endpoint)) {
-                        // check slice direction
-                        if (colorNote.score$getData().score$getCutDirection() == CutDirection.DOT) {
-                            colorNote.score$setCutResult(CutResult.goodCut(colorNote, 15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
-                            //MinecraftClient.getInstance().player.playSound(
-                            //    NoteBlockInstrument.PLING.getSound().value(),
-                            //    1, 1
-                            //);
-                            if (saberColor == NoteType.BLUE) {
-                                rightSwingState.followThrough(colorNote);
-                            } else {
-                                leftSwingState.followThrough(colorNote);
-                            }
+                    if (scorable.score$getData().score$getCutDirection() == CutDirection.DOT || matchAngle(angle)) {
+                        if (saberColor == NoteType.BLUE) {
+                            rightSwingState.followThrough(scorable);
                         } else {
-                            if (matchAngle(angle, colorNote.score$getData().score$getCutDirection())) {
-                                colorNote.score$setCutResult(CutResult.goodCut(colorNote, 15, 0, notePos));
-                                //MinecraftClient.getInstance().player.playSound(
-                                //    NoteBlockInstrument.PLING.getSound().value(),
-                                //    1, 1
-                                //);
-                                if (saberColor == NoteType.BLUE) {
-                                    rightSwingState.followThrough(colorNote);
-                                } else {
-                                    leftSwingState.followThrough(colorNote);
-                                }
-                            } else {
-                                colorNote.score$setCutResult(CutResult.badCut(colorNote, notePos));
-                                process(CutResult.badCut(colorNote, notePos));
-                                colorNote.score$cutNote();
-                            }
+                            leftSwingState.followThrough(scorable);
                         }
-
-
-                    } else if (note.getCutResult().type == CutResult.NO_HIT) {
-                        // good cut
-                        //MinecraftClient.getInstance().player.playSound(
-                        //    NoteBlockInstrument.CHIME.getSound().value(),
-                        //    1, 1
-                        //);
-                        // can't trigger a cut yet because saber needs a chance to potentially hit the bad-cut hitbox
-                        note.setCutResult(CutResult.hit(colorNote, 15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
+                        scorable.score$setCutResult(CutResult.goodCut(scorable, 15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
+                        note.spawnDebris(notePos, note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, getPlaneNormal(local_hand, endpoint, diff));
+                        scorable.score$cutNote();
                     }
-
-                } else {
-                    if (badCutHitbox.checkCollision(local_hand, endpoint)) {
-                        note.setContactColor(saberColor.opposite());
-                        // bad cut
-                        note.setCutResult(CutResult.badCut(colorNote, notePos));
-                        process(CutResult.badCut(colorNote, notePos));
-                        note.cutNote();
-                        //MinecraftClient.getInstance().player.playSound(
-                        //    NoteBlockInstrument.SNARE.getSound().value(),
-                        //    1, 1
-                        //);
-                    }
-                    // no hit
-                }
-            } else {
-                if (badCutHitbox.checkCollision(local_hand, endpoint)) {
-                    // bad cut
-                    // MinecraftClient.getInstance().player.playSound(
-                    //    NoteBlockInstrument.SNARE.getSound().value(),
-                    //    1, 1
-                    //);
-                    note.cutNote();
-                    breakCombo();
                 }
             }
-        } else if (note.getCutResult().type != CutResult.NO_HIT && note.getCutResult().type != CutResult.GOOD_CUT) {
-            note.getCutResult().finalizeScore();
+        }
+
+        if (badCutHitbox.checkCollision(local_hand, endpoint) && note.getCutResult().type != CutResult.GOOD_CUT) {
+            if (note instanceof PhysicalScorableObject scorable) {
+                if (!matchAngle(angle)) {
+                    scorable.score$setCutResult(CutResult.badCut(scorable, notePos));
+                    scorable.score$getCutResult().finalizeScore();
+                    note.spawnDebris(notePos, note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, getPlaneNormal(local_hand, endpoint, diff));
+                }
+            }
+            if (saberColor == NoteType.RED) {
+                HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+            } else {
+                HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
+            }
             note.cutNote();
+            process(CutResult.badCut(null, notePos));
         }
     }
 
@@ -393,7 +386,7 @@ public class GameLogicHandler {
                 breakCombo();
                 HUDRenderer.postScore(-1, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
             }
-            case CutResult.HIT, CutResult.GOOD_CUT -> {
+            case CutResult.GOOD_CUT -> {
                 int pre_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 100, cut.preSwingAngle), 0, 1) * 70);
                 int post_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 60, cut.followThroughAngle), 0, 1) * 30);
                 int finalScore = pre_swing + post_swing + cut.sliceScore;
@@ -528,6 +521,12 @@ public class GameLogicHandler {
             ))
         );
 
+        try {
+            PlayRecorder.save();
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Error saving recording", e);
+        }
+        PlayRecorder.reset();
         BeatmapPlayer.currentBeatmap = null;
         BeatmapPlayer.currentInfo = null;
         BeatmapAudioPlayer.unload();

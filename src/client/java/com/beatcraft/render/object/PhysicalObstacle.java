@@ -1,15 +1,13 @@
 package com.beatcraft.render.object;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.mixin_utils.BufferBuilderAccessible;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
-import com.beatcraft.render.SpawnQuaternionPool;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -107,7 +105,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         RenderSystem.depthMask(false);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
-        buff.sortQuads(((BufferBuilderAccessible) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
 
         BufferRenderer.drawWithGlobalProgram(buff);
 

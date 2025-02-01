@@ -63,8 +63,22 @@ public class MathUtil {
         return new Vector3f(newPoint.x, newPoint.y, newPoint.z);
     }
 
+    public static Vector2f lerpVector2(Vector2f a, Vector2f b, float time) {
+        return new Vector2f(a).lerp(b, time);
+    }
+
     public static Vector3f lerpVector3(Vector3f a, Vector3f b, float time) {
         return new Vector3f(a).lerp(b, time);
+    }
+
+    public static float inverseLerpVector3(Vector3f a, Vector3f b, Vector3f t) {
+        if (a.x != b.x) {
+            return inverseLerp(a.x, b.x, t.x);
+        } else if (a.y != b.y) {
+            return inverseLerp(a.y, b.y, t.y);
+        } else {
+            return inverseLerp(a.z, b.z, t.z);
+        }
     }
 
     public static Vector4f lerpVector4(Vector4f a, Vector4f b, float time) {

@@ -2,6 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Vector3f;
@@ -12,9 +13,14 @@ import java.util.List;
 public class BeatcraftRenderer {
 
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
+    private static final ArrayList<Runnable> noteRenderCalls = new ArrayList<>();
 
     public static void onRender(MatrixStack matrices, Camera camera) {
         BeatmapPlayer.onRender(matrices, camera);
+    }
+
+    public static void recordNoteRenderCall(Runnable call) {
+        noteRenderCalls.add(call);
     }
 
     public static void recordRenderCall(Runnable call) {
@@ -22,6 +28,24 @@ public class BeatcraftRenderer {
     }
 
     public static void render() {
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        for (Runnable renderCall : noteRenderCalls) {
+            try {
+                renderCall.run();
+            } catch (Exception e) {
+                BeatCraft.LOGGER.error("Render call failed! ", e);
+            }
+        }
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        noteRenderCalls.clear();
+
         for (Runnable renderCall : renderCalls) {
             try {
                 renderCall.run();

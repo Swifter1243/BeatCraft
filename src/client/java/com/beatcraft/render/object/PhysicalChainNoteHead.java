@@ -7,7 +7,11 @@ import com.beatcraft.beatmap.data.object.ChainNoteHead;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.model.BakedModel;
@@ -31,7 +35,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
 
     public PhysicalChainNoteHead(ChainNoteHead data) {
         super(data);
-
+        cutResult = GameLogicHandler.CutResult.noHit(this);
         baseDegrees = NoteMath.degreesFromCut(data.getCutDirection());
         baseDegrees = (baseDegrees + data.getAngleOffset()) % 360;
     }
@@ -40,12 +44,14 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel baseModel = mc.getBakedModelManager().getModel(chainHeadModelID);
         BakedModel arrowModel = mc.getBakedModelManager().getModel(PhysicalColorNote.noteArrowModelID);
 
 
         if (!isBaseDissolved()) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, baseModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            BeatcraftRenderer.recordNoteRenderCall(() -> {
+                MeshLoader.CHAIN_HEAD_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_HEAD_MESH.render(localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), true);
+            });
         }
 
         if (!isArrowDissolved()) {
@@ -136,5 +142,10 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     @Override
     public int score$getMaxSwingInAngle() {
         return 100;
+    }
+
+    @Override
+    public QuadMesh getMesh() {
+        return MeshLoader.CHAIN_HEAD_MESH;
     }
 }

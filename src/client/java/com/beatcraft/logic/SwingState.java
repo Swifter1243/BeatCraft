@@ -39,6 +39,7 @@ public class SwingState {
     }
 
     public Vector3f getVelocity(Vector3f currentPosition, Quaternionf currentRotation, double deltaTime) {
+
         Vector3f a = new Vector3f(0, 1, 0).rotate(currentRotation).add(currentPosition);
         endPoint.set(a);
         Vector3f b = new Vector3f(0, 1, 0).rotate(lastRotation).add(lastPosition);
