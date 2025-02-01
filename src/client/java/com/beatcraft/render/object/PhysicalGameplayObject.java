@@ -428,10 +428,12 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         meshes.getLeft().texture = MeshLoader.NOTE_TEXTURE;
         meshes.getRight().texture = MeshLoader.NOTE_TEXTURE;
 
+        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
+
         Debris left = new Debris(
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, -10f).add(planeNormal.mul(2f, new Vector3f())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
             meshes.getLeft()
         );
@@ -439,7 +441,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         Debris right = new Debris(
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, -10f).add(planeNormal.mul(-2f, new Vector3f())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
             meshes.getRight()
         );

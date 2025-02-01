@@ -36,6 +36,7 @@ wall dimensions and positioning
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
@@ -50,13 +51,11 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Random;
 
 
@@ -190,23 +189,17 @@ public class GameLogicHandler {
     private static boolean matchAngle(float angle) {
         angle = angle % 360;
         if (angle < 0) angle += 360;
-        return (45 > angle || angle > 315);
+        return (360-135 < angle && angle < 360-45);
     }
 
     public static Vector3f getPlaneNormal(Vector3f start, Vector3f end, Vector3f velocity) {
-        Vector3f segment = new Vector3f(start);
-        segment.sub(end);
-        Vector3f normal = new Vector3f(velocity);
-        normal.cross(segment);
-        if (normal.length() == 0) {
-            Vector3f defaultVelocity = new Vector3f(0, 0, 1);
-            normal.cross(segment, defaultVelocity);
-            if (normal.length() == 0) {
-                normal.cross(defaultVelocity, new Vector3f(1, 0, 0));
-            }
-        }
-        normal.normalize();
-        return normal;
+        Vector3f s1 = end.sub(start, new Vector3f());
+        Vector3f cross = s1.cross(velocity, new Vector3f());
+        return cross.normalize();
+    }
+
+    public static float distanceToOrigin(Vector3f planeIncident, Vector3f planeNormal) {
+        return Math.abs(planeNormal.dot(planeIncident)) / planeNormal.length();
     }
 
     private static<T extends GameplayObject> void checkSaber(
@@ -233,23 +226,23 @@ public class GameLogicHandler {
 
         Vector3f diff = endpoint.sub(oldEndpoint, new Vector3f());
 
-        int count = 1;
-        if (saberColor == NoteType.BLUE) {
-            for (Vector3f ep : previousRightEndpoints) {
-                Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
-                diff.add(vec);
-                oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
-                count++;
-            }
-        } else {
-            for (Vector3f ep : previousLeftEndpoints) {
-                Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
-                diff.add(vec);
-                oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
-                count++;
-            }
-        }
-        diff.div(count);
+        //int count = 1;
+        //if (saberColor == NoteType.BLUE) {
+        //    for (Vector3f ep : previousRightEndpoints) {
+        //        Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
+        //        diff.add(vec);
+        //        oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
+        //        count++;
+        //    }
+        //} else {
+        //    for (Vector3f ep : previousLeftEndpoints) {
+        //        Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
+        //        diff.add(vec);
+        //        oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
+        //        count++;
+        //    }
+        //}
+        //diff.div(count);
 
         float angle = MathUtil.getVectorAngleDegrees(new Vector2f(diff.x, diff.y).normalize());
 
@@ -295,8 +288,12 @@ public class GameLogicHandler {
                         } else {
                             leftSwingState.followThrough(scorable);
                         }
-                        scorable.score$setCutResult(CutResult.goodCut(scorable, 15, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
-                        note.spawnDebris(notePos, note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, getPlaneNormal(local_hand, endpoint, diff));
+
+                        Vector3f planeNormal = getPlaneNormal(local_hand, endpoint, diff);
+                        float distance = distanceToOrigin(local_hand, planeNormal);
+                        int points = (int) Math.clamp(15 * (1-MathUtil.inverseLerp(0, 0.25f, distance)), 0, 15);
+                        scorable.score$setCutResult(CutResult.goodCut(scorable, points, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
+                        note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, planeNormal);
                         scorable.score$cutNote();
                     }
                 }
@@ -308,7 +305,8 @@ public class GameLogicHandler {
                 if (!matchAngle(angle)) {
                     scorable.score$setCutResult(CutResult.badCut(scorable, notePos));
                     scorable.score$getCutResult().finalizeScore();
-                    note.spawnDebris(notePos, note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, getPlaneNormal(local_hand, endpoint, diff));
+                    Vector3f planeNormal = getPlaneNormal(local_hand, endpoint, diff);
+                    note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, planeNormal);
                 }
             }
             if (saberColor == NoteType.RED) {
@@ -473,11 +471,11 @@ public class GameLogicHandler {
 
     public static float getAccuracy() {
         float acc = (float) score / (float) maxPossibleScore;
-        return Float.isNaN(acc) ? 100 : acc;
+        return Float.isNaN(acc) ? 1 : acc;
     }
 
     public static Rank getRank() {
-        float acc = getAccuracy();
+        float acc = getAccuracy() * 100;
 
         if (acc < 20) {
             return Rank.E;
@@ -516,7 +514,7 @@ public class GameLogicHandler {
         MinecraftClient.getInstance().player.sendMessage(
             Text.literal(String.format(
                 "%s - %.1f%% - %s\nmax combo: %s\ngood cuts: %s\nbad cuts: %s\nmisses: %s",
-                getRank(), getAccuracy(), getScore(), getMaxCombo(),
+                getRank(), getAccuracy()*100, getScore(), getMaxCombo(),
                 goodCuts, badCuts, misses
             ))
         );

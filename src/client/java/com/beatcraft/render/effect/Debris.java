@@ -31,7 +31,7 @@ public class Debris implements Particle {
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
         orientation.add(spin.mul(deltaTime, new Quaternionf()));
         position.add(velocity.mul(deltaTime, new Vector3f()));
-        //velocity.add(new Vector3f(0, -0.1f, 0).mul(deltaTime));
+        velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
         velocity.mul(decay);
 
         BeatcraftRenderer.recordNoteRenderCall(() -> {

@@ -265,8 +265,7 @@ public class HUDRenderer {
 
     private static void renderAccuracy(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
-        String accuracy = String.format("%.1f", GameLogicHandler.getAccuracy()) + "%";
-
+        String accuracy = String.format("%.1f", GameLogicHandler.getAccuracy()*100) + "%";
 
         int w = textRenderer.getWidth(accuracy);
 
