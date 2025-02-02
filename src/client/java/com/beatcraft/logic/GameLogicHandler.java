@@ -293,7 +293,7 @@ public class GameLogicHandler {
                         float distance = distanceToOrigin(local_hand, planeNormal);
                         int points = (int) Math.clamp(15 * (1-MathUtil.inverseLerp(0, 0.25f, distance)), 0, 15);
                         scorable.score$setCutResult(CutResult.goodCut(scorable, points, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
-                        note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, planeNormal);
+                        note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
                         scorable.score$cutNote();
                     }
                 }
@@ -306,7 +306,7 @@ public class GameLogicHandler {
                     scorable.score$setCutResult(CutResult.badCut(scorable, notePos));
                     scorable.score$getCutResult().finalizeScore();
                     Vector3f planeNormal = getPlaneNormal(local_hand, endpoint, diff);
-                    note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand, planeNormal);
+                    note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
                 }
             }
             if (saberColor == NoteType.RED) {
