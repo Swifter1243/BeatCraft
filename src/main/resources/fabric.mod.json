@@ -21,6 +21,9 @@
 		],
 		"client": [
 			"com.beatcraft.BeatCraftClient"
+		],
+		"preLaunch": [
+			"com.beatcraft.BeatCraftPreLaunch"
 		]
 	},
 	"mixins": [

@@ -158,6 +158,11 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
     }
 
     @Override
+    public Quaternionf score$getLaneRotation() {
+        return getLaneRotation();
+    }
+
+    @Override
     public QuadMesh getMesh() {
         return MeshLoader.CHAIN_LINK_MESH;
     }

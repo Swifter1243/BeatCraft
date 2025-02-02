@@ -31,7 +31,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected static final Vector3f WORLD_OFFSET = new Vector3f(0, 0.8f, 1f);
     protected final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
-    private Quaternionf laneRotation;
+    private Quaternionf laneRotation = new Quaternionf();
     private Quaternionf lookRotation = new Quaternionf();
     private Vector3f worldPos = new Vector3f();
     private Quaternionf worldRot = new Quaternionf();
@@ -433,7 +433,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         Debris left = new Debris(
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
             meshes.getLeft()
         );
@@ -441,7 +441,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         Debris right = new Debris(
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
             meshes.getRight()
         );

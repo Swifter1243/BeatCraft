@@ -62,10 +62,11 @@ public class Replayer {
 
     public static void reset() {
         frames.clear();
+        runReplay = false;
     }
 
     public static void update(float beat) {
-        if (!runReplay) return;
+        if (!runReplay || beat < 0) return;
         if (frames.isEmpty()) return;
         PlayFrame previous = null;
         PlayFrame next = null;

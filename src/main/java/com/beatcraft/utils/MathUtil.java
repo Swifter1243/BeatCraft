@@ -1,5 +1,6 @@
 package com.beatcraft.utils;
 
+import com.beatcraft.data.types.Color;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.joml.*;
@@ -173,69 +174,13 @@ public class MathUtil {
         return String.format("%s:%02d", minutes, seconds);
     }
 
-    /// Slices a mesh (list of quads) through a plane into 2 meshes.
-    /// Quads above the plane (in positive normal direction) will be the left side of the pair
-    public static Pair<List<Vector3f[]>, List<Vector3f[]>> sliceMesh(Vector3f planeIncidentPoint, Vector3f planeNormal, List<Vector3f[]> mesh) {
-        List<Vector3f[]> leftMesh = new ArrayList<>();
-        List<Vector3f[]> rightMesh = new ArrayList<>();
-
-        for (Vector3f[] quad : mesh) {
-            List<Vector3f> left = new ArrayList<>();
-            List<Vector3f> right = new ArrayList<>();
-
-            for (Vector3f vertex : quad) {
-                if (isAbovePlane(vertex, planeIncidentPoint, planeNormal)) {
-                    left.add(vertex);
-                } else {
-                    right.add(vertex);
-                }
-            }
-
-            if (left.size() == 4) {
-                leftMesh.add(quad);
-            } else if (right.size() == 4) {
-                rightMesh.add(quad);
-            } else {
-                splitQuad(quad, planeIncidentPoint, planeNormal, left, right, leftMesh, rightMesh);
-            }
-        }
-
-        return new Pair<>(leftMesh, rightMesh);
-    }
-
-    private static boolean isAbovePlane(Vector3f vertex, Vector3f planeIncidentPoint, Vector3f planeNormal) {
-        Vector3f relativePos = new Vector3f(vertex).sub(planeIncidentPoint);
-        return relativePos.dot(planeNormal) >= 0;
-    }
-
-    private static void splitQuad(Vector3f[] quad, Vector3f planeIncidentPoint, Vector3f planeNormal, List<Vector3f> left, List<Vector3f> right, List<Vector3f[]> leftMesh, List<Vector3f[]> rightMesh) {
-        List<Vector3f> intersections = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            Vector3f v1 = quad[i];
-            Vector3f v2 = quad[(i + 1) % 4];
-
-            boolean v1Above = isAbovePlane(v1, planeIncidentPoint, planeNormal);
-            boolean v2Above = isAbovePlane(v2, planeIncidentPoint, planeNormal);
-
-            if (v1Above != v2Above) {
-                Vector3f intersection = findIntersection(v1, v2, planeIncidentPoint, planeNormal);
-                intersections.add(intersection);
-            }
-        }
-
-        if (intersections.size() == 2) {
-            left.addAll(intersections);
-            right.addAll(intersections);
-
-            leftMesh.add(left.toArray(new Vector3f[4]));
-            rightMesh.add(right.toArray(new Vector3f[4]));
-        }
-    }
-
-    private static Vector3f findIntersection(Vector3f v1, Vector3f v2, Vector3f planeIncidentPoint, Vector3f planeNormal) {
-        Vector3f edge = new Vector3f(v2).sub(v1);
-        float t = (planeNormal.dot(planeIncidentPoint) - planeNormal.dot(v1)) / planeNormal.dot(edge);
-        return new Vector3f(v1).add(edge.mul(t));
+    public static Color lerpColor(Color a, Color b, float time) {
+        return new Color(
+            Math.lerp(a.getRed(), b.getRed(), time),
+            Math.lerp(a.getGreen(), b.getGreen(), time),
+            Math.lerp(a.getBlue(), b.getBlue(), time),
+            Math.lerp(a.getAlpha(), b.getAlpha(), time)
+        );
     }
 
 }

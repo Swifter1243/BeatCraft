@@ -47,6 +47,7 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.Replayer;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -315,7 +316,8 @@ public class GameLogicHandler {
                 HapticsHandler.vibrateRight(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
             }
             note.cutNote();
-            process(CutResult.badCut(null, notePos));
+            breakCombo();
+            //process(CutResult.badCut(null, notePos));
         }
     }
 
@@ -382,7 +384,11 @@ public class GameLogicHandler {
                 }
                 misses++;
                 breakCombo();
-                HUDRenderer.postScore(-1, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
+                addScore(0, 115);
+                Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+
+                HUDRenderer.postScore(-1, startPos, endPos, cut.note.score$getLaneRotation());
             }
             case CutResult.GOOD_CUT -> {
                 int pre_swing = (int) (Math.clamp(MathUtil.inverseLerp(0, 100, cut.preSwingAngle), 0, 1) * 70);
@@ -392,7 +398,11 @@ public class GameLogicHandler {
                 addGoodCut();
                 incrementCombo();
                 addScore(finalScore, 115);
-                HUDRenderer.postScore(finalScore, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
+
+                Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+
+                HUDRenderer.postScore(finalScore, startPos, endPos, cut.note.score$getLaneRotation());
             }
             case CutResult.BAD_CUT -> {
                 if (misses == 0 && badCuts == 0) {
@@ -400,7 +410,11 @@ public class GameLogicHandler {
                 }
                 badCuts++;
                 breakCombo();
-                HUDRenderer.postScore(0, cut.contactPosition.mul(1, 0, 1, new Vector3f()), cut.contactPosition.mul(1, 0, 0, new Vector3f()).add(0, 0.5f, 5));
+                addScore(0, 115);
+                Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+
+                HUDRenderer.postScore(0, startPos, endPos, cut.note.score$getLaneRotation());
             }
         }
     }
@@ -525,6 +539,7 @@ public class GameLogicHandler {
             BeatCraft.LOGGER.error("Error saving recording", e);
         }
         PlayRecorder.reset();
+        Replayer.reset();
         BeatmapPlayer.currentBeatmap = null;
         BeatmapPlayer.currentInfo = null;
         BeatmapAudioPlayer.unload();

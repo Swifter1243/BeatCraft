@@ -35,8 +35,8 @@ public class WorldRendererMixin {
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
         DebugRenderer.render();
         HUDRenderer.render(immediate);
-        BeatcraftRenderer.render();
         BeatcraftParticleRenderer.renderParticles();
+        BeatcraftRenderer.render();
         SaberTrailRenderer.renderAll();
         HapticsHandler.endFrame();
     }

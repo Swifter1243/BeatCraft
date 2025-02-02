@@ -42,15 +42,17 @@ public class HUDRenderer {
     private static class ScoreDisplay implements Particle {
 
         private final int score;
-        private double spawnTime;
-        private Vector3f position;
-        private Vector3f endPoint;
+        private final double spawnTime;
+        private final Vector3f position;
+        private final Vector3f endPoint;
+        private final Quaternionf orientation;
 
-        public ScoreDisplay(int score, Vector3f position, Vector3f endPoint) {
+        public ScoreDisplay(int score, Vector3f position, Vector3f endPoint, Quaternionf orientation) {
             this.score = score;
             this.position = position;
             this.endPoint = endPoint;
             this.spawnTime = System.nanoTime() / 1_000_000_000d;
+            this.orientation = orientation;
         }
 
         private static final Function<Float, Float> easing = Easing.getEasing("easeOutExpo");
@@ -67,6 +69,7 @@ public class HUDRenderer {
 
             matrix.scale(1/64f);
             matrix.rotate(new Quaternionf().rotateZ((float) Math.PI));
+            matrix.rotate(orientation);
 
             if (vertexConsumerProvider != null) {
                 TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
@@ -96,8 +99,8 @@ public class HUDRenderer {
         }
     }
 
-    public static void postScore(int score, Vector3f position, Vector3f endpoint) {
-        BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint));
+    public static void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
+        BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
     }
 
     public static VertexConsumerProvider vertexConsumerProvider;

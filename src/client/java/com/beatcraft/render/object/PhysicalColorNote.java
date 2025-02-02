@@ -216,6 +216,11 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     }
 
     @Override
+    public Quaternionf score$getLaneRotation() {
+        return getLaneRotation();
+    }
+
+    @Override
     public QuadMesh getMesh() {
         return MeshLoader.COLOR_NOTE_MESH;
     }

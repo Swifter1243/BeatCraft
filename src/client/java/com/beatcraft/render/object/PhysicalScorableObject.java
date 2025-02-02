@@ -3,6 +3,7 @@ package com.beatcraft.render.object;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
+import org.joml.Quaternionf;
 
 public interface PhysicalScorableObject {
     ScorableObject score$getData();
@@ -15,4 +16,5 @@ public interface PhysicalScorableObject {
     int score$getMaxCutPositionScore();
     int score$getMaxSwingInAngle();
     int score$getMaxFollowThroughAngle();
+    Quaternionf score$getLaneRotation();
 }
