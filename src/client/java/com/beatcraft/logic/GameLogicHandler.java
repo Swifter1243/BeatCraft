@@ -123,9 +123,8 @@ public class GameLogicHandler {
         if (res.getLeft() <= 0.05) {
             HapticsHandler.vibrateLeft(0.2f, 1.0f);
             HapticsHandler.vibrateRight(0.2f, 1.0f);
-            BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFF, 0.02f);
+            BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFFFF, 0.02f);
         }
-
 
     }
 
@@ -540,8 +539,7 @@ public class GameLogicHandler {
         }
         PlayRecorder.reset();
         Replayer.reset();
-        BeatmapPlayer.currentBeatmap = null;
-        BeatmapPlayer.currentInfo = null;
+        BeatmapPlayer.reset();
         BeatmapAudioPlayer.unload();
         reset();
 

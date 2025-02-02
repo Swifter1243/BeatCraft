@@ -39,7 +39,7 @@ public class SparkParticle implements Particle {
 
         if (delta >= 1) return;
 
-        int col = MathUtil.lerpColor(new Color(color), new Color(0xFFFFFFFF), delta).toARGB();
+        int col = MathUtil.lerpColor(new Color(color), new Color(0x01FFFFFF), delta).toARGB();
 
         for (Vector3f vert : vertices) {
             buffer.vertex(vert.x, vert.y, vert.z).color(col);

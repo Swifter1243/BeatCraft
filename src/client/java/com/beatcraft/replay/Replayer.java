@@ -25,6 +25,7 @@ public class Replayer {
     public static boolean runReplay = false;
 
     public static void loadReplay(String replayFile) throws IOException {
+        frames.clear();
         String path = MinecraftClient.getInstance().runDirectory + "/replay/" + replayFile;
 
         String rawData = Files.readString(Path.of(path));
@@ -36,6 +37,8 @@ public class Replayer {
         String diff = json.get("diff").getAsString();
 
         JsonArray frameData = json.getAsJsonArray("frames");
+
+        frames.add(new PlayFrame(0, new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf()));
 
         frameData.forEach(data -> {
             JsonObject obj = data.getAsJsonObject();

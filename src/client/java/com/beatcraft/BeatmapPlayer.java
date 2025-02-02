@@ -130,4 +130,13 @@ public class BeatmapPlayer {
         currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, info);
         currentInfo = info;
     }
+
+    public static void reset() {
+        currentInfo = null;
+        currentBeatmap = null;
+        isPlaying = false;
+        elapsedNanoTime = 0;
+        lastNanoTime = 0;
+    }
+
 }
