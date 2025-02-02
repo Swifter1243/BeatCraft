@@ -299,10 +299,10 @@ public class ColorScheme {
     public static ColorScheme getWeaveEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xc81414, 0x288ed2,
-            0xd91616, 0x30acff,
-            0xff3030,
-            0xd216d9, 0xa1a1a1
+            0xFFc81414, 0xFF288ed2,
+            0xFFd91616, 0xFF30acff,
+            0xFFff3030,
+            0xFFd216d9, 0xFFa1a1a1
         );
         return cs;
     }
@@ -310,10 +310,10 @@ public class ColorScheme {
     public static ColorScheme getPyroEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0x93000a, 0xffab00,
-            0xff1c34, 0xe2bc43,
-            0xd9b36d,
-            0xff002d, 0xc3c3c3
+            0xFF93000a, 0xFFffab00,
+            0xFFff1c34, 0xFFe2bc43,
+            0xFFd9b36d,
+            0xFFff002d, 0xFFc3c3c3
         );
         return cs;
     }
@@ -321,10 +321,10 @@ public class ColorScheme {
     public static ColorScheme getEdmEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xa1a1a1, 0x2db2e0,
-            0x15b700, 0x005eb7,
-            0x2db2e0,
-            0xbc002d, 0x6d00c0
+            0xFFa1a1a1, 0xFF2db2e0,
+            0xFF15b700, 0xFF005eb7,
+            0xFF2db2e0,
+            0xFFbc002d, 0xFF6d00c0
         );
         return cs;
     }
@@ -332,10 +332,10 @@ public class ColorScheme {
     public static ColorScheme getTheSecondEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xc81414, 0x288ed2,
-            0xd91616, 0x30acff,
-            0xff3030,
-            0xd216d9, 0x00ffa5
+            0xFFc81414, 0xFF288ed2,
+            0xFFd91616, 0xFF30acff,
+            0xFFff3030,
+            0xFFd216d9, 0xFF00ffa5
         );
         return cs;
     }
@@ -343,10 +343,10 @@ public class ColorScheme {
     public static ColorScheme getLizzoEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xffcf60, 0xab41e5,
-            0xd6a537, 0xd13de0,
-            0xff8030,
-            0xff668d, 0x5ecbff
+            0xFFffcf60, 0xFFab41e5,
+            0xFFd6a537, 0xFFd13de0,
+            0xFFff8030,
+            0xFFff668d, 0xFF5ecbff
         );
         return cs;
     }
@@ -354,23 +354,23 @@ public class ColorScheme {
     public static ColorScheme getTheWeekndEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0x952121, 0x394a54,
-            0xff4c24, 0x2b60b4,
-            0xea4c02,
-            0xf49a1f, 0x86d3fd
+            0xFF952121, 0xFF394a54,
+            0xFFff4c24, 0xFF2b60b4,
+            0xFFea4c02,
+            0xFFf49a1f, 0xFF86d3fd
         );
-        cs.setEnvironmentWhiteColor(new Color(0xe0e0e0));
-        cs.setEnvironmentWhiteColorBoost(new Color(0xfaeddc));
+        cs.setEnvironmentWhiteColor(new Color(0xFFe0e0e0));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xFFfaeddc));
         return cs;
     }
 
     public static ColorScheme getRockMixtapeEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0x996c0b, 0x99bec7,
-            0xbf1f29, 0xf29429,
-            0xffffff,
-            0xf522ea, 0x60cfe6
+            0xFF996c0b, 0xFF99bec7,
+            0xFFbf1f29, 0xFFf29429,
+            0xFFffffff,
+            0xFFf522ea, 0xFF60cfe6
         );
         return cs;
     }
@@ -378,10 +378,10 @@ public class ColorScheme {
     public static ColorScheme getDragons2Environment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xb9a848, 0x40c367,
-            0x05fe11, 0x000eff,
-            0x8d3fff,
-            0xf90805, 0xffd33a
+            0xFFb9a848, 0xFF40c367,
+            0xFF05fe11, 0xFF000eff,
+            0xFF8d3fff,
+            0xFFf90805, 0xFFffd33a
         );
         return cs;
     }
@@ -389,23 +389,23 @@ public class ColorScheme {
     public static ColorScheme getPanic2Environment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xe65591, 0x278e7c,
-            0xb21d5f, 0x309e9f,
-            0xf76146,
-            0xe67211, 0xa270db
+            0xFFe65591, 0xFF278e7c,
+            0xFFb21d5f, 0xFF309e9f,
+            0xFFf76146,
+            0xFFe67211, 0xFFa270db
         );
-        cs.setEnvironmentWhiteColor(new Color(0xd4e6ec));
-        cs.setEnvironmentWhiteColorBoost(new Color(0xe0d4ec));
+        cs.setEnvironmentWhiteColor(new Color(0xFFd4e6ec));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xFFe0d4ec));
         return cs;
     }
 
     public static ColorScheme getQueenEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0x94918e, 0x8622ad,
-            0xeea31f, 0x0bb7e5,
-            0xeea31f,
-            0xc42513, 0x6602b9
+            0xFF94918e, 0xFF8622ad,
+            0xFFeea31f, 0xFF0bb7e5,
+            0xFFeea31f,
+            0xFFc42513, 0xFF6602b9
         );
         return cs;
     }
@@ -413,22 +413,22 @@ public class ColorScheme {
     public static ColorScheme getLinkinPark2Environment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xa92a2b, 0x63848e,
-            0xa92a2c, 0x9fb0b5,
-            0xa92a2c,
-            0xeb9841, 0x48759f
+            0xFFa92a2b, 0xFF63848e,
+            0xFFa92a2c, 0xFF9fb0b5,
+            0xFFa92a2c,
+            0xFFeb9841, 0xFF48759f
         );
-        cs.setEnvironmentWhiteColor(new Color(0xc0ac97));
+        cs.setEnvironmentWhiteColor(new Color(0xFFc0ac97));
         return cs;
     }
 
     public static ColorScheme getTheRollingStonesEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xe5001d, 0x8622ad,
-            0xf30367, 0x7a67ff,
-            0xf30367,
-            0x907600, 0x01a3ab
+            0xFFe5001d, 0xFF8622ad,
+            0xFFf30367, 0xFF7a67ff,
+            0xFFf30367,
+            0xFF907600, 0xFF01a3ab
         );
         return cs;
     }
@@ -436,10 +436,10 @@ public class ColorScheme {
     public static ColorScheme getLatticeEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xd62c8b, 0x00abfa,
-            0xe429bf, 0x3295cb,
-            0x77b5ff,
-            0x8b22d0, 0x67eaea
+            0xFFd62c8b, 0xFF00abfa,
+            0xFFe429bf, 0xFF3295cb,
+            0xFF77b5ff,
+            0xFF8b22d0, 0xFF67eaea
         );
         return cs;
     }
@@ -447,36 +447,36 @@ public class ColorScheme {
     public static ColorScheme getDaftPunkEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xb83a2e, 0x1fb2b0,
-            0xffb340, 0x8554d1,
-            0x9b00ff,
-            0xdb007a, 0x00d1cd
+            0xFFb83a2e, 0xFF1fb2b0,
+            0xFFffb340, 0xFF8554d1,
+            0xFF9b00ff,
+            0xFFdb007a, 0xFF00d1cd
         );
-        cs.setEnvironmentWhiteColor(new Color(0x7acfff));
-        cs.setEnvironmentWhiteColorBoost(new Color(0xffd57c));
+        cs.setEnvironmentWhiteColor(new Color(0xFF7acfff));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xFFffd57c));
         return cs;
     }
 
     public static ColorScheme getHipHopEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xff9550, 0x049c96,
-            0xe97e00, 0x0fcd2f,
-            0xff508d,
-            0x24fff7, 0x3a46ff
+            0xFFff9550, 0xFF049c96,
+            0xFFe97e00, 0xFF0fcd2f,
+            0xFFff508d,
+            0xFF24fff7, 0xFF3a46ff
         );
-        cs.setEnvironmentWhiteColor(new Color(0xccc1b4));
-        cs.setEnvironmentWhiteColorBoost(new Color(0xe0e0e0));
+        cs.setEnvironmentWhiteColor(new Color(0xFFccc1b4));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xFFe0e0e0));
         return cs;
     }
 
     public static ColorScheme getColliderEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xf67e26, 0x2b99db,
-            0xf66800, 0x2b64db,
-            0xd61900,
-            0xe50906, 0xda69f8
+            0xFFf67e26, 0xFF2b99db,
+            0xFFf66800, 0xFF2b64db,
+            0xFFd61900,
+            0xFFe50906, 0xFFda69f8
         );
         return cs;
     }
@@ -484,10 +484,10 @@ public class ColorScheme {
     public static ColorScheme getBritneyEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xe92499, 0x3f94ff,
-            0xfd03fc, 0x3181e7,
-            0xd61900,
-            0xff7582, 0x7bedcb
+            0xFFe92499, 0xFF3f94ff,
+            0xFFfd03fc, 0xFF3181e7,
+            0xFFd61900,
+            0xFFff7582, 0xFF7bedcb
         );
         return cs;
     }
@@ -495,10 +495,10 @@ public class ColorScheme {
     public static ColorScheme getMonstercat2Environment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0xdf5885, 0x634d9c,
-            0x9e0dd3, 0x56b61c,
-            0x3b26a3,
-            0xb61c1c, 0x168ca5
+            0xFFdf5885, 0xFF634d9c,
+            0xFF9e0dd3, 0xFF56b61c,
+            0xFF3b26a3,
+            0xFFb61c1c, 0xFF168ca5
         );
         return cs;
     }
@@ -506,13 +506,13 @@ public class ColorScheme {
     public static ColorScheme getMetallicaEnvironment() {
         ColorScheme cs = new ColorScheme();
         cs.setColors(
-            0x485567, 0x93b7d2,
-            0xdd7e61, 0x4174dd,
-            0xd61900,
-            0xdb6419, 0x00bfa1
+            0xFF485567, 0xFF93b7d2,
+            0xFFdd7e61, 0xFF4174dd,
+            0xFFd61900,
+            0xFFdb6419, 0xFF00bfa1
         );
-        cs.setEnvironmentWhiteColor(new Color(0x839bad));
-        cs.setEnvironmentWhiteColorBoost(new Color(0x839bad));
+        cs.setEnvironmentWhiteColor(new Color(0xFF839bad));
+        cs.setEnvironmentWhiteColorBoost(new Color(0xFF839bad));
         return cs;
     }
 
