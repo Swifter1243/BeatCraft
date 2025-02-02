@@ -116,6 +116,9 @@ public class BeatCraftClient implements ClientModInitializer {
         String path = StringArgumentType.getString(context, "path");
         path = trimPathQuotes(path);
 
+        Replayer.reset();
+
+
         if (handleDifficultySetup(context, path) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
@@ -279,6 +282,8 @@ public class BeatCraftClient implements ClientModInitializer {
         String songName = StringArgumentType.getString(context, "song");
         String diffSet = StringArgumentType.getString(context, "difficulty_set");
         String diff = StringArgumentType.getString(context, "difficulty");
+
+        Replayer.reset();
 
         List<SongData> filtered = songs.getFiltered(songName);
 
