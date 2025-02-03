@@ -5,17 +5,27 @@ import com.beatcraft.data.menu.song_preview.SongPreview;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public class SongDownloader {
 
@@ -105,6 +115,104 @@ public class SongDownloader {
         loadFromSearch(after);
     }
 
+    public static void downloadSong(SongPreview preview, String runDirectory, Runnable after) {
+        CompletableFuture.runAsync(() -> {
+            _downloadSong(preview, runDirectory);
+        }).thenRun(after);
+    }
+
+    private static void _downloadSong(SongPreview preview, String runDirectory) {
+        String url = preview.versions().getFirst().downloadURL();
+
+        String unzip_to = runDirectory + "/beatmaps/" + preview.id();
+        String path = unzip_to + ".zip";
+
+        Request request = new Request.Builder().url(url).build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                BeatCraft.LOGGER.error("Failed to download song: {}", response);
+                return;
+            }
+
+            try (FileOutputStream outputStream = new FileOutputStream(path)) {
+                outputStream.write(response.body().bytes());
+            }
+
+            unzip(path, unzip_to);
+
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to download song!", e);
+        }
+
+    }
+
+    private static void unzip(String source, String destination) {
+
+        try (ZipInputStream inputStream = new ZipInputStream(new FileInputStream(source))) {
+
+            // list files in zip
+            ZipEntry zipEntry = inputStream.getNextEntry();
+
+            while (zipEntry != null) {
+
+                boolean isDirectory = false;
+                // example 1.1
+                // some zip stored files and folders separately
+                // e.g data/
+                //     data/folder/
+                //     data/folder/file.txt
+                if (zipEntry.getName().endsWith(File.separator)) {
+                    isDirectory = true;
+                }
+
+                Path newPath = zipSlipProtect(zipEntry, Path.of(destination));
+
+                if (isDirectory) {
+                    Files.createDirectories(newPath);
+                } else {
+
+                    // example 1.2
+                    // some zip stored file path only, need create parent directories
+                    // e.g data/folder/file.txt
+                    if (newPath.getParent() != null) {
+                        if (Files.notExists(newPath.getParent())) {
+                            Files.createDirectories(newPath.getParent());
+                        }
+                    }
+
+                    // copy files, nio
+                    Files.copy(inputStream, newPath, StandardCopyOption.REPLACE_EXISTING);
+
+                }
+
+                zipEntry = inputStream.getNextEntry();
+
+            }
+            inputStream.closeEntry();
+
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to unzip song!", e);
+        }
+        try {
+            Files.deleteIfExists(Path.of(source));
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to remove temporary zip!", e);
+        }
+    }
+
+    public static Path zipSlipProtect(ZipEntry zipEntry, Path targetDir) throws IOException {
+
+        Path targetDirResolved = targetDir.resolve(zipEntry.getName());
+
+        Path normalizePath = targetDirResolved.normalize();
+        if (!normalizePath.startsWith(targetDir)) {
+            throw new IOException("Bad zip entry: " + zipEntry.getName());
+        }
+
+        return normalizePath;
+    }
+
     private static int currentRequestId = 0;
     public static void loadFromSearch(Runnable after) {
         final int id = ++currentRequestId;
@@ -121,7 +229,7 @@ public class SongDownloader {
             });
     }
 
-    private static Lock lock = new ReentrantLock();
+    private static final Lock lock = new ReentrantLock();
 
     private static void _loadFromSearch() {
         if (search.isEmpty()) {

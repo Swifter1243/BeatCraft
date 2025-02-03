@@ -3,7 +3,6 @@ package com.beatcraft;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.items.ModItems;
-import com.beatcraft.items.SaberItem;
 import com.beatcraft.items.group.ModItemGroup;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;

@@ -34,4 +34,20 @@ public record SongVersion(
             downloadURL, coverURL, previewURL
         );
     }
+
+    public List<String> getSets() {
+        ArrayList<String> out = new ArrayList<>();
+        diffs.forEach(d -> {
+            out.add(d.characteristic());
+        });
+        return out;
+    }
+
+    public List<String> getDiffs() {
+        ArrayList<String> out = new ArrayList<>();
+        diffs.forEach(d -> {
+            out.add(d.difficulty());
+        });
+        return out;
+    }
 }

@@ -6,6 +6,7 @@
   "gui.beatcraft.button.audio_settings": "Audio",
   "gui.beatcraft.button.controllers_settings": "Controllers",
   "gui.beatcraft.button.debug_settings": "Debug",
+  "gui.beatcraft.download_song": "Download",
 
   "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
   "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics: %s",

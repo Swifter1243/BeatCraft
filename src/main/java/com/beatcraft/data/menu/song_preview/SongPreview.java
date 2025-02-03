@@ -50,4 +50,29 @@ public record SongPreview(
             uploaded, automapper, ranked, qualified, versions
         );
     }
+
+    public String getSets() {
+        ArrayList<String> sets = new ArrayList<>();
+        for (SongVersion v : versions) {
+            v.getSets().forEach(s -> {
+                if (!sets.contains(s)) {
+                    sets.add(s);
+                }
+            });
+        }
+        return String.join(" | ", sets);
+    }
+
+    public String getDiffs() {
+        ArrayList<String> diffs = new ArrayList<>();
+        for (SongVersion v : versions) {
+            v.getDiffs().forEach(s -> {
+                if (!diffs.contains(s)) {
+                    diffs.add(s);
+                }
+            });
+        }
+        return String.join(" | ", diffs);
+    }
+
 }
