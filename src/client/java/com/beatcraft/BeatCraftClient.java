@@ -11,6 +11,7 @@ import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
+import com.beatcraft.screen.SongDownloaderScreen;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -42,7 +43,8 @@ public class BeatCraftClient implements ClientModInitializer {
     public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
     public static final SongList songs = new SongList();
 
-    public static final KeyBinding keyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
+    public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
+    public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
 
     @Override
     public void onInitializeClient() {
@@ -52,10 +54,15 @@ public class BeatCraftClient implements ClientModInitializer {
         GeckolibRenderInit.init();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (keyBind.wasPressed()) {
+            if (settingsKeyBind.wasPressed()) {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
-                while (keyBind.wasPressed());
+                while (settingsKeyBind.wasPressed());
+            }
+            else if (songSearchKeybind.wasPressed()) {
+                var screen = new SongDownloaderScreen(null);
+                client.setScreen(screen);
+                while (songSearchKeybind.wasPressed());
             }
         });
 
