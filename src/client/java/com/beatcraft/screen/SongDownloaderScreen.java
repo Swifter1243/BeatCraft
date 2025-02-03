@@ -1,12 +1,12 @@
 package com.beatcraft.screen;
 
 import com.beatcraft.BeatCraftClient;
-import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.data.menu.song_preview.SongPreview;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -25,9 +25,10 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
     private TextBoxComponent search;
     private FlowLayout listComponent;
     private FlowLayout previewComponent;
+    private LabelComponent pageDisplay;
 
     public SongDownloaderScreen(Screen parent) {
-        super(Text.translatable(""));
+        super(Text.translatable("screen.beatcraft.song_downloader"));
         this.parent = parent;
     }
 
@@ -49,17 +50,33 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
             this::makeSongPreviewDisplay,
             true
         );
+        pageDisplay = (LabelComponent) Components.label(Text.literal(String.format("PAGE %s", SongDownloader.page))).lineHeight(15).tooltip(Text.translatable("gui.beatcraft.button.page_error"));
         previewComponent = Containers.verticalFlow(Sizing.fill(), Sizing.fill());
         flowLayout.surface(Surface.VANILLA_TRANSLUCENT);
         flowLayout.child(
             search
         ).child(
-            Containers.horizontalFlow(Sizing.fill(), Sizing.fill(80))
+            Containers.horizontalFlow(Sizing.fill(), Sizing.fill(90))
                 .child(
-                    Containers.verticalFlow(Sizing.fill(50), Sizing.content())
+                    Containers.verticalFlow(Sizing.fill(50), Sizing.fill())
                         .child(
+                            Containers.horizontalFlow(Sizing.fill(), Sizing.content())
+                                .child(
+                                    Components.box(Sizing.fill(5), Sizing.fixed(2)).color(Color.ofArgb(0))
+                                ).child(
+                                    Components.button(Text.literal(" < "), this::pageLeft)
+                                ).child(
+                                    Components.box(Sizing.fill(25), Sizing.fixed(2)).color(Color.ofArgb(0))
+                                ).child(
+                                    pageDisplay
+                                ).child(
+                                    Components.box(Sizing.fill(25), Sizing.fixed(2)).color(Color.ofArgb(0))
+                                ).child(
+                                    Components.button(Text.literal(" > "), this::pageRight)
+                                )
+                        ).child(
                             Containers.verticalScroll(
-                                Sizing.content(), Sizing.fill(),
+                                Sizing.content(), Sizing.fill(90),
                                 listComponent
                             )
                         )
@@ -75,19 +92,30 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
 
     }
 
+    private void pageLeft(ButtonComponent button) {
+        SongDownloader.pageLeft(this::updateList);
+    }
+
+    private void pageRight(ButtonComponent button) {
+        SongDownloader.pageRight(this::updateList);
+    }
+
     protected void previewLayoutConfigurator(FlowLayout layout) {
 
     }
 
     protected Component makeSongPreviewDisplay(SongPreview preview) {
 
-        var layoutA = Containers.horizontalFlow(Sizing.fixed(450), Sizing.fixed(50));
+        var layoutA = Containers.horizontalFlow(Sizing.fixed(450), Sizing.fixed(30));
 
-        var layoutB = Containers.verticalFlow(Sizing.fill(50), Sizing.fill());
+        var layoutB = Containers.verticalFlow(Sizing.fill(45), Sizing.fill());
 
-        var openButton = Components.button(Text.literal(" > "), (b) -> openPreview(b, preview)).positioning(Positioning.relative(35, 0));
+        var openButton = Components.button(Text.literal(" > "), (b) -> openPreview(b, preview)).positioning(Positioning.relative(45, 0));
 
-        var titleScroll = Containers.horizontalScroll(Sizing.fill(50), Sizing.content(), Components.label(Text.literal(preview.name())).lineHeight(8));
+        var titleScroll = Containers.horizontalScroll(
+            Sizing.fill(65), Sizing.content(),
+            Components.label(Text.literal(preview.name()))
+        );
 
         layoutB.child(
                 titleScroll
@@ -96,6 +124,8 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
         );
 
         layoutA.child(
+            Components.spacer(5)
+        ).child(
             layoutB
         ).child(
             openButton
@@ -163,6 +193,7 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
             SongDownloader.songPreviews.forEach(preview -> {
                 listComponent.child(this.makeSongPreviewDisplay(preview));
             });
+            pageDisplay.text(Text.literal(String.format("PAGE %s", SongDownloader.page)));
         });
 
     }

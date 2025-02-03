@@ -106,7 +106,7 @@ public class SongDownloader {
     private static CompletableFuture<Void> loadRequest = null;
 
     public static void pageLeft(Runnable after) {
-        page = Math.max(page, 0);
+        page = Math.max(page-1, 0);
         loadFromSearch(after);
     }
 
@@ -298,6 +298,7 @@ public class SongDownloader {
     private static void loadLatest() {
 
         songPreviews.clear();
+        page = 0;
 
         String listQuery = LATEST_URL + "?pageSize=" + PAGE_SIZE;
 

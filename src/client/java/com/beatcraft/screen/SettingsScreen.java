@@ -1,350 +1,212 @@
 package com.beatcraft.screen;
 
-import com.beatcraft.BeatCraftClient;
 import com.beatcraft.render.DebugRenderer;
+import io.wispforest.owo.ui.base.BaseOwoScreen;
+import io.wispforest.owo.ui.component.ButtonComponent;
+import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.container.Containers;
+import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.container.GridLayout;
+import io.wispforest.owo.ui.core.OwoUIAdapter;
+import io.wispforest.owo.ui.core.Sizing;
+import io.wispforest.owo.ui.core.Surface;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 
-/*
-Tabs: General | Quality | Audio | Controllers | Debug
+import java.util.function.Consumer;
 
-General tab:
-(Vivecraft) show hands [toggle]                          (should be tied to vivecraft's setting)
-Saber Trail Intensity  (from Quality tab)
-Volume                 (from Audio tab)
+public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
-Quality Tab:
-Saber Trail Intensity  [int from 10 to 300 in inc of 10] (also in general tab)
-Smoke Graphics         [toggle]
-Burn Mark Trails       [toggle]
+    private enum Page {
+        GENERAL,
+        QUALITY,
+        AUDIO,
+        CONTROLLERS,
+        DEBUG
+    }
 
-Audio tab:
-Volume                 [slider]                          (also in general tab AND minecraft's audio settings page)
-Ambient Volume Scale   [slider from 0-100%]
-Latency                [int >= 0] [toggle to enable]
+    private Page page = Page.GENERAL;
 
-Controllers tab:
-Selected Profile       [int from 0-2]
-    profile options:
-    Position           [xyz sliders]
-    Rotation           [xyz sliders]
-
-Debug tab:
-Debug Rendering        [toggle]
-Saber Debug Renderers  [toggle]
-Show Hitboxes          [toggle]
-
- */
-
-public class SettingsScreen extends Screen {
-
-    private int page = 0;
     private final Screen parent;
 
+    private FlowLayout settingPage;
+
     public SettingsScreen(Screen parent) {
-        super(Text.translatable("screen.beatcraft.settings"));
         this.parent = parent;
     }
 
-
-    private void onGeneralButtonPressed(ButtonWidget button) {
-        page = 0;
-        clearChildren();
-        init();
-    }
-
-    private void onQualityButtonPressed(ButtonWidget button) {
-        page = 1;
-        clearChildren();
-        init();
-    }
-
-    private void onAudioButtonPressed(ButtonWidget button) {
-        page = 2;
-        clearChildren();
-        init();
-    }
-
-    private void onControllersButtonPressed(ButtonWidget button) {
-        page = 3;
-        clearChildren();
-        init();
-    }
-
-    private void onDebugButtonPressed(ButtonWidget button) {
-        page = 4;
-        clearChildren();
-        init();
+    @Override
+    protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
+        return OwoUIAdapter.create(this, Containers::horizontalFlow);
     }
 
     @Override
-    protected void init() {
-        int left_width = 150;
-        int right_width = 100;
-        int common_width = 120;
-        int button_height = 20;
-        int left_column = (width / 2 + 50) - (left_width + 5);
-        int left_column_alt = (width / 2 + 30) - (common_width + 5);
-        int right_column = (width / 2 + 50) + 5;
-        int right_column_alt = (width / 2 + 30) + 5;
-
-        var done_button = ButtonWidget.builder(Text.translatable("gui.back"), this::goBack)
-            .dimensions(width/2 - 50, height-25, 100, 20)
-            .build();
-        addDrawableChild(done_button);
-
-        int menu_x = 5;
-        int menu_y = 20;
-
-        // Common buttons
-        var general_button = ButtonWidget.builder(Text.translatable("gui.beatcraft.button.general_settings"), this::onGeneralButtonPressed)
-            .dimensions(menu_x, menu_y, 100, button_height)
-            .build();
-
-        var quality_button = ButtonWidget.builder(Text.translatable("gui.beatcraft.button.quality_settings"), this::onQualityButtonPressed)
-            .dimensions(menu_x, menu_y + 25, 100, button_height)
-            .build();
-
-        var audio_button = ButtonWidget.builder(Text.translatable("gui.beatcraft.button.audio_settings"), this::onAudioButtonPressed)
-            .dimensions(menu_x, menu_y + 50, 100, button_height)
-            .build();
-
-        var controllers_button = ButtonWidget.builder(Text.translatable("gui.beatcraft.button.controllers_settings"), this::onControllersButtonPressed)
-            .dimensions(menu_x, menu_y + 75, 100, button_height)
-            .build();
-
-        var debug_button = ButtonWidget.builder(Text.translatable("gui.beatcraft.button.debug_settings"), this::onDebugButtonPressed)
-            .dimensions(menu_x, menu_y + 100, 100, button_height)
-            .build();
-
-        addDrawableChild(general_button);
-        addDrawableChild(quality_button);
-        addDrawableChild(audio_button);
-        addDrawableChild(controllers_button);
-        addDrawableChild(debug_button);
-
-        if (page == 0) { // General
-            var saberTrailIntensityLabel = new TextWidget(Text.translatable("setting.beatcraft.quality.trail_intensity"), this.textRenderer);
-            saberTrailIntensityLabel.setDimensionsAndPosition(left_width, button_height, left_column, menu_y);
-
-            var saberTrailSlider = new SliderWidget(right_column, menu_y, right_width, button_height, Text.literal("60"), (5f/29f)) {
-                @Override
-                protected void updateMessage() {
-                    int val = (int) ((value * 29) + 1) * 10;
-                    this.setMessage(Text.literal(Integer.toString(val)));
-                }
-
-                @Override
-                protected void applyValue() {
-                    int val = (int) ((value * 29) + 1) * 10;
-                    updateTrailIntensity(val);
-                }
-            };
-
-            addDrawableChild(saberTrailIntensityLabel);
-            addDrawableChild(saberTrailSlider);
-
-            var volumeSlider = new SliderWidget(left_column_alt, menu_y + 25, common_width, button_height, Text.translatable("setting.beatcraft.audio.volume", "100%"), 1.0) {
-
-                @Override
-                protected void updateMessage() {
-                    int vol = (int) (value * 100);
-                    setMessage(Text.translatable("setting.beatcraft.audio.volume", vol + "%"));
-                }
-
-                @Override
-                protected void applyValue() {
-                    updateVolume(value);
-                }
-            };
-
-            addDrawableChild(volumeSlider);
-
-        }
-        else if (page == 1) { // Quality
-
-            var saberTrailIntensityLabel = new TextWidget(Text.translatable("setting.beatcraft.quality.trail_intensity"), this.textRenderer);
-            saberTrailIntensityLabel.setDimensionsAndPosition(left_width, button_height, left_column, menu_y);
-
-            var saberTrailSlider = new SliderWidget(right_column, menu_y, right_width, button_height, Text.literal("60"), (5f/29f)) {
-                @Override
-                protected void updateMessage() {
-                    int val = (int) ((value * 29) + 1) * 10;
-                    this.setMessage(Text.literal(Integer.toString(val)));
-                }
-
-                @Override
-                protected void applyValue() {
-                    int val = (int) ((value * 29) + 1) * 10;
-                    updateTrailIntensity(val);
-                }
-            };
-
-            addDrawableChild(saberTrailIntensityLabel);
-            addDrawableChild(saberTrailSlider);
-
-            var smokeGraphicsToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.quality.smoke_graphics", BeatCraftClient.playerConfig.shouldRenderSmoke() ? "ON" : "OFF"), this::toggleSmokeGraphics)
-                .dimensions(left_column_alt, menu_y + 25, common_width, button_height)
-                .build();
-
-            addDrawableChild(smokeGraphicsToggle);
-
-            var burnMarkTrailToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.quality.burn_mark_trails", BeatCraftClient.playerConfig.shouldRenderBurnMarkTrails() ? "ON" : "OFF"), this::toggleBurnMarks)
-                .dimensions(right_column_alt, menu_y + 25, common_width, button_height)
-                .build();
-
-            addDrawableChild(burnMarkTrailToggle);
-
-        }
-        else if (page == 2) { // Audio
-
-            var volumeSlider = new SliderWidget(left_column_alt, menu_y, common_width, button_height, Text.translatable("setting.beatcraft.audio.volume", "100%"), 1.0) {
-
-                @Override
-                protected void updateMessage() {
-                    int vol = (int) (value * 100);
-                    setMessage(Text.translatable("setting.beatcraft.audio.volume", vol + "%"));
-                }
-
-                @Override
-                protected void applyValue() {
-                    updateVolume(value);
-                }
-            };
-
-//            var latency_label = new TextWidget(Text.translatable("setting.beatcraft.audio.latency"), this.textRenderer);
-//            latency_label.setDimensionsAndPosition(
-//                    left_width, button_height,
-//                    left_column, menu_y + 25
-//            );
-
-            var latency_label = ButtonWidget.builder(Text.translatable("setting.beatcraft.audio.latency", BeatCraftClient.playerConfig.getOverrideLatency() ? "ON" : "OFF"), this::toggleAudioLatencyOverride)
-                    .dimensions(left_column, menu_y + 25, left_width, button_height)
-                    .build();
-
-            var latency_field = new TextFieldWidget(this.textRenderer, right_width, button_height, Text.literal("0"));
-            latency_field.setPosition(right_column, menu_y + 25);
-            latency_field.setTextPredicate(s -> {
-                try {
-                    int ignored = Integer.parseInt(s);
-                    return true;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            });
-
-            latency_field.setChangedListener(this::updateLatency);
-
-            addDrawableChild(volumeSlider);
-            addDrawableChild(latency_label);
-            addDrawableChild(latency_field);
-
-
-        }
-        else if (page == 3) { // Controllers
-
-        }
-        else if (page == 4) { // Debug
-            var mainRenderToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.debug.main_renderer", DebugRenderer.doDebugRendering ? "ON" : "OFF"), this::toggleDebugRendering)
-                .dimensions(width / 2 - (common_width/2) + 30, menu_y, common_width, button_height)
-                .build();
-
-            addDrawableChild(mainRenderToggle);
-
-            var saberRenderToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF"), this::toggleDebugSaberRendering)
-                .dimensions(left_column_alt, menu_y + 25, common_width, button_height)
-                .tooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF")))
-                .build();
-
-            addDrawableChild(saberRenderToggle);
-
-            var hitboxToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.debug.hitboxes", DebugRenderer.renderHitboxes ? "ON" : "OFF"), this::toggleHitboxes)
-                .dimensions(right_column_alt, menu_y + 25, common_width, button_height)
-                .build();
-
-            addDrawableChild(hitboxToggle);
-
-            var arcLinesToggle = ButtonWidget.builder(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF"), this::toggleArcLines)
-                .dimensions(left_column_alt, menu_y + 50, common_width, button_height)
-                .tooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF")))
-                .build();
-
-            addDrawableChild(arcLinesToggle);
-
-        }
-
+    protected void build(FlowLayout flowLayout) {
+        flowLayout.surface(Surface.VANILLA_TRANSLUCENT);
+        settingPage = Containers.verticalFlow(Sizing.fill(75), Sizing.fill());
+        setPage();
+        flowLayout.child(Components.spacer(15)).child(
+            Containers.verticalFlow(Sizing.fill(20), Sizing.fill(95))
+                .child(Components.spacer(15))
+                .child(
+                    Components.button(Text.translatable("gui.beatcraft.button.general_settings"), this::gotoGeneralPage)
+                ).child(Components.spacer(5)).child(
+                    Components.button(Text.translatable("gui.beatcraft.button.quality_settings"), this::gotoQualityPage)
+                ).child(Components.spacer(5)).child(
+                    Components.button(Text.translatable("gui.beatcraft.button.audio_settings"), this::gotoAudioPage)
+                ).child(Components.spacer(5)).child(
+                    Components.button(Text.translatable("gui.beatcraft.button.controllers_settings"), this::gotoControllersPage)
+                ).child(Components.spacer(5)).child(
+                    Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage)
+                ).child(Components.spacer(5)).child(
+                    Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader)
+                )
+        ).child(settingPage);
     }
 
-    public void goBack(ButtonWidget button) {
-        close();
-    }
-
-    public void updateTrailIntensity(int value) {
-
-    }
-
-    public void updateVolume(double volume) {
-
-    }
-
-    public void toggleAudioLatencyOverride(ButtonWidget button) {
-        boolean do_latency = !BeatCraftClient.playerConfig.getOverrideLatency();
-        BeatCraftClient.playerConfig.setOverrideLatency(do_latency);
-
-        button.setMessage(Text.translatable("setting.beatcraft.audio.latency", do_latency ? "ON" : "OFF"));
-
-    }
-
-    public void updateLatency(String rawValue) {
-        try {
-            int latency = Integer.parseInt(rawValue);
-
-            BeatCraftClient.playerConfig.setLatency(latency);
-        } catch (NumberFormatException ignored) {
-
+    private void setPage() {
+        settingPage.clearChildren();
+        switch (page) {
+            case GENERAL -> setGeneralPage();
+            case QUALITY -> setQualityPage();
+            case AUDIO -> setAudioPage();
+            case CONTROLLERS -> setControllersPage();
+            case DEBUG -> setDebugPage();
         }
     }
 
-    public void toggleSmokeGraphics(ButtonWidget button) {
-        boolean smoke = BeatCraftClient.playerConfig.shouldRenderSmoke();
-        BeatCraftClient.playerConfig.setSmokeRendering(!smoke);
-        button.setMessage(Text.translatable("setting.beatcraft.quality.smoke_graphics", smoke ? "OFF" : "ON"));
+    private void setGeneralPage() {
+
+        var slider = Components.slider(Sizing.fill());
+        slider.onChanged().subscribe(this::updateTrailIntensity);
+
+        settingPage.child(Components.spacer(10)).child(
+            Containers.grid(Sizing.fill(90), Sizing.content(), 1, 2)
+                .child(
+                    Components.label(Text.translatable("setting.beatcraft.quality.trail_intensity"))
+                        .lineHeight(15),
+                    0, 0
+                ).child(
+                    slider,
+                0, 1
+                )
+        );
     }
 
-    public void toggleBurnMarks(ButtonWidget button) {
-        boolean marks = BeatCraftClient.playerConfig.shouldRenderBurnMarkTrails();
-        BeatCraftClient.playerConfig.setBurnMarkRendering(!marks);
-        button.setMessage(Text.translatable("setting.beatcraft.quality.burn_mark_trails", marks ? "OFF" : "ON"));
+    private void setQualityPage() {
 
     }
 
-    public void toggleDebugRendering(ButtonWidget button) {
+    private void setAudioPage() {
+
+    }
+
+    private void setControllersPage() {
+
+    }
+
+    private void setDebugPage() {
+        settingPage.child(Components.spacer(10)).child(
+            toggleOption(
+                "setting.beatcraft.debug.main_renderer",
+                DebugRenderer.doDebugRendering,
+                this::toggleMainDebugRenderer
+            )
+        ).child(
+            toggleOption(
+                "setting.beatcraft.debug.saber_renderer",
+                DebugRenderer.debugSaberRendering,
+                this::toggleSaberDebugRenderer
+            )
+        ).child(
+            toggleOption(
+                "setting.beatcraft.debug.hitboxes",
+                DebugRenderer.renderHitboxes,
+                this::toggleHitboxRenderer
+            )
+        ).child(
+            toggleOption(
+                "setting.beatcraft.debug.arc_lines",
+                DebugRenderer.renderArcDebugLines,
+                this::toggleArcLineRenderer
+            )
+        );
+    }
+
+    private GridLayout toggleOption(String translatable, boolean state, Consumer<ButtonComponent> onClick) {
+        return Containers.grid(Sizing.fill(), Sizing.content(), 1, 2)
+            .child(
+                Components.label(Text.translatable(translatable)).lineHeight(15),
+                0, 0
+            ).child(
+                Components.button(getToggleText(state), onClick),
+                0, 1
+            );
+    }
+
+    private void gotoGeneralPage(ButtonComponent button) {
+        page = Page.GENERAL;
+        setPage();
+    }
+
+    private void gotoQualityPage(ButtonComponent button) {
+        page = Page.QUALITY;
+        setPage();
+    }
+
+    private void gotoAudioPage(ButtonComponent button) {
+        page = Page.AUDIO;
+        setPage();
+    }
+
+    private void gotoControllersPage(ButtonComponent button) {
+        page = Page.CONTROLLERS;
+        setPage();
+    }
+
+    private void gotoDebugPage(ButtonComponent button) {
+        page = Page.DEBUG;
+        setPage();
+    }
+
+    private void gotoSongDownloader(ButtonComponent button) {
+        var screen = new SongDownloaderScreen(this);
+        assert client != null;
+        client.setScreen(screen);
+    }
+
+    private void updateTrailIntensity(double value) {
+
+    }
+
+    private void toggleMainDebugRenderer(ButtonComponent button) {
         DebugRenderer.doDebugRendering = !DebugRenderer.doDebugRendering;
-        button.setMessage(Text.translatable("setting.beatcraft.debug.main_renderer", DebugRenderer.doDebugRendering ? "ON" : "OFF"));
+        button.setMessage(getToggleText(DebugRenderer.doDebugRendering));
     }
 
-    public void toggleDebugSaberRendering(ButtonWidget button) {
+    private void toggleSaberDebugRenderer(ButtonComponent button) {
         DebugRenderer.debugSaberRendering = !DebugRenderer.debugSaberRendering;
-        button.setMessage(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF"));
-        button.setTooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.saber_renderer", DebugRenderer.debugSaberRendering ? "ON" : "OFF")));
+        button.setMessage(getToggleText(DebugRenderer.debugSaberRendering));
     }
 
-    public void toggleArcLines(ButtonWidget button) {
-        DebugRenderer.renderArcDebugLines = !DebugRenderer.renderArcDebugLines;
-        button.setMessage(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF"));
-        button.setTooltip(Tooltip.of(Text.translatable("setting.beatcraft.debug.arc_lines", DebugRenderer.renderArcDebugLines ? "ON" : "OFF")));
-    }
-
-    public void toggleHitboxes(ButtonWidget button) {
+    private void toggleHitboxRenderer(ButtonComponent button) {
         DebugRenderer.renderHitboxes = !DebugRenderer.renderHitboxes;
-        button.setMessage(Text.translatable("setting.beatcraft.debug.hitboxes", DebugRenderer.renderHitboxes ? "ON" : "OFF"));
+        button.setMessage(getToggleText(DebugRenderer.renderHitboxes));
     }
 
+    private void toggleArcLineRenderer(ButtonComponent button) {
+        DebugRenderer.renderArcDebugLines = !DebugRenderer.renderArcDebugLines;
+        button.setMessage(getToggleText(DebugRenderer.renderArcDebugLines));
+    }
+
+    private Text getToggleText(boolean state) {
+        if (state) {
+            return Text.translatable("gui.beatcraft.option.on");
+        } else {
+            return Text.translatable("gui.beatcraft.option.off");
+        }
+    }
 
     @Override
     public void close() {

@@ -137,7 +137,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
     private void updateBounds() {
         bounds.min.x = -((data.getWidth() * 0.6f) - 0.3f);
-        bounds.max.y = (data.getHeight() * 0.6f) + 0.3f;
+        bounds.max.y = (data.getHeight() * 0.6f);
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
 
