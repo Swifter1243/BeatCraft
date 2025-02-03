@@ -54,13 +54,13 @@ public class Obstacle extends GameplayObject {
             JsonObject customData = json.getAsJsonObject("customData");
 
             if (customData.has("coordinates")) {
-                JsonArray coordinates = customData.getAsJsonArray("_coordinates");
+                JsonArray coordinates = customData.getAsJsonArray("coordinates");
                 x = coordinates.get(0).getAsInt() + 1.9f;
                 y = coordinates.get(1).getAsInt();
             }
 
             if (customData.has("position")) {
-                JsonArray coordinates = customData.getAsJsonArray("_position");
+                JsonArray coordinates = customData.getAsJsonArray("position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
             }
