@@ -51,15 +51,15 @@ public class Obstacle extends GameplayObject {
 
     public void loadCustomObstacleDataV3(JsonObject json, Difficulty difficulty) {
         if (json.has("customData")) {
-            JsonObject customData = json.getAsJsonObject("_customData");
+            JsonObject customData = json.getAsJsonObject("customData");
 
-            if (customData.has("_coordinates")) {
+            if (customData.has("coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("_coordinates");
                 x = coordinates.get(0).getAsInt() + 1.9f;
                 y = coordinates.get(1).getAsInt();
             }
 
-            if (customData.has("_position")) {
+            if (customData.has("position")) {
                 JsonArray coordinates = customData.getAsJsonArray("_position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
