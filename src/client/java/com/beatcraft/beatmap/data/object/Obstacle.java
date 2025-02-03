@@ -5,12 +5,85 @@ import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.joml.Vector3f;
 
 public class Obstacle extends GameplayObject {
 
     private float duration;
     private float width;
     private float height;
+    private boolean noodleSizing = false;
+
+    public void loadCustomObstacleDataV2(JsonObject json, Difficulty difficulty) {
+        if (json.has("_customData")) {
+            JsonObject customData = json.getAsJsonObject("_customData");
+
+            if (customData.has("_coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("_coordinates");
+                x = coordinates.get(0).getAsInt() + 1.9f;
+                y = coordinates.get(1).getAsInt();
+            }
+
+            if (customData.has("_position")) {
+                JsonArray coordinates = customData.getAsJsonArray("_position");
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("_scale")) {
+                JsonArray size = customData.getAsJsonArray("_scale");
+                if (!size.isEmpty()) {
+                    width = size.get(0).getAsFloat();
+
+                    if (size.size() >= 2) {
+                        height = size.get(1).getAsFloat();
+
+                        if (size.size() == 3) {
+                            duration = size.get(2).getAsFloat();
+                            noodleSizing = true;
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    public void loadCustomObstacleDataV3(JsonObject json, Difficulty difficulty) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("_customData");
+
+            if (customData.has("_coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("_coordinates");
+                x = coordinates.get(0).getAsInt() + 1.9f;
+                y = coordinates.get(1).getAsInt();
+            }
+
+            if (customData.has("_position")) {
+                JsonArray coordinates = customData.getAsJsonArray("_position");
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("size")) {
+                JsonArray size = customData.getAsJsonArray("size");
+                if (!size.isEmpty()) {
+                    width = size.get(0).getAsFloat();
+
+                    if (size.size() >= 2) {
+                        height = size.get(1).getAsFloat();
+
+                        if (size.size() == 3) {
+                            duration = size.get(2).getAsFloat();
+                            noodleSizing = true;
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
 
     @Override
     public Obstacle loadV2(JsonObject json, Difficulty difficulty) {
@@ -41,6 +114,9 @@ public class Obstacle extends GameplayObject {
             }
         }
 
+        loadCustomDataV2(json, difficulty);
+        loadCustomObstacleDataV2(json, difficulty);
+
         loadJumps(difficulty.getInfo());
 
         return this;
@@ -58,6 +134,9 @@ public class Obstacle extends GameplayObject {
         this.y = (float) JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
         this.width = (float) JsonUtil.getOrDefault(json, "w", JsonElement::getAsInt, 0);
         this.height = (float) JsonUtil.getOrDefault(json, "h", JsonElement::getAsInt, 0);
+
+        loadCustomDataV3(json, difficulty);
+        loadCustomObstacleDataV3(json, difficulty);
 
         loadJumps(difficulty.getInfo());
 
@@ -87,6 +166,13 @@ public class Obstacle extends GameplayObject {
 
     public float getDuration() {
         return duration;
+    }
+
+    public float getLength(float njsDistance) {
+        if (noodleSizing) {
+            return duration;
+        }
+        return duration * njsDistance;
     }
 
     public float getWidth() {

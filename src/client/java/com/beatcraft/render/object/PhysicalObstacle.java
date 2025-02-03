@@ -2,6 +2,7 @@ package com.beatcraft.render.object;
 
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
+import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
@@ -13,6 +14,7 @@ import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -117,10 +119,19 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     @Override
+    protected Vector2f getJumpsXY(float lifetime) {
+        float reverseSpawnTime = 1 - org.joml.Math.abs(lifetime - 0.5f) * 2;
+        float jumpTime = Easing.easeOutQuad(reverseSpawnTime);
+        Vector2f grid = get2DPosition();
+        grid.y = Math.lerp(doNoteGravity() ? -0.3f: grid.y, grid.y, jumpTime);
+        return grid;
+    }
+
+    @Override
     protected Vector2f get2DPosition() {
         return new Vector2f(
             data.getX() * 0.6f - 1.1f,
-            data.getY() * 0.6f - 0.3f
+            data.getY() * 0.6f - 0.6f
         );
     }
 
@@ -130,13 +141,13 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
 
-        bounds.max.z = data.getDuration() * length;
+        bounds.max.z = data.getLength(length);
     }
 
     @Override
     public float getJumpOutPosition() {
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
-        return -(length * data.getDuration());
+        return -(data.getLength(length));
     }
 
     @Override

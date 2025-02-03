@@ -2,6 +2,7 @@ package com.beatcraft.render.object;
 
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
+import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Arc;
 import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.data.types.ISplinePath;
@@ -15,6 +16,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -131,6 +133,15 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
             DebugRenderer.renderPath(basePath, localPos.add(camPos, new Vector3f()), segments, data.getColor().toARGB());
         }
+    }
+
+    @Override
+    protected Vector2f getJumpsXY(float lifetime) {
+        float reverseSpawnTime = 1 - org.joml.Math.abs(lifetime - 0.5f) * 2;
+        float jumpTime = Easing.easeOutQuad(reverseSpawnTime);
+        Vector2f grid = get2DPosition();
+        grid.y = org.joml.Math.lerp(doNoteGravity() ? -0.3f: grid.y, grid.y, jumpTime);
+        return grid;
     }
 
     @Override
