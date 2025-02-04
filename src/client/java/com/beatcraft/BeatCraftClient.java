@@ -7,6 +7,7 @@ import com.beatcraft.data.menu.SongData;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.render.block.BlockRenderSettings;
+import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
@@ -21,15 +22,18 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +52,9 @@ public class BeatCraftClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+
+        setupFiles();
+
         registerCommands();
 
         BlockRenderSettings.init();
@@ -69,6 +76,28 @@ public class BeatCraftClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             songs.loadSongs();
         });
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
+            DynamicTexture.unloadAllTextures();
+        });
+
+    }
+
+    private void setupFiles() {
+        String runDirectory = MinecraftClient.getInstance().runDirectory.getAbsolutePath();
+        List<String> makeFolders = List.of(
+            runDirectory + "/beatmaps/",          // for beatmaps
+            runDirectory + "/beatcraft/",         // root directory for other data
+            runDirectory + "/beatcraft/replay/",  // replay files
+            runDirectory + "/beatcraft/temp/"     // for stuff like temporary images for song covers and audio previews
+        );
+
+        for (String folderPath : makeFolders) {
+            File folder = new File(folderPath);
+            if (!folder.exists()) {
+                var ignored = folder.mkdirs();
+            }
+        }
 
     }
 

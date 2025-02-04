@@ -41,7 +41,7 @@ public class PlayRecorder {
 
         if (outputFile == null) return;
 
-        String path = MinecraftClient.getInstance().runDirectory.getAbsolutePath() + "/replay/" + outputFile;
+        String path = MinecraftClient.getInstance().runDirectory.getAbsolutePath() + "/beatcraft/replay/" + outputFile;
 
         JsonObject json = new JsonObject();
 

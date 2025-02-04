@@ -5,7 +5,6 @@ import com.beatcraft.data.menu.song_preview.SongPreview;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class SongDownloader {
@@ -238,7 +236,7 @@ public class SongDownloader {
             });
     }
 
-    private static final Lock lock = new ReentrantLock();
+    public static final Lock listModifyLock = new ReentrantLock();
 
     private static void _loadFromSearch() {
         if (search.isEmpty()) {
@@ -293,10 +291,10 @@ public class SongDownloader {
                 localPreviews.add(preview);
             });
 
-            lock.lock();
+            listModifyLock.lock();
             songPreviews.clear();
             songPreviews.addAll(localPreviews);
-            lock.unlock();
+            listModifyLock.unlock();
 
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to connect to beatsaver!", e);

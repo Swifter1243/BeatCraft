@@ -4,9 +4,8 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.ISplinePath;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.render.mesh.MeshLoader;
-import com.beatcraft.render.mesh.MeshSlicer;
-import com.beatcraft.render.mesh.TriangleMesh;
+import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.render.mesh.*;
 import com.beatcraft.render.object.PhysicalColorNote;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -18,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -34,6 +34,7 @@ public class DebugRenderer {
     public static final ParticleEffect BLUE_DUST = new DustParticleEffect(new Vector3f(0, 0, 1), 0.5f);
     public static final ParticleEffect MAGENTA_DUST = new DustParticleEffect(new Vector3f(1, 0, 1), 0.5f);
 
+    public static DynamicTexture dynamicTexture;
 
     public static boolean doDebugRendering = false;
     public static boolean debugSaberRendering = false;
@@ -223,78 +224,7 @@ public class DebugRenderer {
 
     }
 
-    public static void renderSimpleQuads(List<Vector3f[]> quads, int color, Vector3f position, Quaternionf orientation) {
-        renderCalls.add(() -> _renderSimpleQuads(quads, color, position, orientation));
-    }
-
-    private static void _renderSimpleQuads(List<Vector3f[]> quads, int color, Vector3f position, Quaternionf orientation) {
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
-        for (Vector3f[] quad : quads) {
-            Vector3f a = quad[0].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
-            Vector3f b = quad[1].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
-            Vector3f c = quad[2].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
-            Vector3f d = quad[3].rotate(orientation, new Vector3f()).add(position).sub(cameraPos);
-
-            buffer.vertex(a.x, a.y, a.z).color(color);
-            buffer.vertex(b.x, b.y, b.z).color(color);
-            buffer.vertex(c.x, c.y, c.z).color(color);
-            buffer.vertex(d.x, d.y, d.z).color(color);
-
-        }
-
-        BuiltBuffer buff = buffer.endNullable();
-
-        if (buff == null) return;
-
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-        BufferRenderer.drawWithGlobalProgram(buff);
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
-
-    }
-
-
-
     public static void render() {
-
-        //DebugRenderer.renderPath(BeatCraftClient.TEST, new Vector3f(), 50, 0xFF0000);
-
-        //if (MinecraftClient.getInstance().player != null) {
-        //    Pair<TriangleMesh, TriangleMesh> slicedMeshes = MeshSlicer.sliceMesh(new Vector3f(), MinecraftClient.getInstance().player.getPos().toVector3f().normalize(), MeshLoader.COLOR_NOTE_MESH);
-        //
-        //    TriangleMesh left = slicedMeshes.getLeft();
-        //    TriangleMesh right = slicedMeshes.getRight();
-        //
-        //    left.color = 0xFFFF0000;
-        //    right.color = 0xFF0000FF;
-        //    left.texture = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
-        //    right.texture = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
-        //
-        //    RenderSystem.enableBlend();
-        //    RenderSystem.defaultBlendFunc();
-        //
-        //    RenderSystem.disableCull();
-        //    RenderSystem.enableDepthTest();
-        //    left.render(new Vector3f(0, 0, 0), new Quaternionf(), false);
-        //    right.render(new Vector3f(0, 0, 0), new Quaternionf(), false);
-        //    RenderSystem.enableCull();
-        //    RenderSystem.disableBlend();
-        //    RenderSystem.depthMask(true);
-        //
-        //}
 
         for (Runnable renderCall : renderCalls) {
             try {

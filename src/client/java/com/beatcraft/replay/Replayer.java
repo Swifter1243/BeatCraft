@@ -26,7 +26,7 @@ public class Replayer {
 
     public static void loadReplay(String replayFile) throws IOException {
         frames.clear();
-        String path = MinecraftClient.getInstance().runDirectory + "/replay/" + replayFile;
+        String path = MinecraftClient.getInstance().runDirectory + "/beatcraft/replay/" + replayFile;
 
         String rawData = Files.readString(Path.of(path));
 

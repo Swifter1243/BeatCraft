@@ -1,21 +1,23 @@
 package com.beatcraft.screen;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.data.menu.FileDownloader;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.data.menu.song_preview.SongPreview;
+import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
-import io.wispforest.owo.ui.component.ButtonComponent;
-import io.wispforest.owo.ui.component.Components;
-import io.wispforest.owo.ui.component.LabelComponent;
-import io.wispforest.owo.ui.component.TextBoxComponent;
+import io.wispforest.owo.ui.component.*;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -26,6 +28,8 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
     private FlowLayout listComponent;
     private FlowLayout previewComponent;
     private LabelComponent pageDisplay;
+    private FlowLayout coverContainer;
+    private DynamicTexture coverImage;
 
     public SongDownloaderScreen(Screen parent) {
         super(Text.translatable("screen.beatcraft.song_downloader"));
@@ -134,14 +138,48 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
         return layoutA;
     }
 
+    private void setCoverImage() {
+        coverContainer.clearChildren();
+        if (coverImage != null) {
+            coverImage.unloadTexture();
+            coverImage = null;
+        }
+        try {
+            coverImage = new DynamicTexture(
+                MinecraftClient.getInstance().runDirectory + "/beatcraft/temp/cover.png"
+            );
+
+            coverContainer.child(
+                Components.texture(coverImage.id(), 0, 0, 100, 100, coverImage.width(), coverImage.height())
+            );
+
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to change image!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private void openPreview(ButtonComponent button, SongPreview preview) {
         previewComponent.clearChildren();
+        coverContainer = Containers.verticalFlow(Sizing.content(), Sizing.content());
 
-        //var image_placeholder = Components.box(Sizing.fixed(100), Sizing.fixed(100)).positioning(Positioning.relative(50, 0));
+        coverContainer.child(
+            Components.texture(
+                Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_downloader/default_cover.png"),
+                0, 0, 100, 100, 256, 256
+            )
+        ).horizontalAlignment(HorizontalAlignment.CENTER);
 
-        //previewComponent.child(image_placeholder);
+        FileDownloader.downloadCoverImage(
+            preview.versions().getFirst().coverURL(),
+            MinecraftClient.getInstance().runDirectory + "/beatcraft/temp/cover.png",
+            this::setCoverImage
+        );
+
 
         previewComponent.child(
+                coverContainer
+        ).child(
                 Containers.horizontalScroll(Sizing.fill(), Sizing.content(),
                         Components.label(Text.literal(preview.name()))
                 )
@@ -166,7 +204,7 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
                         Text.translatable("gui.beatcraft.download_song"),
                         b -> downloadSong(b, preview)
                 )
-        );
+        ).horizontalAlignment(HorizontalAlignment.CENTER);
 
     }
 
@@ -190,9 +228,11 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
     protected void updateList() {
         listUpdateQueue.add(() -> {
             listComponent.clearChildren();
+            SongDownloader.listModifyLock.lock();
             SongDownloader.songPreviews.forEach(preview -> {
                 listComponent.child(this.makeSongPreviewDisplay(preview));
             });
+            SongDownloader.listModifyLock.unlock();
             pageDisplay.text(Text.literal(String.format("PAGE %s", SongDownloader.page)));
         });
 
@@ -208,6 +248,10 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     public void close() {
+        if (coverImage != null) {
+            coverImage.unloadTexture();
+            coverImage = null;
+        }
         client.setScreen(parent);
     }
 }
