@@ -121,10 +121,19 @@ public class SongDownloader {
         }).thenRun(after);
     }
 
+    private static String filterString(String in) {
+        String replaced = in.replaceAll("[^a-zA-Z0-9._\\-+()\\[\\]']", "_");
+
+        if (replaced.length() > 150) {
+            replaced = replaced.substring(0, 100);
+        }
+        return replaced;
+    }
+
     private static void _downloadSong(SongPreview preview, String runDirectory) {
         String url = preview.versions().getFirst().downloadURL();
 
-        String unzip_to = runDirectory + "/beatmaps/" + preview.id();
+        String unzip_to = runDirectory + "/beatmaps/" + preview.id() + " (" + filterString(preview.metaData().songName() + " - " + preview.metaData().levelAuthorName()) + ")";
         String path = unzip_to + ".zip";
 
         Request request = new Request.Builder().url(url).build();
