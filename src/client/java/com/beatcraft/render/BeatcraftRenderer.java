@@ -2,27 +2,32 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BeatcraftRenderer {
 
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
-    private static final ArrayList<Runnable> noteRenderCalls = new ArrayList<>();
+    private static final ArrayList<TriConsumer<BufferBuilder, BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
 
     public static void onRender(MatrixStack matrices, Camera camera) {
         BeatmapPlayer.onRender(matrices, camera);
     }
 
-    public static void recordNoteRenderCall(Runnable call) {
+    // lambdas are passed, in order, the triangle buffer and the quad buffer
+    public static void recordNoteRenderCall(TriConsumer<BufferBuilder, BufferBuilder, Vector3f> call) {
         noteRenderCalls.add(call);
     }
 
@@ -43,17 +48,38 @@ public class BeatcraftRenderer {
 
     public static void render() {
 
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
-        for (Runnable renderCall : noteRenderCalls) {
+        for (var renderCall : noteRenderCalls) {
             try {
-                renderCall.run();
+                renderCall.accept(triBuffer, quadBuffer, cameraPos);
             } catch (Exception e) {
                 BeatCraft.LOGGER.error("Render call failed! ", e);
             }
         }
+        int oldTexture = RenderSystem.getShaderTexture(0);
+        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+
+        var triBuff = triBuffer.endNullable();
+        var quadBuff = quadBuffer.endNullable();
+        if (triBuff != null) {
+            BufferRenderer.drawWithGlobalProgram(triBuff);
+        }
+        if (quadBuff != null) {
+            BufferRenderer.drawWithGlobalProgram(quadBuff);
+        }
+
+        RenderSystem.setShaderTexture(0, oldTexture);
+
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();

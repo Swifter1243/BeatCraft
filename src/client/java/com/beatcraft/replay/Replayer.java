@@ -3,14 +3,19 @@ package com.beatcraft.replay;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -23,10 +28,17 @@ public class Replayer {
 
     private static final ArrayList<PlayFrame> frames = new ArrayList<>();
     public static boolean runReplay = false;
+    private static ItemStack leftSaber = new ItemStack(ModItems.SABER_ITEM, 1);
+    private static ItemStack rightSaber = new ItemStack(ModItems.SABER_ITEM, 1);
 
     public static void loadReplay(String replayFile) throws IOException {
         frames.clear();
         String path = MinecraftClient.getInstance().runDirectory + "/beatcraft/replay/" + replayFile;
+        leftSaber.set(ModComponents.AUTO_SYNC_COLOR, 0);
+        leftSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0xc03030);
+
+        rightSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
+        rightSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
 
         String rawData = Files.readString(Path.of(path));
 
@@ -111,11 +123,8 @@ public class Replayer {
         GameLogicHandler.updateRightSaber(rightSaberPos, rightSaberRot);
         GameLogicHandler.updateLeftSaber(leftSaberPos, leftSaberRot);
 
-        Vector3f lep = new Vector3f(0, 1, 0).rotate(leftSaberRot).add(leftSaberPos);
-        Vector3f rep = new Vector3f(0, 1, 0).rotate(rightSaberRot).add(rightSaberPos);
-
-        DebugRenderer.renderLine(leftSaberPos, lep, 0xFFFF0000, 0xFFFF0000);
-        DebugRenderer.renderLine(rightSaberPos, rep, 0xFF0000FF, 0xFF0000FF);
+        SaberRenderer.renderReplaySaber(leftSaber, leftSaberPos, leftSaberRot);
+        SaberRenderer.renderReplaySaber(rightSaber, rightSaberPos, rightSaberRot);
 
     }
 

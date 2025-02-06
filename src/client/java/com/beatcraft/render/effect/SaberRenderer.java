@@ -1,6 +1,5 @@
 package com.beatcraft.render.effect;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.ControllerProfile;
@@ -11,6 +10,7 @@ import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.HUDRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -18,20 +18,17 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import software.bernie.geckolib.animatable.GeoItem;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -40,6 +37,23 @@ public class SaberRenderer {
 
     private static final ArrayList<Function<BufferBuilder, Void>> render_calls = new ArrayList<>();
 
+    public static void renderReplaySaber(ItemStack item, Vector3f position, Quaternionf orientation) {
+        renderReplayTrail(item, position, orientation);
+
+        MatrixStack matrices = new MatrixStack();
+        var cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        matrices.translate(-cam.x, -cam.y, -cam.z);
+        matrices.translate(position.x, position.y, position.z);
+        matrices.multiply(orientation);
+        matrices.scale(0.3333f, 0.3333f, 0.3333f);
+
+        BeatcraftRenderer.recordRenderCall(() -> {
+                MinecraftClient.getInstance().getItemRenderer().renderItem(
+                        item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
+                        matrices, HUDRenderer.vertexConsumerProvider, MinecraftClient.getInstance().world, 0
+                );
+        });
+    }
 
     public static void renderSaber(ItemStack item, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumerProvider, Hand hand, AbstractClientPlayerEntity player, float tickDelta) {
         matrices.push();
@@ -68,6 +82,24 @@ public class SaberRenderer {
 
 
         matrices.pop();
+    }
+
+    public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
+        Vector3f hiltPos = new Vector3f(0, (7/8f)*0.2f, 0).rotate(rotation).add(basePos);
+        Vector3f tipPos = new Vector3f(0, (41/8f)*0.2f, 0).rotate(rotation).add(basePos);
+        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+        int color;
+
+        int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
+
+        if (sync == -1 || BeatmapPlayer.currentBeatmap == null) {
+            color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT, 0) + 0xFF000000;
+        } else if (sync == 0) {
+            color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+        } else {
+            color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+        }
+        queueRender(hiltPos, tipPos, stash, color);
     }
 
     public static void renderTrail(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack) {

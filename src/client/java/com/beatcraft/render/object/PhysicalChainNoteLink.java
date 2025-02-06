@@ -68,9 +68,9 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         BakedModel arrowModel = mc.getBakedModelManager().getModel(chainDotModelID);
 
         if (!isBaseDissolved()) {
-            BeatcraftRenderer.recordNoteRenderCall(() -> {
+            BeatcraftRenderer.recordNoteRenderCall((tri, quad, cam) -> {
                 MeshLoader.CHAIN_LINK_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_LINK_MESH.render(localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), true);
+                MeshLoader.CHAIN_LINK_MESH.drawToBuffer(quad, localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), cam);
             });
         }
 

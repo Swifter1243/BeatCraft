@@ -120,7 +120,7 @@ public class SongDownloader {
     }
 
     private static String filterString(String in) {
-        String replaced = in.replaceAll("[^a-zA-Z0-9._\\-+()\\[\\]']", "_");
+        String replaced = in.replaceAll("[^a-zA-Z0-9._\\-+()\\[\\]' ]", "_");
 
         if (replaced.length() > 150) {
             replaced = replaced.substring(0, 100);
@@ -158,20 +158,11 @@ public class SongDownloader {
 
         try (ZipInputStream inputStream = new ZipInputStream(new FileInputStream(source))) {
 
-            // list files in zip
             ZipEntry zipEntry = inputStream.getNextEntry();
 
             while (zipEntry != null) {
 
-                boolean isDirectory = false;
-                // example 1.1
-                // some zip stored files and folders separately
-                // e.g data/
-                //     data/folder/
-                //     data/folder/file.txt
-                if (zipEntry.getName().endsWith(File.separator)) {
-                    isDirectory = true;
-                }
+                boolean isDirectory = zipEntry.getName().endsWith(File.separator);
 
                 Path newPath = zipSlipProtect(zipEntry, Path.of(destination));
 
@@ -179,16 +170,12 @@ public class SongDownloader {
                     Files.createDirectories(newPath);
                 } else {
 
-                    // example 1.2
-                    // some zip stored file path only, need create parent directories
-                    // e.g data/folder/file.txt
                     if (newPath.getParent() != null) {
                         if (Files.notExists(newPath.getParent())) {
                             Files.createDirectories(newPath.getParent());
                         }
                     }
 
-                    // copy files, nio
                     Files.copy(inputStream, newPath, StandardCopyOption.REPLACE_EXISTING);
 
                 }
