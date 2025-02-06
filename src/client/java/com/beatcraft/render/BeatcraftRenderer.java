@@ -9,9 +9,12 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 public class BeatcraftRenderer {
 
+    private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> noteRenderCalls = new ArrayList<>();
 
@@ -25,6 +28,17 @@ public class BeatcraftRenderer {
 
     public static void recordRenderCall(Runnable call) {
         renderCalls.add(call);
+    }
+
+    public static void recordEarlyRenderCall(Consumer<VertexConsumerProvider> call) {
+        earlyRenderCalls.add(call);
+    }
+
+    public static void earlyRender(VertexConsumerProvider vcp) {
+        for (var call : earlyRenderCalls) {
+            call.accept(vcp);
+        }
+        earlyRenderCalls.clear();
     }
 
     public static void render() {

@@ -35,8 +35,14 @@ repositories {
 	maven { url 'https://maven.wispforest.io/releases/' }
 }
 
+fabricApi {
+	configureDataGeneration()
+}
+
 loom {
 	splitEnvironmentSourceSets()
+
+	accessWidenerPath = file("src/main/resources/beatcraft.accesswidener")
 
 	mods {
 		"beatcraft" {

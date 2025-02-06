@@ -6,7 +6,7 @@ import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.BeatcraftParticleRenderer;
-import com.beatcraft.render.effect.SaberTrailRenderer;
+import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
@@ -33,11 +33,12 @@ public class WorldRendererMixin {
         )
     )
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
+        BeatcraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
         HUDRenderer.render(immediate);
         BeatcraftParticleRenderer.renderParticles();
         BeatcraftRenderer.render();
-        SaberTrailRenderer.renderAll();
+        SaberRenderer.renderAll();
         HapticsHandler.endFrame();
     }
 

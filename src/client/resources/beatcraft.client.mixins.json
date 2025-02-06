@@ -5,6 +5,7 @@
   "client": [
     "BufferBuilderMixin",
     "CustomModelLoader",
+    "GameRendererMixin",
     "ItemEntityRendererMixin",
     "OptionsScreenMixin",
     "WorldRendererMixin"
@@ -13,6 +14,6 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "vivecraft.VivecraftItemRenderingMixin"
+    "HeldItemRendererMixin"
   ]
 }

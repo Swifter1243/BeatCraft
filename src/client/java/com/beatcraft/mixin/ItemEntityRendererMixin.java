@@ -1,7 +1,7 @@
 package com.beatcraft.mixin;
 
 import com.beatcraft.items.ModItems;
-import com.beatcraft.render.effect.SaberTrailRenderer;
+import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -30,7 +30,7 @@ public abstract class ItemEntityRendererMixin extends EntityRenderer<ItemEntity>
         )
     )
     public void renderInject(ItemEntity entity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci, @Local BakedModel bakedModel) {
-        SaberTrailRenderer.renderItemEntityTrail(entity, tickDelta, bakedModel);
+        SaberRenderer.renderItemEntityTrail(entity, tickDelta, bakedModel);
     }
 
     @Override

@@ -1,32 +1,155 @@
 package com.beatcraft.render.effect;
 
+import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.data.ControllerProfile;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Arm;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import software.bernie.geckolib.animatable.GeoItem;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
-public class SaberTrailRenderer {
+public class SaberRenderer {
 
     private static final ArrayList<Function<BufferBuilder, Void>> render_calls = new ArrayList<>();
+
+
+    public static void renderSaber(ItemStack item, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumerProvider, Hand hand, AbstractClientPlayerEntity player, float tickDelta) {
+        matrices.push();
+        renderTrail(true, matrices, hand == Hand.MAIN_HAND, player, tickDelta, item);
+
+        Vector3f worldPos = matrices.peek().getPositionMatrix()
+            .getTranslation(new Vector3f())
+            .add(BeatCraftClient.playerGlobalPosition.toVector3f())
+            .add(BeatCraftClient.playerSaberPosition.toVector3f())
+            .sub(BeatCraftClient.playerCameraPosition.toVector3f());
+            //.sub(player.getPos().toVector3f());
+        Quaternionf worldRotation = (hand == Hand.MAIN_HAND ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation);
+            //.add(BeatCraftClient.playerGlobalRotation, new Quaternionf())
+            //.add(BeatCraftClient.playerSaberRotation);
+
+
+        MatrixStack matrixStack = new MatrixStack();
+        matrixStack.translate(worldPos.x, worldPos.y, worldPos.z);
+        matrixStack.multiply(worldRotation);
+        matrixStack.scale(0.3333f, 0.3333f, 0.3333f);
+
+        MinecraftClient.getInstance().getItemRenderer().renderItem(
+            item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
+            matrixStack, vertexConsumerProvider, null, 0
+        );
+
+
+        matrices.pop();
+    }
+
+    public static void renderTrail(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack) {
+        if (stack.isOf(ModItems.SABER_ITEM)) {
+
+            // Step 1: initial transform to get saber into the default position.
+            matrix.scale(0.3333f, 0.3333f, 0.3333f);
+            matrix.translate(0, -0.25, 0.25);
+            matrix.multiply((new Quaternionf()).rotationXYZ(-38 * MathHelper.RADIANS_PER_DEGREE, 0, 0));
+
+            // Step 2: modify rotation and translation based on user settings
+            Vector3f translation;
+            Quaternionf rotation;
+            ControllerProfile profile = BeatCraftClient.playerConfig.getActiveControllerProfile();
+            boolean rightHand;
+            if ((player.getMainArm() == Arm.RIGHT && mainHand) || (player.getMainArm() == Arm.LEFT && !mainHand)) {
+                // right hand
+                translation = profile.getRightTranslation();
+                rotation = profile.getRightRotation();
+                rightHand = true;
+            } else {
+                // left hand
+                translation = profile.getLeftTranslation();
+                rotation = profile.getLeftRotation();
+                rightHand = false;
+            }
+
+            matrix.translate(translation.x, translation.y, translation.z);
+            matrix.multiply(rotation);
+
+            // Step 2.5: use result to do collisions
+
+
+            // Step 3: use result to also render trail
+            if (doCollisionCheck) {
+                matrix.push();
+                matrix.translate(0, (7 / 8f) * 0.6, 0);
+                Vector3f blade_base = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
+                matrix.pop();
+
+                matrix.push();
+                matrix.translate(0, (41 / 8f) * 0.6, 0);
+                Vector3f blade_tip = matrix.peek().getPositionMatrix().getTranslation(new Vector3f());
+                matrix.pop();
+
+                matrix.push();
+                matrix.translate(0, 0.25 * 0.6, 0);
+                MatrixStack.Entry entry = matrix.peek();
+                matrix.pop();
+
+                Vec3d playerPos = player.getLerpedPos(tickDelta);
+                Vector3f saberPos = entry.getPositionMatrix().getTranslation(new Vector3f());
+                saberPos.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
+                Quaternionf saberRot = entry.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+
+                if (rightHand) {
+                    GameLogicHandler.updateRightSaber(saberPos, saberRot);
+                } else {
+                    GameLogicHandler.updateLeftSaber(saberPos, saberRot);
+                }
+
+                blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
+                blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
+                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+                int color;
+
+                int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
+
+                if (sync == -1 || BeatmapPlayer.currentBeatmap == null) {
+                    color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT, 0) + 0xFF000000;
+                } else if (sync == 0) {
+                    color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+                } else {
+                    color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+                }
+
+                if (stash != null) {
+                    SaberRenderer.queueRender(blade_base, blade_tip, stash, color);
+                }
+            }
+        }
+    }
 
     // Called from ItemEntityRendererMixin
     public static void renderItemEntityTrail(ItemEntity entity, float tickDelta, BakedModel bakedModel) {
@@ -82,14 +205,14 @@ public class SaberTrailRenderer {
             }
 
             if (stash != null) {
-                SaberTrailRenderer.queueRender(blade_base, blade_tip, stash, color);
+                SaberRenderer.queueRender(blade_base, blade_tip, stash, color);
             }
         }
     }
 
     public static void queueRender(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col) {
         Function<BufferBuilder, Void> callable = (trail_buffer) -> {
-            SaberTrailRenderer.render(blade_base, blade_tip, stash, col, trail_buffer);
+            SaberRenderer.render(blade_base, blade_tip, stash, col, trail_buffer);
             return null;
         };
         render_calls.add(callable);
