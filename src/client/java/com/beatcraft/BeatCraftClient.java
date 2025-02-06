@@ -52,7 +52,7 @@ public class BeatCraftClient implements ClientModInitializer {
     public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
     public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
 
-    public static final Vec3d playerCameraPosition = new Vec3d(2, 0.5, -4);
+    public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerCameraRotation = new Quaternionf();
 
     public static final Vec3d playerGlobalPosition = new Vec3d(0, 0, 0);
