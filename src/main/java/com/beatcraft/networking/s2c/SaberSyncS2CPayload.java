@@ -1,5 +1,6 @@
-package com.beatcraft.networking;
+package com.beatcraft.networking.s2c;
 
+import com.beatcraft.networking.BeatCraftNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -11,8 +12,8 @@ import java.util.UUID;
 
 public record SaberSyncS2CPayload(UUID player, Vector3f leftPos, Quaternionf leftRot, Vector3f rightPos, Quaternionf rightRot) implements CustomPayload {
 
-    static PacketCodec<PacketByteBuf, SaberSyncS2CPayload> CODEC = CustomPayload.codecOf(SaberSyncS2CPayload::write, SaberSyncS2CPayload::read);
-    static CustomPayload.Id<SaberSyncS2CPayload> ID = new Id<>(BeatCraftNetworking.SABER_SYNC_S2C_PAYLOAD);
+    public static PacketCodec<PacketByteBuf, SaberSyncS2CPayload> CODEC = CustomPayload.codecOf(SaberSyncS2CPayload::write, SaberSyncS2CPayload::read);
+    public static CustomPayload.Id<SaberSyncS2CPayload> ID = new Id<>(BeatCraftNetworking.SABER_SYNC_S2C);
 
     @Override
     public Id<? extends CustomPayload> getId() {

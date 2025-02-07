@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -76,10 +77,10 @@ public class SongDownloader {
             this.val2 = val2;
         }
 
-        public Boolean val() {
+        public Boolean valSearch() {
             return val;
         }
-        public Boolean val2() {
+        public Boolean valLatest() {
             return val2;
         }
     }
@@ -88,6 +89,7 @@ public class SongDownloader {
 
     private static final String LATEST_URL = "https://api.beatsaver.com/maps/latest";
     private static final String SEARCH_URL = "https://api.beatsaver.com/search/v1/";
+    private static final String MAP_ID_URL = "https://api.beatsaver.com/maps/id/";
 
     private static final int PAGE_SIZE = 20;
 
@@ -117,6 +119,42 @@ public class SongDownloader {
         CompletableFuture.runAsync(() -> {
             _downloadSong(preview, runDirectory);
         }).thenRun(after);
+    }
+
+    /// passes the path to the song folder to `after` if the download was successful
+    public static void downloadFromId(String id, String runDirectory, Consumer<String> after) {
+        CompletableFuture.runAsync(() -> _downloadFromId(id, runDirectory, after));
+    }
+
+    private static void _downloadFromId(String id, String runDirectory, Consumer<String> after) {
+        Request request = new Request.Builder().url(MAP_ID_URL + id).build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                BeatCraft.LOGGER.error("Failed to download song '{}'", id);
+                return;
+            }
+
+            String rawJson = response.body().string();
+
+            JsonObject responseJson = JsonParser.parseString(rawJson).getAsJsonObject();
+
+            SongPreview preview = SongPreview.loadJson(responseJson);
+
+            _downloadSong(preview, runDirectory);
+
+            String songFolder = runDirectory + "/beatmaps/" + preview.id() + " (" + filterString(preview.metaData().songName() + " - " + preview.metaData().levelAuthorName()) + ")";
+
+            if (new File(songFolder).exists()) {
+                after.accept(songFolder);
+            } else {
+                BeatCraft.LOGGER.error("Something went wrong with processing downloaded song!");
+            }
+
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to download song '{}'", id, e);
+        }
+
     }
 
     private static String filterString(String in) {
@@ -266,9 +304,9 @@ public class SongDownloader {
                 return;
             }
 
-            String rawBody = response.body().string();
+            String rawJson = response.body().string();
 
-            JsonObject responseJson = JsonParser.parseString(rawBody).getAsJsonObject();
+            JsonObject responseJson = JsonParser.parseString(rawJson).getAsJsonObject();
 
             JsonArray docs = responseJson.getAsJsonArray("docs");
 
@@ -300,8 +338,8 @@ public class SongDownloader {
             listQuery += "&before=" + before;
         }
 
-        if (automapper.val2() != null) {
-            listQuery += "&automapper=" + automapper.val2();
+        if (automapper.valLatest() != null) {
+            listQuery += "&automapper=" + automapper.valLatest();
         }
 
         Request listRequest = new Request.Builder().url(listQuery).build();

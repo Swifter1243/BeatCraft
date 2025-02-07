@@ -58,6 +58,7 @@ import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.UUID;
 
 
 public class GameLogicHandler {
@@ -74,6 +75,8 @@ public class GameLogicHandler {
     private static int score = 0;
     private static int maxHealth;
     private static int health;
+
+    private static UUID trackedPlayerUuid = null;
 
     public static final Random random = new Random();
 
@@ -94,6 +97,18 @@ public class GameLogicHandler {
 
     private static final Stash<Vector3f> previousLeftEndpoints = new Stash<>(10);
     private static final Stash<Vector3f> previousRightEndpoints = new Stash<>(10);
+
+    public static void trackPlayer(UUID uuid) {
+        trackedPlayerUuid = uuid;
+    }
+
+    public static boolean isTrackingClient() {
+        return trackedPlayerUuid == null;
+    }
+
+    public static boolean isTracking(UUID uuid) {
+        return trackedPlayerUuid == uuid;
+    }
 
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
         previousLeftEndpoints.push(new Vector3f(0, 1, 0).rotate(previousLeftSaberRotation).add(previousLeftSaberPos));

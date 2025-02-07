@@ -10,6 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
@@ -36,6 +37,14 @@ public class BeatCraft implements ModInitializer {
 		BeatCraftNetworking.init();
 
 		registerCommands();
+
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			BeatCraft.LOGGER.info("player disconnect!");
+		});
+
+		ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
+			BeatCraft.LOGGER.info("player connect!");
+		});
 
 	}
 

@@ -9,14 +9,13 @@ import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.networking.SaberSyncC2SPayload;
+import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayFrame;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
@@ -35,7 +34,6 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import oshi.util.tuples.Quartet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +53,8 @@ public class SaberRenderer {
             PlayerEntity player = world.getPlayerByUuid(uuid);
             if (player == null) return;
 
+            boolean tracked = GameLogicHandler.isTracking(uuid);
+
             ItemStack stack = player.getMainHandStack();
             ItemStack stack2 = player.getOffHandStack();
 
@@ -66,13 +66,16 @@ public class SaberRenderer {
 
             if (stack.isOf(ModItems.SABER_ITEM)) {
                 renderReplaySaber(stack, playFrame.rightSaberPosition(), playFrame.rightSaberRotation());
+                if (tracked) {
+                    GameLogicHandler.updateRightSaber(playFrame.rightSaberPosition(), playFrame.rightSaberRotation());
+                }
             }
-
             if (stack2.isOf(ModItems.SABER_ITEM)) {
                 renderReplaySaber(stack2, playFrame.leftSaberPosition(), playFrame.leftSaberRotation());
-
+                if (tracked) {
+                    GameLogicHandler.updateLeftSaber(playFrame.leftSaberPosition(), playFrame.leftSaberRotation());
+                }
             }
-
         });
     }
 
@@ -87,10 +90,10 @@ public class SaberRenderer {
         matrices.scale(0.3333f, 0.3333f, 0.3333f);
 
         BeatcraftRenderer.recordRenderCall(() -> {
-                MinecraftClient.getInstance().getItemRenderer().renderItem(
-                        item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
-                        matrices, HUDRenderer.vertexConsumerProvider, MinecraftClient.getInstance().world, 0
-                );
+            MinecraftClient.getInstance().getItemRenderer().renderItem(
+                item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
+                matrices, HUDRenderer.vertexConsumerProvider, MinecraftClient.getInstance().world, 0
+            );
         });
     }
 
@@ -197,12 +200,13 @@ public class SaberRenderer {
                 saberPos.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 Quaternionf saberRot = entry.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
 
-                if (rightHand) {
-                    GameLogicHandler.updateRightSaber(saberPos, saberRot);
-                } else {
-                    GameLogicHandler.updateLeftSaber(saberPos, saberRot);
+                if (GameLogicHandler.isTrackingClient()) {
+                    if (rightHand) {
+                        GameLogicHandler.updateRightSaber(saberPos, saberRot);
+                    } else {
+                        GameLogicHandler.updateLeftSaber(saberPos, saberRot);
+                    }
                 }
-
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
