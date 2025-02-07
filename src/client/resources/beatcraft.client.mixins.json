@@ -8,6 +8,7 @@
     "GameRendererMixin",
     "ItemEntityRendererMixin",
     "OptionsScreenMixin",
+    "PlayerHeldItemFeatureRendererMixin",
     "WorldRendererMixin"
   ],
   "injectors": {

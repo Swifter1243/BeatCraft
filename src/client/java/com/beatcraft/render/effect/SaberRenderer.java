@@ -9,17 +9,23 @@ import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.networking.SaberSyncC2SPayload;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.replay.PlayFrame;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
@@ -29,13 +35,46 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import oshi.util.tuples.Quartet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class SaberRenderer {
 
+    public static final HashMap<UUID, PlayFrame> otherPlayerSabers = new HashMap<>();
+
     private static final ArrayList<Function<BufferBuilder, Void>> render_calls = new ArrayList<>();
+
+    private static void renderOtherPlayerSabers() {
+        otherPlayerSabers.forEach((uuid, playFrame) -> {
+            ClientWorld world = MinecraftClient.getInstance().world;
+            if (world == null) return;
+            PlayerEntity player = world.getPlayerByUuid(uuid);
+            if (player == null) return;
+
+            ItemStack stack = player.getMainHandStack();
+            ItemStack stack2 = player.getOffHandStack();
+
+            if (player.getMainArm() == Arm.LEFT) {
+                var s3 = stack;
+                stack = stack2;
+                stack2 = s3;
+            }
+
+            if (stack.isOf(ModItems.SABER_ITEM)) {
+                renderReplaySaber(stack, playFrame.rightSaberPosition(), playFrame.rightSaberRotation());
+            }
+
+            if (stack2.isOf(ModItems.SABER_ITEM)) {
+                renderReplaySaber(stack, playFrame.leftSaberPosition(), playFrame.leftSaberRotation());
+
+            }
+
+        });
+    }
 
     public static void renderReplaySaber(ItemStack item, Vector3f position, Quaternionf orientation) {
         renderReplayTrail(item, position, orientation);
@@ -82,6 +121,9 @@ public class SaberRenderer {
 
 
         matrices.pop();
+
+        ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation));
+
     }
 
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
@@ -251,6 +293,8 @@ public class SaberRenderer {
     }
 
     public static void renderAll() {
+
+        renderOtherPlayerSabers();
 
         if (render_calls.isEmpty()) return;
 
