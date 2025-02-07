@@ -69,7 +69,7 @@ public class SaberRenderer {
             }
 
             if (stack2.isOf(ModItems.SABER_ITEM)) {
-                renderReplaySaber(stack, playFrame.leftSaberPosition(), playFrame.leftSaberRotation());
+                renderReplaySaber(stack2, playFrame.leftSaberPosition(), playFrame.leftSaberRotation());
 
             }
 
