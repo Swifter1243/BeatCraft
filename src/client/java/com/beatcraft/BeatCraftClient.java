@@ -6,6 +6,7 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
+import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.item.GeckolibRenderInit;
@@ -70,6 +71,8 @@ public class BeatCraftClient implements ClientModInitializer {
 
         BlockRenderSettings.init();
         GeckolibRenderInit.init();
+
+        BeatCraftClientNetworking.init();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (settingsKeyBind.wasPressed()) {
