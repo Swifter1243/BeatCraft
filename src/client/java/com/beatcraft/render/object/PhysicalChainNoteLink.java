@@ -69,6 +69,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
 
         if (!isBaseDissolved()) {
             BeatcraftRenderer.recordNoteRenderCall((tri, quad, cam) -> {
+                if (quad == null) return;
                 MeshLoader.CHAIN_LINK_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_LINK_MESH.drawToBuffer(quad, localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), cam);
             });

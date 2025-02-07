@@ -125,6 +125,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
         if (!isBaseDissolved()) {
             BeatcraftRenderer.recordNoteRenderCall((tri, quad, cam) -> {
+                if (quad == null) return;
                 MeshLoader.COLOR_NOTE_MESH.color = data.getColor().toARGB();
                 MeshLoader.COLOR_NOTE_MESH.drawToBuffer(quad, localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), cam);
             });

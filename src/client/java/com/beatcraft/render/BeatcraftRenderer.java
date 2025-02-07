@@ -49,7 +49,6 @@ public class BeatcraftRenderer {
     public static void render() {
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
@@ -58,22 +57,32 @@ public class BeatcraftRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
+        int oldTexture = RenderSystem.getShaderTexture(0);
+        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         for (var renderCall : noteRenderCalls) {
             try {
-                renderCall.accept(triBuffer, quadBuffer, cameraPos);
+                renderCall.accept(triBuffer, null, cameraPos);
             } catch (Exception e) {
                 BeatCraft.LOGGER.error("Render call failed! ", e);
             }
         }
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-
         var triBuff = triBuffer.endNullable();
-        var quadBuff = quadBuffer.endNullable();
         if (triBuff != null) {
             BufferRenderer.drawWithGlobalProgram(triBuff);
         }
+
+        BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        for (var renderCall : noteRenderCalls) {
+            try {
+                renderCall.accept(null, quadBuffer, cameraPos);
+            } catch (Exception e) {
+                BeatCraft.LOGGER.error("Render call failed! ", e);
+            }
+        }
+
+        var quadBuff = quadBuffer.endNullable();
         if (quadBuff != null) {
             BufferRenderer.drawWithGlobalProgram(quadBuff);
         }

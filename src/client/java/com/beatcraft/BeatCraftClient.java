@@ -58,7 +58,6 @@ public class BeatCraftClient implements ClientModInitializer {
     public static final Vec3d playerGlobalPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerGlobalRotation = new Quaternionf();
 
-
     public static final Vec3d playerSaberPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerSaberRotation = new Quaternionf();
 
