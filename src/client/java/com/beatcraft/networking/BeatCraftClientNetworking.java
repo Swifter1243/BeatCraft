@@ -6,6 +6,7 @@ import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.s2c.BeatSyncS2CPayload;
 import com.beatcraft.networking.s2c.MapSyncS2CPayload;
+import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
 import com.beatcraft.networking.s2c.SaberSyncS2CPayload;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.replay.PlayFrame;
@@ -25,6 +26,7 @@ public class BeatCraftClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(SaberSyncS2CPayload.ID, BeatCraftClientNetworking::handleSaberSyncPayload);
         ClientPlayNetworking.registerGlobalReceiver(MapSyncS2CPayload.ID, BeatCraftClientNetworking::handleMapSyncPayload);
         ClientPlayNetworking.registerGlobalReceiver(BeatSyncS2CPayload.ID, BeatCraftClientNetworking::handleBeatSyncPayload);
+        ClientPlayNetworking.registerGlobalReceiver(PlayerDisconnectS2CPayload.ID, BeatCraftClientNetworking::handlePlayerDisconnectPayload);
     }
 
 
@@ -51,6 +53,7 @@ public class BeatCraftClientNetworking {
             //PlayerEntity player = world.getPlayerByUuid(uuid);
             //if (player == null) return;
 
+            GameLogicHandler.trackPlayer(uuid);
             SongDownloader.downloadFromId(song_id, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), BeatCraftClientNetworking::loadNewSong);
 
         });
@@ -72,6 +75,12 @@ public class BeatCraftClientNetworking {
             if (Math.abs(BeatmapPlayer.getCurrentBeat() - beat) > 0.01) {
                 BeatmapPlayer.currentBeatmap.seek(beat);
             }
+        });
+    }
+
+    private static void handlePlayerDisconnectPayload(PlayerDisconnectS2CPayload payload, ClientPlayNetworking.Context context) {
+        context.client().execute(() -> {
+            GameLogicHandler.untrack(payload.uuid());
         });
     }
 

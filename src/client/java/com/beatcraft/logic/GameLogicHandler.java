@@ -36,7 +36,6 @@ wall dimensions and positioning
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
-import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
@@ -95,11 +94,15 @@ public class GameLogicHandler {
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
 
-    private static final Stash<Vector3f> previousLeftEndpoints = new Stash<>(10);
-    private static final Stash<Vector3f> previousRightEndpoints = new Stash<>(10);
-
     public static void trackPlayer(UUID uuid) {
         trackedPlayerUuid = uuid;
+    }
+
+    public static void untrack(UUID uuid) {
+        if (trackedPlayerUuid == uuid) {
+            trackedPlayerUuid = null;
+            unloadAll();
+        }
     }
 
     public static boolean isTrackingClient() {
@@ -111,7 +114,6 @@ public class GameLogicHandler {
     }
 
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
-        previousLeftEndpoints.push(new Vector3f(0, 1, 0).rotate(previousLeftSaberRotation).add(previousLeftSaberPos));
         previousLeftSaberPos = leftSaberPos;
         previousLeftSaberRotation = leftSaberRotation;
         leftSaberPos = position;
@@ -119,7 +121,6 @@ public class GameLogicHandler {
     }
 
     public static void updateRightSaber(Vector3f position, Quaternionf rotation) {
-        previousRightEndpoints.push(new Vector3f(0, 1, 0).rotate(previousRightSaberRotation).add(previousRightSaberPos));
         previousRightSaberPos = rightSaberPos;
         previousRightSaberRotation = rightSaberRotation;
         rightSaberPos = position;
@@ -204,7 +205,7 @@ public class GameLogicHandler {
     private static boolean matchAngle(float angle) {
         angle = angle % 360;
         if (angle < 0) angle += 360;
-        return (360-135 < angle && angle < 360-45);
+        return (225 < angle && angle < 315);
     }
 
     public static Vector3f getPlaneNormal(Vector3f start, Vector3f end, Vector3f velocity) {
@@ -240,24 +241,6 @@ public class GameLogicHandler {
         oldEndpoint.sub(notePos).rotate(inverted);
 
         Vector3f diff = endpoint.sub(oldEndpoint, new Vector3f());
-
-        //int count = 1;
-        //if (saberColor == NoteType.BLUE) {
-        //    for (Vector3f ep : previousRightEndpoints) {
-        //        Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
-        //        diff.add(vec);
-        //        oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
-        //        count++;
-        //    }
-        //} else {
-        //    for (Vector3f ep : previousLeftEndpoints) {
-        //        Vector3f vec = oldEndpoint.sub(ep.sub(notePos, new Vector3f()).rotate(inverted), new Vector3f());
-        //        diff.add(vec);
-        //        oldEndpoint = ep.sub(notePos, new Vector3f()).rotate(inverted);
-        //        count++;
-        //    }
-        //}
-        //diff.div(count);
 
         float angle = MathUtil.getVectorAngleDegrees(new Vector2f(diff.x, diff.y).normalize());
 
@@ -552,12 +535,16 @@ public class GameLogicHandler {
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Error saving recording", e);
         }
+
+        unloadAll();
+    }
+
+    public static void unloadAll() {
         PlayRecorder.reset();
         Replayer.reset();
         BeatmapPlayer.reset();
         BeatmapAudioPlayer.unload();
         reset();
-
     }
 
 }

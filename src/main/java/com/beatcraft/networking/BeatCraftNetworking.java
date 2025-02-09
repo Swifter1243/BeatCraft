@@ -21,6 +21,7 @@ public class BeatCraftNetworking {
     public static final Identifier SABER_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "saber_sync_s2c");
     public static final Identifier MAP_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "map_sync_s2c");
     public static final Identifier BEAT_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "beat_sync_s2c");
+    public static final Identifier PLAYER_DISCONNECT_S2C = Identifier.of(BeatCraft.MOD_ID, "player_disconnect_s2c");
 
     // C2S
     public static final Identifier SABER_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "saber_sync_c2s");

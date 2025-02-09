@@ -41,6 +41,7 @@ public class SongData {
     private String author;
     private float bpm;
     private float length;
+    private String uid = null;
 
     private String coverImageFilename;
 
@@ -58,6 +59,13 @@ public class SongData {
 
     public SongData(String songFolder) throws IOException {
         File folder = new File(songFolder);
+
+        String songIdBase = folder.getName();
+
+        // Can't wait for this to cause issues when someone renames a song folder lol
+        if (songIdBase.matches("[a-z0-9]+ \\(.*")) {
+            uid = songIdBase.split(" ")[0];
+        }
 
         this.songFolder = folder.toPath();
 
@@ -212,6 +220,10 @@ public class SongData {
 
     public String getSubtitle() {
         return subtitle;
+    }
+
+    public String getId() {
+        return uid;
     }
 
     public String getAuthor() {
