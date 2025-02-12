@@ -28,8 +28,8 @@ public class Replayer {
 
     private static final ArrayList<PlayFrame> frames = new ArrayList<>();
     public static boolean runReplay = false;
-    private static ItemStack leftSaber = new ItemStack(ModItems.SABER_ITEM, 1);
-    private static ItemStack rightSaber = new ItemStack(ModItems.SABER_ITEM, 1);
+    private static final ItemStack leftSaber = new ItemStack(ModItems.SABER_ITEM, 1);
+    private static final ItemStack rightSaber = new ItemStack(ModItems.SABER_ITEM, 1);
 
     public static void loadReplay(String replayFile) throws IOException {
         frames.clear();

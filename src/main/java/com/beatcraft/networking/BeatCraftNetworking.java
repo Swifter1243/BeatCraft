@@ -65,6 +65,8 @@ public class BeatCraftNetworking {
         context.server().execute(() -> {
             PlayerEntity player = context.player();
             UUID uuid = player.getUuid();
+            BeatCraft.currentTrackId = payload.uid();
+            BeatCraft.currentTrackedPlayer = uuid;
             PlayerLookup.all(context.server()).forEach(pl -> {
                 if (pl == player) return;
                 ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid()));
@@ -75,6 +77,10 @@ public class BeatCraftNetworking {
     private static void handleBeatSyncPayload(BeatSyncC2SPayload payload, ServerPlayNetworking.Context context) {
         context.server().execute(() -> {
             PlayerEntity player = context.player();
+            if (player.getUuid() == BeatCraft.currentTrackedPlayer) {
+                BeatCraft.currentTrackedPlayer = null;
+                BeatCraft.currentTrackId = null;
+            }
             PlayerLookup.tracking(player).forEach(pl -> {
                 ServerPlayNetworking.send(pl, new BeatSyncS2CPayload(payload.beat()));
             });
