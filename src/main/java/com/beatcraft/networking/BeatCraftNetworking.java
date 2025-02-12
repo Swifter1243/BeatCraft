@@ -6,6 +6,7 @@ import com.beatcraft.networking.c2s.MapSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.networking.s2c.BeatSyncS2CPayload;
 import com.beatcraft.networking.s2c.MapSyncS2CPayload;
+import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
 import com.beatcraft.networking.s2c.SaberSyncS2CPayload;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -34,6 +35,7 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playS2C().register(SaberSyncS2CPayload.ID, SaberSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(MapSyncS2CPayload.ID, MapSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BeatSyncS2CPayload.ID, BeatSyncS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PlayerDisconnectS2CPayload.ID, PlayerDisconnectS2CPayload.CODEC);
 
         // Client to Server
         PayloadTypeRegistry.playC2S().register(SaberSyncC2SPayload.ID, SaberSyncC2SPayload.CODEC);
@@ -69,7 +71,7 @@ public class BeatCraftNetworking {
             BeatCraft.currentTrackedPlayer = uuid;
             PlayerLookup.all(context.server()).forEach(pl -> {
                 if (pl == player) return;
-                ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid()));
+                ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid(), payload.set(), payload.diff()));
             });
         });
     }

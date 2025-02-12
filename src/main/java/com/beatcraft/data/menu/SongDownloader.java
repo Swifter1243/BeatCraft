@@ -122,11 +122,11 @@ public class SongDownloader {
     }
 
     /// passes the path to the song folder to `after` if the download was successful
-    public static void downloadFromId(String id, String runDirectory, Consumer<String> after) {
+    public static void downloadFromId(String id, String runDirectory, Runnable after) {
         CompletableFuture.runAsync(() -> _downloadFromId(id, runDirectory, after));
     }
 
-    private static void _downloadFromId(String id, String runDirectory, Consumer<String> after) {
+    private static void _downloadFromId(String id, String runDirectory, Runnable after) {
         Request request = new Request.Builder().url(MAP_ID_URL + id).build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -146,7 +146,7 @@ public class SongDownloader {
             String songFolder = runDirectory + "/beatmaps/" + preview.id() + " (" + filterString(preview.metaData().songName() + " - " + preview.metaData().levelAuthorName()) + ")";
 
             if (new File(songFolder).exists()) {
-                after.accept(songFolder);
+                after.run();
             } else {
                 BeatCraft.LOGGER.error("Something went wrong with processing downloaded song!");
             }

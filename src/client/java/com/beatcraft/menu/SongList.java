@@ -34,6 +34,15 @@ public class SongList {
         return list;
     }
 
+    public SongData getById(String id) {
+        for (SongData data : songs) {
+            if (id.equals(data.getId())) {
+                return data;
+            }
+        }
+        return null;
+    }
+
     /// loads beatmaps from `./beatmaps/`
     /// if the folder does not exist it will be created
     public void loadSongs() {

@@ -1,7 +1,9 @@
 package com.beatcraft.networking;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.data.menu.SongData;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.s2c.BeatSyncS2CPayload;
@@ -47,6 +49,8 @@ public class BeatCraftClientNetworking {
         context.client().execute(() -> {
             UUID uuid = payload.player();
             String song_id = payload.uid();
+            String set = payload.set();
+            String diff = payload.diff();
 
             ClientWorld world = MinecraftClient.getInstance().world;
             if (world == null) return;
@@ -54,14 +58,20 @@ public class BeatCraftClientNetworking {
             //if (player == null) return;
 
             GameLogicHandler.trackPlayer(uuid);
-            SongDownloader.downloadFromId(song_id, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), BeatCraftClientNetworking::loadNewSong);
+            SongDownloader.downloadFromId(song_id, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), () -> loadNewSong(song_id, set, diff));
 
         });
     }
 
-    private static void loadNewSong(String path) {
+    private static void loadNewSong(String id, String set, String diff) {
         try {
-            BeatmapPlayer.setupDifficultyFromFile(path);
+            BeatCraftClient.songs.loadSongs();
+
+            SongData data = BeatCraftClient.songs.getById(id);
+
+            SongData.BeatmapInfo info = data.getBeatMapInfo(set, diff);
+
+            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
         } catch (IOException e) {
