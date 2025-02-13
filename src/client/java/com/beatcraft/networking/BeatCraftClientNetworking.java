@@ -3,6 +3,7 @@ package com.beatcraft.networking;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
@@ -72,6 +73,7 @@ public class BeatCraftClientNetworking {
             SongData.BeatmapInfo info = data.getBeatMapInfo(set, diff);
 
             BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
+            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
         } catch (IOException e) {

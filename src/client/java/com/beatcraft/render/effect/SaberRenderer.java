@@ -9,6 +9,7 @@ import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.HUDRenderer;
@@ -126,7 +127,9 @@ public class SaberRenderer {
         matrices.pop();
 
         ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation));
-
+        if (GameLogicHandler.isTrackingClient()) {
+            ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
+        }
     }
 
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {

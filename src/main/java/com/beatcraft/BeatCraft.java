@@ -30,6 +30,8 @@ public class BeatCraft implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static UUID currentTrackedPlayer = null;
 	public static String currentTrackId = null;
+	public static String currentSet = null;
+	public static String currentDiff = null;
 
 	@Override
 	public void onInitialize() {
@@ -50,6 +52,8 @@ public class BeatCraft implements ModInitializer {
 			if (currentTrackedPlayer == handler.player.getUuid()) {
 				currentTrackedPlayer = null;
 				currentTrackId = null;
+				currentSet = null;
+				currentDiff = null;
 			}
 			PlayerLookup.all(server).forEach(p -> {
 				if (p != handler.player) {
@@ -61,7 +65,7 @@ public class BeatCraft implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
 			BeatCraft.LOGGER.info("player connect!");
 			if (currentTrackedPlayer != null) {
-				packetSender.sendPacket(new MapSyncS2CPayload(currentTrackedPlayer, currentTrackId));
+				packetSender.sendPacket(new MapSyncS2CPayload(currentTrackedPlayer, currentTrackId, currentSet, currentDiff));
 			}
 		});
 

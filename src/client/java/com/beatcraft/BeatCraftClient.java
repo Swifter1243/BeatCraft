@@ -370,7 +370,7 @@ public class BeatCraftClient implements ClientModInitializer {
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
             if (song.getId() != null) {
-                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId()));
+                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff));
             }
             return 1;
         } else {
