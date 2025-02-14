@@ -7,12 +7,16 @@ import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
+import com.beatcraft.networking.c2s.MapSyncC2SPayload;
+import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
@@ -68,6 +72,7 @@ public class Replayer {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
+            ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -125,6 +130,9 @@ public class Replayer {
 
         SaberRenderer.renderReplaySaber(leftSaber, leftSaberPos, leftSaberRot);
         SaberRenderer.renderReplaySaber(rightSaber, rightSaberPos, rightSaberRot);
+
+        ClientPlayNetworking.send(new SaberSyncC2SPayload(leftSaberPos, leftSaberRot, rightSaberPos, rightSaberRot));
+        ClientPlayNetworking.send(new BeatSyncC2SPayload(beat));
 
     }
 

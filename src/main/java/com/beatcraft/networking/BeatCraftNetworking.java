@@ -4,10 +4,8 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
-import com.beatcraft.networking.s2c.BeatSyncS2CPayload;
-import com.beatcraft.networking.s2c.MapSyncS2CPayload;
-import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
-import com.beatcraft.networking.s2c.SaberSyncS2CPayload;
+import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
+import com.beatcraft.networking.s2c.*;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -23,11 +21,13 @@ public class BeatCraftNetworking {
     public static final Identifier MAP_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "map_sync_s2c");
     public static final Identifier BEAT_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "beat_sync_s2c");
     public static final Identifier PLAYER_DISCONNECT_S2C = Identifier.of(BeatCraft.MOD_ID, "player_disconnect_s2c");
+    public static final Identifier SPEED_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "speed_sync_s2c");
 
     // C2S
     public static final Identifier SABER_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "saber_sync_c2s");
     public static final Identifier MAP_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "map_sync_c2s");
     public static final Identifier BEAT_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "beat_sync_c2s");
+    public static final Identifier SPEED_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "speed_sync_c2s");
 
     public static void init() {
 
@@ -36,11 +36,13 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playS2C().register(MapSyncS2CPayload.ID, MapSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BeatSyncS2CPayload.ID, BeatSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PlayerDisconnectS2CPayload.ID, PlayerDisconnectS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(SpeedSyncS2CPayload.ID, SpeedSyncS2CPayload.CODEC);
 
         // Client to Server
         PayloadTypeRegistry.playC2S().register(SaberSyncC2SPayload.ID, SaberSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(MapSyncC2SPayload.ID, MapSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BeatSyncC2SPayload.ID, BeatSyncC2SPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SpeedSyncC2SPayload.ID, SpeedSyncC2SPayload.CODEC);
 
         // receivers
         ServerPlayNetworking.registerGlobalReceiver(SaberSyncC2SPayload.ID, BeatCraftNetworking::handleSaberSyncPayload);
