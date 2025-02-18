@@ -7,10 +7,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
-import com.beatcraft.networking.s2c.BeatSyncS2CPayload;
-import com.beatcraft.networking.s2c.MapSyncS2CPayload;
-import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
-import com.beatcraft.networking.s2c.SaberSyncS2CPayload;
+import com.beatcraft.networking.s2c.*;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.replay.PlayFrame;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -30,6 +27,8 @@ public class BeatCraftClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(MapSyncS2CPayload.ID, BeatCraftClientNetworking::handleMapSyncPayload);
         ClientPlayNetworking.registerGlobalReceiver(BeatSyncS2CPayload.ID, BeatCraftClientNetworking::handleBeatSyncPayload);
         ClientPlayNetworking.registerGlobalReceiver(PlayerDisconnectS2CPayload.ID, BeatCraftClientNetworking::handlePlayerDisconnectPayload);
+        ClientPlayNetworking.registerGlobalReceiver(SpeedSyncS2CPayload.ID, BeatCraftClientNetworking::handleSpeedSyncPayload);
+        ClientPlayNetworking.registerGlobalReceiver(SongPauseS2CPayload.ID, BeatCraftClientNetworking::handlePausePayload);
     }
 
 
@@ -99,6 +98,18 @@ public class BeatCraftClientNetworking {
     private static void handlePlayerDisconnectPayload(PlayerDisconnectS2CPayload payload, ClientPlayNetworking.Context context) {
         context.client().execute(() -> {
             GameLogicHandler.untrack(payload.uuid());
+        });
+    }
+
+    private static void handleSpeedSyncPayload(SpeedSyncS2CPayload payload, ClientPlayNetworking.Context context) {
+        context.client().execute(() -> {
+            BeatmapPlayer.setPlaybackSpeed(payload.speed(), true);
+        });
+    }
+
+    private static void handlePausePayload(SongPauseS2CPayload payload, ClientPlayNetworking.Context context) {
+        context.client().execute(() -> {
+            BeatmapPlayer.pause(true);
         });
     }
 

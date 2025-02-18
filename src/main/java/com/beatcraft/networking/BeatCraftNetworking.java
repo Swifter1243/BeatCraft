@@ -1,10 +1,7 @@
 package com.beatcraft.networking;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
-import com.beatcraft.networking.c2s.MapSyncC2SPayload;
-import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
-import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
+import com.beatcraft.networking.c2s.*;
 import com.beatcraft.networking.s2c.*;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -22,12 +19,14 @@ public class BeatCraftNetworking {
     public static final Identifier BEAT_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "beat_sync_s2c");
     public static final Identifier PLAYER_DISCONNECT_S2C = Identifier.of(BeatCraft.MOD_ID, "player_disconnect_s2c");
     public static final Identifier SPEED_SYNC_S2C = Identifier.of(BeatCraft.MOD_ID, "speed_sync_s2c");
+    public static final Identifier SONG_PAUSE_S2C = Identifier.of(BeatCraft.MOD_ID, "song_pause_s2c");
 
     // C2S
     public static final Identifier SABER_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "saber_sync_c2s");
     public static final Identifier MAP_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "map_sync_c2s");
     public static final Identifier BEAT_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "beat_sync_c2s");
     public static final Identifier SPEED_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "speed_sync_c2s");
+    public static final Identifier SONG_PAUSE_C2S = Identifier.of(BeatCraft.MOD_ID, "song_pause_c2s");
 
     public static void init() {
 
@@ -37,6 +36,7 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playS2C().register(BeatSyncS2CPayload.ID, BeatSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PlayerDisconnectS2CPayload.ID, PlayerDisconnectS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(SpeedSyncS2CPayload.ID, SpeedSyncS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(SongPauseS2CPayload.ID, SongPauseS2CPayload.CODEC);
 
         // Client to Server
         PayloadTypeRegistry.playC2S().register(SaberSyncC2SPayload.ID, SaberSyncC2SPayload.CODEC);
@@ -48,6 +48,8 @@ public class BeatCraftNetworking {
         ServerPlayNetworking.registerGlobalReceiver(SaberSyncC2SPayload.ID, BeatCraftNetworking::handleSaberSyncPayload);
         ServerPlayNetworking.registerGlobalReceiver(MapSyncC2SPayload.ID, BeatCraftNetworking::handleMapSyncPayload);
         ServerPlayNetworking.registerGlobalReceiver(BeatSyncC2SPayload.ID, BeatCraftNetworking::handleBeatSyncPayload);
+        ServerPlayNetworking.registerGlobalReceiver(SpeedSyncC2SPayload.ID, BeatCraftNetworking::handleSpeedSyncPayload);
+        ServerPlayNetworking.registerGlobalReceiver(SongPauseC2SPayload.ID, BeatCraftNetworking::handlePausePayload);
 
     }
 
@@ -91,6 +93,27 @@ public class BeatCraftNetworking {
             }
             PlayerLookup.tracking(player).forEach(pl -> {
                 ServerPlayNetworking.send(pl, new BeatSyncS2CPayload(payload.beat()));
+            });
+        });
+    }
+
+    private static void handleSpeedSyncPayload(SpeedSyncC2SPayload payload, ServerPlayNetworking.Context context) {
+        context.server().execute(() -> {
+            PlayerEntity player = context.player();
+
+            PlayerLookup.tracking(player).forEach(pl -> {
+                ServerPlayNetworking.send(pl, new SpeedSyncS2CPayload(payload.speed()));
+            });
+        });
+    }
+
+
+    private static void handlePausePayload(SongPauseC2SPayload payload, ServerPlayNetworking.Context context) {
+        context.server().execute(() -> {
+            PlayerEntity player = context.player();
+
+            PlayerLookup.tracking(player).forEach(pl -> {
+                ServerPlayNetworking.send(pl, new SongPauseS2CPayload());
             });
         });
     }

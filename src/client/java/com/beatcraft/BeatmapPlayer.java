@@ -5,6 +5,9 @@ import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.networking.c2s.SongPauseC2SPayload;
+import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -72,10 +75,18 @@ public class BeatmapPlayer {
     public static float getPlaybackSpeed() {
         return playbackSpeed;
     }
+
     public static void setPlaybackSpeed(float speed) {
+        setPlaybackSpeed(speed, false);
+    }
+
+    public static void setPlaybackSpeed(float speed, boolean skipPacketSend) {
         BeatmapAudioPlayer.beatmapAudio.setPlaybackSpeed(speed);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         playbackSpeed = speed;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SpeedSyncC2SPayload(speed));
+        }
     }
 
     public static boolean isPlaying() {
@@ -93,7 +104,14 @@ public class BeatmapPlayer {
     }
 
     public static void pause() {
+        pause(false);
+    }
+
+    public static void pause(boolean skipPacketSend) {
         isPlaying = false;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SongPauseC2SPayload());
+        }
     }
 
     public static void restart() {
