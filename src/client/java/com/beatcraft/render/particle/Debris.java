@@ -1,4 +1,4 @@
-package com.beatcraft.render.effect;
+package com.beatcraft.render.particle;
 
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.mesh.TriangleMesh;

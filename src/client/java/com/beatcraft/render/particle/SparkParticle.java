@@ -1,4 +1,4 @@
-package com.beatcraft.render.effect;
+package com.beatcraft.render.particle;
 
 import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.MathUtil;

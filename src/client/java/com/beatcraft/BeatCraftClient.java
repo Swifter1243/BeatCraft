@@ -8,6 +8,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.item.GeckolibRenderInit;
@@ -29,7 +30,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -372,6 +372,7 @@ public class BeatCraftClient implements ClientModInitializer {
             if (song.getId() != null) {
                 ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff));
             }
+            HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
             return 1;
         } else {
             return -1;
@@ -379,7 +380,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     }
 
-    private CompletableFuture<Suggestions> songDifficultySuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+    private CompletableFuture<Suggestions> songDifficultySuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
         String songName = StringArgumentType.getString(context, "song");
         String diffSet = StringArgumentType.getString(context, "difficulty_set");
         String diffName = suggestionsBuilder.getRemaining();
@@ -425,7 +426,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     }
 
-    private CompletableFuture<Suggestions> songDifficultySetSuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+    private CompletableFuture<Suggestions> songDifficultySetSuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
         String songName = StringArgumentType.getString(context, "song");
         String diffSet = suggestionsBuilder.getRemaining();
         List<SongData> filtered = songs.getFiltered(songName);
@@ -455,7 +456,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     }
 
-    private CompletableFuture<Suggestions> songSuggestor(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+    private CompletableFuture<Suggestions> songSuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
 
         String songName = suggestionsBuilder.getRemaining();
 
@@ -511,9 +512,9 @@ public class BeatCraftClient implements ClientModInitializer {
                             .executes(this::songList)
                     )
                     .then(literal("load")
-                            .then(argument("song", StringArgumentType.string()).suggests(this::songSuggestor)
-                                    .then(argument("difficulty_set", StringArgumentType.string()).suggests(this::songDifficultySetSuggestor)
-                                            .then(argument("difficulty", StringArgumentType.string()).suggests(this::songDifficultySuggestor)
+                            .then(argument("song", StringArgumentType.string()).suggests(this::songSuggester)
+                                    .then(argument("difficulty_set", StringArgumentType.string()).suggests(this::songDifficultySetSuggester)
+                                            .then(argument("difficulty", StringArgumentType.string()).suggests(this::songDifficultySuggester)
                                                     .executes(this::songLoad)
                                             )
                                     )

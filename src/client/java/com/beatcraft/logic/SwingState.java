@@ -1,11 +1,9 @@
 package com.beatcraft.logic;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.render.DebugRenderer;
-import com.beatcraft.render.effect.BeatcraftParticleRenderer;
-import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.PhysicalScorableObject;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;

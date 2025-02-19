@@ -234,7 +234,6 @@ public class SaberRenderer {
 
     // Called from ItemEntityRendererMixin
     public static void renderItemEntityTrail(ItemEntity entity, float tickDelta, BakedModel bakedModel) {
-        boolean depth = bakedModel.hasDepth();
 
         ItemStack stack = entity.getStack();
         if (stack.isOf(ModItems.SABER_ITEM)) {
@@ -247,15 +246,6 @@ public class SaberRenderer {
             float l = entity.getRotation(tickDelta);
             matrix.multiply(RotationAxis.POSITIVE_Y.rotation(l));
 
-            float dx = bakedModel.getTransformation().ground.scale.x();
-            float dy = bakedModel.getTransformation().ground.scale.y();
-            float dz = bakedModel.getTransformation().ground.scale.z();
-            if (!depth) {
-                float fx = -0.0F * (float) (0) * 0.5F * dx;
-                float fy = -0.0F * (float) (0) * 0.5F * dy;
-                float fz = -0.09375F * (float) (0) * 0.5F * dz;
-                matrix.translate(fx, fy, fz);
-            }
             matrix.push();
             bakedModel.getTransformation().getTransformation(ModelTransformationMode.GROUND).apply(false, matrix);
 

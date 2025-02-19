@@ -1,4 +1,4 @@
-package com.beatcraft.render.effect;
+package com.beatcraft.render.particle;
 
 import net.minecraft.client.render.BufferBuilder;
 import org.joml.Vector3f;

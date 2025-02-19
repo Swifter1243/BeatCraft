@@ -3,10 +3,18 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.Rank;
+import com.beatcraft.menu.EndScreenData;
+import com.beatcraft.menu.ModifierMenu;
+import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.render.effect.BeatcraftParticleRenderer;
-import com.beatcraft.render.effect.Particle;
+import com.beatcraft.render.menu.EndScreenPanel;
+import com.beatcraft.render.menu.ModifierMenuPanel;
+import com.beatcraft.render.menu.SongSelectMenuPanel;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.ScoreDisplay;
 import com.beatcraft.utils.MathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -15,13 +23,23 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.function.Function;
 
 public class HUDRenderer {
+
+    public enum MenuScene {
+        InGame,
+        SongSelect,
+        MainMenu,
+        Downloader,
+        EndScreen
+    }
+
+    public static MenuScene scene = MenuScene.SongSelect;
+    public static NoteType pointerSaber = NoteType.BLUE;
 
     private static boolean showHUD = true;
     private static boolean advancedHUD = true;
@@ -36,68 +54,16 @@ public class HUDRenderer {
 
     private static final Function<Float, Float> opacityEasing = Easing.getEasing("easeInExpo");
 
-    private static final int TEXT_COLOR = 0xFFFFFFFF;
-    private static final int TEXT_LIGHT = 255;
+    public static final int TEXT_COLOR = 0xFFFFFFFF;
+    public static final int TEXT_LIGHT = 255;
 
-    private static class ScoreDisplay implements Particle {
+    public static final SongSelectMenu songSelectMenu = new SongSelectMenu();
+    private static final SongSelectMenuPanel songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
 
-        private final int score;
-        private final double spawnTime;
-        private final Vector3f position;
-        private final Vector3f endPoint;
-        private final Quaternionf orientation;
+    public static final ModifierMenu modifierMenu = new ModifierMenu();
+    private static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
 
-        public ScoreDisplay(int score, Vector3f position, Vector3f endPoint, Quaternionf orientation) {
-            this.score = score;
-            this.position = position;
-            this.endPoint = endPoint;
-            this.spawnTime = System.nanoTime() / 1_000_000_000d;
-            this.orientation = orientation;
-        }
-
-        private static final Function<Float, Float> easing = Easing.getEasing("easeOutExpo");
-
-        @Override
-        public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
-
-            float f = (float) MathUtil.inverseLerp(spawnTime, spawnTime+1.25d, System.nanoTime() / 1_000_000_000d);
-            f = Math.clamp(f, 0, 1);
-            Vector3f currentPos = MathUtil.lerpVector3(position, endPoint, easing.apply(f)).sub(cameraPos);
-
-            Matrix4f matrix = new Matrix4f();
-            matrix.translate(currentPos);
-
-            matrix.scale(1/64f);
-            matrix.rotate(new Quaternionf().rotateZ((float) Math.PI));
-            matrix.rotate(orientation);
-
-            if (vertexConsumerProvider != null) {
-                TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-                String display = String.valueOf(this.score == 0 ? "x" : this.score == -1 ? "MISS" : this.score);
-
-                int color = this.score > 100 ? 0xFFFFFFFF : 0xFF909090;
-
-                int w = textRenderer.getWidth(display);
-
-                textRenderer.draw(
-                    Text.literal(display),
-                    -w/2f, 0, color, false,
-                    matrix, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL,
-                    0, TEXT_LIGHT
-                );
-
-            }
-
-
-        }
-
-        @Override
-        public boolean shouldRemove() {
-            float f = (float) MathUtil.inverseLerp(spawnTime, spawnTime+1.25d, System.nanoTime() / 1_000_000_000d);
-            return f >= 1.25;
-        }
-    }
+    public static final EndScreenPanel endScreenPanel = new EndScreenPanel(new EndScreenData(0, Rank.A, 0, 0, 0, 0));
 
     public static void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
         BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
@@ -107,6 +73,23 @@ public class HUDRenderer {
 
     public static void render(VertexConsumerProvider immediate) {
         vertexConsumerProvider = immediate;
+
+        switch (scene) {
+            case InGame -> {
+                renderGameHud(immediate);
+            }
+            case SongSelect -> {
+                renderSongSelectHud(immediate);
+            }
+            case MainMenu -> {
+            }
+            case Downloader -> {
+            }
+        }
+
+    }
+
+    public static void renderGameHud(VertexConsumerProvider immediate) {
 
         if (!showHUD) return;
 
@@ -164,8 +147,11 @@ public class HUDRenderer {
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
+    }
 
-
+    private static void renderSongSelectHud(VertexConsumerProvider immediate) {
+        songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
     }
 
 

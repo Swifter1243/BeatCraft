@@ -40,10 +40,10 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
-import com.beatcraft.render.effect.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
@@ -74,6 +74,8 @@ public class GameLogicHandler {
     private static int score = 0;
     private static int maxHealth;
     private static int health;
+
+    public static boolean FPFC = false;
 
     private static UUID trackedPlayerUuid = null;
 
@@ -128,6 +130,9 @@ public class GameLogicHandler {
     }
 
     public static void update(double deltaTime) {
+        if (FPFC) {
+
+        }
         rightSwingState.updateSaber(rightSaberPos, rightSaberRotation, deltaTime);
         leftSwingState.updateSaber(leftSaberPos, leftSaberRotation, deltaTime);
 
@@ -520,15 +525,22 @@ public class GameLogicHandler {
 
 
     public static void triggerSongEnd() {
+        HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
 
-        assert MinecraftClient.getInstance().player != null;
-        MinecraftClient.getInstance().player.sendMessage(
-            Text.literal(String.format(
-                "%s - %.1f%% - %s\nmax combo: %s\ngood cuts: %s\nbad cuts: %s\nmisses: %s",
-                getRank(), getAccuracy()*100, getScore(), getMaxCombo(),
-                goodCuts, badCuts, misses
-            ))
-        );
+        HUDRenderer.endScreenPanel.setData(new EndScreenData(
+                getScore(), getRank(),
+                getMaxCombo(), goodCuts, getAccuracy()*100,
+                goodCuts + badCuts + misses
+        ));
+
+        //assert MinecraftClient.getInstance().player != null;
+        //MinecraftClient.getInstance().player.sendMessage(
+        //    Text.literal(String.format(
+        //        "%s - %.1f%% - %s\nmax combo: %s\ngood cuts: %s\nbad cuts: %s\nmisses: %s",
+        //        getRank(), getAccuracy()*100, getScore(), getMaxCombo(),
+        //        goodCuts, badCuts, misses
+        //    ))
+        //);
 
         try {
             PlayRecorder.save();

@@ -43,6 +43,7 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playC2S().register(MapSyncC2SPayload.ID, MapSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BeatSyncC2SPayload.ID, BeatSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SpeedSyncC2SPayload.ID, SpeedSyncC2SPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SongPauseC2SPayload.ID, SongPauseC2SPayload.CODEC);
 
         // receivers
         ServerPlayNetworking.registerGlobalReceiver(SaberSyncC2SPayload.ID, BeatCraftNetworking::handleSaberSyncPayload);

@@ -5,7 +5,7 @@ import com.beatcraft.logic.HapticsHandler;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
-import com.beatcraft.render.effect.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.render.*;

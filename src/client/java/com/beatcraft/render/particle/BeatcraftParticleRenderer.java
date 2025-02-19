@@ -1,4 +1,4 @@
-package com.beatcraft.render.effect;
+package com.beatcraft.render.particle;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
