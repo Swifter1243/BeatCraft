@@ -13,7 +13,7 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
         super(data);
         position.set(0, 2f, 6);
         size.set(800, 500);
-
+        backgroundColor = 0;
         setData(data);
     }
 
@@ -22,18 +22,20 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
 
         widgets.clear();
         widgets.addAll(List.of(
-                new TextWidget(String.valueOf(data.score), new Vector3f(0, -200, 0)),
-                new TextWidget(String.valueOf(data.accuracy), new Vector3f(0, 0, 0)),
-                new TextWidget("MAX COMBO", new Vector3f(-300, -100, 0), 0.35f),
-                new TextWidget(String.valueOf(data.maxCombo), new Vector3f(-300, -50, 0)),
-                new TextWidget(data.goodCuts + "/" + data.totalNotes, new Vector3f(-300, 0, 0)),
+                new TextWidget("LEVEL CLEARED", new Vector3f(0, -80, 0), 5),
+                new TextWidget("GOOD CUTS", new Vector3f(-280, 30, -0.01f), 2),
+                new TextWidget("SCORE", new Vector3f(0, 30, -0.01f), 2),
+                new TextWidget("RANK", new Vector3f(280, 30, -0.01f), 2),
+                new TextWidget(data.goodCuts + "/" + data.totalNotes, new Vector3f(-280, 50, -0.01f), 5),
+                new TextWidget(String.valueOf(data.score), new Vector3f(0, 50, -0.01f), 5),
+                new TextWidget(String.valueOf(data.rank), new Vector3f(280, 50, -0.01f), 5),
+                new TextWidget("MAX COMBO " + data.maxCombo, new Vector3f(-280, 90, -0.01f), 1.5f),
                 new ButtonWidget(
-                        new Vector3f(0, 200, 0), new Vector2f(300, 50),
+                        new Vector3f(0, 180, -0.01f), new Vector2f(100, 20),
                         () -> {
                             HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                         },
-                        new TextWidget("CONTINUE", new Vector3f()
-                        )
+                        new TextWidget("CONTINUE", new Vector3f(), 5)
                 )
         ));
     }

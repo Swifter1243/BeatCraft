@@ -51,6 +51,7 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -131,7 +132,14 @@ public class GameLogicHandler {
 
     public static void update(double deltaTime) {
         if (FPFC) {
-
+            assert MinecraftClient.getInstance().player != null;
+            Vector3f pos = MinecraftClient.getInstance().player.getPos().toVector3f().add(MinecraftClient.getInstance().player.getEyePos().toVector3f(), new Vector3f());
+            Quaternionf rot = new Quaternionf().rotateX((MinecraftClient.getInstance().player.getPitch() + 90) * MathHelper.RADIANS_PER_DEGREE).rotateY(MinecraftClient.getInstance().player.getHeadYaw() * MathHelper.RADIANS_PER_DEGREE);
+            //Quaternionf rotation = new Quaternionf().rotateX(90 * MathHelper.RADIANS_PER_DEGREE).normalize().add(rot);
+            rightSaberPos = new Vector3f(pos);
+            leftSaberPos = pos;
+            rightSaberRotation = new Quaternionf(rot);
+            leftSaberRotation = rot;
         }
         rightSwingState.updateSaber(rightSaberPos, rightSaberRotation, deltaTime);
         leftSwingState.updateSaber(leftSaberPos, leftSaberRotation, deltaTime);

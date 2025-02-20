@@ -27,6 +27,7 @@ public abstract class MenuPanel<T extends Menu> {
     protected Vector3f position = new Vector3f();
     protected Quaternionf orientation = new Quaternionf();
     protected Vector2f size = new Vector2f();
+    protected int backgroundColor = 0x90000000;
     protected T data;
     protected ArrayList<Widget> widgets = new ArrayList<>();
 
@@ -43,8 +44,10 @@ public abstract class MenuPanel<T extends Menu> {
         protected List<Widget> children = new ArrayList<>();
 
         protected void draw(DrawContext context) {
+            context.push();
             render(context);
             children.forEach(w -> w.draw(context));
+            context.pop();
         }
 
         protected abstract void render(DrawContext context);
@@ -63,7 +66,11 @@ public abstract class MenuPanel<T extends Menu> {
         }
 
         @Override
-        protected void render(DrawContext context) {}
+        protected void render(DrawContext context) {
+            context.translate(-position.x, -position.y, -position.z);
+
+            // Handle collision
+        }
     }
 
     protected static class TextWidget extends Widget {
@@ -82,10 +89,15 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
         }
 
+        protected TextWidget withColor(int color) {
+            this.color = color;
+            return this;
+        }
+
         @Override
         protected void render(DrawContext context) {
-            context.translate(position.x, position.y, position.z);
-            context.scale(scale, scale, scale);
+            context.translate(-position.x, -position.y, -position.z);
+            context.scale(-scale, -scale, -scale);
             context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
         }
     }
@@ -112,6 +124,7 @@ public abstract class MenuPanel<T extends Menu> {
     protected static class ToggleWidget extends Widget {
         protected List<Widget> childrenB;
         protected Consumer<Boolean> changeHandler;
+        protected boolean state = true;
 
         /// position and size refer to the hitbox size.
         /// childrenA are rendered while the toggle is in the `true` position
@@ -123,6 +136,49 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
             this.size = size;
             this.changeHandler = toggleHandler;
+        }
+
+        @Override
+        protected void draw(DrawContext context) {
+            context.push();
+            render(context);
+            if (state) {
+                children.forEach(w -> w.draw(context));
+            } else {
+                childrenB.forEach(w -> w.draw(context));
+            }
+            context.pop();
+        }
+
+        @Override
+        protected void render(DrawContext context) {
+
+        }
+    }
+
+
+    protected static class HoverWidget extends Widget {
+        protected List<Widget> childrenB;
+        protected boolean hovered = false;
+
+        /// childrenA are rendered when not hovered.
+        /// childrenB are rendered when hovered
+        protected HoverWidget(Vector3f position, List<Widget> childrenA, List<Widget> childrenB) {
+            this.position = position;
+            this.children = childrenA;
+            this.childrenB = childrenB;
+        }
+
+        @Override
+        protected void draw(DrawContext context) {
+            context.push();
+            render(context);
+            if (hovered) {
+                childrenB.forEach(w -> w.draw(context));
+            } else {
+                children.forEach(w -> w.draw(context));
+            }
+            context.pop();
         }
 
         @Override
@@ -147,7 +203,7 @@ public abstract class MenuPanel<T extends Menu> {
         context.scale(1/128f, 1/128f, 1/128f);
         context.push();
 
-        context.fill((int) (-size.x/2f), (int) (-size.y/2f), (int) (size.x/2f), (int) (size.y/2f), 0x90000000);
+        context.fill((int) (-size.x/2f), (int) (-size.y/2f), (int) (size.x/2f), (int) (size.y/2f), backgroundColor);
 
         widgets.forEach(w -> w.draw(context));
 

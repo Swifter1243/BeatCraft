@@ -85,6 +85,9 @@ public class HUDRenderer {
             }
             case Downloader -> {
             }
+            case EndScreen -> {
+                renderEndScreen(immediate);
+            }
         }
 
     }
@@ -152,6 +155,10 @@ public class HUDRenderer {
     private static void renderSongSelectHud(VertexConsumerProvider immediate) {
         songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
+    }
+
+    private static void renderEndScreen(VertexConsumerProvider immediate) {
+        endScreenPanel.render((VertexConsumerProvider.Immediate) immediate);
     }
 
 

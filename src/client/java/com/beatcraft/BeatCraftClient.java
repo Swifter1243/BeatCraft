@@ -380,6 +380,16 @@ public class BeatCraftClient implements ClientModInitializer {
 
     }
 
+    private int enableFPFC(CommandContext<FabricClientCommandSource> context) {
+        GameLogicHandler.FPFC = true;
+        return 1;
+    }
+
+    private int disableFPFC(CommandContext<FabricClientCommandSource> context) {
+        GameLogicHandler.FPFC = false;
+        return 1;
+    }
+
     private CompletableFuture<Suggestions> songDifficultySuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
         String songName = StringArgumentType.getString(context, "song");
         String diffSet = StringArgumentType.getString(context, "difficulty_set");
@@ -555,6 +565,10 @@ public class BeatCraftClient implements ClientModInitializer {
                                     )
                             )
                     )
+            );
+            dispatcher.register(literal("fpfc")
+                    .then(literal("enable").executes(this::enableFPFC))
+                    .then(literal("disable").executes(this::disableFPFC))
             );
         }));
     }
