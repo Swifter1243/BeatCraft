@@ -5,6 +5,8 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
 import org.joml.Vector3f;
 
+import java.util.List;
+
 public class SparkParticle implements Particle {
 
     public Vector3f position;
@@ -28,7 +30,9 @@ public class SparkParticle implements Particle {
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
         Vector3f normal = new Vector3f(position).sub(cameraPos).normalize();
 
-        Vector3f[] vertices = MathUtil.generateCircle(normal, size / 2f, 3, position.sub(cameraPos, new Vector3f()), 270, 0);
+        List<Vector3f[]> vertices = MathUtil.fillMesh(
+                MathUtil.generateCircle(normal, size / 2f, 3, position.sub(cameraPos, new Vector3f()), 270, 0)
+        );
         position.add(velocity);
         velocity.mul(decay);
         velocity.y -= 0.000002f;
@@ -41,8 +45,10 @@ public class SparkParticle implements Particle {
 
         int col = MathUtil.lerpColor(new Color(color), new Color(0x01FFFFFF), delta).toARGB();
 
-        for (Vector3f vert : vertices) {
-            buffer.vertex(vert.x, vert.y, vert.z).color(col);
+        for (Vector3f[] vert : vertices) {
+            buffer.vertex(vert[0].x, vert[0].y, vert[0].z).color(col);
+            buffer.vertex(vert[1].x, vert[1].y, vert[1].z).color(col);
+            buffer.vertex(vert[2].x, vert[2].y, vert[2].z).color(col);
         }
 
     }

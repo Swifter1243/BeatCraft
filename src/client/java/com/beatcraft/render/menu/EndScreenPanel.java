@@ -2,7 +2,6 @@ package com.beatcraft.render.menu;
 
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.HUDRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -31,11 +30,21 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                 new TextWidget(String.valueOf(data.rank), new Vector3f(280, 50, -0.01f), 5),
                 new TextWidget("MAX COMBO " + data.maxCombo, new Vector3f(-280, 90, -0.01f), 1.5f),
                 new ButtonWidget(
-                        new Vector3f(0, 180, -0.01f), new Vector2f(100, 20),
+                        new Vector3f(0, 200, -0.01f), new Vector2f(250, 50),
                         () -> {
                             HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                         },
-                        new TextWidget("CONTINUE", new Vector3f(), 5)
+                        new HoverWidget(
+                                new Vector3f(),
+                                new Vector2f(250, 50),
+                                List.of(
+                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F222222, 0x22222222)
+                                ),
+                                List.of(
+                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F2260B0, 0x22226080)
+                                )
+                        ),
+                        new TextWidget("CONTINUE", new Vector3f(0, -20, 0), 5)
                 )
         ));
     }

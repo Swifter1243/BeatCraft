@@ -1,6 +1,7 @@
 package com.beatcraft.render;
 
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.NoteType;
@@ -14,6 +15,7 @@ import com.beatcraft.render.menu.EndScreenPanel;
 import com.beatcraft.render.menu.ModifierMenuPanel;
 import com.beatcraft.render.menu.SongSelectMenuPanel;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.MenuPointerParticle;
 import com.beatcraft.render.particle.ScoreDisplay;
 import com.beatcraft.utils.MathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -22,9 +24,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
+import net.minecraft.util.Pair;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector2f;
 
 import java.util.function.Function;
 
@@ -40,6 +45,7 @@ public class HUDRenderer {
 
     public static MenuScene scene = MenuScene.SongSelect;
     public static NoteType pointerSaber = NoteType.BLUE;
+    private static Vector3f pointerTarget = new Vector3f();
 
     private static boolean showHUD = true;
     private static boolean advancedHUD = true;
@@ -153,14 +159,62 @@ public class HUDRenderer {
     }
 
     private static void renderSongSelectHud(VertexConsumerProvider immediate) {
-        songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
-        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate);
+
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = songSelectMenuPanel.raycast(saberPos, saberRot);
+
+        Vector3f target = null;
+        Vector2f local = null;
+
+        if (pair != null) {
+            target = pair.getLeft();
+
+            spawnMenuPointerParticle(target, songSelectMenuPanel.getNormal());
+
+            local = pair.getRight();
+        }
+
+        songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            target = null;
+            local = null;
+        } else {
+            target = pair.getLeft();
+            spawnMenuPointerParticle(target, modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
     private static void renderEndScreen(VertexConsumerProvider immediate) {
-        endScreenPanel.render((VertexConsumerProvider.Immediate) immediate);
+
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = endScreenPanel.raycast(saberPos, saberRot);
+
+        Vector3f target = null;
+        Vector2f local = null;
+
+        if (pair != null) {
+            target = pair.getLeft();
+            spawnMenuPointerParticle(target, endScreenPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        endScreenPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
+    private static void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
+        //BeatCraft.LOGGER.info("Pointer at {} {}", position, normal);
+        BeatcraftParticleRenderer.addParticle(new MenuPointerParticle(position.add(normal.mul(0.01f, new Vector3f()), new Vector3f()), normal));
+    }
 
     private static void renderRank(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 

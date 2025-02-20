@@ -7,6 +7,7 @@ import org.joml.*;
 import org.joml.Math;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MathUtil {
@@ -181,6 +182,60 @@ public class MathUtil {
             Math.lerp(a.getBlue(), b.getBlue(), time),
             Math.lerp(a.getAlpha(), b.getAlpha(), time)
         );
+    }
+
+    public static Pair<Vector3f, Vector2f> raycastPlane(Vector3f raycastOrigin, Quaternionf raycastOrientation, Vector3f planeCenter, Quaternionf planeOrientation, Vector2f planeSize) {
+        Vector3f planeNormal = new Vector3f(0, 0, 1).rotate(planeOrientation);
+
+        Vector3f rayDirection = new Vector3f(0, 1, 0).rotate(raycastOrientation);
+
+        float denominator = rayDirection.dot(planeNormal);
+        if (Math.abs(denominator) < 0.000001) {
+            return null;
+        }
+
+        float t = planeCenter.sub(raycastOrigin, new Vector3f()).dot(planeNormal) / denominator;
+        if (t < 0) {
+            return null;
+        }
+
+        Vector3f intersection = new Vector3f(raycastOrigin).fma(t, rayDirection);
+
+        Vector3f localPoint = intersection.sub(planeCenter, new Vector3f()).rotate(new Quaternionf(planeOrientation).invert());
+
+        if (Math.abs(localPoint.x) > planeSize.x / 2 || Math.abs(localPoint.y) > planeSize.y / 2) {
+            return null;
+        }
+
+        return new Pair<>(intersection, new Vector2f(localPoint.x, localPoint.y));
+    }
+
+    public static boolean check2DPointCollision(Vector2f point, Vector2f center, Vector2f size) {
+        Vector2f minCorner = center.sub(size.mul(0.5f, new Vector2f()), new Vector2f());
+        Vector2f maxCorner = center.add(size.mul(0.5f, new Vector2f()), new Vector2f());
+
+        return (minCorner.x <= point.x && point.x <= maxCorner.x && minCorner.y <= point.y && point.y <= maxCorner.y);
+    }
+
+    /// Takes an array of vertices and generates a list of triangles that fills the closed loop formed by the vertices.
+    /// this method is super scuffed and makes really weird meshes so don't use for non-convex or non-flat shapes
+    public static List<Vector3f[]> fillMesh(Vector3f[] vertices) {
+        if (vertices.length < 3) {
+            return List.of();
+        }
+
+        ArrayList<Vector3f> points = new ArrayList<>(Arrays.stream(vertices).toList());
+
+        var p0 = points.removeFirst();
+        var p1 = points.removeFirst();
+
+        ArrayList<Vector3f[]> tris = new ArrayList<>();
+
+        for (Vector3f p2 : points) {
+            tris.add(new Vector3f[]{p0, p1, p2});
+            p1 = p2;
+        }
+        return tris;
     }
 
 }

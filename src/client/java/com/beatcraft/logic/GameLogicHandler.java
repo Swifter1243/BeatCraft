@@ -43,6 +43,7 @@ import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
@@ -130,11 +131,15 @@ public class GameLogicHandler {
         rightSaberRotation = rotation;
     }
 
-    public static void update(double deltaTime) {
+    public static void update(double deltaTime, float tickDelta) {
         if (FPFC) {
             assert MinecraftClient.getInstance().player != null;
-            Vector3f pos = MinecraftClient.getInstance().player.getPos().toVector3f().add(MinecraftClient.getInstance().player.getEyePos().toVector3f(), new Vector3f());
-            Quaternionf rot = new Quaternionf().rotateX((MinecraftClient.getInstance().player.getPitch() + 90) * MathHelper.RADIANS_PER_DEGREE).rotateY(MinecraftClient.getInstance().player.getHeadYaw() * MathHelper.RADIANS_PER_DEGREE);
+            Vector3f pos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
+            Quaternionf rot = new Quaternionf()
+                    .rotateY(-MinecraftClient.getInstance().player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
+                    .normalize()
+                    .rotateX((90 + MinecraftClient.getInstance().player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
+                    .normalize();
             //Quaternionf rotation = new Quaternionf().rotateX(90 * MathHelper.RADIANS_PER_DEGREE).normalize().add(rot);
             rightSaberPos = new Vector3f(pos);
             leftSaberPos = pos;

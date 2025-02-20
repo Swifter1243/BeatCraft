@@ -118,7 +118,7 @@ public class BeatmapPlayer {
         play(0);
     }
 
-    public static void onRender(MatrixStack matrices, Camera camera) {
+    public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         // Progress time
         long deltaNanoSeconds = getNanoDeltaTime();
 
@@ -137,8 +137,8 @@ public class BeatmapPlayer {
         // Render beatmap
         if (currentBeatmap != null) {
             currentBeatmap.render(matrices, camera);
-            GameLogicHandler.update((double) deltaNanoSeconds / 1_000_000_000d);
         }
+        GameLogicHandler.update((double) deltaNanoSeconds / 1_000_000_000d, tickDelta);
     }
 
     public static void setupDifficultyFromFile(String path) throws IOException {

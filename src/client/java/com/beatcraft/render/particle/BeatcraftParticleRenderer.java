@@ -80,7 +80,7 @@ public class BeatcraftParticleRenderer {
         float dt = (float) (t - lastUpdateTime);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         particles.forEach(p -> p.update(dt, buffer, cameraPos));

@@ -382,11 +382,13 @@ public class BeatCraftClient implements ClientModInitializer {
 
     private int enableFPFC(CommandContext<FabricClientCommandSource> context) {
         GameLogicHandler.FPFC = true;
+        context.getSource().sendFeedback(Text.of("Enabled FPFC"));
         return 1;
     }
 
     private int disableFPFC(CommandContext<FabricClientCommandSource> context) {
         GameLogicHandler.FPFC = false;
+        context.getSource().sendFeedback(Text.of("Disabled FPFC"));
         return 1;
     }
 

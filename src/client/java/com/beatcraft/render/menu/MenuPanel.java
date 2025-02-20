@@ -1,18 +1,15 @@
 package com.beatcraft.render.menu;
 
-import com.beatcraft.BeatCraft;
-import com.beatcraft.logic.GameLogicHandler;
+import blue.endless.jankson.annotation.Nullable;
 import com.beatcraft.menu.Menu;
-import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.DebugRenderer;
-import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -43,14 +40,15 @@ public abstract class MenuPanel<T extends Menu> {
         protected Vector2f size = new Vector2f();
         protected List<Widget> children = new ArrayList<>();
 
-        protected void draw(DrawContext context) {
+        protected void draw(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.push();
-            render(context);
-            children.forEach(w -> w.draw(context));
+            var p = pointerPosition == null ? null : new Vector2f(pointerPosition).sub(new Vector2f(position.x, position.y));
+            render(context, p);
+            children.forEach(w -> w.draw(context, p));
             context.pop();
         }
 
-        protected abstract void render(DrawContext context);
+        protected abstract void render(DrawContext context, @Nullable Vector2f pointerPosition);
     }
 
     // Widget definitions ----------------------------------------------------------
@@ -66,10 +64,13 @@ public abstract class MenuPanel<T extends Menu> {
         }
 
         @Override
-        protected void render(DrawContext context) {
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.translate(-position.x, -position.y, -position.z);
 
             // Handle collision
+            if (pointerPosition != null && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
+
+            }
         }
     }
 
@@ -95,10 +96,13 @@ public abstract class MenuPanel<T extends Menu> {
         }
 
         @Override
-        protected void render(DrawContext context) {
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.translate(-position.x, -position.y, -position.z);
             context.scale(-scale, -scale, -scale);
             context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+            if (pointerPosition != null) {
+                pointerPosition.mul(scale);
+            }
         }
     }
 
@@ -118,7 +122,7 @@ public abstract class MenuPanel<T extends Menu> {
         }
 
         @Override
-        protected void render(DrawContext context) {}
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {}
     }
 
     protected static class ToggleWidget extends Widget {
@@ -139,19 +143,20 @@ public abstract class MenuPanel<T extends Menu> {
         }
 
         @Override
-        protected void draw(DrawContext context) {
+        protected void draw(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.push();
-            render(context);
+            var p = pointerPosition == null ? null : new Vector2f(pointerPosition).sub(new Vector2f(position.x, position.y));
+            render(context, p);
             if (state) {
-                children.forEach(w -> w.draw(context));
+                children.forEach(w -> w.draw(context, p));
             } else {
-                childrenB.forEach(w -> w.draw(context));
+                childrenB.forEach(w -> w.draw(context, p));
             }
             context.pop();
         }
 
         @Override
-        protected void render(DrawContext context) {
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
 
         }
     }
@@ -163,34 +168,68 @@ public abstract class MenuPanel<T extends Menu> {
 
         /// childrenA are rendered when not hovered.
         /// childrenB are rendered when hovered
-        protected HoverWidget(Vector3f position, List<Widget> childrenA, List<Widget> childrenB) {
+        protected HoverWidget(Vector3f position, Vector2f size, List<Widget> childrenA, List<Widget> childrenB) {
             this.position = position;
+            this.size = size;
             this.children = childrenA;
             this.childrenB = childrenB;
         }
 
         @Override
-        protected void draw(DrawContext context) {
+        protected void draw(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.push();
-            render(context);
+            var p = pointerPosition == null ? null : new Vector2f(pointerPosition).sub(new Vector2f(position.x, position.y));
+            render(context, p);
             if (hovered) {
-                childrenB.forEach(w -> w.draw(context));
+                childrenB.forEach(w -> w.draw(context, p));
             } else {
-                children.forEach(w -> w.draw(context));
+                children.forEach(w -> w.draw(context, p));
             }
             context.pop();
         }
 
         @Override
-        protected void render(DrawContext context) {
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
 
+            // Handle collision
+            if (pointerPosition != null) {
+                hovered = MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size);
+            }
+        }
+    }
+
+    protected static class GradientWidget extends Widget {
+
+        private int col1;
+        private int col2;
+
+        protected GradientWidget(Vector3f position, Vector2f size, int col1, int col2) {
+            this.position = position;
+            this.size = size;
+            this.col1 = col1;
+            this.col2 = col2;
+        }
+
+        @Override
+        protected void render(DrawContext context, Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
+
+            context.fillGradient((int) -size.x/2, (int) -size.y/2, (int) size.x/2, (int) size.y/2, col1, col2);
         }
     }
 
     // End widget definitions ------------------------------------------------------
 
+    public Pair<Vector3f, Vector2f> raycast(Vector3f position, Quaternionf orientation) {
+        return MathUtil.raycastPlane(position, orientation, this.position, this.orientation, this.size.div(128, new Vector2f()));
+    }
 
-    public void render(VertexConsumerProvider.Immediate immediate) {
+    public Vector3f getNormal() {
+        return new Vector3f(0, 0, -1).rotate(orientation);
+    }
+
+    public void render(VertexConsumerProvider.Immediate immediate, @Nullable Vector2f pointerPosition) {
 
         DrawContext context = new DrawContext(MinecraftClient.getInstance(), immediate);
 
@@ -205,7 +244,7 @@ public abstract class MenuPanel<T extends Menu> {
 
         context.fill((int) (-size.x/2f), (int) (-size.y/2f), (int) (size.x/2f), (int) (size.y/2f), backgroundColor);
 
-        widgets.forEach(w -> w.draw(context));
+        widgets.forEach(w -> w.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f())));
 
         context.draw();
         context.pop();

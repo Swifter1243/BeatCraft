@@ -22,8 +22,8 @@ public class BeatcraftRenderer {
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<TriConsumer<BufferBuilder, BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
 
-    public static void onRender(MatrixStack matrices, Camera camera) {
-        BeatmapPlayer.onRender(matrices, camera);
+    public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
+        BeatmapPlayer.onRender(matrices, camera, tickDelta);
     }
 
     // lambdas are passed, in order, the triangle buffer and the quad buffer
