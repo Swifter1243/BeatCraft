@@ -2,6 +2,7 @@ package com.beatcraft.menu;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.data.menu.SongDownloader;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.File;
@@ -69,6 +70,8 @@ public class SongList {
             try {
                 SongData data = new SongData(songFolder.getAbsolutePath());
                 songs.add(data);
+
+                //SongDownloader.convertAllToPng(songFolder.getAbsolutePath()); // this will convert existing beatmaps to only contain png images instead of jpeg/jpg
 
             } catch (IOException e) {
                 BeatCraft.LOGGER.error("Failed to load beatmap ", e);

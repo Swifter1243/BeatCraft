@@ -24,9 +24,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector2f;
@@ -40,23 +38,27 @@ public class HUDRenderer {
         SongSelect,
         MainMenu,
         Downloader,
-        EndScreen
+        EndScreen,
+        ConfirmSongDelete
     }
 
     public static MenuScene scene = MenuScene.SongSelect;
     public static NoteType pointerSaber = NoteType.BLUE;
     private static Vector3f pointerTarget = new Vector3f();
 
+    public static boolean triggerPressed = false;
+    public static boolean triggerWasPressed = false;
+
     private static boolean showHUD = true;
     private static boolean advancedHUD = true;
 
-    private static Vector3f leftHudPosition = new Vector3f(3, 1, 0);
-    private static Vector3f rightHudPosition = new Vector3f(-3, 1, 0);
-    private static Vector3f healthBarPosition = new Vector3f(0, -2, 0);
+    private static final Vector3f leftHudPosition = new Vector3f(3, 1, 0);
+    private static final Vector3f rightHudPosition = new Vector3f(-3, 1, 0);
+    private static final Vector3f healthBarPosition = new Vector3f(0, -2, 0);
 
-    private static Quaternionf leftHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
-    private static Quaternionf rightHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
-    private static Quaternionf healthBarOrientation = new Quaternionf().rotateZ((float) Math.PI);
+    private static final Quaternionf leftHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
+    private static final Quaternionf rightHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
+    private static final Quaternionf healthBarOrientation = new Quaternionf().rotateZ((float) Math.PI);
 
     private static final Function<Float, Float> opacityEasing = Easing.getEasing("easeInExpo");
 
@@ -64,7 +66,11 @@ public class HUDRenderer {
     public static final int TEXT_LIGHT = 255;
 
     public static final SongSelectMenu songSelectMenu = new SongSelectMenu();
-    private static final SongSelectMenuPanel songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
+    private static SongSelectMenuPanel songSelectMenuPanel = null;
+
+    public static void initSongSelectMenuPanel() {
+        songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
+    }
 
     public static final ModifierMenu modifierMenu = new ModifierMenu();
     private static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
@@ -94,8 +100,19 @@ public class HUDRenderer {
             case EndScreen -> {
                 renderEndScreen(immediate);
             }
+            case ConfirmSongDelete -> {
+
+            }
         }
 
+
+
+    }
+
+    public static boolean isTriggerPressed() {
+        boolean res = triggerPressed && !triggerWasPressed;
+        HUDRenderer.triggerWasPressed = HUDRenderer.triggerPressed;
+        return res;
     }
 
     public static void renderGameHud(VertexConsumerProvider immediate) {
@@ -159,19 +176,17 @@ public class HUDRenderer {
     }
 
     private static void renderSongSelectHud(VertexConsumerProvider immediate) {
+        if (songSelectMenuPanel == null) return;
 
         var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
         var pair = songSelectMenuPanel.raycast(saberPos, saberRot);
 
-        Vector3f target = null;
         Vector2f local = null;
 
         if (pair != null) {
-            target = pair.getLeft();
-
-            spawnMenuPointerParticle(target, songSelectMenuPanel.getNormal());
+            spawnMenuPointerParticle(pair.getLeft(), songSelectMenuPanel.getNormal());
 
             local = pair.getRight();
         }
@@ -181,11 +196,9 @@ public class HUDRenderer {
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
 
         if (pair == null) {
-            target = null;
             local = null;
         } else {
-            target = pair.getLeft();
-            spawnMenuPointerParticle(target, modifierMenuPanel.getNormal());
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
             local = pair.getRight();
         }
 
@@ -199,12 +212,10 @@ public class HUDRenderer {
 
         var pair = endScreenPanel.raycast(saberPos, saberRot);
 
-        Vector3f target = null;
         Vector2f local = null;
 
         if (pair != null) {
-            target = pair.getLeft();
-            spawnMenuPointerParticle(target, endScreenPanel.getNormal());
+            spawnMenuPointerParticle(pair.getLeft(), endScreenPanel.getNormal());
             local = pair.getRight();
         }
 

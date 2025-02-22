@@ -19,14 +19,19 @@ public class DynamicTexture {
     private final int width;
     private final int height;
 
+    private String filterString(String in) {
+        return in.replaceAll("[^a-z0-9/._-]", "_").replaceAll("(?i)\\.jpe?g$", ".png");
+    }
+
     public DynamicTexture(String path) throws IOException {
+        path = path.replaceAll("(?i)\\.jpe?g$", ".png");
         NativeImage img = NativeImage.read(new FileInputStream(path));
         net.minecraft.client.texture.DynamicTexture tex = new NativeImageBackedTexture(img);
 
         width = img.getWidth();
         height = img.getHeight();
 
-        textureID = Identifier.of(BeatCraft.MOD_ID, "dynamic/" + Path.of(path).getFileName().toString());
+        textureID = Identifier.of(BeatCraft.MOD_ID, "dynamic/" + filterString(path.toLowerCase()));
 
         MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
 
@@ -59,6 +64,14 @@ public class DynamicTexture {
     public void unloadTexture() {
         if (!isLoaded()) return;
         MinecraftClient.getInstance().getTextureManager().destroyTexture(this.textureID);
+        loadedTextures.remove(this.textureID);
+    }
+
+    public static void unloadTextureFromId(Identifier id) {
+        if (loadedTextures.contains(id)) {
+            MinecraftClient.getInstance().getTextureManager().destroyTexture(id);
+            loadedTextures.remove(id);
+        }
     }
 
 }

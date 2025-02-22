@@ -64,6 +64,10 @@ public class BeatmapAudio {
         }
     }
 
+    public void setVolume(float volume) {
+        AL10.alSourcef(source, AL10.AL_GAIN, volume);
+    }
+
     public void setPlaybackSpeed(float speed) {
         AL10.alSourcef(source, AL10.AL_PITCH, speed);
     }

@@ -2,8 +2,10 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
@@ -30,6 +32,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -77,6 +80,11 @@ public class BeatCraftClient implements ClientModInitializer {
 
         BeatCraftClientNetworking.init();
 
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            HUDRenderer.triggerPressed = false;
+        });
+
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (settingsKeyBind.wasPressed()) {
                 var screen = new SettingsScreen(null);
@@ -92,10 +100,21 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             songs.loadSongs();
+            HUDRenderer.initSongSelectMenuPanel();
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
+            playerConfig.writeToFile();
+        });
+
+        ClientPreAttackCallback.EVENT.register((client, player, c) -> {
+            if (GameLogicHandler.isTrackingClient() && player.getMainHandStack().isOf(ModItems.SABER_ITEM)) {
+                HUDRenderer.triggerPressed = true;
+                HUDRenderer.pointerSaber = NoteType.BLUE;
+                return true;
+            }
+            return false;
         });
 
     }

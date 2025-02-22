@@ -1,5 +1,8 @@
 package com.beatcraft.screen;
 
+import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.render.DebugRenderer;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
@@ -43,6 +46,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout flowLayout) {
+        int BUTTON_WIDTH = 75;
         flowLayout.surface(Surface.VANILLA_TRANSLUCENT);
         settingPage = Containers.verticalFlow(Sizing.fill(75), Sizing.fill());
         setPage();
@@ -50,17 +54,17 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
             Containers.verticalFlow(Sizing.fill(20), Sizing.fill(95))
                 .child(Components.spacer(15))
                 .child(
-                    Components.button(Text.translatable("gui.beatcraft.button.general_settings"), this::gotoGeneralPage)
+                    Components.button(Text.translatable("gui.beatcraft.button.general_settings"), this::gotoGeneralPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(5)).child(
-                    Components.button(Text.translatable("gui.beatcraft.button.quality_settings"), this::gotoQualityPage)
+                    Components.button(Text.translatable("gui.beatcraft.button.quality_settings"), this::gotoQualityPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(5)).child(
-                    Components.button(Text.translatable("gui.beatcraft.button.audio_settings"), this::gotoAudioPage)
+                    Components.button(Text.translatable("gui.beatcraft.button.audio_settings"), this::gotoAudioPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(5)).child(
-                    Components.button(Text.translatable("gui.beatcraft.button.controllers_settings"), this::gotoControllersPage)
+                    Components.button(Text.translatable("gui.beatcraft.button.controllers_settings"), this::gotoControllersPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(5)).child(
-                    Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage)
+                    Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(5)).child(
-                    Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader)
+                    Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 )
         ).child(settingPage);
     }
@@ -78,7 +82,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     private void setGeneralPage() {
 
-        var slider = Components.slider(Sizing.fill());
+        var slider = Components.discreteSlider(Sizing.fill(50), 1, 20).value(12d/20d).message(str -> Text.of(str + "0"));
         slider.onChanged().subscribe(this::updateTrailIntensity);
 
         settingPage.child(Components.spacer(10)).child(
@@ -99,7 +103,20 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private void setAudioPage() {
+        var slider = Components.discreteSlider(Sizing.fill(50), 1, 100).value(BeatCraftClient.playerConfig.getVolume()).message(str -> Text.of(str + "%"));
+        slider.onChanged().subscribe(this::updateVolume);
 
+        settingPage.child(Components.spacer(10)).child(
+            Containers.grid(Sizing.fill(90), Sizing.content(), 1, 2)
+                .child(
+                    Components.label(Text.translatable("setting.beatcraft.audio.volume"))
+                        .lineHeight(15),
+                    0, 0
+                ).child(
+                    slider,
+                    0, 1
+                )
+        );
     }
 
     private void setControllersPage() {
@@ -140,7 +157,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 Components.label(Text.translatable(translatable)).lineHeight(15),
                 0, 0
             ).child(
-                Components.button(getToggleText(state), onClick),
+                Components.button(getToggleText(state), onClick).sizing(Sizing.fixed(30), Sizing.content()),
                 0, 1
             );
     }
@@ -180,6 +197,11 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     }
 
+    private void updateVolume(double value) {
+        BeatCraftClient.playerConfig.setVolume((float) value / 100f);
+        BeatmapAudioPlayer.beatmapAudio.setVolume((float) value / 100f);
+    }
+
     private void toggleMainDebugRenderer(ButtonComponent button) {
         DebugRenderer.doDebugRendering = !DebugRenderer.doDebugRendering;
         button.setMessage(getToggleText(DebugRenderer.doDebugRendering));
@@ -210,6 +232,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     public void close() {
+        BeatCraftClient.playerConfig.writeToFile();
         client.setScreen(parent);
     }
 }

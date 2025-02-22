@@ -9,6 +9,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -228,6 +231,9 @@ public class SongDownloader {
         }
         try {
             Files.deleteIfExists(Path.of(source));
+
+            convertAllToPng(destination);
+
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to remove temporary zip!", e);
         }
@@ -372,6 +378,46 @@ public class SongDownloader {
 
     }
 
+    public static void convertToPng(File inputFile, File outputFile) throws IOException {
+        BufferedImage originalImage = ImageIO.read(inputFile);
+        if (originalImage == null) {
+            throw new IOException("Invalid image file: " + inputFile.getAbsolutePath());
+        }
 
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+
+        BufferedImage convertedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = convertedImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(originalImage, 0, 0, width, height, null);
+        g2d.dispose();
+
+        ImageIO.write(convertedImage, "png", outputFile);
+
+        Files.deleteIfExists(inputFile.toPath());
+    }
+
+    public static void convertAllToPng(String folder) {
+        File dir = new File(folder);
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Invalid directory: " + folder);
+            return;
+        }
+
+        File[] files = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg"));
+        if (files == null) return;
+
+        for (File file : files) {
+            String outputFileName = file.getAbsolutePath().replaceAll("(?i)\\.jpe?g$", ".png");
+            File outputFile = new File(outputFileName);
+
+            try {
+                convertToPng(file, outputFile);
+            } catch (IOException e) {
+                BeatCraft.LOGGER.error("Failed to convert image to png '{}'", file.getName(), e);
+            }
+        }
+    }
 
 }

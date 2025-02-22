@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SongData {
@@ -39,6 +40,7 @@ public class SongData {
     private String title;
     private String subtitle;
     private String author;
+    private ArrayList<String> mappers = new ArrayList<>();
     private float bpm;
     private float length;
     private String uid = null;
@@ -55,7 +57,7 @@ public class SongData {
     //      "Expert+": "ExpertPlusStandard.dat"
     //    }
     // }
-    private final HashMap<String, HashMap<String, BeatmapInfo>> beatmaps = new HashMap<>();
+    private final LinkedHashMap<String, LinkedHashMap<String, BeatmapInfo>> beatmaps = new LinkedHashMap<>();
 
     public SongData(String songFolder) throws IOException {
         File folder = new File(songFolder);
@@ -80,11 +82,11 @@ public class SongData {
         JsonObject json = JsonParser.parseString(rawInfo).getAsJsonObject();
 
         if (json.has("_version")) {
-            loadV2(json);
+            loadV2(json, folder.toPath());
         } else {
             loadV4(json, folder.toPath());
         }
-
+        this.mappers = new ArrayList<>(this.mappers.stream().distinct().toList());
     }
 
     private static @Nullable File getFile(String songFolder, File folder) throws FileNotFoundException {
@@ -107,7 +109,7 @@ public class SongData {
         return infoFile;
     }
 
-    private void loadV2(JsonObject json) {
+    private void loadV2(JsonObject json, Path folder) {
 
         title = json.get("_songName").getAsString();
         subtitle = JsonUtil.getOrDefault(json, "_songSubName", JsonElement::getAsString, "");
@@ -119,9 +121,9 @@ public class SongData {
         previewStartTime = json.get("_previewStartTime").getAsFloat();
         previewDuration = json.get("_previewDuration").getAsFloat();
 
-        previewFilename = json.get("_songFilename").getAsString();
+        previewFilename = folder.toAbsolutePath() + "/" + json.get("_songFilename").getAsString();
 
-        coverImageFilename = json.get("_coverImageFilename").getAsString();
+        coverImageFilename = folder.toAbsolutePath() + "/" + json.get("_coverImageFilename").getAsString();
 
         length = 0; // get from song file itself?
 
@@ -132,14 +134,23 @@ public class SongData {
 
             String setName = set.get("_beatmapCharacteristicName").getAsString();
 
-            beatmaps.put(setName, new HashMap<>());
+            beatmaps.put(setName, new LinkedHashMap<>());
 
             JsonArray difficulties = set.getAsJsonArray("_difficultyBeatmaps");
 
             difficulties.forEach(o -> {
                 JsonObject obj = o.getAsJsonObject();
-                String diff = obj.get("_difficulty").getAsString();
+                String diff = obj.get("_difficulty").getAsString().replace("ExpertPlus", "Expert+");
                 String fileName = obj.get("_beatmapFilename").getAsString();
+
+                if (obj.has("_customData")) {
+                    JsonObject cd = obj.getAsJsonObject("_customData");
+                    if (cd.has("_difficultyLabel")) {
+                        diff = cd.get("_difficultyLabel").getAsString();
+                    }
+                }
+
+                mappers.add(mapper);
 
                 BeatmapInfo info = new BeatmapInfo(this, fileName, fileName, List.of(mapper), List.of(mapper));
 
@@ -175,8 +186,8 @@ public class SongData {
 
         bpm = audioData.get("bpm").getAsFloat();
 
-        previewFilename = json.get("songPreviewFilename").getAsString();
-        coverImageFilename = json.get("coverImageFilename").getAsString();
+        previewFilename = folder.toAbsolutePath() + "/" + json.get("songPreviewFilename").getAsString();
+        coverImageFilename = folder.toAbsolutePath() + "/" + json.get("coverImageFilename").getAsString();
 
         previewStartTime = audioData.get("previewStartTime").getAsFloat();
         previewDuration = audioData.get("previewDuration").getAsFloat();
@@ -201,16 +212,18 @@ public class SongData {
             rawMappers.forEach(m -> mappers.add(m.getAsString()));
             rawLighters.forEach(l -> lighters.add(l.getAsString()));
 
+            this.mappers.addAll(mappers);
+            this.mappers.addAll(lighters);
+
             BeatmapInfo info = new BeatmapInfo(this, mapFile, lightFile, mappers, lighters);
 
             if (!beatmaps.containsKey(set)) {
-                beatmaps.put(set, new HashMap<>());
+                beatmaps.put(set, new LinkedHashMap<>());
             }
 
             beatmaps.get(set).put(diff, info);
 
         });
-
     }
 
 
@@ -228,6 +241,10 @@ public class SongData {
 
     public String getAuthor() {
         return author;
+    }
+
+    public List<String> getMappers() {
+        return mappers;
     }
 
     public float getLength() {

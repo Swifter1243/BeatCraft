@@ -2,6 +2,7 @@ package com.beatcraft.render.menu;
 
 import blue.endless.jankson.annotation.Nullable;
 import com.beatcraft.menu.Menu;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
@@ -17,6 +18,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public abstract class MenuPanel<T extends Menu> {
@@ -38,7 +40,7 @@ public abstract class MenuPanel<T extends Menu> {
     protected abstract static class Widget {
         protected Vector3f position = new Vector3f();
         protected Vector2f size = new Vector2f();
-        protected List<Widget> children = new ArrayList<>();
+        protected ArrayList<Widget> children = new ArrayList<>();
 
         protected void draw(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.push();
@@ -60,7 +62,7 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
             this.size = size;
             this.onClickHandler = onClickHandler;
-            this.children = Arrays.stream(children).toList();
+            this.children = new ArrayList<>(Arrays.stream(children).toList());
         }
 
         @Override
@@ -69,7 +71,9 @@ public abstract class MenuPanel<T extends Menu> {
 
             // Handle collision
             if (pointerPosition != null && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
-
+                if (HUDRenderer.isTriggerPressed()) {
+                    onClickHandler.run();
+                }
             }
         }
     }
@@ -78,6 +82,8 @@ public abstract class MenuPanel<T extends Menu> {
         protected String text;
         protected float scale = 1;
         public int color = 0xFFFFFFFF;
+        private int alignment = 1;
+        private int wrapWidth = 0;
 
         protected TextWidget(String text, Vector3f position, float scale) {
             this.text = text;
@@ -90,8 +96,24 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
         }
 
+        protected TextWidget alignedLeft() {
+            alignment = 0;
+            return this;
+        }
+
+        protected TextWidget withWrapWidth(int width) {
+            wrapWidth = width;
+            alignment = -1;
+            return this;
+        }
+
         protected TextWidget withColor(int color) {
             this.color = color;
+            return this;
+        }
+
+        protected TextWidget withScale(float scale) {
+            this.scale = scale;
             return this;
         }
 
@@ -99,7 +121,13 @@ public abstract class MenuPanel<T extends Menu> {
         protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.translate(-position.x, -position.y, -position.z);
             context.scale(-scale, -scale, -scale);
-            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+            if (alignment == 0) {
+                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+            } else if (alignment == 1) {
+                context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+            } else if (alignment == -1) {
+                context.drawTextWrapped(MinecraftClient.getInstance().textRenderer, Text.of(text), -wrapWidth/2, 0, wrapWidth, color);
+            }
             if (pointerPosition != null) {
                 pointerPosition.mul(scale);
             }
@@ -109,10 +137,13 @@ public abstract class MenuPanel<T extends Menu> {
     protected static class TextureWidget extends Widget {
         protected Identifier texture = null;
         protected DynamicTexture dynamicTexture = null;
+        protected float scaleX = 1;
+        protected float scaleY = 1;
 
-        protected TextureWidget(Identifier texture, Vector3f position) {
+        protected TextureWidget(Identifier texture, Vector3f position, Vector2f size) {
             this.texture = texture;
             this.position = position;
+            this.size = size;
         }
 
         protected TextureWidget(DynamicTexture texture, Vector3f position) {
@@ -121,12 +152,28 @@ public abstract class MenuPanel<T extends Menu> {
             this.texture = texture.id();
         }
 
+        protected TextureWidget withScale(float scale) {
+            this.scaleX = scale;
+            this.scaleY = scale;
+            return this;
+        }
+
+        protected TextureWidget withScale(float scaleX, float scaleY) {
+            this.scaleX = scaleX;
+            this.scaleY = scaleY;
+            return this;
+        }
+
         @Override
-        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {}
+        protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
+            context.scale(-scaleX, -scaleY, -1);
+            context.drawTexture(this.texture, -(int) (this.size.x/2), -(int) (this.size.y/2), (int) this.size.x, (int) this.size.y, (int) this.size.x, (int) this.size.y, (int) this.size.x, (int) this.size.y);
+        }
     }
 
     protected static class ToggleWidget extends Widget {
-        protected List<Widget> childrenB;
+        protected ArrayList<Widget> childrenB;
         protected Consumer<Boolean> changeHandler;
         protected boolean state = true;
 
@@ -135,8 +182,8 @@ public abstract class MenuPanel<T extends Menu> {
         /// childrenB are rendered in the `false` position
         /// toggleHandler is called and passed the new toggle state when the toggle is clicked
         protected ToggleWidget(Vector3f position, Vector2f size, List<Widget> childrenA, List<Widget> childrenB, Consumer<Boolean> toggleHandler) {
-            this.children = childrenA;
-            this.childrenB = childrenB;
+            this.children = new ArrayList<>(childrenA);
+            this.childrenB = new ArrayList<>(childrenB);
             this.position = position;
             this.size = size;
             this.changeHandler = toggleHandler;
@@ -163,7 +210,7 @@ public abstract class MenuPanel<T extends Menu> {
 
 
     protected static class HoverWidget extends Widget {
-        protected List<Widget> childrenB;
+        protected ArrayList<Widget> childrenB;
         protected boolean hovered = false;
 
         /// childrenA are rendered when not hovered.
@@ -171,8 +218,8 @@ public abstract class MenuPanel<T extends Menu> {
         protected HoverWidget(Vector3f position, Vector2f size, List<Widget> childrenA, List<Widget> childrenB) {
             this.position = position;
             this.size = size;
-            this.children = childrenA;
-            this.childrenB = childrenB;
+            this.children = new ArrayList<>(childrenA);
+            this.childrenB = new ArrayList<>(childrenB);
         }
 
         @Override
@@ -201,14 +248,16 @@ public abstract class MenuPanel<T extends Menu> {
 
     protected static class GradientWidget extends Widget {
 
-        private int col1;
-        private int col2;
+        private final int col1;
+        private final int col2;
+        private final float angle;
 
-        protected GradientWidget(Vector3f position, Vector2f size, int col1, int col2) {
+        protected GradientWidget(Vector3f position, Vector2f size, int col1, int col2, float angle) {
             this.position = position;
             this.size = size;
             this.col1 = col1;
             this.col2 = col2;
+            this.angle = angle;
         }
 
         @Override
@@ -216,6 +265,44 @@ public abstract class MenuPanel<T extends Menu> {
             context.translate(-position.x, -position.y, -position.z);
 
             context.fillGradient((int) -size.x/2, (int) -size.y/2, (int) size.x/2, (int) size.y/2, col1, col2);
+        }
+    }
+
+    protected static class DynamicGradientWidget extends Widget {
+        private final Callable<Integer> col1;
+        private final Callable<Integer> col2;
+        private final float angle;
+
+        protected DynamicGradientWidget(Vector3f position, Vector2f size, Callable<Integer> col1, Callable<Integer> col2, float angle) {
+            this.position = position;
+            this.size = size;
+            this.col1 = col1;
+            this.col2 = col2;
+            this.angle = angle;
+        }
+
+        @Override
+        protected void render(DrawContext context, Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
+            try {
+                context.fillGradient((int) -size.x / 2, (int) -size.y / 2, (int) size.x / 2, (int) size.y / 2, col1.call(), col2.call());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected static class ContainerWidget extends Widget {
+
+        protected ContainerWidget(Vector3f position, Vector2f size, Widget... children) {
+            this.position = position;
+            this.size = size;
+            this.children = new ArrayList<>(Arrays.stream(children).toList());
+        }
+
+        @Override
+        protected void render(DrawContext context, Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
         }
     }
 

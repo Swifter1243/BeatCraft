@@ -7,6 +7,7 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.c2s.SongPauseC2SPayload;
 import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
+import com.beatcraft.render.HUDRenderer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
@@ -132,7 +133,9 @@ public class BeatmapPlayer {
         }
 
         // Handle Audio
-        BeatmapAudioPlayer.onFrame();
+        if (HUDRenderer.scene == HUDRenderer.MenuScene.InGame) {
+            BeatmapAudioPlayer.onFrame();
+        }
 
         // Render beatmap
         if (currentBeatmap != null) {

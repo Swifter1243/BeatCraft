@@ -72,6 +72,10 @@ public class PlayerConfig {
         }
     }
 
+    public void setVolume(float volume) {
+        this.audio_volume = volume;
+    }
+
     public float getVolume() {
         return this.audio_volume;
     }

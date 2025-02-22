@@ -38,10 +38,10 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                                 new Vector3f(),
                                 new Vector2f(250, 50),
                                 List.of(
-                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F222222, 0x22222222)
+                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F222222, 0x22222222, 0)
                                 ),
                                 List.of(
-                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F2260B0, 0x22226080)
+                                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(250, 50), 0x7F2260B0, 0x22226080, 0)
                                 )
                         ),
                         new TextWidget("CONTINUE", new Vector3f(0, -20, 0), 5)
