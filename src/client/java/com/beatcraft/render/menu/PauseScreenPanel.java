@@ -25,6 +25,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                     BeatmapPlayer.currentInfo = null;
                     BeatmapAudioPlayer.unload();
                     HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+                    BeatmapAudioPlayer.unmuteVanillaMusic();
                 },
                 new HoverWidget(new Vector3f(), new Vector2f(150, 50), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7F7F7F7F, 0x7F7F7F7F, 0)

@@ -266,6 +266,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
                         BeatmapPlayer.restart();
                         GameLogicHandler.reset();
+                        BeatmapAudioPlayer.muteVanillaMusic();
                         ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
 
                     } catch (IOException e) {

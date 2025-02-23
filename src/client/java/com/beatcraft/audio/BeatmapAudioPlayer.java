@@ -2,14 +2,25 @@ package com.beatcraft.audio;
 
 import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.sound.SoundCategory;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class BeatmapAudioPlayer {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
+    private static double currentMusicVolume = mc.options.getSoundVolume(SoundCategory.MUSIC);
     public static BeatmapAudio beatmapAudio = new BeatmapAudio();
     public static CompletableFuture<Void> loadRequest = null;
+
+    public static void muteVanillaMusic() {
+        currentMusicVolume = mc.options.getSoundVolume(SoundCategory.MUSIC);
+        mc.options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(0d);
+    }
+
+    public static void unmuteVanillaMusic() {
+        mc.options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
+    }
 
     public static void playAudioFromFile(String path) {
         unload();

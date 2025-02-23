@@ -109,6 +109,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
+            BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();
         });
 
