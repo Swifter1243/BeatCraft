@@ -43,5 +43,11 @@
   "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
   "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set",
 
-  "generator.beatcraft.beatcraft": "BeatCraft"
+  "generator.beatcraft.beatcraft": "BeatCraft",
+
+  "key.beatcraft.settings": "Open BeatCraft settings",
+  "key.beatcraft.song_search": "Open BeatSaver download page",
+  "key.beatcraft.pause_song": "Pause song",
+
+  "category.beatcraft.keybindings": "BeatCraft"
 }

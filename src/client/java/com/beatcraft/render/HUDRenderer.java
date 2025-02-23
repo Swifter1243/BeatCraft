@@ -11,9 +11,7 @@ import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.render.menu.EndScreenPanel;
-import com.beatcraft.render.menu.ModifierMenuPanel;
-import com.beatcraft.render.menu.SongSelectMenuPanel;
+import com.beatcraft.render.menu.*;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.MenuPointerParticle;
 import com.beatcraft.render.particle.ScoreDisplay;
@@ -39,7 +37,8 @@ public class HUDRenderer {
         MainMenu,
         Downloader,
         EndScreen,
-        ConfirmSongDelete
+        ConfirmSongDelete,
+        Paused
     }
 
     public static MenuScene scene = MenuScene.SongSelect;
@@ -66,7 +65,9 @@ public class HUDRenderer {
     public static final int TEXT_LIGHT = 255;
 
     public static final SongSelectMenu songSelectMenu = new SongSelectMenu();
-    private static SongSelectMenuPanel songSelectMenuPanel = null;
+    public static SongSelectMenuPanel songSelectMenuPanel = null;
+
+    public static final PauseScreenPanel pauseScreenPanel = new PauseScreenPanel();
 
     public static void initSongSelectMenuPanel() {
         songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
@@ -76,6 +77,8 @@ public class HUDRenderer {
     private static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
 
     public static final EndScreenPanel endScreenPanel = new EndScreenPanel(new EndScreenData(0, Rank.A, 0, 0, 0, 0));
+
+    public static ConfirmSongDeleteMenuPanel confirmSongDeleteMenuPanel = null;
 
     public static void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
         BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
@@ -101,11 +104,12 @@ public class HUDRenderer {
                 renderEndScreen(immediate);
             }
             case ConfirmSongDelete -> {
-
+                renderConfirmSongDelete(immediate);
+            }
+            case Paused -> {
+                renderPauseScreen(immediate);
             }
         }
-
-
 
     }
 
@@ -193,16 +197,16 @@ public class HUDRenderer {
 
         songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
-        pair = modifierMenuPanel.raycast(saberPos, saberRot);
-
-        if (pair == null) {
-            local = null;
-        } else {
-            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
-            local = pair.getRight();
-        }
-
-        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        //pair = modifierMenuPanel.raycast(saberPos, saberRot);
+        //
+        //if (pair == null) {
+        //    local = null;
+        //} else {
+        //    spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+        //    local = pair.getRight();
+        //}
+        //
+        //modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
     private static void renderEndScreen(VertexConsumerProvider immediate) {
@@ -220,6 +224,39 @@ public class HUDRenderer {
         }
 
         endScreenPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+    }
+
+    private static void renderConfirmSongDelete(VertexConsumerProvider immediate) {
+        if (confirmSongDeleteMenuPanel == null) return;
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = confirmSongDeleteMenuPanel.raycast(saberPos, saberRot);
+
+        Vector2f local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), confirmSongDeleteMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        confirmSongDeleteMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+    }
+
+    private static void renderPauseScreen(VertexConsumerProvider immediate) {
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = pauseScreenPanel.raycast(saberPos, saberRot);
+
+        Vector2f local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), pauseScreenPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        pauseScreenPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
     private static void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
@@ -345,8 +382,8 @@ public class HUDRenderer {
 
     }
 
-    private static void drawArc(Vector3f center, Vector3f[] innerArc, BufferBuilder buffer, Vector3f cameraPos, int color) {
-//        ArrayList<Vector3f[]> quads = new ArrayList<>();
+    public static void drawArc(Vector3f center, Vector3f[] innerArc, BufferBuilder buffer, int color) {
+        // ArrayList<Vector3f[]> quads = new ArrayList<>();
 
         for (int i = 0; i < innerArc.length-1; i++) {
             Vector3f a = innerArc[i];
@@ -398,13 +435,13 @@ public class HUDRenderer {
 
             Vector3f[] arcPoints = MathUtil.generateCircle(normal, radius, 2 + (int) (circleProgress * 20), center, 360*circleProgress, 180);
 
-            drawArc(center, arcPoints, buffer, cameraPos, 0xFFFFFFFF);
+            drawArc(center, arcPoints, buffer, 0xFFFFFFFF);
         }
 
         if (circleProgress < 1) {
             Vector3f[] arcPoints = MathUtil.generateCircle(normal, radius, 2 + (int) ((1-circleProgress) * 20), center, 360*(1-circleProgress), 180+360*circleProgress);
 
-            drawArc(center, arcPoints, buffer, cameraPos, 0x7F7F7F7F);
+            drawArc(center, arcPoints, buffer, 0x7F7F7F7F);
         }
 
     }

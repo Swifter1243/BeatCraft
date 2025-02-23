@@ -196,7 +196,7 @@ public class SongData {
             JsonObject obj = o.getAsJsonObject();
 
             String set = obj.get("characteristic").getAsString();
-            String diff = obj.get("difficulty").getAsString();
+            String diff = obj.get("difficulty").getAsString().replace("ExpertPlus", "Expert+");
 
             String mapFile = obj.get("beatmapDataFilename").getAsString();
             String lightFile = obj.get("lightshowDataFilename").getAsString();
@@ -281,6 +281,10 @@ public class SongData {
 
     public BeatmapInfo getBeatMapInfo(String difficultySet, String difficulty) {
         return beatmaps.get(difficultySet).get(difficulty);
+    }
+
+    public Path getSongFolder() {
+        return songFolder;
     }
 
 

@@ -8,6 +8,7 @@ import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
@@ -145,6 +146,7 @@ public abstract class Difficulty {
     }
 
     public void render(MatrixStack matrices, Camera camera) {
+        if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
         colorNotes.forEach(o -> o.render(matrices, camera));
         bombNotes.forEach(o -> o.render(matrices, camera));
         chainHeadNotes.forEach(o -> o.render(matrices, camera));

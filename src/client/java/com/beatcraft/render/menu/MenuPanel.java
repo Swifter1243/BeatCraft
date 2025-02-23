@@ -8,6 +8,8 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -72,6 +74,8 @@ public abstract class MenuPanel<T extends Menu> {
             // Handle collision
             if (pointerPosition != null && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
                 if (HUDRenderer.isTriggerPressed()) {
+                    assert MinecraftClient.getInstance().player != null;
+                    MinecraftClient.getInstance().player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 0.2f, 1);
                     onClickHandler.run();
                 }
             }

@@ -133,7 +133,7 @@ public class BeatmapPlayer {
         }
 
         // Handle Audio
-        if (HUDRenderer.scene == HUDRenderer.MenuScene.InGame) {
+        if (HUDRenderer.scene == HUDRenderer.MenuScene.InGame || HUDRenderer.scene == HUDRenderer.MenuScene.Paused) {
             BeatmapAudioPlayer.onFrame();
         }
 

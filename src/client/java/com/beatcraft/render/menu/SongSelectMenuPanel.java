@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.menu.ConfirmSongDeleteMenu;
 import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
 import com.beatcraft.render.HUDRenderer;
@@ -107,9 +108,11 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
         updateList();
     }
 
-
-
-    private void initLayout() {
+    public void initLayout() {
+        widgets.clear();
+        songDisplay.children.clear();
+        setDifficulties.children.clear();
+        difficultyStats.children.clear();
 
         widgets.addAll(List.of(
             new ButtonWidget(new Vector3f(-30, -200, 0.05f), new Vector2f(50, 50), this::scrollUp,
@@ -129,7 +132,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
         updateList();
     }
 
-    private void updateList() {
+    public void updateList() {
         int start = scrollIndex * SONGS_PER_PAGE;
         int end = Math.min(BeatCraftClient.songs.getSongs().size(), start+SONGS_PER_PAGE);
 
@@ -253,7 +256,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
         difficultyStats.children.add(
             new ButtonWidget(
                 new Vector3f(150, 200, 0),
-                new Vector2f(250, 50),
+                new Vector2f(130, 50),
                 () -> {
                     try {
                         song_play_request.cancel(true);
@@ -273,13 +276,13 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                     new Vector3f(),
                     new Vector2f(130, 50),
                     List.of(
-                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F2F70C0, 0x222F60A0, 0)
+                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F2F5080, 0x222D5090, 0)
                     ),
                     List.of(
-                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F2260B0, 0x22226080, 0)
+                        new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F4270E0, 0x224270C0, 0)
                     )
                 ),
-                new TextWidget("PLAY", new Vector3f(0, -8, 0)).withScale(3)
+                new TextWidget("PLAY", new Vector3f(0, -11, 0)).withScale(3)
             )
         );
 
@@ -360,7 +363,17 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             new TextWidget(data.getTitle(), new Vector3f(0, -175, 0)).withScale(3).alignedLeft(),
             new TextWidget(data.getAuthor(), new Vector3f(0, -145, 0)).withScale(2.5f).alignedLeft(),
             new TextWidget("["+String.join(", ", data.getMappers())+"]", new Vector3f(0, -115, 0)).withScale(2).alignedLeft().withColor(0xFF44CC22),
-            new ButtonWidget(new Vector3f(-150, 200, 0), new Vector2f(200, 50), getDeletionConfirm(data))
+            new ButtonWidget(new Vector3f(30, -35, 0), new Vector2f(60, 25), () -> {
+                HUDRenderer.confirmSongDeleteMenuPanel = new ConfirmSongDeleteMenuPanel(new ConfirmSongDeleteMenu(data));
+                HUDRenderer.scene = HUDRenderer.MenuScene.ConfirmSongDelete;
+            },
+                new HoverWidget(new Vector3f(), new Vector2f(60, 25), List.of(
+                    new GradientWidget(new Vector3f(0, 0, 0.05f), new Vector2f(60, 25), 0x7FAA1111, 0x7F881111, 0)
+                ), List.of(
+                    new GradientWidget(new Vector3f(0, 0, 0.05f), new Vector2f(60, 25), 0x7FCC2222, 0x7FAA2222, 0)
+                )),
+                new TextWidget("DELETE", new Vector3f(0, -6, 0.01f)).withScale(1.5f)
+            )
             // TODO: set, difficulty, play button, delete button, practice button, level stats (note count, wall count, etc...)
         ));
 
@@ -391,12 +404,6 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
         openSet(closestSelection, data);
 
-    }
-
-    private static Runnable getDeletionConfirm(SongData data) {
-        return () -> {
-
-        };
     }
 
 }
