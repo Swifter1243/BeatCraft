@@ -15,9 +15,9 @@ public class JsonUtil {
         return getVector3(array);
     }
     public static Vector3f getVector3(JsonArray array) {
-        float x = array.get(0).getAsFloat();
-        float y = array.get(1).getAsFloat();
-        float z = array.get(2).getAsFloat();
+        float x = getOrDefault(array, 0, JsonElement::getAsFloat, 0f);
+        float y = getOrDefault(array, 1, JsonElement::getAsFloat, 0f);
+        float z = getOrDefault(array, 2, JsonElement::getAsFloat, 0f);
         return new Vector3f(x, y, z);
     }
 
@@ -26,16 +26,24 @@ public class JsonUtil {
         return getVector4(array);
     }
     public static Vector4f getVector4(JsonArray array) {
-        float x = array.get(0).getAsFloat();
-        float y = array.get(1).getAsFloat();
-        float z = array.get(2).getAsFloat();
-        float w = array.get(3).getAsFloat();
+        float x = getOrDefault(array, 0, JsonElement::getAsFloat, 0f);
+        float y = getOrDefault(array, 1, JsonElement::getAsFloat, 0f);
+        float z = getOrDefault(array, 2, JsonElement::getAsFloat, 0f);
+        float w = getOrDefault(array, 3, JsonElement::getAsFloat, 0f);
         return new Vector4f(x, y, z, w);
     }
 
     public static<T> T getOrDefault(JsonObject json, String key, Function<JsonElement, T> getter, T fallback) {
         if (json.has(key)) {
             return getter.apply(json.get(key));
+        } else {
+            return fallback;
+        }
+    }
+
+    public static<T> T getOrDefault(JsonArray array, int index, Function<JsonElement, T> getter, T fallback) {
+        if (array.size() > index) {
+            return getter.apply(array.get(index));
         } else {
             return fallback;
         }
