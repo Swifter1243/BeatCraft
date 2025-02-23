@@ -8,16 +8,14 @@ import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.render.object.PhysicalBombNote;
-import com.beatcraft.render.object.PhysicalGameplayObject;
-import com.beatcraft.render.object.PhysicalColorNote;
+import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.object.*;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.Replayer;
 import com.google.gson.JsonArray;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
@@ -32,6 +30,10 @@ public abstract class Difficulty {
     private final TrackLibrary trackLibrary = new TrackLibrary();
     public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
     public final ArrayList<PhysicalBombNote> bombNotes = new ArrayList<>();
+    public final ArrayList<PhysicalChainNoteHead> chainHeadNotes = new ArrayList<>();
+    public final ArrayList<PhysicalChainNoteLink> chainLinkNotes = new ArrayList<>();
+    public final ArrayList<PhysicalObstacle> obstacles = new ArrayList<>();
+    public final ArrayList<PhysicalArc> arcs = new ArrayList<>();
     public final ArrayList<RotationEvent> rotationEvents = new ArrayList<>();
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
     public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
@@ -59,6 +61,10 @@ public abstract class Difficulty {
     private void sortObjectsByTime() {
         colorNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         bombNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        chainHeadNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        chainLinkNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        obstacles.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
+        arcs.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         rotationEvents.sort(this::compareObjects);
         animateTracks.sort(this::compareObjects);
         assignPathAnimations.sort(this::compareObjects);
@@ -68,6 +74,10 @@ public abstract class Difficulty {
         EventHandler<Float, RotationEvent> eventHandler = new RotationEventHandler(rotationEvents);
         applyRotationOnArray(eventHandler, colorNotes);
         applyRotationOnArray(eventHandler, bombNotes);
+        applyRotationOnArray(eventHandler, chainHeadNotes);
+        applyRotationOnArray(eventHandler, chainLinkNotes);
+        applyRotationOnArray(eventHandler, obstacles);
+        applyRotationOnArray(eventHandler, arcs);
     }
 
     private <T extends PhysicalGameplayObject<K>, K extends GameplayObject> void applyRotationOnArray(EventHandler<Float, RotationEvent> eventHandler, ArrayList<T> array) {
@@ -103,6 +113,8 @@ public abstract class Difficulty {
 
     private void finalizeBaseRotations() {
         colorNotes.forEach(PhysicalColorNote::finalizeBaseRotation);
+        chainHeadNotes.forEach(PhysicalChainNoteHead::finalizeBaseRotation);
+        chainLinkNotes.forEach(PhysicalChainNoteLink::finalizeBaseRotation);
     }
 
     private void setupAnimatedProperties() {
@@ -133,9 +145,14 @@ public abstract class Difficulty {
         return setDifficulty;
     }
 
-    public void render(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
-        colorNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
-        bombNotes.forEach(o -> o.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix));
+    public void render(MatrixStack matrices, Camera camera) {
+        if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
+        colorNotes.forEach(o -> o.render(matrices, camera));
+        bombNotes.forEach(o -> o.render(matrices, camera));
+        chainHeadNotes.forEach(o -> o.render(matrices, camera));
+        chainLinkNotes.forEach(o -> o.render(matrices, camera));
+        obstacles.forEach(o -> o.render(matrices, camera));
+        arcs.forEach(o -> o.render(matrices, camera));
     }
 
     public void seek(float beat) {
@@ -143,6 +160,12 @@ public abstract class Difficulty {
         parentHandler.seek(beat);
         colorNotes.forEach(o -> o.seek(beat));
         bombNotes.forEach(o -> o.seek(beat));
+        chainHeadNotes.forEach(o -> o.seek(beat));
+        chainLinkNotes.forEach(o -> o.seek(beat));
+        obstacles.forEach(o -> o.seek(beat));
+        arcs.forEach(o -> o.seek(beat));
+        PlayRecorder.seek(beat);
+        Replayer.seek(beat);
     }
 
     public void update(float beat) {
@@ -150,6 +173,12 @@ public abstract class Difficulty {
         parentHandler.update(beat);
         colorNotes.forEach(o -> o.update(beat));
         bombNotes.forEach(o -> o.update(beat));
+        chainHeadNotes.forEach(o -> o.update(beat));
+        chainLinkNotes.forEach(o -> o.update(beat));
+        obstacles.forEach(o -> o.update(beat));
+        arcs.forEach(o -> o.update(beat));
+        PlayRecorder.update(beat);
+        Replayer.update(beat);
     }
 
     public TrackLibrary getTrackLibrary() {

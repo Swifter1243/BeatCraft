@@ -2,13 +2,16 @@ package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
-import com.beatcraft.beatmap.data.Color;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 
-public class ColorNote extends GameplayObject {
+public class ColorNote extends GameplayObject implements ScorableObject {
     private float angleOffset;
     private CutDirection cutDirection;
     private NoteType noteType;
@@ -70,6 +73,23 @@ public class ColorNote extends GameplayObject {
         return this;
     }
 
+    @Override
+    public ColorNote loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV4(json, colorNoteData, difficulty);
+
+        int i = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+        JsonObject noteData = colorNoteData.get(i).getAsJsonObject();
+
+        angleOffset = JsonUtil.getOrDefault(noteData, "a", JsonElement::getAsInt, 0);
+        cutDirection = CutDirection.values()[JsonUtil.getOrDefault(noteData, "d", JsonElement::getAsInt, 0)];
+        noteType = NoteType.values()[JsonUtil.getOrDefault(noteData, "c", JsonElement::getAsInt, 0)];
+
+        applyColorScheme(difficulty.getSetDifficulty());
+
+        return this;
+    }
+
+
     public float getAngleOffset() {
         return angleOffset;
     }
@@ -92,5 +112,15 @@ public class ColorNote extends GameplayObject {
 
     public boolean isNoteGravityDisabled() {
         return disableNoteGravity;
+    }
+
+    @Override
+    public NoteType score$getNoteType() {
+        return getNoteType();
+    }
+
+    @Override
+    public CutDirection score$getCutDirection() {
+        return getCutDirection();
     }
 }

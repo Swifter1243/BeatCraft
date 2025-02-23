@@ -2,24 +2,143 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.beatmap.data.NoteType;
+import com.beatcraft.data.PlayerConfig;
+import com.beatcraft.data.menu.SongData;
+import com.beatcraft.items.ModItems;
+import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.menu.SongList;
+import com.beatcraft.networking.BeatCraftClientNetworking;
+import com.beatcraft.networking.c2s.MapSyncC2SPayload;
+import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.block.BlockRenderSettings;
+import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.Replayer;
+import com.beatcraft.screen.SettingsScreen;
+import com.beatcraft.screen.SongDownloaderScreen;
 import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec3d;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
+import org.joml.Quaternionf;
+import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class BeatCraftClient implements ClientModInitializer {
+
+    public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
+    public static final SongList songs = new SongList();
+
+    public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
+    public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
+
+    public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.beatcraft.keybindings"));
+
+    public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
+    public static final Quaternionf playerCameraRotation = new Quaternionf();
+
+    public static final Vec3d playerGlobalPosition = new Vec3d(0, 0, 0);
+    public static final Quaternionf playerGlobalRotation = new Quaternionf();
+
+    public static final Vec3d playerSaberPosition = new Vec3d(0, 0, 0);
+    public static final Quaternionf playerSaberRotation = new Quaternionf();
+
     @Override
     public void onInitializeClient() {
+
+        setupFiles();
+
         registerCommands();
+
+        BlockRenderSettings.init();
+        GeckolibRenderInit.init();
+
+        BeatCraftClientNetworking.init();
+
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            HUDRenderer.triggerPressed = false;
+        });
+
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (settingsKeyBind.wasPressed()) {
+                var screen = new SettingsScreen(null);
+                client.setScreen(screen);
+                while (settingsKeyBind.wasPressed());
+            } else if (songSearchKeybind.wasPressed()) {
+                var screen = new SongDownloaderScreen(null);
+                client.setScreen(screen);
+                while (songSearchKeybind.wasPressed());
+            } else if (pauseLevelKeybind.wasPressed()) {
+                HUDRenderer.scene = HUDRenderer.MenuScene.Paused;
+                BeatmapPlayer.pause();
+            }
+        });
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            songs.loadSongs();
+            HUDRenderer.initSongSelectMenuPanel();
+        });
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
+            DynamicTexture.unloadAllTextures();
+            playerConfig.writeToFile();
+        });
+
+        ClientPreAttackCallback.EVENT.register((client, player, c) -> {
+            if (GameLogicHandler.isTrackingClient() && player.getMainHandStack().isOf(ModItems.SABER_ITEM)) {
+                HUDRenderer.triggerPressed = true;
+                HUDRenderer.pointerSaber = NoteType.BLUE;
+                return true;
+            }
+            return false;
+        });
+
+    }
+
+    private void setupFiles() {
+        String runDirectory = MinecraftClient.getInstance().runDirectory.getAbsolutePath();
+        List<String> makeFolders = List.of(
+            runDirectory + "/beatmaps/",          // for beatmaps
+            runDirectory + "/beatcraft/",         // root directory for other data
+            runDirectory + "/beatcraft/replay/",  // replay files
+            runDirectory + "/beatcraft/temp/"     // for stuff like temporary images for song covers and audio previews
+        );
+
+        for (String folderPath : makeFolders) {
+            File folder = new File(folderPath);
+            if (!folder.exists()) {
+                var ignored = folder.mkdirs();
+            }
+        }
+
     }
 
     private int songPlay(CommandContext<FabricClientCommandSource> context) {
@@ -69,15 +188,43 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
-    private int songLoad(CommandContext<FabricClientCommandSource> context) {
+    private int songLoadFile(CommandContext<FabricClientCommandSource> context) {
         String path = StringArgumentType.getString(context, "path");
         path = trimPathQuotes(path);
+
+        Replayer.reset();
+
 
         if (handleDifficultySetup(context, path) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
+            GameLogicHandler.reset();
             return 1;
         } else {
+            return -1;
+        }
+    }
+
+    private int songList(CommandContext<FabricClientCommandSource> context) {
+
+
+        return 1;
+    }
+
+    private int songRecord(CommandContext<FabricClientCommandSource> context) {
+        PlayRecorder.outputFile = StringArgumentType.getString(context, "output_file");
+        Replayer.runReplay = false;
+        return 1;
+    }
+
+    private int songReplay(CommandContext<FabricClientCommandSource> context) {
+        String file = StringArgumentType.getString(context, "replay_file");
+        try {
+            Replayer.loadReplay(file);
+            return 1;
+        } catch (IOException e) {
+            context.getSource().sendError(Text.literal("Failed to load replay"));
+            BeatCraft.LOGGER.error("Failed to load replay", e);
             return -1;
         }
     }
@@ -91,16 +238,18 @@ public class BeatCraftClient implements ClientModInitializer {
         }
     }
 
-    private int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
+    public static int handleDifficultySetup(CommandContext<FabricClientCommandSource> context, String path) {
         try {
             BeatmapPlayer.setupDifficultyFromFile(path);
         } catch (UnrecognizedFormatException e) {
             context.getSource().sendError(Text.literal("That jawn is an unsupported version!"));
-            e.printStackTrace();
+            //e.printStackTrace();
+            BeatCraft.LOGGER.error("That map is an unsupported version! ", e);
             return -1;
         } catch (IOException e) {
             context.getSource().sendError(Text.literal("That path didn't exist or something!"));
-            e.printStackTrace();
+            //e.printStackTrace();
+            BeatCraft.LOGGER.error("File could not be found! ", e);
             return -1;
         }
 
@@ -117,42 +266,339 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
-    private void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) ->
-                dispatcher.register(literal("song")
-                        .then(literal("play")
-                                .executes(this::songPlay)
-                                .then(argument("beat", FloatArgumentType.floatArg(0))
-                                        .executes(this::songPlayBeat)
-                                )
-                        )
-                        .then(literal("pause")
-                                .executes(this::songPause)
-                        )
-                        .then(literal("restart")
-                                .executes(this::songRestart)
-                        )
-                        .then(literal("speed")
-                                .then(literal("reset")
-                                        .executes(this::songSpeedReset)
-                                )
-                                .then(argument("scalar", FloatArgumentType.floatArg(0.0001f, 5))
-                                        .executes(this::songSpeedScalar)
-                                )
-                        )
-                        .then(literal("unload")
-                                .executes(this::songUnload)
-                        )
-                        .then(literal("load")
-                                .then(argument("path", StringArgumentType.greedyString())
-                                        .executes(this::songLoad)
-                                )
-                        )
-                        .then(literal("scrub")
-                                .then(argument("beats", FloatArgumentType.floatArg())
-                                        .executes(this::songScrub)
-                                )
-                        )
-                )));
+    private int colorFromFloats(CommandContext<FabricClientCommandSource> context) {
+        float fr = FloatArgumentType.getFloat(context, "R");
+        float fg = FloatArgumentType.getFloat(context, "G");
+        float fb = FloatArgumentType.getFloat(context, "B");
+
+        int r = (int) (fr * 255);
+        int g = (int) (fg * 255);
+        int b = (int) (fb * 255);
+
+        int hex = r;
+        hex <<= 8;
+        hex += g;
+        hex <<= 8;
+        hex += b;
+
+        String hexStr = Integer.toHexString(hex);
+
+        context.getSource().sendFeedback(Text.literal(
+                String.format(
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                        r, g, b,
+                        fr, fg, fb,
+                        hex, hexStr
+                )
+        ));
+
+        return 1;
     }
+
+    private int colorFromIntegers(CommandContext<FabricClientCommandSource> context) {
+        int r = IntegerArgumentType.getInteger(context, "R");
+        int g = IntegerArgumentType.getInteger(context, "G");
+        int b = IntegerArgumentType.getInteger(context, "B");
+
+        float fr = r / 255.0f;
+        float fg = g / 255.0f;
+        float fb = b / 255.0f;
+
+        int hex = r;
+        hex <<= 8;
+        hex += g;
+        hex <<= 8;
+        hex += b;
+
+        String hexStr = Integer.toHexString(hex);
+
+        context.getSource().sendFeedback(Text.literal(
+                String.format(
+                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                        r, g, b,
+                        fr, fg, fb,
+                        hex, hexStr
+                )
+        ));
+
+        return 1;
+    }
+
+    private int colorFromHex(CommandContext<FabricClientCommandSource> context) {
+
+        String hexStr = StringArgumentType.getString(context, "hex_code");
+
+        try {
+            int hex = Integer.parseInt(hexStr, 16);
+
+            int r = (hex >> 16) & 0xFF;
+            int g = (hex >> 8) & 0xFF;
+            int b = hex & 0xFF;
+
+            float fr = r / 255.0f;
+            float fg = g / 255.0f;
+            float fb = b / 255.0f;
+
+            context.getSource().sendFeedback(Text.literal(
+                    String.format(
+                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                            r, g, b,
+                            fr, fg, fb,
+                            hex, hexStr
+                    )
+            ));
+
+        } catch (NumberFormatException e) {
+            context.getSource().sendError(Text.literal("Invalid hex: " + e.getMessage()));
+        }
+        return 1;
+    }
+
+    private int songLoad(CommandContext<FabricClientCommandSource> context) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = StringArgumentType.getString(context, "difficulty_set");
+        String diff = StringArgumentType.getString(context, "difficulty");
+
+        Replayer.reset();
+
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return -1;
+        }
+
+        SongData song = filtered.getFirst();
+
+        if (!song.getDifficultySets().contains(diffSet)) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return -1;
+        }
+
+        if (!song.getDifficulties(diffSet).contains(diff)) {
+            context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
+            return -1;
+        }
+
+        SongData.BeatmapInfo beatmapInfo = song.getBeatMapInfo(diffSet, diff);
+
+        if (PlayRecorder.outputFile != null) {
+            PlayRecorder.songName = songName;
+            PlayRecorder.difficultySet = diffSet;
+            PlayRecorder.difficulty = diff;
+        }
+
+        if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
+            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
+            BeatmapPlayer.restart();
+            GameLogicHandler.reset();
+            if (song.getId() != null) {
+                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff));
+            }
+            HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
+            return 1;
+        } else {
+            return -1;
+        }
+
+    }
+
+    private int enableFPFC(CommandContext<FabricClientCommandSource> context) {
+        GameLogicHandler.FPFC = true;
+        context.getSource().sendFeedback(Text.of("Enabled FPFC"));
+        return 1;
+    }
+
+    private int disableFPFC(CommandContext<FabricClientCommandSource> context) {
+        GameLogicHandler.FPFC = false;
+        context.getSource().sendFeedback(Text.of("Disabled FPFC"));
+        return 1;
+    }
+
+    private CompletableFuture<Suggestions> songDifficultySuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = StringArgumentType.getString(context, "difficulty_set");
+        String diffName = suggestionsBuilder.getRemaining();
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        SongData data = filtered.getFirst();
+        List<String> sets = data.getDifficultySets();
+        ArrayList<String> filteredSets = new ArrayList<>();
+
+        for (String set : sets) {
+            if (set.contains(diffSet)) {
+                filteredSets.add(set);
+            }
+        }
+
+        if (filteredSets.isEmpty()) {
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        String set = filteredSets.getFirst();
+
+        List<String> diffs = data.getDifficulties(set);
+        ArrayList<String> suggests = new ArrayList<>();
+        for (String diff : diffs) {
+            if (diff.contains(diffName)) {
+                suggests.add(diff.contains(" ") ? "\"" + diff + "\"" : diff);
+            }
+        }
+
+        if (suggests.isEmpty()) {
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        suggests.forEach(suggestionsBuilder::suggest);
+        return suggestionsBuilder.buildFuture();
+
+    }
+
+    private CompletableFuture<Suggestions> songDifficultySetSuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+        String songName = StringArgumentType.getString(context, "song");
+        String diffSet = suggestionsBuilder.getRemaining();
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        if (filtered.isEmpty()) {
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.song_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        SongData data = filtered.getFirst();
+        List<String> sets = data.getDifficultySets();
+        ArrayList<String> suggest = new ArrayList<>();
+
+        for (String set : sets) {
+            if (set.contains(diffSet)) {
+                suggest.add(set.contains(" ") ? "\"" + set + "\"" : set);
+            }
+        }
+
+        if (suggest.isEmpty()) {
+            //context.getSource().sendError(Text.translatable("command.beatcraft.error.difficulty_set_not_found"));
+            return suggestionsBuilder.buildFuture();
+        }
+
+        suggest.forEach(suggestionsBuilder::suggest);
+        return suggestionsBuilder.buildFuture();
+
+    }
+
+    private CompletableFuture<Suggestions> songSuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+
+        String songName = suggestionsBuilder.getRemaining();
+
+        List<SongData> filtered = songs.getFiltered(songName);
+
+        for (SongData song : filtered) {
+            suggestionsBuilder.suggest(song.getTitle().contains(" ") ? "\"" + song.getTitle() + "\"" : song.getTitle());
+        }
+
+        return suggestionsBuilder.buildFuture();
+    }
+
+    private void registerCommands() {
+        ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
+            dispatcher.register(literal("song")
+                    .then(literal("play")
+                            .executes(this::songPlay)
+                            .then(argument("beat", FloatArgumentType.floatArg(0))
+                                    .executes(this::songPlayBeat)
+                            )
+                    )
+                    .then(literal("pause")
+                            .executes(this::songPause)
+                    )
+                    .then(literal("restart")
+                            .executes(this::songRestart)
+                    )
+                    .then(literal("speed")
+                            .then(literal("reset")
+                                    .executes(this::songSpeedReset)
+                            )
+                            .then(argument("scalar", FloatArgumentType.floatArg(0.0001f, 5))
+                                    .executes(this::songSpeedScalar)
+                            )
+                    )
+                    .then(literal("unload")
+                            .executes(this::songUnload)
+                    )
+                    .then(literal("loadFile")
+                            .then(argument("path", StringArgumentType.greedyString())
+                                    .executes(this::songLoadFile)
+                            )
+                    )
+                    .then(literal("scrub")
+                            .then(argument("beats", FloatArgumentType.floatArg())
+                                    .executes(this::songScrub)
+                            )
+                    )
+                    .then(literal("list")
+                            .then(argument("filter", StringArgumentType.greedyString())
+                                .executes(this::songList)
+                            )
+                            .executes(this::songList)
+                    )
+                    .then(literal("load")
+                            .then(argument("song", StringArgumentType.string()).suggests(this::songSuggester)
+                                    .then(argument("difficulty_set", StringArgumentType.string()).suggests(this::songDifficultySetSuggester)
+                                            .then(argument("difficulty", StringArgumentType.string()).suggests(this::songDifficultySuggester)
+                                                    .executes(this::songLoad)
+                                            )
+                                    )
+                            )
+                    )
+                    .then(literal("record")
+                            .then(argument("output_file", StringArgumentType.string())
+                                    .executes(this::songRecord)
+                            )
+                    )
+                    .then(literal("replay")
+                            .then(argument("replay_file", StringArgumentType.string())
+                                    .executes(this::songReplay)
+                            )
+                    )
+            );
+            dispatcher.register(literal("color_helper")
+                    .then(literal("hex")
+                            .then(argument("hex_code", StringArgumentType.word())
+                                    .executes(this::colorFromHex)
+                            )
+                    )
+                    .then(literal("intRGB")
+                            .then(argument("R", IntegerArgumentType.integer(0, 255))
+                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
+                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                                                    .executes(this::colorFromIntegers)
+                                            )
+                                    )
+                            )
+                    )
+                    .then(literal("floatRGB")
+                            .then(argument("R", FloatArgumentType.floatArg(0, 1))
+                                    .then(argument("G", FloatArgumentType.floatArg(0, 1))
+                                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
+                                                    .executes(this::colorFromFloats)
+                                            )
+                                    )
+                            )
+                    )
+            );
+            dispatcher.register(literal("fpfc")
+                    .then(literal("enable").executes(this::enableFPFC))
+                    .then(literal("disable").executes(this::disableFPFC))
+            );
+        }));
+    }
+
+
+
+
 }

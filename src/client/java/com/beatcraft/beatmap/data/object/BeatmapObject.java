@@ -2,6 +2,8 @@ package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.IBeatmapData;
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public abstract class BeatmapObject implements IBeatmapData<BeatmapObject> {
@@ -15,7 +17,7 @@ public abstract class BeatmapObject implements IBeatmapData<BeatmapObject> {
 
     @Override
     public BeatmapObject loadV3(JsonObject json, Difficulty difficulty) {
-        this.beat = json.get("b").getAsFloat();
+        this.beat = JsonUtil.getOrDefault(json, "b", JsonElement::getAsFloat, 0f);
         return this;
     }
 

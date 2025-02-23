@@ -4,13 +4,14 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
-import com.beatcraft.utils.MathUtil;
+import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.networking.c2s.SongPauseC2SPayload;
+import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
+import com.beatcraft.render.HUDRenderer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,7 +29,8 @@ public class BeatmapPlayer {
 
     public static float getCurrentBeat() {
         if (currentInfo == null) return 0;
-        return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+        //return MathUtil.secondsToBeats(getCurrentSeconds(), currentInfo.getBpm());
+        return currentInfo.getBeat(getCurrentSeconds(), 1f);
     }
 
     public static float getCurrentSeconds() {
@@ -42,16 +44,17 @@ public class BeatmapPlayer {
     private static void setCurrentBeat(float beat) {
         if (currentInfo == null) return;
         currentBeatmap.seek(beat);
-        float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());
+        //float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());
+        float seconds = currentInfo.getTime(beat, 0);
         elapsedNanoTime = secondsToNano(seconds);
     }
 
     private static float nanoToSeconds(long nanoseconds) {
-        return nanoseconds / 1000000000F;
+        return nanoseconds / 1_000_000_000F;
     }
 
     private static long secondsToNano(float seconds) {
-        return (long)(seconds * 1000000000);
+        return (long)(seconds * 1_000_000_000);
     }
 
     private static void updateLastNanoTime() {
@@ -63,7 +66,7 @@ public class BeatmapPlayer {
         updateLastNanoTime();
 
         // Prevent lag spikes that are too big.
-        if (nanoDeltaTime > 1000000000) {
+        if (nanoDeltaTime > 1_000_000_000) {
             return 0;
         }
 
@@ -73,10 +76,18 @@ public class BeatmapPlayer {
     public static float getPlaybackSpeed() {
         return playbackSpeed;
     }
+
     public static void setPlaybackSpeed(float speed) {
+        setPlaybackSpeed(speed, false);
+    }
+
+    public static void setPlaybackSpeed(float speed, boolean skipPacketSend) {
         BeatmapAudioPlayer.beatmapAudio.setPlaybackSpeed(speed);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         playbackSpeed = speed;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SpeedSyncC2SPayload(speed));
+        }
     }
 
     public static boolean isPlaying() {
@@ -94,20 +105,27 @@ public class BeatmapPlayer {
     }
 
     public static void pause() {
+        pause(false);
+    }
+
+    public static void pause(boolean skipPacketSend) {
         isPlaying = false;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SongPauseC2SPayload());
+        }
     }
 
     public static void restart() {
         play(0);
     }
 
-    public static void onRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projectionMatrix) {
+    public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         // Progress time
         long deltaNanoSeconds = getNanoDeltaTime();
 
         boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.isReady();
         if (shouldMapPlay) {
-            elapsedNanoTime += deltaNanoSeconds * playbackSpeed;
+            elapsedNanoTime += (long) (deltaNanoSeconds * playbackSpeed);
 
             if (currentBeatmap != null) {
                 currentBeatmap.update(getCurrentBeat());
@@ -115,12 +133,15 @@ public class BeatmapPlayer {
         }
 
         // Handle Audio
-        BeatmapAudioPlayer.onFrame();
+        if (HUDRenderer.scene == HUDRenderer.MenuScene.InGame || HUDRenderer.scene == HUDRenderer.MenuScene.Paused) {
+            BeatmapAudioPlayer.onFrame();
+        }
 
         // Render beatmap
         if (currentBeatmap != null) {
-            currentBeatmap.render(matrices, tickDelta, limitTime, renderBlockOutline, camera, gameRenderer, lightmapTextureManager, projectionMatrix);
+            currentBeatmap.render(matrices, camera);
         }
+        GameLogicHandler.update((double) deltaNanoSeconds / 1_000_000_000d, tickDelta);
     }
 
     public static void setupDifficultyFromFile(String path) throws IOException {
@@ -130,4 +151,13 @@ public class BeatmapPlayer {
         currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, info);
         currentInfo = info;
     }
+
+    public static void reset() {
+        currentInfo = null;
+        currentBeatmap = null;
+        isPlaying = false;
+        elapsedNanoTime = 0;
+        lastNanoTime = 0;
+    }
+
 }

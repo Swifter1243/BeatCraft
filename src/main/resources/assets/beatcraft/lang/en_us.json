@@ -1,0 +1,53 @@
+{
+  "screen.beatcraft.settings": "BeatCraft Settings...",
+  "screen.beatcraft.song_downloader": "BeatSaver",
+
+  "gui.beatcraft.button.general_settings": "General",
+  "gui.beatcraft.button.quality_settings": "Quality",
+  "gui.beatcraft.button.audio_settings": "Audio",
+  "gui.beatcraft.button.controllers_settings": "Controllers",
+  "gui.beatcraft.button.debug_settings": "Debug",
+  "gui.beatcraft.download_song": "Download",
+  "gui.beatcraft.button.page_error": "Only works if search bar has text in it",
+  "gui.beatcraft.option.on": "ON",
+  "gui.beatcraft.option.off": "OFF",
+
+  "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
+  "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics",
+  "setting.beatcraft.quality.burn_mark_trails": "Burn Mark Trails",
+  "setting.beatcraft.audio.volume": "Volume",
+  "setting.beatcraft.audio.ambient_volume_scale": "Ambient Volume Scale",
+  "setting.beatcraft.audio.latency": "Latency",
+  "setting.beatcraft.controllers.selected_profile": "Selected Profile",
+  "setting.beatcraft.controllers.profile.position": "Position",
+  "setting.beatcraft.controllers.profile.rotation": "Rotation",
+  "setting.beatcraft.debug.main_renderer": "Debug Rendering",
+  "setting.beatcraft.debug.saber_renderer": "Saber Debug Renderer",
+  "setting.beatcraft.debug.hitboxes": "Show Hitboxes",
+  "setting.beatcraft.debug.arc_lines": "Arc Debug Lines",
+
+  "itemGroup.beatcraft.group": "BeatCraft",
+
+  "item.beatcraft.saber": "Saber",
+
+  "block.beatcraft.black_mirror_block": "Black Mirror Block",
+
+  "block.beatcraft.filled_light_tile": "Full Light Tile",
+  "block.beatcraft.edge_light_tile": "Edge Light Tile",
+  "block.beatcraft.corner_light_tile": "Corner Light Tile",
+  "block.beatcraft.column_light_tile": "Column Light Tile",
+  "block.beatcraft.end_light_tile": "End Light Tile",
+  "block.beatcraft.stripe_light_tile": "Stripe Light Tile",
+
+  "command.beatcraft.error.song_not_found": "Song not found",
+  "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
+  "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set",
+
+  "generator.beatcraft.beatcraft": "BeatCraft",
+
+  "key.beatcraft.settings": "Open BeatCraft settings",
+  "key.beatcraft.song_search": "Open BeatSaver download page",
+  "key.beatcraft.pause_song": "Pause song",
+
+  "category.beatcraft.keybindings": "BeatCraft"
+}

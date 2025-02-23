@@ -5,7 +5,8 @@
 	"name": "BeatCraft",
 	"description": "Beat Saber in Minecraft.",
 	"authors": [
-		"Swifter"
+		"Swifter",
+		"Westbot"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -20,6 +21,12 @@
 		],
 		"client": [
 			"com.beatcraft.BeatCraftClient"
+		],
+		"preLaunch": [
+			"com.beatcraft.BeatCraftPreLaunch"
+		],
+		"fabric-datagen": [
+			"com.beatcraft.BeatCraftDataGenerator"
 		]
 	},
 	"mixins": [
@@ -29,11 +36,15 @@
 			"environment": "client"
 		}
 	],
+	"accessWidener": "beatcraft.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.20.4",
-		"java": ">=17",
-		"fabric-api": "*"
+		"fabricloader": ">=${loader_version}",
+		"minecraft": "~${minecraft_version}",
+		"fabric": "*",
+		"java": ">=21",
+		"fabric-api": "*",
+		"vivecraft": ">=${vivecraft_version}",
+		"geckolib": ">=${geckolib_version}"
 	},
 	"suggests": {
 		"another-mod": "*"

@@ -1,12 +1,9 @@
 package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
-import com.beatcraft.beatmap.Info;
-import com.beatcraft.beatmap.data.Color;
-import com.beatcraft.beatmap.data.CutDirection;
-import com.beatcraft.beatmap.data.NoteType;
+import com.beatcraft.data.types.Color;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.util.JsonHelper;
 
 public class BombNote extends GameplayObject {
     private Color color = new Color(0.2f, 0.2f, 0.2f);
@@ -37,6 +34,15 @@ public class BombNote extends GameplayObject {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());
             }
         }
+
+        return this;
+    }
+
+    @Override
+    public BombNote loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV4(json, colorNoteData, difficulty);
+
+        // customData?
 
         return this;
     }

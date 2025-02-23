@@ -4,12 +4,23 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.Debris;
+import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.mesh.MeshSlicer;
+import com.beatcraft.render.mesh.QuadMesh;
+import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Pair;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
 
@@ -18,14 +29,18 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     private static final float JUMP_SECONDS = 0.4f;
     protected static final float SIZE_SCALAR = 0.5f;
     protected static final Vector3f WORLD_OFFSET = new Vector3f(0, 0.8f, 1f);
-    private final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
+    protected final Quaternionf spawnQuaternion = SpawnQuaternionPool.getRandomQuaternion();
     protected Quaternionf baseRotation = new Quaternionf();
-    private Quaternionf laneRotation;
+    private Quaternionf laneRotation = new Quaternionf();
     private Quaternionf lookRotation = new Quaternionf();
+    private Vector3f worldPos = new Vector3f();
+    private Quaternionf worldRot = new Quaternionf();
     private Matrix4f matrix = new Matrix4f();
     private AnimationState animationState = new AnimationState();
     protected T data;
     protected boolean despawned = false;
+    protected GameLogicHandler.CutResult cutResult = GameLogicHandler.CutResult.noHit(null);
+    private NoteType contactColor = null;
 
     public PhysicalGameplayObject(T data) {
         this.data = data;
@@ -65,6 +80,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void seek(float beat) {
         despawned = false;
+        if (this instanceof PhysicalScorableObject scorable) {
+            cutResult = GameLogicHandler.CutResult.noHit(scorable);
+        }
         update(beat);
     }
 
@@ -81,6 +99,13 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             return;
         }
 
+        if (pastBeat(beat)) {
+            if (this instanceof PhysicalScorableObject scorable) {
+                scorable.score$getCutResult().setContactPosition(this.getWorldPos());
+                scorable.score$getCutResult().finalizeScore();
+            }
+        }
+
         float lifetime = getLifetime(beat);
         animationState = animatedPropertyState;
         animationState = AnimationState.combine(animationState, getObjectPathAnimationState(lifetime));
@@ -90,7 +115,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public boolean hasAppeared() {
-        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        //float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
+        float margin = BeatmapPlayer.currentInfo.getBeat(JUMP_SECONDS, 1f);
         return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
     }
 
@@ -274,6 +300,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return beat >= getDespawnBeat();
     }
 
+    protected boolean pastBeat(float beat) {
+        return beat > getData().getBeat()+0.25f;
+    }
+
     private void applyMatrixToRender(Matrix4f matrix, MatrixStack matrices) {
         Matrix3f normalMatrix = new Matrix3f();
         matrix.get3x3(normalMatrix);
@@ -305,8 +335,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         applyMatrixToRender(matrix, matrices);
 
+
+        worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos)
+            .add(mc.gameRenderer.getCamera().getPos().toVector3f());
+        worldRot = matrices.peek().getPositionMatrix().getUnnormalizedRotation(worldRot);
+
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
+
+
+        GameLogicHandler.checkNote(this);
 
         objectRender(matrices, vertexConsumer, animationState);
     }
@@ -324,4 +362,93 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public void setLaneRotation(Quaternionf laneRotation) {
         this.laneRotation = laneRotation;
     }
+
+    public float getCollisionDistance() {
+        return 0;
+    }
+
+    public Vector3f getWorldPos() {
+        return worldPos;
+    }
+
+    public Quaternionf getWorldRot() {
+        return worldRot;
+    }
+
+    public Hitbox getGoodCutBounds() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public Hitbox getBadCutBounds() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public Hitbox getAccurateHitbox() {
+        return new Hitbox(new Vector3f(), new Vector3f());
+    }
+
+    public void cutNote() {
+        this.despawn();
+    }
+
+    public GameLogicHandler.CutResult getCutResult() {
+        return cutResult;
+    }
+
+    public void setCutResult(GameLogicHandler.CutResult cutResult) {
+        this.cutResult = cutResult;
+    }
+
+    @Nullable
+    public NoteType getContactColor() {
+        return this.contactColor;
+    }
+
+    public void setContactColor(NoteType color) {
+        contactColor = color;
+    }
+
+    public QuadMesh getMesh() {
+        return null;
+    }
+
+    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
+        QuadMesh mesh = getMesh();
+        if (mesh == null) return;
+        Pair<TriangleMesh, TriangleMesh> meshes = MeshSlicer.sliceMesh(planeIncident, planeNormal, mesh);
+
+        if (color == NoteType.RED) {
+            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+        } else {
+            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+        }
+
+        meshes.getLeft().texture = MeshLoader.NOTE_TEXTURE;
+        meshes.getRight().texture = MeshLoader.NOTE_TEXTURE;
+
+        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
+
+        Debris left = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
+            meshes.getLeft()
+        );
+
+        Debris right = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
+            meshes.getRight()
+        );
+
+        BeatcraftParticleRenderer.addParticle(left);
+        BeatcraftParticleRenderer.addParticle(right);
+
+    }
+
 }

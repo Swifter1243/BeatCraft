@@ -1,10 +1,13 @@
 package com.beatcraft.audio;
 
+import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import net.minecraft.client.sound.OggAudioStream;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 
-import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -16,6 +19,7 @@ public class BeatmapAudio {
     private final int source;
     private boolean isPlaying = false;
     private boolean isLoaded = false;
+    private float songDuration = 0;
 
     public BeatmapAudio() {
         source = AL10.alGenSources();
@@ -56,8 +60,12 @@ public class BeatmapAudio {
 
     public void seek(float time) {
         if (isLoaded) {
-            AL11.alSourcef(source, AL11.AL_SEC_OFFSET, time);
+            AL11.alSourcef(source, AL11.AL_SEC_OFFSET, time + (BeatCraftClient.playerConfig.getLatency() / 1_000_000_000f));
         }
+    }
+
+    public void setVolume(float volume) {
+        AL10.alSourcef(source, AL10.AL_GAIN, volume);
     }
 
     public void setPlaybackSpeed(float speed) {
@@ -90,25 +98,39 @@ public class BeatmapAudio {
         throw new IllegalArgumentException("Invalid audio format: " + format);
     }
 
+    public static float getDuration(int bufferId) {
+        int size = AL10.alGetBufferi(bufferId, AL10.AL_SIZE);
+        int frequency = AL10.alGetBufferi(bufferId, AL10.AL_FREQUENCY);
+        int channels = AL10.alGetBufferi(bufferId, AL10.AL_CHANNELS);
+        int bits = AL10.alGetBufferi(bufferId, AL10.AL_BITS);
+        int bytesPerSample = bits / 8;
+        return (float) size / (frequency * channels * bytesPerSample);
+    }
+
     public void loadAudioFromFile(String path) throws IOException {
         closeBuffer();
 
         InputStream inputStream = Files.newInputStream(Path.of(path));
         OggAudioStream oggAudioStream = new OggAudioStream(inputStream);
-
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
 
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
 
-        ByteBuffer audioData = oggAudioStream.getBuffer();
+        ByteBuffer audioData = oggAudioStream.readAll();
         AL10.alBufferData(buffer, formatID, audioData, sampleRate);
         AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
+
+        songDuration = getDuration(buffer);
 
         isLoaded = true;
         inputStream.close();
         oggAudioStream.close();
+    }
+
+    public float getSongDuration() {
+        return songDuration;
     }
 
     public void closeBuffer() {

@@ -1,6 +1,5 @@
 package com.beatcraft.audio;
 
-import com.beatcraft.utils.MathUtil;
 import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 
@@ -18,6 +17,7 @@ public class BeatmapAudioPlayer {
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
                 beatmapAudio.loadAudioFromFile(path);
+                beatmapAudio.seek(0); // seek auto-compensates for the player's latency setting
                 beatmapAudio.play();
             } catch (IOException e) {
                 throw new RuntimeException("Something FUCKED happened.", e);
@@ -47,7 +47,8 @@ public class BeatmapAudioPlayer {
     }
 
     public static void goToBeat(float beat) {
-        float time = MathUtil.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
+        //float time = MathUtil.beatsToSeconds(beat, BeatmapPlayer.currentInfo.getBpm());
+        float time = BeatmapPlayer.currentInfo.getTime(beat, 1f);
         beatmapAudio.seek(time);
     }
 

@@ -71,7 +71,7 @@ public class Track {
             Matrix4f parentMatrix = new Matrix4f();
 
             if (parent.isParented()) {
-                Matrix4f parentParentMatrix = tryGetParentMatrix();
+                Matrix4f parentParentMatrix = parent.tryGetParentMatrix();
                 if (parentParentMatrix != null) {
                     parentMatrix.mul(parentParentMatrix);
                 }

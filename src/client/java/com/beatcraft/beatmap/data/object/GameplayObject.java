@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap.data.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.track.ObjectTrackContainer;
 import com.beatcraft.beatmap.Difficulty;
@@ -7,30 +8,23 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.NoteMath;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.JsonHelper;
 import org.joml.Quaternionf;
 
 public abstract class GameplayObject extends BeatmapObject {
-    private float njs;
-    private float offset;
-    private float x;
-    private float y;
+    protected float njs;
+    protected float offset;
+    protected float x;
+    protected float y;
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
     private final Animation pathAnimation = new Animation();
     private NoteMath.Jumps jumps;
 
-    @Override
-    public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
-        super.loadV2(json, difficulty);
-
-        x = json.get("_lineIndex").getAsInt();
-        y = json.get("_lineLayer").getAsInt();
-        offset =  difficulty.getSetDifficulty().getOffset();
-        njs =  difficulty.getSetDifficulty().getNjs();
-
+    public void loadCustomDataV2(JsonObject json, Difficulty difficulty) {
         if (json.has("_customData")) {
             JsonObject customData = json.getAsJsonObject("_customData");
 
@@ -59,21 +53,9 @@ public abstract class GameplayObject extends BeatmapObject {
                 pathAnimation.loadV2(customData.get("_animation").getAsJsonObject(), difficulty);
             }
         }
-
-        loadJumps(difficulty.getInfo());
-
-        return this;
     }
 
-    @Override
-    public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
-        super.loadV3(json, difficulty);
-
-        x = json.get("x").getAsInt();
-        y = json.get("y").getAsInt();
-        offset =  difficulty.getSetDifficulty().getOffset();
-        njs =  difficulty.getSetDifficulty().getNjs();
-
+    public void loadCustomDataV3(JsonObject json, Difficulty difficulty) {
         if (json.has("customData")) {
             JsonObject customData = json.getAsJsonObject("customData");
 
@@ -102,13 +84,64 @@ public abstract class GameplayObject extends BeatmapObject {
                 pathAnimation.loadV3(customData.get("animation").getAsJsonObject(), difficulty);
             }
         }
+    }
+
+    @Override
+    public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
+        super.loadV2(json, difficulty);
+
+        x = json.get("_lineIndex").getAsInt();
+        y = json.get("_lineLayer").getAsInt();
+        offset =  difficulty.getSetDifficulty().getOffset();
+        njs =  difficulty.getSetDifficulty().getNjs();
+
+        loadCustomDataV2(json, difficulty);
 
         loadJumps(difficulty.getInfo());
 
         return this;
     }
 
-    private void loadJumps(Info info) {
+    @Override
+    public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsInt, 0);
+        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
+        offset =  difficulty.getSetDifficulty().getOffset();
+        njs =  difficulty.getSetDifficulty().getNjs();
+
+        loadCustomDataV3(json, difficulty);
+
+        loadJumps(difficulty.getInfo());
+
+        return this;
+    }
+
+    public GameplayObject loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        int index = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+
+        offset =  difficulty.getSetDifficulty().getOffset();
+        njs =  difficulty.getSetDifficulty().getNjs();
+
+        // TODO: read customData
+
+        loadJumps(difficulty.getInfo());
+
+        if (index >= colorNoteData.size()) {
+            return this;
+        }
+
+        JsonObject noteData = colorNoteData.get(index).getAsJsonObject();
+        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsInt, 0);
+        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsInt, 0);
+
+        return this;
+    }
+
+    protected void loadJumps(Info info) {
         this.jumps = NoteMath.getJumps(njs, offset, info.getBpm());
     }
 

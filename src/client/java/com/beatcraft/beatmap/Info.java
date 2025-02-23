@@ -1,9 +1,14 @@
 package com.beatcraft.beatmap;
 
-import com.beatcraft.beatmap.data.Color;
+import com.beatcraft.audio.AudioInfo;
+import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.ColorScheme;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
@@ -12,8 +17,33 @@ public class Info {
     private String environmentName;
     private String songFilename;
     private String mapDirectory;
+    private AudioInfo audioInfo = null;
 
     private final HashMap<String, StyleSet> styleSets = new HashMap<>();
+
+    public float getBeat(float time, float speedModifier) {
+        if (audioInfo == null) {
+            return (bpm / 60f) * time * speedModifier;
+        } else {
+            return audioInfo.getBeat(time, speedModifier);
+        }
+    }
+
+    public float getTime(float beat, float speedModifier) {
+        if (audioInfo == null) {
+            return beat * (60 / bpm);
+        } else {
+            return audioInfo.getTime(beat, speedModifier);
+        }
+    }
+
+    public float getSongDuration() {
+        if (audioInfo == null) {
+            return BeatmapAudioPlayer.beatmapAudio.getSongDuration();
+        } else {
+            return audioInfo.getSongDuration();
+        }
+    }
 
     public float getBpm() {
         return bpm;
@@ -43,15 +73,26 @@ public class Info {
         return Path.of(this.getMapDirectory(), path).toString();
     }
 
-    public static Info from(JsonObject json, String path) {
+    public static Info from(JsonObject json, String path) throws IOException {
         Info info = new Info();
 
         info.mapDirectory = Path.of(path).getParent().toString();
 
-        info.bpm = json.get("_beatsPerMinute").getAsFloat();
-        info.environmentName = json.get("_environmentName").getAsString();
-        info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
+        if (json.has("audio")) {
+            JsonObject audio = json.get("audio").getAsJsonObject();
+            info.bpm = audio.get("bpm").getAsFloat();
+            info.environmentName = json.get("environmentNames").getAsJsonArray().get(0).getAsString();
+            info.songFilename = info.attachPathToMapDirectory(audio.get("songFilename").getAsString());
+            String audioDataFileName = audio.get("audioDataFilename").getAsString();
+            String audioDataRaw = Files.readString(Path.of(info.mapDirectory + "/" + audioDataFileName));
+            JsonObject audioJson = JsonParser.parseString(audioDataRaw).getAsJsonObject();
+            info.audioInfo = AudioInfo.loadV4(audioJson);
+        } else {
+            info.bpm = json.get("_beatsPerMinute").getAsFloat();
+            info.environmentName = json.get("_environmentName").getAsString();
+            info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
 
+        }
         return info;
     }
 
@@ -63,8 +104,17 @@ public class Info {
         public static SetDifficulty from(JsonObject json, Info info) {
             SetDifficulty setDifficulty = new SetDifficulty();
 
-            setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
-            setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+            if (json.has("noteJumpMovementSpeed")) {
+                setDifficulty.njs = json.get("noteJumpMovementSpeed").getAsFloat();
+                setDifficulty.offset = json.get("noteJumpStartBeatOffset").getAsFloat();
+            }
+            else {
+                setDifficulty.njs = json.get("_noteJumpMovementSpeed").getAsFloat();
+                setDifficulty.offset = json.get("_noteJumpStartBeatOffset").getAsFloat();
+                if (setDifficulty.njs == 0) { // This fixes some old maps such as OST 1 songs
+                    setDifficulty.njs = 16.0f;
+                }
+            }
             setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
 
             if (json.has("_customData")) {

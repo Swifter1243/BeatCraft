@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,23 +17,42 @@ public class BeatmapLoader {
 
         Info info = Info.from(json, path);
 
-        JsonArray styleSetsRaw = json.get("_difficultyBeatmapSets").getAsJsonArray();
-        styleSetsRaw.forEach(styleSetRaw -> {
-            JsonObject styleSetObject = styleSetRaw.getAsJsonObject();
-            Info.StyleSet styleSet = new Info.StyleSet();
+        if (json.has("difficultyBeatmaps")) {
+            JsonArray styleSetsRaw = json.get("difficultyBeatmaps").getAsJsonArray();
+            styleSetsRaw.forEach(styleSetRaw -> {
+                JsonObject styleSetObject = styleSetRaw.getAsJsonObject();
 
-            String styleKey = styleSetObject.get("_beatmapCharacteristicName").getAsString();
-            info.getStyleSets().put(styleKey, styleSet);
+                String styleKey = styleSetObject.get("characteristic").getAsString();
+                if (!info.getStyleSets().containsKey(styleKey)) {
+                    info.getStyleSets().put(styleKey, new Info.StyleSet());
+                }
 
-            JsonArray difficultiesRaw = styleSetObject.get("_difficultyBeatmaps").getAsJsonArray();
-            difficultiesRaw.forEach(difficultyRaw -> {
-                JsonObject difficultyObject = difficultyRaw.getAsJsonObject();
-                Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(difficultyObject, info);
-                String fileName = difficultyObject.get("_beatmapFilename").getAsString();
+                Info.StyleSet styleSet = info.getStyleSets().get(styleKey);
+
+                Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(styleSetObject, info);
+                String fileName = styleSetObject.get("beatmapDataFilename").getAsString();
                 styleSet.difficulties.put(fileName, setDifficulty);
-            });
-        });
 
+            });
+        }
+        else {
+            JsonArray styleSetsRaw = json.get("_difficultyBeatmapSets").getAsJsonArray();
+            styleSetsRaw.forEach(styleSetRaw -> {
+                JsonObject styleSetObject = styleSetRaw.getAsJsonObject();
+                Info.StyleSet styleSet = new Info.StyleSet();
+
+                String styleKey = styleSetObject.get("_beatmapCharacteristicName").getAsString();
+                info.getStyleSets().put(styleKey, styleSet);
+
+                JsonArray difficultiesRaw = styleSetObject.get("_difficultyBeatmaps").getAsJsonArray();
+                difficultiesRaw.forEach(difficultyRaw -> {
+                    JsonObject difficultyObject = difficultyRaw.getAsJsonObject();
+                    Info.SetDifficulty setDifficulty = Info.SetDifficulty.from(difficultyObject, info);
+                    String fileName = difficultyObject.get("_beatmapFilename").getAsString();
+                    styleSet.difficulties.put(fileName, setDifficulty);
+                });
+            });
+        }
         return info;
     }
 
@@ -81,7 +99,9 @@ public class BeatmapLoader {
             case 3 -> {
                 return new DifficultyV3(info, setDifficulty).load(json);
             }
-            case 4 -> throw new NotImplementedException("Beatmap V4 is not implemented.");
+            case 4 -> {
+                return new DifficultyV4(info, setDifficulty).load(json);
+            }
             default -> throw new UnrecognizedFormatException();
         }
     }

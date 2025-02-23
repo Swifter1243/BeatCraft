@@ -1,0 +1,3 @@
+accessWidener v2 named
+accessible field net/minecraft/client/render/Camera pos Lnet/minecraft/util/math/Vec3d;
+accessible field net/minecraft/client/render/Camera blockPos Lnet/minecraft/util/math/BlockPos$Mutable;
