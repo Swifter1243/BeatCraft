@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class EdgeLightTileBlock extends Block {
 
-    private static final DirectionProperty FACE = DirectionProperty.of("face");
-    private static final DirectionProperty ROTATION = DirectionProperty.of("rotation");
+    public static final DirectionProperty FACE = DirectionProperty.of("face");
+    public static final DirectionProperty ROTATION = DirectionProperty.of("rotation");
 
     public EdgeLightTileBlock() {
         super(Settings.create().noCollision().hardness(3f).resistance(5f).sounds(BlockSoundGroup.GLASS));

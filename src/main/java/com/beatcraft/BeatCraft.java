@@ -1,5 +1,7 @@
 package com.beatcraft;
 
+import com.beatcraft.blocks.CornerLightTileBlock;
+import com.beatcraft.blocks.EdgeLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.items.ModItems;
@@ -15,9 +17,15 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,11 +102,67 @@ public class BeatCraft implements ModInitializer {
 		return 1;
 	}
 
+	private static void fillBlocks(ServerWorld world, BlockPos minPos, BlockPos maxPos, BlockState blockState) {
+
+		for (int x = minPos.getX(); x <= maxPos.getX(); x++) {
+			for (int y = minPos.getY(); y <= maxPos.getY(); y++) {
+				for (int z = minPos.getZ(); z <= maxPos.getZ(); z++) {
+					world.setBlockState(new BlockPos(x, y, z), blockState);
+				}
+			}
+		}
+	}
+
+	private static int generatePlayArea(CommandContext<ServerCommandSource> context) {
+
+		ServerWorld world = context.getSource().getWorld();
+
+		// play area tower
+		fillBlocks(world, new BlockPos(-2, -64, -2), new BlockPos(1, -1, 1), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
+
+		// light rim on tower
+		world.setBlockState(new BlockPos(1, 0, -2), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.DOWN).with(CornerLightTileBlock.ROTATION, Direction.EAST));
+		world.setBlockState(new BlockPos(1, 0, -1), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.EAST));
+		world.setBlockState(new BlockPos(1, 0, 0), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.EAST));
+
+		world.setBlockState(new BlockPos(1, 0, 1), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.DOWN).with(CornerLightTileBlock.ROTATION, Direction.SOUTH));
+		world.setBlockState(new BlockPos(0, 0, 1), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.SOUTH));
+		world.setBlockState(new BlockPos(-1, 0, 1), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.SOUTH));
+
+		world.setBlockState(new BlockPos(-2, 0, 1), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.DOWN).with(CornerLightTileBlock.ROTATION, Direction.WEST));
+		world.setBlockState(new BlockPos(-2, 0, 0), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.WEST));
+		world.setBlockState(new BlockPos(-2, 0, -1), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.WEST));
+
+		world.setBlockState(new BlockPos(-2, 0, -2), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.DOWN).with(CornerLightTileBlock.ROTATION, Direction.NORTH));
+		world.setBlockState(new BlockPos(-1, 0, -2), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.NORTH));
+		world.setBlockState(new BlockPos(0, 0, -2), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.NORTH));
+
+		// runway
+		fillBlocks(world, new BlockPos(-2, -1, 8), new BlockPos(1, -1, 44), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
+
+		// runway lights
+		fillBlocks(world, new BlockPos(-2, 0, 8), new BlockPos(-2, 0, 39), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.WEST));
+		fillBlocks(world, new BlockPos(1, 0, 8), new BlockPos(1, 0, 39), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.EAST));
+
+		// runway front lights
+		world.setBlockState(new BlockPos(1, -1, 7), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.SOUTH).with(CornerLightTileBlock.ROTATION, Direction.EAST));
+		world.setBlockState(new BlockPos(0, -1, 7), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.SOUTH).with(EdgeLightTileBlock.ROTATION, Direction.DOWN));
+		world.setBlockState(new BlockPos(-1, -1, 7), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.SOUTH).with(EdgeLightTileBlock.ROTATION, Direction.DOWN));
+		world.setBlockState(new BlockPos(-2, -1, 7), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.SOUTH).with(CornerLightTileBlock.ROTATION, Direction.DOWN));
+
+		context.getSource().sendFeedback(() -> Text.of("Generated play area at world origin"), true);
+
+		return 1;
+	}
+
 
 	private void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(literal("sabers")
+			dispatcher.register(literal("sabers").requires(source -> source.hasPermissionLevel(2))
 					.executes(BeatCraft::giveSabers)
+			);
+			dispatcher.register(literal("playarea").requires(source -> source.hasPermissionLevel(2))
+					.executes(BeatCraft::generatePlayArea)
 			);
 		});
 	}
