@@ -92,7 +92,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
     public SongSelectMenuPanel(SongSelectMenu data) {
         super(data);
         backgroundColor = 0;
-        position.set(0, 2f, 6);
+        position.set(0.1f, 2f, 6);
         size.set(1000, 500);
 
         initLayout();

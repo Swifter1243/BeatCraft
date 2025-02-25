@@ -35,6 +35,7 @@ public class HUDRenderer {
         InGame,
         SongSelect,
         MainMenu,
+        Settings,
         Downloader,
         EndScreen,
         ConfirmSongDelete,
@@ -51,6 +52,7 @@ public class HUDRenderer {
     private static boolean showHUD = true;
     private static boolean advancedHUD = true;
 
+    // In-game UI positioning
     private static final Vector3f leftHudPosition = new Vector3f(3, 1, 0);
     private static final Vector3f rightHudPosition = new Vector3f(-3, 1, 0);
     private static final Vector3f healthBarPosition = new Vector3f(0, -2, 0);
@@ -64,14 +66,11 @@ public class HUDRenderer {
     public static final int TEXT_COLOR = 0xFFFFFFFF;
     public static final int TEXT_LIGHT = 255;
 
+    // Menu Panels
     public static final SongSelectMenu songSelectMenu = new SongSelectMenu();
     public static SongSelectMenuPanel songSelectMenuPanel = null;
 
     public static final PauseScreenPanel pauseScreenPanel = new PauseScreenPanel();
-
-    public static void initSongSelectMenuPanel() {
-        songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
-    }
 
     public static final ModifierMenu modifierMenu = new ModifierMenu();
     private static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
@@ -79,6 +78,14 @@ public class HUDRenderer {
     public static final EndScreenPanel endScreenPanel = new EndScreenPanel(new EndScreenData(0, Rank.A, 0, 0, 0, 0));
 
     public static ConfirmSongDeleteMenuPanel confirmSongDeleteMenuPanel = null;
+
+    private static final SongDownloaderMenuPanel songDownloaderMenuPanel = new SongDownloaderMenuPanel();
+
+    private static final SettingsMenuPanel settingsMenuPanel = new SettingsMenuPanel();
+
+    public static void initSongSelectMenuPanel() {
+        songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
+    }
 
     public static void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
         BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
@@ -96,9 +103,13 @@ public class HUDRenderer {
             case SongSelect -> {
                 renderSongSelectHud(immediate);
             }
+            case Settings -> {
+                renderSettings(immediate);
+            }
             case MainMenu -> {
             }
             case Downloader -> {
+                renderDownloader(immediate);
             }
             case EndScreen -> {
                 renderEndScreen(immediate);
@@ -197,16 +208,72 @@ public class HUDRenderer {
 
         songSelectMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
-        //pair = modifierMenuPanel.raycast(saberPos, saberRot);
-        //
-        //if (pair == null) {
-        //    local = null;
-        //} else {
-        //    spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
-        //    local = pair.getRight();
-        //}
-        //
-        //modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+    }
+
+    private static void renderSettings(VertexConsumerProvider immediate) {
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = settingsMenuPanel.raycast(saberPos, saberRot);
+
+        Vector2f local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), settingsMenuPanel.getNormal());
+
+            local = pair.getRight();
+        }
+
+        settingsMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+    }
+
+    private static void renderDownloader(VertexConsumerProvider immediate) {
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = songDownloaderMenuPanel.raycast(saberPos, saberRot);
+
+        Vector2f local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), songDownloaderMenuPanel.getNormal());
+
+            local = pair.getRight();
+        }
+
+        songDownloaderMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
     private static void renderEndScreen(VertexConsumerProvider immediate) {

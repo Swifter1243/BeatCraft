@@ -179,7 +179,7 @@ public abstract class MenuPanel<T extends Menu> {
     protected static class ToggleWidget extends Widget {
         protected ArrayList<Widget> childrenB;
         protected Consumer<Boolean> changeHandler;
-        protected boolean state = true;
+        protected boolean state = false;
 
         /// position and size refer to the hitbox size.
         /// childrenA are rendered while the toggle is in the `true` position
@@ -191,6 +191,12 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
             this.size = size;
             this.changeHandler = toggleHandler;
+        }
+
+        public void setState(boolean state) {
+            if (state == this.state) return;
+            this.state = state;
+            changeHandler.accept(state);
         }
 
         @Override
@@ -208,7 +214,17 @@ public abstract class MenuPanel<T extends Menu> {
 
         @Override
         protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
+            context.translate(-position.x, -position.y, -position.z);
 
+            // Handle collision
+            if (pointerPosition != null && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
+                if (HUDRenderer.isTriggerPressed()) {
+                    assert MinecraftClient.getInstance().player != null;
+                    MinecraftClient.getInstance().player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 0.2f, 1);
+                    state = !state;
+                    changeHandler.accept(state);
+                }
+            }
         }
     }
 
