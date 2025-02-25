@@ -75,7 +75,6 @@ dependencies {
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 
 	// BeatSaver
-	implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
 }

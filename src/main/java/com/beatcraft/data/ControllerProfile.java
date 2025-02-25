@@ -1,5 +1,6 @@
 package com.beatcraft.data;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -60,6 +61,38 @@ public class ControllerProfile {
 
         }
 
+    }
+
+    public void writeJson(JsonArray array) {
+        JsonObject json = new JsonObject();
+
+        var lc = new JsonObject();
+        lc.add("position", writeVector3f(leftTranslation));
+        lc.add("rotation", writeVector3f(leftRotation));
+
+        var rc = new JsonObject();
+        rc.add("position", writeVector3f(rightTranslation));
+        rc.add("rotation", writeVector3f(rightRotation));
+
+        json.add("leftController", lc);
+        json.add("rightController", rc);
+
+        array.add(json);
+
+    }
+
+    private JsonObject writeVector3f(Vector3f vector3f) {
+        JsonObject json = new JsonObject();
+        if (vector3f.x != 0) {
+            json.addProperty("x", vector3f.x);
+        }
+        if (vector3f.y != 0) {
+            json.addProperty("y", vector3f.y);
+        }
+        if (vector3f.z != 0) {
+            json.addProperty("z", vector3f.z);
+        }
+        return json;
     }
 
 

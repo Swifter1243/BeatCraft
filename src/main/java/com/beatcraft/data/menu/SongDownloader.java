@@ -5,9 +5,6 @@ import com.beatcraft.data.menu.song_preview.SongPreview;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,7 +13,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,7 +89,7 @@ public class SongDownloader {
         }
     }
 
-    private static final OkHttpClient httpClient = new OkHttpClient();
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
 
     private static final String LATEST_URL = "https://api.beatsaver.com/maps/latest";
     private static final String SEARCH_URL = "https://api.beatsaver.com/search/v1/";
@@ -130,16 +131,20 @@ public class SongDownloader {
     }
 
     private static void _downloadFromId(String id, String runDirectory, Runnable after) {
-        Request request = new Request.Builder().url(MAP_ID_URL + id).build();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(MAP_ID_URL + id))
+            .GET()
+            .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200 || response.body() == null) {
                 BeatCraft.LOGGER.error("Failed to download song '{}'", id);
                 return;
             }
 
-            String rawJson = response.body().string();
-
+            String rawJson = response.body();
             JsonObject responseJson = JsonParser.parseString(rawJson).getAsJsonObject();
 
             SongPreview preview = SongPreview.loadJson(responseJson);
@@ -154,10 +159,10 @@ public class SongDownloader {
                 BeatCraft.LOGGER.error("Something went wrong with processing downloaded song!");
             }
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             BeatCraft.LOGGER.error("Failed to download song '{}'", id, e);
+            Thread.currentThread().interrupt();
         }
-
     }
 
     private static String filterString(String in) {
@@ -171,28 +176,32 @@ public class SongDownloader {
 
     private static void _downloadSong(SongPreview preview, String runDirectory) {
         String url = preview.versions().getFirst().downloadURL();
+        String unzipTo = runDirectory + "/beatmaps/" + preview.id() + " (" + filterString(preview.metaData().songName() + " - " + preview.metaData().levelAuthorName()) + ")";
+        String path = unzipTo + ".zip";
 
-        String unzip_to = runDirectory + "/beatmaps/" + preview.id() + " (" + filterString(preview.metaData().songName() + " - " + preview.metaData().levelAuthorName()) + ")";
-        String path = unzip_to + ".zip";
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
 
-        Request request = new Request.Builder().url(url).build();
+        try {
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
-                BeatCraft.LOGGER.error("Failed to download song: {}", response);
+            if (response.statusCode() != 200 || response.body() == null) {
+                BeatCraft.LOGGER.error("Failed to download song: {}", response.statusCode());
                 return;
             }
 
             try (FileOutputStream outputStream = new FileOutputStream(path)) {
-                outputStream.write(response.body().bytes());
+                outputStream.write(response.body());
             }
 
-            unzip(path, unzip_to);
+            unzip(path, unzipTo);
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             BeatCraft.LOGGER.error("Failed to download song!", e);
+            Thread.currentThread().interrupt();
         }
-
     }
 
     private static void unzip(String source, String destination) {
@@ -279,41 +288,36 @@ public class SongDownloader {
 
         String searchQuery = SEARCH_URL + page +
             "?q=" + URLEncoder.encode(search, StandardCharsets.UTF_8) +
-            "&leaderboard=" + leaderBoardSort.val()
-            ;
+            "&leaderboard=" + leaderBoardSort.val();
 
         if (order.val() != null) {
             searchQuery += "&order=" + order.val();
         }
-
         if (noodle != null) {
             searchQuery += "&noodle=" + noodle;
         }
-
         if (chroma != null) {
             searchQuery += "&chroma=" + chroma;
         }
-
         if (verified != null) {
             searchQuery += "&verified=" + verified;
         }
 
-        Request searchRequest = new Request.Builder().url(searchQuery).build();
+        HttpRequest searchRequest = HttpRequest.newBuilder()
+            .uri(URI.create(searchQuery))
+            .GET()
+            .build();
 
-        try (Response response = httpClient.newCall(searchRequest).execute()) {
-            if (!response.isSuccessful()) {
+        try {
+            HttpResponse<String> response = httpClient.send(searchRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200 || response.body() == null) {
                 BeatCraft.LOGGER.error("Failed to find songs from BeatSaver!");
                 return;
             }
-            if (response.body() == null) {
-                BeatCraft.LOGGER.error("Failed to find songs from BeatSaver!");
-                return;
-            }
 
-            String rawJson = response.body().string();
-
+            String rawJson = response.body();
             JsonObject responseJson = JsonParser.parseString(rawJson).getAsJsonObject();
-
             JsonArray docs = responseJson.getAsJsonArray("docs");
 
             docs.forEach(rawSongJson -> {
@@ -323,14 +327,17 @@ public class SongDownloader {
             });
 
             listModifyLock.lock();
-            songPreviews.clear();
-            songPreviews.addAll(localPreviews);
-            listModifyLock.unlock();
+            try {
+                songPreviews.clear();
+                songPreviews.addAll(localPreviews);
+            } finally {
+                listModifyLock.unlock();
+            }
 
-        } catch (IOException e) {
-            BeatCraft.LOGGER.error("Failed to connect to beatsaver!", e);
+        } catch (IOException | InterruptedException e) {
+            BeatCraft.LOGGER.error("Failed to connect to BeatSaver!", e);
+            Thread.currentThread().interrupt();
         }
-
     }
 
     private static void loadLatest() {
@@ -348,22 +355,21 @@ public class SongDownloader {
             listQuery += "&automapper=" + automapper.valLatest();
         }
 
-        Request listRequest = new Request.Builder().url(listQuery).build();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(listQuery))
+            .GET()
+            .build();
 
-        try (Response response = httpClient.newCall(listRequest).execute()) {
-            if (!response.isSuccessful()) {
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200 || response.body() == null) {
                 BeatCraft.LOGGER.error("Failed to fetch songs from BeatSaver!");
                 return;
             }
-            if (response.body() == null) {
-                BeatCraft.LOGGER.error("Failed to fetch songs from BeatSaver!");
-                return;
-            }
 
-            String rawBody = response.body().string();
-
+            String rawBody = response.body();
             JsonObject responseJson = JsonParser.parseString(rawBody).getAsJsonObject();
-
             JsonArray docs = responseJson.getAsJsonArray("docs");
 
             docs.forEach(rawSongJson -> {
@@ -372,10 +378,10 @@ public class SongDownloader {
                 songPreviews.add(preview);
             });
 
-        } catch (IOException e) {
-            BeatCraft.LOGGER.error("Failed to connect to beatsaver!", e);
+        } catch (IOException | InterruptedException e) {
+            BeatCraft.LOGGER.error("Failed to connect to BeatSaver!", e);
+            Thread.currentThread().interrupt(); // Restore the interrupted status
         }
-
     }
 
     public static void convertToPng(File inputFile, File outputFile) throws IOException {

@@ -1,21 +1,23 @@
 package com.beatcraft.data.menu;
 
 import com.beatcraft.BeatCraft;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 
 public class FileDownloader {
 
-    private static final OkHttpClient httpClient = new OkHttpClient();
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
 
     public static void downloadCoverImage(String url, String outputFileName, Runnable after) {
         CompletableFuture.runAsync(() -> {
@@ -23,25 +25,32 @@ public class FileDownloader {
         }).thenRun(after);
     }
     private static void _downloadCoverImage(String url, String outputFileName) {
-        Request request = new Request.Builder().url(url).build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .GET()
+            .build();
+
+        try {
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+            if (response.statusCode() != 200 || response.body() == null) {
                 BeatCraft.LOGGER.error("Failed to download file from '{}'", url);
                 throw new IOException("Failed to download file from: " + url);
             }
 
             File tempFile = new File(outputFileName + ".tmp");
-            try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
-                outputStream.write(response.body().bytes());
-            }
+            Files.write(tempFile.toPath(), response.body(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
             File finalPngFile = new File(outputFileName);
             convertAndResize(tempFile, finalPngFile);
 
-            var ignored = tempFile.delete();
+            boolean deleted = tempFile.delete();
+            if (!deleted) {
+                BeatCraft.LOGGER.warn("Failed to delete temporary file '{}'", tempFile.getAbsolutePath());
+            }
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             BeatCraft.LOGGER.error("Failed to download file '{}'", url, e);
             throw new RuntimeException("Failed to download image: " + url, e);
         }

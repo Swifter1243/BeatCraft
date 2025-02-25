@@ -3,6 +3,7 @@ package com.beatcraft.data;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -25,9 +26,11 @@ public class PlayerConfig {
     private boolean quality_smokeGraphics = true;
     private boolean quality_burnMarkTrails = true;
 
-    private int controller_selectedProfile_index = 0;
+    private int controller_selectedProfile_index = -1;
 
-    private ArrayList<ControllerProfile> profiles = new ArrayList<>();
+    private final ArrayList<ControllerProfile> profiles = new ArrayList<>();
+
+    private static final ControllerProfile DEFAULT_CONTROLLER_PROFILE = new ControllerProfile();
 
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
@@ -42,6 +45,17 @@ public class PlayerConfig {
 
         controller_selectedProfile_index = JsonUtil.getOrDefault(json, "controller.selectedProfile.index", JsonElement::getAsInt, controller_selectedProfile_index);
 
+        if (json.has("controller.profiles")) {
+            JsonArray rawProfiles = json.getAsJsonArray("controller.profiles");
+            rawProfiles.forEach(rawProfile -> {
+                JsonObject profileData = rawProfile.getAsJsonObject();
+
+                ControllerProfile profile = new ControllerProfile(profileData);
+
+                profiles.add(profile);
+            });
+        }
+
     }
 
     private void writeJson(JsonObject json) {
@@ -54,6 +68,15 @@ public class PlayerConfig {
         json.addProperty("quality.burn_mark_trails", quality_burnMarkTrails);
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
+
+        JsonArray array = new JsonArray();
+
+        profiles.forEach(profile -> {
+            profile.writeJson(array);
+        });
+
+        json.add("controller.profiles", array);
+
     }
 
     public PlayerConfig() {
@@ -121,10 +144,10 @@ public class PlayerConfig {
 
 
     public ControllerProfile getActiveControllerProfile() {
-        if (profiles.isEmpty()) {
-            return new ControllerProfile();
+        if (profiles.isEmpty() || controller_selectedProfile_index <= -1) {
+            return DEFAULT_CONTROLLER_PROFILE;
         } else {
-            return profiles.get(Math.min(profiles.size(), this.controller_selectedProfile_index));
+            return profiles.get(this.controller_selectedProfile_index);
         }
     }
 
