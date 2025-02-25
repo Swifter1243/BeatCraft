@@ -44,6 +44,11 @@ public class RotationEvent extends BeatmapObject implements IEvent {
     }
 
     private static float getRotationAsFloat(JsonElement element) {
+
+        if (element.getAsInt() >= 8 || element.getAsInt() < 0) {
+            return 0; // this temporarily can fix some old levels but idk if it's correct behavior
+        }
+
         V2ROTATION rotation = V2ROTATION.values()[element.getAsInt()];
         return switch(rotation) {
             case CCW_60 -> -60F;
