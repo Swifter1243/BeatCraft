@@ -9,6 +9,7 @@ import com.beatcraft.logic.Hitbox;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -41,22 +42,21 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
         var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+        updateBounds();
 
 
         var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
-        //localPos.x = (-data.getX()) * 0.6f + 0.9f;
-        //localPos.y = (data.getY() * 0.6f + 0.25f);
-        //localPos.add(0, 0, camPos.z);
-        localPos.add(camPos);//.add(0.2f, 0, 0);
-        updateBounds();
+        localPos.add(camPos);
         GameLogicHandler.checkObstacle(this, localPos, rotation);
 
         render(localPos, rotation);
 
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
-        DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
-        DebugRenderer.renderHitbox(bounds, localPos, rotation, 0xFFFFFF, true);
+        ObstacleGlowRenderer.render(localPos, rotation, bounds, color);
+
+        //DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
+        //DebugRenderer.renderHitbox(bounds, localPos, rotation, 0xFFFFFF, true);
     }
 
     @Override

@@ -105,12 +105,27 @@ public class ControllerProfile {
     }
 
     public Quaternionf getLeftRotation() {
-        return (new Quaternionf()).rotationXYZ(leftRotation.x, leftRotation.y, leftRotation.z);
+        return (new Quaternionf()).rotationYXZ(leftRotation.y, leftRotation.x, leftRotation.z);
     }
 
     public Quaternionf getRightRotation() {
-        return (new Quaternionf()).rotationXYZ(rightRotation.x, rightRotation.y, rightRotation.z);
+        return (new Quaternionf()).rotationYXZ(rightRotation.y, rightRotation.x, rightRotation.z);
     }
 
+    public void setLeftTranslation(Vector3f pos) {
+        leftTranslation = pos;
+    }
+
+    public void setRightTranslation(Vector3f pos) {
+        rightTranslation = pos;
+    }
+
+    public void setLeftRotation(Vector3f euler) {
+        leftRotation = euler;
+    }
+
+    public void setRightRotation(Vector3f euler) {
+        rightRotation = euler;
+    }
 
 }

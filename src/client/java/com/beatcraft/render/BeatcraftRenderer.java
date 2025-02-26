@@ -2,6 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -103,6 +104,8 @@ public class BeatcraftRenderer {
             }
         }
         renderCalls.clear();
+
+        ObstacleGlowRenderer.renderAll();
     }
 
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {

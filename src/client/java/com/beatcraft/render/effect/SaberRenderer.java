@@ -303,6 +303,7 @@ public class SaberRenderer {
         }
 
         BuiltBuffer buffer = trail_buffer.endNullable();
+        render_calls.clear();
 
         if (buffer == null) return;
 
@@ -319,7 +320,6 @@ public class SaberRenderer {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
 
-        render_calls.clear();
 
     }
 
