@@ -1,5 +1,6 @@
 package com.beatcraft.logic;
 
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.render.DebugRenderer;
@@ -79,7 +80,7 @@ public class SwingState {
     }
 
     private void createSparks(Vector3f pos, Vector3f velocity) {
-        //BeatCraft.LOGGER.info("Making sparks at {} {}", pos, velocity);
+        if (!BeatCraftClient.playerConfig.doSparkParticles()) return;
         int col = this.color == NoteType.RED ? BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB() : BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         BeatcraftParticleRenderer.spawnSparkParticles(pos, velocity.mul(0.1f, new Vector3f()), 0.2f, 0.03f, GameLogicHandler.random.nextInt(5, 15), col, 0.02f);
     }

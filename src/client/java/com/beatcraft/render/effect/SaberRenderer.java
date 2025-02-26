@@ -330,7 +330,6 @@ public class SaberRenderer {
         Vec3d cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
 
         if (!stash.isEmpty()) {
-            //
             int opacity = 0;
             float step = 0x7F / (float) stash.getSize();
             for (Pair<Vector3f, Vector3f> ab : stash) {
@@ -340,6 +339,8 @@ public class SaberRenderer {
                 int op = (0x7F - ((int)(step * opacity))) << 24;
                 int op2 = (0x7F - ((int)(step * (opacity+1)))) << 24;
                 opacity++;
+
+                if (op == 0 || op2 == 0) continue;
 
                 trail_buffer.vertex((float) (current_base.x - cam.x), (float) (current_base.y - cam.y), (float) (current_base.z - cam.z)).color(col + op);
                 trail_buffer.vertex((float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z)).color(col + op2);

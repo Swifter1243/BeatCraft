@@ -12,9 +12,12 @@
   "gui.beatcraft.option.on": "ON",
   "gui.beatcraft.option.off": "OFF",
 
+  "setting.beatcraft.player_option.reduced_debris": "Reduced Debris",
+
   "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
   "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics",
   "setting.beatcraft.quality.burn_mark_trails": "Burn Mark Trails",
+  "setting.beatcraft.quality.particles": "Spark Particles",
   "setting.beatcraft.audio.volume": "Volume",
   "setting.beatcraft.audio.ambient_volume_scale": "Ambient Volume Scale",
   "setting.beatcraft.audio.latency": "Latency",

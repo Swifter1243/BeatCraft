@@ -34,12 +34,12 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 
     @Unique
     public void initStash(int size) {
-        this.stash = new Stash<>(size);
+        this.stash = new Stash<>(size, true);
     }
 
     @Unique
     public Stash<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash() {
-        return stash == null ? new Stash<>(2) : stash;
+        return stash == null ? new Stash<>(2, false) : stash;
     }
 
 

@@ -18,6 +18,7 @@ public class PlayerConfig {
 
     public final File configFile = new File("./config/beatcraft/config.json");
     public final File configFolder = new File("./config/beatcraft/");
+
     private float audio_volume = 1.0f;
     private float audio_ambientVolumeScale = 0.8f;
     private int audio_latency = 0; // measured in milliseconds
@@ -25,12 +26,15 @@ public class PlayerConfig {
 
     private boolean quality_smokeGraphics = true;
     private boolean quality_burnMarkTrails = true;
+    private boolean quality_sparkParticles = true;
 
     private int controller_selectedProfile_index = -1;
 
     private final ArrayList<ControllerProfile> profiles = new ArrayList<>();
 
     private static final ControllerProfile DEFAULT_CONTROLLER_PROFILE = new ControllerProfile();
+
+    private boolean option_reducedDebris = false;
 
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
@@ -42,6 +46,9 @@ public class PlayerConfig {
 
         quality_smokeGraphics = JsonUtil.getOrDefault(json, "quality.smoke_graphics", JsonElement::getAsBoolean, quality_smokeGraphics);
         quality_burnMarkTrails = JsonUtil.getOrDefault(json, "quality.burn_mark_trails", JsonElement::getAsBoolean, quality_burnMarkTrails);
+        quality_sparkParticles = JsonUtil.getOrDefault(json, "quality.spark_particles", JsonElement::getAsBoolean, quality_sparkParticles);
+
+        option_reducedDebris = JsonUtil.getOrDefault(json, "option.reduced_debris", JsonElement::getAsBoolean, option_reducedDebris);
 
         controller_selectedProfile_index = JsonUtil.getOrDefault(json, "controller.selectedProfile.index", JsonElement::getAsInt, controller_selectedProfile_index);
 
@@ -66,6 +73,9 @@ public class PlayerConfig {
 
         json.addProperty("quality.smoke_graphics", quality_smokeGraphics);
         json.addProperty("quality.burn_mark_trails", quality_burnMarkTrails);
+        json.addProperty("quality.spark_particles", quality_sparkParticles);
+
+        json.addProperty("option.reduced_debris", option_reducedDebris);
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
@@ -142,6 +152,21 @@ public class PlayerConfig {
         return this.quality_burnMarkTrails;
     }
 
+    public void setReducedDebris(boolean value) {
+        option_reducedDebris = value;
+    }
+
+    public boolean isReducedDebris() {
+        return option_reducedDebris;
+    }
+
+    public void setSparkParticles(boolean value) {
+        quality_sparkParticles = value;
+    }
+
+    public boolean doSparkParticles() {
+        return quality_sparkParticles;
+    }
 
     public ControllerProfile getActiveControllerProfile() {
         if (profiles.isEmpty() || controller_selectedProfile_index <= -1) {

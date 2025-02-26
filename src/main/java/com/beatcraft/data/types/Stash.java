@@ -48,10 +48,21 @@ public class Stash<T> implements Iterable<T> {
         }
     }
 
-    private ArrayList<T> data = new ArrayList<>();
+    private final ArrayList<T> data = new ArrayList<>();
 
     private int pointer = 0;
-    private final int max_size;
+    private int max_size;
+    private final boolean isTrail;
+
+    private static int saberTrailSize = 120;
+
+    public static void updateTrailSize(int size) {
+        saberTrailSize = size;
+    }
+
+    public static int getTrailSize() {
+        return saberTrailSize;
+    }
 
     public boolean isEmpty() {
         return data.getFirst() == null;
@@ -61,14 +72,28 @@ public class Stash<T> implements Iterable<T> {
         return this.max_size;
     }
 
-    public Stash(int capacity) {
+    public Stash(int capacity, boolean isTrail) {
+        this.isTrail = isTrail;
         max_size = capacity;
-        for (int i=0; i<=capacity; i++) {
+        for (int i = 0; i <= capacity; i++) {
+            data.add(null);
+        }
+    }
+
+    /// Resizing will clear all data
+    public void resize(int newSize) {
+        max_size = newSize;
+        pointer = 0;
+        data.clear();
+        for (int i = 0; i <= newSize; i++) {
             data.add(null);
         }
     }
 
     public void push(T element) {
+        if (isTrail && max_size != saberTrailSize) {
+            resize(saberTrailSize);
+        }
         data.set(pointer, element);
         pointer = (pointer + 1) % max_size;
     }

@@ -252,6 +252,7 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
             coverImage.unloadTexture();
             coverImage = null;
         }
+        assert client != null;
         client.setScreen(parent);
     }
 }

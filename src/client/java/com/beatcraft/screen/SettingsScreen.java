@@ -1,8 +1,8 @@
 package com.beatcraft.screen;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.data.types.Stash;
 import com.beatcraft.render.DebugRenderer;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
@@ -82,18 +82,35 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     private void setGeneralPage() {
 
-        var slider = Components.discreteSlider(Sizing.fill(50), 1, 20).value(12d/20d).message(str -> Text.of(str + "0"));
-        slider.onChanged().subscribe(this::updateTrailIntensity);
+        var trailIntensitySlider = Components.discreteSlider(Sizing.fill(50), 1, 20).value((Stash.getTrailSize()-10)/190f).message(str -> Text.of(str + "0"));
+        trailIntensitySlider.onChanged().subscribe(this::updateTrailIntensity);
+
+        var reducedDebrisToggle = Components.checkbox(Text.translatable("setting.beatcraft.player_option.reduced_debris"));
+        reducedDebrisToggle.checked(BeatCraftClient.playerConfig.isReducedDebris());
+        reducedDebrisToggle.onChanged(BeatCraftClient.playerConfig::setReducedDebris);
+
+        var sparkParticlesToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.particles"));
+        sparkParticlesToggle.checked(BeatCraftClient.playerConfig.doSparkParticles());
+        sparkParticlesToggle.onChanged(BeatCraftClient.playerConfig::setSparkParticles);
 
         settingPage.child(Components.spacer(10)).child(
             Containers.grid(Sizing.fill(90), Sizing.content(), 1, 2)
                 .child(
-                    Components.label(Text.translatable("setting.beatcraft.quality.trail_intensity"))
-                        .lineHeight(15),
+                    Components.label(Text.translatable("setting.beatcraft.quality.trail_intensity")).lineHeight(15),
                     0, 0
                 ).child(
-                    slider,
-                0, 1
+                    trailIntensitySlider,
+                    0, 1
+                )
+        ).child(Components.spacer(10)).child(
+            Containers.grid(Sizing.fill(90), Sizing.content(), 1, 2)
+                .child(
+                    reducedDebrisToggle,
+                    0, 0
+                )
+                .child(
+                    sparkParticlesToggle,
+                    0, 1
                 )
         );
     }
@@ -194,7 +211,8 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private void updateTrailIntensity(double value) {
-
+        int size = (int) (value * 10);
+        Stash.updateTrailSize(size);
     }
 
     private void updateVolume(double value) {
@@ -233,6 +251,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
     @Override
     public void close() {
         BeatCraftClient.playerConfig.writeToFile();
+        assert client != null;
         client.setScreen(parent);
     }
 }
