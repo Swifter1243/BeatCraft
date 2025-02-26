@@ -40,24 +40,24 @@ public class ObstacleGlowRenderer {
     }
 
     public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos) {
-        var edges = BeatcraftRenderer.getCubeEdges(bounds.min.add(position, new Vector3f()).rotate(orientation), bounds.max.add(position, new Vector3f()).rotate(orientation));
-
-        //Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-        //Tessellator tessellator = Tessellator.getInstance();
-        //BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        var edges = BeatcraftRenderer.getCubeEdges(bounds.min, bounds.max);
 
         for (Vector3f[] edge : edges) {
-            var mesh = buildEdge(edge[0], edge[1], cameraPos);
+
+            var e0 = edge[0].rotate(orientation, new Vector3f()).add(position);
+            var e1 = edge[1].rotate(orientation, new Vector3f()).add(position);
+            
+            var mesh = buildEdge(e0, e1, cameraPos);
 
             int fadeColor = (0x00FFFFFF & color) | 0x01000000;
 
-            buffer.vertex(edge[0].x - cameraPos.x, edge[0].y - cameraPos.y, edge[0].z - cameraPos.z).color(0xFFFFFFFF);
-            buffer.vertex(edge[1].x - cameraPos.x, edge[1].y - cameraPos.y, edge[1].z - cameraPos.z).color(0xFFFFFFFF);
+            buffer.vertex(e0.x - cameraPos.x, e0.y - cameraPos.y, e0.z - cameraPos.z).color(0xFFFFFFFF);
+            buffer.vertex(e1.x - cameraPos.x, e1.y - cameraPos.y, e1.z - cameraPos.z).color(0xFFFFFFFF);
             buffer.vertex(mesh[3].x - cameraPos.x, mesh[3].y - cameraPos.y, mesh[3].z - cameraPos.z).color(fadeColor);
             buffer.vertex(mesh[0].x - cameraPos.x, mesh[0].y - cameraPos.y, mesh[0].z - cameraPos.z).color(fadeColor);
 
-            buffer.vertex(edge[0].x - cameraPos.x, edge[0].y - cameraPos.y, edge[0].z - cameraPos.z).color(0xFFFFFFFF);
-            buffer.vertex(edge[1].x - cameraPos.x, edge[1].y - cameraPos.y, edge[1].z - cameraPos.z).color(0xFFFFFFFF);
+            buffer.vertex(e0.x - cameraPos.x, e0.y - cameraPos.y, e0.z - cameraPos.z).color(0xFFFFFFFF);
+            buffer.vertex(e1.x - cameraPos.x, e1.y - cameraPos.y, e1.z - cameraPos.z).color(0xFFFFFFFF);
             buffer.vertex(mesh[2].x - cameraPos.x, mesh[2].y - cameraPos.y, mesh[2].z - cameraPos.z).color(fadeColor);
             buffer.vertex(mesh[1].x - cameraPos.x, mesh[1].y - cameraPos.y, mesh[1].z - cameraPos.z).color(fadeColor);
 

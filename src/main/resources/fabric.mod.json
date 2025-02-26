@@ -39,7 +39,7 @@
 	"accessWidener": "beatcraft.accesswidener",
 	"depends": {
 		"fabricloader": ">=${loader_version}",
-		"minecraft": "~${minecraft_version}",
+		"minecraft": "${minecraft_version}",
 		"fabric": "*",
 		"java": ">=21",
 		"fabric-api": "*",
