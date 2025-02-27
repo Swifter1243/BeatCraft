@@ -75,6 +75,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         );
     }
     private void _render(Vector3f pos, Quaternionf orientation) {
+        if (BeatmapPlayer.currentBeatmap == null) return;
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
             .getColorScheme().getObstacleColor().toARGB(0.15f);
 

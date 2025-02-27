@@ -116,6 +116,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public boolean hasAppeared() {
+        if (BeatmapPlayer.currentBeatmap == null) return false;
         //float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
         float margin = BeatmapPlayer.currentInfo.getBeat(JUMP_SECONDS, 1f);
         return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
@@ -414,7 +415,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
-        if (BeatCraftClient.playerConfig.isReducedDebris()) return;
+        if (BeatCraftClient.playerConfig.isReducedDebris() || BeatmapPlayer.currentBeatmap == null) return;
         QuadMesh mesh = getMesh();
         if (mesh == null) return;
         Pair<TriangleMesh, TriangleMesh> meshes = MeshSlicer.sliceMesh(planeIncident, planeNormal, mesh);

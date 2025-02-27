@@ -54,7 +54,7 @@ public class Stash<T> implements Iterable<T> {
     private int max_size;
     private final boolean isTrail;
 
-    private static int saberTrailSize = 120;
+    private static int saberTrailSize = 30;
 
     public static void updateTrailSize(int size) {
         saberTrailSize = size;

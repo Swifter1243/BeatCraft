@@ -60,7 +60,7 @@ public class Hitbox {
         return null;
     }
 
-    private boolean isPointInHitbox(Vector3f point) {
+    public boolean isPointInHitbox(Vector3f point) {
         return min.x <= point.x && point.x <= max.x &&
             min.y <= point.y && point.y <= max.y &&
             min.z <= point.z && point.z <= max.z;

@@ -43,19 +43,18 @@ import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
-import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.Random;
@@ -74,8 +73,25 @@ public class GameLogicHandler {
     private static int modifierProgress = 0;
     private static int maxPossibleScore = 0;
     private static int score = 0;
-    private static int maxHealth;
-    private static int health;
+    private static boolean failed = false;
+    public static boolean noFail = false;
+
+    // health values:
+    // start: 50
+    // miss: -15
+    // hit: +5
+    // bad-cut: -10
+    // bomb: -15
+    // walls: -10/s
+    public static int maxHealth = 100;
+    public static float health = 50;
+    private static final int MISS_HP = 15;
+    private static final int BADCUT_HP = 10;
+    private static final int BOMB_HP = 15;
+    private static final int WALL_HP = 10;
+    private static final int HEAL_HP = 5;
+    private static boolean inWall = false;
+    private static Vector3f headPos = new Vector3f();
 
     public static boolean FPFC = false;
 
@@ -131,18 +147,22 @@ public class GameLogicHandler {
         rightSaberRotation = rotation;
     }
 
+    public static void preUpdate(double deltaTime, float tickDelta) {
+        inWall = false;
+    }
+
     public static void update(double deltaTime, float tickDelta) {
+        assert MinecraftClient.getInstance().player != null;
+        headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
         if (FPFC) {
-            assert MinecraftClient.getInstance().player != null;
-            Vector3f pos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
             Quaternionf rot = new Quaternionf()
                     .rotateY(-MinecraftClient.getInstance().player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize()
                     .rotateX((90 + MinecraftClient.getInstance().player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize();
             //Quaternionf rotation = new Quaternionf().rotateX(90 * MathHelper.RADIANS_PER_DEGREE).normalize().add(rot);
-            rightSaberPos = new Vector3f(pos);
-            leftSaberPos = pos;
+            rightSaberPos = new Vector3f(headPos);
+            leftSaberPos = new Vector3f(headPos);
             rightSaberRotation = new Quaternionf(rot);
             leftSaberRotation = rot;
         }
@@ -161,6 +181,11 @@ public class GameLogicHandler {
             if (!FPFC) {
                 BeatcraftParticleRenderer.spawnSparkParticles(res.getRight(), new Vector3f(0, 0f, 0), 0.2f, 0.03f, random.nextInt(3, 5), 0xFFFFFFFF, 0.02f);
             }
+        }
+
+        if (inWall) {
+            processDamage(WALL_HP * (float) deltaTime);
+            checkFail();
         }
 
     }
@@ -327,6 +352,8 @@ public class GameLogicHandler {
                     Vector3f planeNormal = getPlaneNormal(local_hand, endpoint, diff);
                     note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
                 }
+            } else {
+                hitBomb();
             }
             if (saberColor == NoteType.RED) {
                 HapticsHandler.vibrateLeft(1f, 0.075f * MinecraftClient.getInstance().getCurrentFps());
@@ -392,6 +419,11 @@ public class GameLogicHandler {
         checkSaberAgainstObstacle(hitbox, position, inverted, rightSaberPos, rightSaberRotation, NoteType.BLUE);
         checkSaberAgainstObstacle(hitbox, position, inverted, leftSaberPos, leftSaberRotation, NoteType.RED);
 
+        Vector3f localHeadPos = new Vector3f(headPos).sub(position).rotate(inverted);
+
+        if (!inWall) {
+            inWall = hitbox.isPointInHitbox(localHeadPos);
+        }
     }
 
     public static void process(CutResult cut) {
@@ -400,7 +432,7 @@ public class GameLogicHandler {
                 if (misses == 0 && badCuts == 0) {
                     loseFCTime = System.nanoTime() / 1_000_000_000d;
                 }
-                misses++;
+                addMiss();
                 breakCombo();
                 addScore(0, 115);
                 Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
@@ -426,7 +458,7 @@ public class GameLogicHandler {
                 if (misses == 0 && badCuts == 0) {
                     loseFCTime = System.nanoTime() / 1_000_000_000d;
                 }
-                badCuts++;
+                addBadcut();
                 breakCombo();
                 addScore(0, 115);
                 Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
@@ -468,8 +500,65 @@ public class GameLogicHandler {
         return maxPossibleScore;
     }
 
+    public static float getHealthPercentage() {
+        return health / (float) maxHealth;
+    }
+
     public static void addGoodCut() {
         goodCuts++;
+        if (maxHealth == 100 && !(failed && noFail)) {
+            health = Math.min(maxHealth, health+HEAL_HP);
+        }
+    }
+
+    private static void processDamage(float damage) {
+        if (maxHealth == 100) {
+            health -= damage;
+        } else if (maxHealth == 4) {
+            health -= 1;
+        } else {
+            health = 0;
+        }
+    }
+
+    private static void addMiss() {
+        misses++;
+        if (failed && noFail) return;
+        processDamage(MISS_HP);
+        checkFail();
+    }
+
+    private static void addBadcut() {
+        badCuts++;
+        if (failed && noFail) return;
+        processDamage(BADCUT_HP);
+        checkFail();
+    }
+
+    private static void hitBomb() {
+        if (failed && noFail) return;
+        processDamage(BOMB_HP);
+        checkFail();
+    }
+
+    private static void checkFail() {
+        if (health <= 0) {
+            health = 0;
+            failed = true;
+            if (!noFail) {
+                // trigger fail animation
+                HUDRenderer.endScreenPanel.setFailed();
+                HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
+
+                try {
+                    PlayRecorder.save();
+                } catch (IOException e) {
+                    BeatCraft.LOGGER.error("Error saving recording", e);
+                }
+
+                unloadAll();
+            }
+        }
     }
 
     public static void incrementCombo() {
@@ -537,6 +626,9 @@ public class GameLogicHandler {
         loseFCTime = 0;
         badCuts = 0;
         misses = 0;
+        failed = false;
+        health = maxHealth == 100 ? 50 : maxHealth == 4 ? 4 : 1;
+        inWall = false;
     }
 
 

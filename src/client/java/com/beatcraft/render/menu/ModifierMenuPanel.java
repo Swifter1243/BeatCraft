@@ -2,6 +2,7 @@ package com.beatcraft.render.menu;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.render.HUDRenderer;
 import net.minecraft.client.MinecraftClient;
@@ -22,7 +23,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         Modifiers,
         PlayerOptions,
         Settings,
-        Downloader
+        Downloader,
+        Replay
     }
 
     private SongSelectPage currentPage = SongSelectPage.Modifiers;
@@ -31,6 +33,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private final ContainerWidget playerOptionsPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget settingsPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget downloaderPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
+    private final ContainerWidget replayPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
 
     public ModifierMenuPanel(ModifierMenu data) {
         super(data);
@@ -45,28 +48,29 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     private void initLayout() {
 
-        // Top buttons: Modifiers | Player Options | Settings | BeatSaver
-        int BUTTON_COUNT = 4;
+        // Top buttons: Modifiers | Player Options | Settings | BeatSaver | Replay
+        int BUTTON_COUNT = 5;
         widgets.addAll(List.of(
             getOptionButton("Modifiers", 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
             getOptionButton("Player Options", 1, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
             getOptionButton("Settings", 2, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
-            getOptionButton("BeatSaver", 3, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader)
+            getOptionButton("BeatSaver", 3, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
+            getOptionButton("Replay", 4, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay)
         ));
 
-        //modifierPage.children.addAll(List.of(
-        //        getModifierToggle("No Fail", 0, 0, this::toggleNoFail, "1 Life", "4 Lives", "Zen Mode"),
-        //        getModifierToggle("1 Life", 0, 1, this::toggle1Life, "No Fail", "4 Lives", "Zen Mode"),
-        //        getModifierToggle("4 Lives", 0, 2, this::toggle4Lives, "No Fail", "1 Life", "Zen Mode"),
-        //
+        modifierPage.children.addAll(List.of(
+                getModifierToggle("No Fail", 0, 0, this::toggleNoFail, "1 Life", "4 Lives", "Zen Mode"),
+                getModifierToggle("1 Life", 0, 1, this::toggle1Life, "No Fail", "4 Lives", "Zen Mode"),
+                getModifierToggle("4 Lives", 0, 2, this::toggle4Lives, "No Fail", "1 Life", "Zen Mode")
+
         //        getModifierToggle("No Bombs", 1, 0, this::toggleNoBombs, "Zen Mode"),
         //        getModifierToggle("No Walls", 1, 1, this::toggleNoObstacles, "Zen Mode"),
         //        getModifierToggle("No Arrows", 1, 2, this::toggleNoArrows, "Zen Mode"),
-        //
+
         //        getModifierToggle("Ghost Notes", 2, 0, this::toggleGhostNotes, "Disappearing Arrows", "Zen Mode"),
         //        getModifierToggle("Disappearing Arrows", 2, 1, this::toggleDisappearingArrows, "Ghost Notes", "Zen Mode"),
         //        getModifierToggle("Small Notes", 2, 2, this::toggleSmallNotes, "Zen Mode")
-        //));
+        ));
         modifierPage.children.addAll(List.of(
                 //getModifierToggle("Pro Mode", 3, 0, this::toggleProMode, "Zen Mode"),
                 //getModifierToggle("Strict Angles", 3, 1, this::toggleStrictAngles, "Zen Mode"),
@@ -185,17 +189,24 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     }
 
+    private void setReplayPage() {
+        currentPage = SongSelectPage.Replay;
+        HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+    }
+
     // Modifier Toggles
     private void toggleNoFail(boolean state) {
-
+        GameLogicHandler.noFail = state;
     }
 
     private void toggle1Life(boolean state) {
-
+        GameLogicHandler.maxHealth = state ? 1 : 100;
+        GameLogicHandler.health = state ? 1 : 50;
     }
 
     private void toggle4Lives(boolean state) {
-
+        GameLogicHandler.maxHealth = state ? 4 : 100;
+        GameLogicHandler.health = state ? 4 : 50;
     }
 
     private void toggleNoBombs(boolean state) {
@@ -278,6 +289,9 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             }
             case Downloader -> {
                 downloaderPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
+            }
+            case Replay -> {
+                replayPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
             }
         }
 

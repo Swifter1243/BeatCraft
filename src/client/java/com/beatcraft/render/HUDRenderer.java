@@ -563,6 +563,21 @@ public class HUDRenderer {
     }
 
     private static void renderPlayerHealth(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+        float progress = GameLogicHandler.getHealthPercentage();
+        Vector3f leftPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f()).add(1.35f, 0, 0);
+        Vector3f rightPos = new Vector3f(leftPos.x - 2.7f, leftPos.y, leftPos.z);
+        Vector3f midPos = MathUtil.lerpVector3(leftPos, rightPos, progress);
+
+        buffer.vertex(leftPos.x, leftPos.y, leftPos.z).color(0xFFFFFFFF);
+        buffer.vertex(leftPos.x, leftPos.y+0.05f, leftPos.z).color(0xFFFFFFFF);
+        buffer.vertex(midPos.x, midPos.y+0.05f, midPos.z).color(0xFFFFFFFF);
+        buffer.vertex(midPos.x, midPos.y, midPos.z).color(0xFFFFFFFF);
+
+        buffer.vertex(midPos.x, midPos.y, midPos.z).color(0x7F7F7F7F);
+        buffer.vertex(midPos.x, midPos.y+0.05f, midPos.z).color(0x7F7F7F7F);
+        buffer.vertex(rightPos.x, rightPos.y+0.05f, rightPos.z).color(0x7F7F7F7F);
+        buffer.vertex(rightPos.x, rightPos.y, rightPos.z).color(0x7F7F7F7F);
+
 
     }
 

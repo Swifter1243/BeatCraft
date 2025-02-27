@@ -137,6 +137,7 @@ public class BeatmapPlayer {
             BeatmapAudioPlayer.onFrame();
         }
 
+        GameLogicHandler.preUpdate((double) deltaNanoSeconds / 1_000_000_000d, tickDelta);
         // Render beatmap
         if (currentBeatmap != null) {
             currentBeatmap.render(matrices, camera);

@@ -260,7 +260,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 () -> {
                     try {
                         song_play_request.cancel(true);
-                        currentDisplay = null;
+                        //currentDisplay = null;
                         HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                         BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
                         BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
