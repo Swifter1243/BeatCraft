@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
+import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +26,7 @@ public class GameRendererMixin {
     public void overridePlayerCameraPos(RenderTickCounter tickCounter, CallbackInfo ci, @Local Camera camera) {
         camera.pos = camera.pos.add(BeatCraftClient.playerCameraPosition).add(BeatCraftClient.playerGlobalPosition);
         camera.blockPos.set(camera.pos.x, camera.pos.y, camera.pos.z);
-        camera.getRotation().add(BeatCraftClient.playerCameraRotation).add(BeatCraftClient.playerGlobalRotation);
+        camera.getRotation().mul(BeatCraftClient.playerCameraRotation).mul(BeatCraftClient.playerGlobalRotation).normalize();
     }
 
 }

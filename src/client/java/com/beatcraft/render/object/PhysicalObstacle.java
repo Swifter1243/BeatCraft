@@ -70,8 +70,8 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void render(Vector3f pos, Quaternionf orientation) {
-        BeatcraftRenderer.recordRenderCall(
-            () -> _render(pos, orientation)
+        BeatcraftRenderer.recordEarlyRenderCall(
+            vcp -> _render(pos, orientation)
         );
     }
     private void _render(Vector3f pos, Quaternionf orientation) {

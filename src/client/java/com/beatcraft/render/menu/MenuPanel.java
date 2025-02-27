@@ -135,6 +135,8 @@ public abstract class MenuPanel<T extends Menu> {
             if (pointerPosition != null) {
                 pointerPosition.mul(scale);
             }
+            context.scale(-1/scale, -1/scale, -1/scale);
+
         }
     }
 

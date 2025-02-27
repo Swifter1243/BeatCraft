@@ -155,8 +155,8 @@ public class SaberRenderer {
 
             // Step 1: initial transform to get saber into the default position.
             matrix.scale(0.3333f, 0.3333f, 0.3333f);
-            matrix.translate(0, -0.25, 0.25);
-            matrix.multiply((new Quaternionf()).rotationXYZ(-38 * MathHelper.RADIANS_PER_DEGREE, 0, 0));
+            matrix.translate(0, -0.25, 0.35);
+            matrix.multiply((new Quaternionf()).rotationXYZ(-45 * MathHelper.RADIANS_PER_DEGREE, 0, 0));
 
             // Step 2: modify rotation and translation based on user settings
             Vector3f translation;

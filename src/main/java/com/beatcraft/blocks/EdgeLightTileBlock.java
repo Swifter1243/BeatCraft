@@ -1,8 +1,9 @@
 package com.beatcraft.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
+import com.beatcraft.blocks.entity.EdgeLightTileBlockEntity;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
@@ -13,13 +14,18 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
 
-public class EdgeLightTileBlock extends Block {
+public class EdgeLightTileBlock extends BlockWithEntity implements BlockEntityProvider {
+    public static final MapCodec<EdgeLightTileBlock> CODEC = createCodec(EdgeLightTileBlock::new);
 
     public static final DirectionProperty FACE = DirectionProperty.of("face");
     public static final DirectionProperty ROTATION = DirectionProperty.of("rotation");
 
     public EdgeLightTileBlock() {
-        super(Settings.create().noCollision().hardness(3f).resistance(5f).sounds(BlockSoundGroup.GLASS));
+        this(Settings.create().noCollision().hardness(3f).resistance(5f).sounds(BlockSoundGroup.GLASS));
+    }
+
+    public EdgeLightTileBlock(Settings settings) {
+        super(settings);
         setDefaultState(getDefaultState().with(FACE, Direction.DOWN).with(ROTATION, Direction.NORTH));
     }
 
@@ -46,4 +52,13 @@ public class EdgeLightTileBlock extends Block {
         return parent.with(FACE, face).with(ROTATION, rot);
     }
 
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new EdgeLightTileBlockEntity(pos, state);
+    }
 }

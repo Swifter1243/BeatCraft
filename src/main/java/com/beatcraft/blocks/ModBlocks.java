@@ -1,12 +1,17 @@
 package com.beatcraft.blocks;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.blocks.entity.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+
+import java.util.concurrent.Callable;
 
 public class ModBlocks {
 
@@ -20,6 +25,38 @@ public class ModBlocks {
     public static final EndLightTileBlock END_LIGHT_TILE_BLOCK = (EndLightTileBlock) register(new EndLightTileBlock(), "end_light_tile");
 
 
+    // block entities
+    public static final BlockEntityType<EdgeLightTileBlockEntity> EDGE_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        EDGE_LIGHT_TILE_BLOCK, EdgeLightTileBlockEntity::new, "edge_light_block_entity"
+    );
+
+    public static final BlockEntityType<CornerLightTileBlockEntity> CORNER_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        CORNER_LIGHT_TILE_BLOCK, CornerLightTileBlockEntity::new, "corner_light_block_entity"
+    );
+
+    public static final BlockEntityType<EndLightTileBlockEntity> END_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        END_LIGHT_TILE_BLOCK, EndLightTileBlockEntity::new, "end_light_block_entity"
+    );
+
+    public static final BlockEntityType<FilledLightTileBlockEntity> FILLED_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        FILLED_LIGHT_TILE_BLOCK, FilledLightTileBlockEntity::new, "filled_light_block_entity"
+    );
+
+    public static final BlockEntityType<ColumnLightTileBlockEntity> COLUMN_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        COLUMN_LIGHT_TILE_BLOCK, ColumnLightTileBlockEntity::new, "column_light_block_entity"
+    );
+
+    private static<T extends BlockEntity> BlockEntityType<T> registerBlockEntity(Block parent, BlockEntityType.BlockEntityFactory<T> factory, String id) {
+        try {
+            return Registry.register(
+                Registries.BLOCK_ENTITY_TYPE,
+                Identifier.of(BeatCraft.MOD_ID, id),
+                BlockEntityType.Builder.create(factory, parent).build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static Block register(Block block, String path) {
         Registry.register(Registries.BLOCK, Identifier.of(BeatCraft.MOD_ID, path), block);

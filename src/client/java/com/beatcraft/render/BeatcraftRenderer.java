@@ -2,19 +2,21 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BeatcraftRenderer {
@@ -22,6 +24,7 @@ public class BeatcraftRenderer {
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<TriConsumer<BufferBuilder, BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         BeatmapPlayer.onRender(matrices, camera, tickDelta);
@@ -36,18 +39,15 @@ public class BeatcraftRenderer {
         renderCalls.add(call);
     }
 
+    public static void recordLaserRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        laserRenderCalls.add(call);
+    }
+
     public static void recordEarlyRenderCall(Consumer<VertexConsumerProvider> call) {
         earlyRenderCalls.add(call);
     }
 
     public static void earlyRender(VertexConsumerProvider vcp) {
-        for (var call : earlyRenderCalls) {
-            call.accept(vcp);
-        }
-        earlyRenderCalls.clear();
-    }
-
-    public static void render() {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -96,6 +96,41 @@ public class BeatcraftRenderer {
         RenderSystem.enableCull();
         noteRenderCalls.clear();
 
+
+        for (var call : earlyRenderCalls) {
+            call.accept(vcp);
+        }
+        earlyRenderCalls.clear();
+
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : laserRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        laserRenderCalls.clear();
+
+        var buff = buffer.endNullable();
+        if (buff == null) return;
+
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+    }
+
+    public static void render() {
+
         for (Runnable renderCall : renderCalls) {
             try {
                 renderCall.run();
@@ -105,7 +140,6 @@ public class BeatcraftRenderer {
         }
         renderCalls.clear();
 
-        ObstacleGlowRenderer.renderAll();
     }
 
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {

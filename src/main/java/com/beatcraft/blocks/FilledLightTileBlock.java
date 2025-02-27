@@ -1,8 +1,9 @@
 package com.beatcraft.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
+import com.beatcraft.blocks.entity.FilledLightTileBlockEntity;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.sound.BlockSoundGroup;
@@ -18,16 +19,18 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class FilledLightTileBlock extends Block {
+public class FilledLightTileBlock extends BlockWithEntity implements BlockEntityProvider {
+    private static final MapCodec<FilledLightTileBlock> CODEC = createCodec(FilledLightTileBlock::new);
 
-
-    private static final DirectionProperty FACE = DirectionProperty.of("face");
-    private static final IntProperty PATTERN = IntProperty.of("pattern", 0, 2);
-
-
+    public static final DirectionProperty FACE = DirectionProperty.of("face");
+    public static final IntProperty PATTERN = IntProperty.of("pattern", 0, 2);
 
     public FilledLightTileBlock() {
-        super(Settings.create().noCollision().hardness(3f).resistance(5f).sounds(BlockSoundGroup.GLASS));
+        this(Settings.create().noCollision().hardness(3f).resistance(5f).sounds(BlockSoundGroup.GLASS));
+    }
+
+    public FilledLightTileBlock(Settings settings) {
+        super(settings);
         setDefaultState(getDefaultState().with(FACE, Direction.DOWN).with(PATTERN, 0));
     }
 
@@ -63,4 +66,13 @@ public class FilledLightTileBlock extends Block {
         return parent.with(FACE, face);
     }
 
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new FilledLightTileBlockEntity(pos, state);
+    }
 }

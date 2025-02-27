@@ -15,8 +15,6 @@ import java.util.function.BiConsumer;
 
 public class ObstacleGlowRenderer {
 
-    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> renderCalls = new ArrayList<>();
-
     private static Vector3f[] buildEdge(Vector3f pos1, Vector3f pos2, Vector3f cameraPos) {
         Vector3f lineNormal = pos1.sub(pos2, new Vector3f()).normalize();
 
@@ -36,7 +34,7 @@ public class ObstacleGlowRenderer {
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
-        renderCalls.add((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera));
+        BeatcraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera));
     }
 
     public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos) {
@@ -62,38 +60,6 @@ public class ObstacleGlowRenderer {
             buffer.vertex(mesh[1].x - cameraPos.x, mesh[1].y - cameraPos.y, mesh[1].z - cameraPos.z).color(fadeColor);
 
         }
-
-    }
-
-
-    public static void renderAll() {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
-        for (var call : renderCalls) {
-            call.accept(buffer, cameraPos);
-        }
-
-        renderCalls.clear();
-
-        var buff = buffer.endNullable();
-        if (buff == null) return;
-
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-
-        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
 
     }
 
