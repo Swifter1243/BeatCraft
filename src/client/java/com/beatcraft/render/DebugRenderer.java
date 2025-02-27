@@ -186,6 +186,15 @@ public class DebugRenderer {
 
         Vec3d cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
 
+        var oldShader = RenderSystem.getShader();
+
+        RenderSystem.disableCull();
+        RenderSystem.depthMask(doDepthTest);
+        if (doDepthTest) RenderSystem.enableDepthTest();
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        var oldLineWidth = RenderSystem.getShaderLineWidth();
+        RenderSystem.lineWidth(lineWidth);
+
         for (Vector3f[] edge : edges) {
             var c1 = edge[0].rotate(orientation, new Vector3f());
             var c2 = edge[1].rotate(orientation, new Vector3f());
@@ -204,15 +213,6 @@ public class DebugRenderer {
 
         BuiltBuffer buff = buffer.endNullable();
         if (buff == null) return;
-
-        var oldShader = RenderSystem.getShader();
-
-        RenderSystem.disableCull();
-        RenderSystem.depthMask(doDepthTest);
-        if (doDepthTest) RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        var oldLineWidth = RenderSystem.getShaderLineWidth();
-        RenderSystem.lineWidth(lineWidth);
 
         BufferRenderer.drawWithGlobalProgram(buff);
 

@@ -298,6 +298,14 @@ public class SaberRenderer {
         var tessellator = Tessellator.getInstance();
         var trail_buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
+
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
         for (Function<BufferBuilder, Void> runnable : render_calls) {
             runnable.apply(trail_buffer);
         }
@@ -307,12 +315,6 @@ public class SaberRenderer {
 
         if (buffer == null) return;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
         buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
         BufferRenderer.drawWithGlobalProgram(buffer);
         RenderSystem.enableDepthTest();

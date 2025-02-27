@@ -83,19 +83,19 @@ public class BeatcraftParticleRenderer {
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
-        particles.forEach(p -> p.update(dt, buffer, cameraPos));
-        lastUpdateTime = t;
-        particles.removeIf(Particle::shouldRemove);
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
+
+        particles.forEach(p -> p.update(dt, buffer, cameraPos));
+        lastUpdateTime = t;
+        particles.removeIf(Particle::shouldRemove);
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
 
         BufferRenderer.drawWithGlobalProgram(buff);
 

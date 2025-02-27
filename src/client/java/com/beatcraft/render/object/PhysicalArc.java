@@ -172,6 +172,11 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         //Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
         int segments = 50;
 
         for (int i = 0; i < segments; i++) {
@@ -230,10 +235,6 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         BuiltBuffer buff = buffer.endNullable();
         if (buff == null) return;
 
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         BufferRenderer.drawWithGlobalProgram(buff);
 

@@ -90,6 +90,12 @@ public class QuadMesh implements Mesh {
     @Override
     public void render(Vector3f position, Quaternionf orientation, boolean sortBuffer) {
         BufferBuilder buffer = createBuffer();
+
+
+        int oldTexture = RenderSystem.getShaderTexture(0);
+        RenderSystem.setShaderTexture(0, texture);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+
         drawToBuffer(buffer, position, orientation, MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
 
         BuiltBuffer buff = buffer.endNullable();
@@ -99,9 +105,6 @@ public class QuadMesh implements Mesh {
             buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         }
 
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         BufferRenderer.drawWithGlobalProgram(buff);
 
         RenderSystem.setShaderTexture(0, oldTexture);

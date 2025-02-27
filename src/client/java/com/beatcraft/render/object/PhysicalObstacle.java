@@ -86,6 +86,12 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         List<Vector3f[]> faces = BeatcraftRenderer.getCubeFaces(bounds.min, bounds.max);
 
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.depthMask(false);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
         for (Vector3f[] face : faces) {
             var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);
             var c2 = face[1].rotate(orientation, new Vector3f()).add(pos).sub(cam);
@@ -101,12 +107,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         BuiltBuffer buff = buffer.endNullable();
         if (buff == null) return;
-
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.depthMask(false);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
 
