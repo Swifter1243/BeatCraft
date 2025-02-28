@@ -1,6 +1,7 @@
 package com.beatcraft.render.menu;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.ModifierMenu;
@@ -15,6 +16,7 @@ import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
@@ -44,6 +46,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         size.set(800, 500);
 
         initLayout();
+
+        toggleModifiers(BeatCraftClient.playerConfig.getActiveModifiers());
     }
 
     private void initLayout() {
@@ -115,7 +119,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     private final HashMap<String, ToggleWidget> toggles = new HashMap<>();
 
-    private Consumer<Boolean> getExclusionHandler(Consumer<Boolean> toggleHandler, String... exclusive) {
+    private Consumer<Boolean> getExclusionHandler(String label, Consumer<Boolean> toggleHandler, String... exclusive) {
         return (b) -> {
             if (b) {
                 for (String exclude : exclusive) {
@@ -126,6 +130,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                     }
                 }
             }
+            BeatCraftClient.playerConfig.setModifier(label, b);
             toggleHandler.accept(b);
         };
     }
@@ -156,7 +161,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             ), List.of(
                 new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F666666, 0x5F666666, 0)
             ))
-        ), getExclusionHandler(toggleHandler, exclusive));
+        ), getExclusionHandler(label, toggleHandler, exclusive));
         toggles.put(label, toggle);
         return new ContainerWidget(
             new Vector3f(x, y, 0), new Vector2f(widget_width, widget_height),
@@ -195,6 +200,30 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
     // Modifier Toggles
+
+    public void toggleModifiers(List<String> modifiers) {
+        modifiers.forEach(this::_toggleModifier);
+    }
+
+    private void _toggleModifier(String mod) {
+        Consumer<Boolean> a = switch (mod) {
+            case "No Fail" -> this::toggleNoFail;
+            case "1 Life" -> this::toggle1Life;
+            case "4 Lives" -> this::toggle4Lives;
+
+            case "Slower Song" -> this::toggleSlowerSong;
+            case "Faster Song" -> this::toggleFasterSong;
+            case "Super Fast Song" -> this::toggleSuperFastSong;
+
+            default -> b -> {};
+        };
+
+        toggles.get(mod).setState(true);
+
+        a.accept(true);
+
+    }
+
     private void toggleNoFail(boolean state) {
         GameLogicHandler.noFail = state;
     }

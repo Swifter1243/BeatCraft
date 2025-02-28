@@ -260,7 +260,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 () -> {
                     try {
                         song_play_request.cancel(true);
-                        //currentDisplay = null;
+                        currentDisplay = null;
                         HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                         BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
                         BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
@@ -293,16 +293,16 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
     private void setPreview(SongData data) {
         this.songDisplay.children.clear();
 
-        boolean in_list = false;
-        for (Widget widget : songListContainer.children) {
-            if (widget instanceof SongDisplayWidget songDisp && songDisp.data == currentDisplay) {
-                in_list = true;
-            }
-        }
-
-        if (!in_list) {
-            DynamicTexture.unloadTextureFromId(textureId);
-        }
+        //boolean in_list = false;
+        //for (Widget widget : songListContainer.children) {
+        //    if (widget instanceof SongDisplayWidget songDisp && songDisp.data == currentDisplay) {
+        //        in_list = true;
+        //    }
+        //}
+        //
+        //if (!in_list) {
+        //    DynamicTexture.unloadTextureFromId(textureId);
+        //}
 
         currentDisplay = data;
 

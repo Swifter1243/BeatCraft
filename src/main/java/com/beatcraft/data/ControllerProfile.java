@@ -104,6 +104,14 @@ public class ControllerProfile {
         return this.rightTranslation;
     }
 
+    public Vector3f getLeftRotationEuler() {
+        return this.leftRotation;
+    }
+
+    public Vector3f getRightRotationEuler() {
+        return this.rightRotation;
+    }
+
     public Quaternionf getLeftRotation() {
         return (new Quaternionf()).rotationYXZ(leftRotation.y, leftRotation.x, leftRotation.z);
     }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerConfig {
 
@@ -27,6 +28,8 @@ public class PlayerConfig {
     private boolean quality_smokeGraphics = true;
     private boolean quality_burnMarkTrails = true;
     private boolean quality_sparkParticles = true;
+
+    private ArrayList<String> activeModifiers = new ArrayList<>();
 
     private int controller_selectedProfile_index = -1;
 
@@ -49,6 +52,14 @@ public class PlayerConfig {
         quality_sparkParticles = JsonUtil.getOrDefault(json, "quality.spark_particles", JsonElement::getAsBoolean, quality_sparkParticles);
 
         option_reducedDebris = JsonUtil.getOrDefault(json, "option.reduced_debris", JsonElement::getAsBoolean, option_reducedDebris);
+
+        if (json.has("active_modifiers")) {
+            JsonArray rawModifiers = json.getAsJsonArray("active_modifiers");
+            rawModifiers.forEach(mod -> {
+
+                activeModifiers.add(mod.getAsString());
+            });
+        }
 
         controller_selectedProfile_index = JsonUtil.getOrDefault(json, "controller.selectedProfile.index", JsonElement::getAsInt, controller_selectedProfile_index);
 
@@ -87,6 +98,12 @@ public class PlayerConfig {
 
         json.add("controller.profiles", array);
 
+        JsonArray array2 = new JsonArray();
+
+        activeModifiers.forEach(array2::add);
+
+        json.add("active_modifiers", array2);
+
     }
 
     public PlayerConfig() {
@@ -103,6 +120,22 @@ public class PlayerConfig {
                 BeatCraft.LOGGER.error("Error creating player config file: ", e);
             }
         }
+    }
+
+    public void setModifier(String modifier, boolean active) {
+        if (active && !activeModifiers.contains(modifier)) {
+            activeModifiers.add(modifier);
+        } else if (!active) {
+            activeModifiers.remove(modifier);
+        }
+    }
+
+    public List<String> getActiveModifiers() {
+        return activeModifiers;
+    }
+
+    public boolean isModifierActive(String modifier) {
+        return activeModifiers.contains(modifier);
     }
 
     public void setVolume(float volume) {
@@ -176,6 +209,29 @@ public class PlayerConfig {
         }
     }
 
+    public int getSelectedControllerProfileIndex() {
+        return controller_selectedProfile_index;
+    }
+
+    public void selectProfile(int index) {
+        controller_selectedProfile_index = Math.clamp(index, -1, profiles.size()-1);
+    }
+
+    public int getProfileCount() {
+        return profiles.size();
+    }
+
+    public ControllerProfile addProfile() {
+        ControllerProfile profile = new ControllerProfile();
+        profiles.add(profile);
+        return profile;
+    }
+
+    public void deleteControllerProfile(int index) {
+        if (0 <= index && index < profiles.size()) {
+            profiles.remove(index);
+        }
+    }
 
 
     public static PlayerConfig loadFromFile() {

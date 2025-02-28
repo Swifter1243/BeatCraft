@@ -33,6 +33,8 @@ public class DynamicTexture {
 
         textureID = Identifier.of(BeatCraft.MOD_ID, "dynamic/" + filterString(path.toLowerCase()));
 
+        unloadTextureFromId(textureID);
+
         MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
 
         loadedTextures.add(textureID);
