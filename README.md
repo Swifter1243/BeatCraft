@@ -1,3 +1,5 @@
+Download [BeatCraft from Modrinth!](https://modrinth.com/mod/beatcraft)
+
 # THIS SHIT IS STILL WORK IN PROGRESS.
 
 About 3 years ago (2021) I made a [reddit post](https://www.reddit.com/r/Minecraft/comments/l4w7of/working_on_making_beat_saber_in_minecraft) showing off my attempt at making Beat Saber in Minecraft. It got all sorts of attention and people really wanted to play it. There was only one problem..
