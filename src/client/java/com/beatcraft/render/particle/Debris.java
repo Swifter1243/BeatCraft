@@ -34,8 +34,7 @@ public class Debris implements Particle {
         velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
         velocity.mul(decay);
 
-        BeatcraftRenderer.recordNoteRenderCall((tri, quad, cam) -> {
-            if (tri == null) return;
+        BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
             mesh.drawToBuffer(tri, position, orientation, cam);
         });
 

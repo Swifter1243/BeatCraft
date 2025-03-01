@@ -23,7 +23,7 @@ public class BeatcraftRenderer {
 
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
-    private static final ArrayList<TriConsumer<BufferBuilder, BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
@@ -31,7 +31,7 @@ public class BeatcraftRenderer {
     }
 
     // lambdas are passed, in order, the triangle buffer and the quad buffer
-    public static void recordNoteRenderCall(TriConsumer<BufferBuilder, BufferBuilder, Vector3f> call) {
+    public static void recordNoteRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
         noteRenderCalls.add(call);
     }
 
@@ -63,7 +63,7 @@ public class BeatcraftRenderer {
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         for (var renderCall : noteRenderCalls) {
             try {
-                renderCall.accept(triBuffer, null, cameraPos);
+                renderCall.accept(triBuffer, cameraPos);
             } catch (Exception e) {
                 BeatCraft.LOGGER.error("Render call failed! ", e);
             }
@@ -73,20 +73,20 @@ public class BeatcraftRenderer {
             BufferRenderer.drawWithGlobalProgram(triBuff);
         }
 
-        BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        for (var renderCall : noteRenderCalls) {
-            try {
-                renderCall.accept(null, quadBuffer, cameraPos);
-            } catch (Exception e) {
-                BeatCraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-
-        var quadBuff = quadBuffer.endNullable();
-        if (quadBuff != null) {
-            BufferRenderer.drawWithGlobalProgram(quadBuff);
-        }
+        //BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        //
+        //for (var renderCall : noteRenderCalls) {
+        //    try {
+        //        renderCall.accept(null, quadBuffer, cameraPos);
+        //    } catch (Exception e) {
+        //        BeatCraft.LOGGER.error("Render call failed! ", e);
+        //    }
+        //}
+        //
+        //var quadBuff = quadBuffer.endNullable();
+        //if (quadBuff != null) {
+        //    BufferRenderer.drawWithGlobalProgram(quadBuff);
+        //}
 
         RenderSystem.setShaderTexture(0, oldTexture);
 

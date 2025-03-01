@@ -41,13 +41,14 @@ public class QuadMesh implements Mesh {
 
     public TriangleMesh toTriangleMesh() {
 
-        ArrayList<Triangle> tris = new ArrayList<>();
-
         TriangleMesh newMesh = new TriangleMesh();
 
         for (Quad quad : quads) {
             newMesh.addTris(quad.toTriangles(this, newMesh));
         }
+
+        newMesh.texture = texture;
+        newMesh.color = color;
 
         return newMesh;
     }

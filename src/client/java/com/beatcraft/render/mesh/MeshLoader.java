@@ -17,6 +17,10 @@ public class MeshLoader {
     public static QuadMesh CHAIN_HEAD_MESH;
     public static QuadMesh CHAIN_LINK_MESH;
 
+    public static TriangleMesh COLOR_NOTE_RENDER_MESH;
+    public static TriangleMesh CHAIN_HEAD_RENDER_MESH;
+    public static TriangleMesh CHAIN_LINK_RENDER_MESH;
+
     public static final Identifier NOTE_TEXTURE = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
 
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
@@ -27,6 +31,10 @@ public class MeshLoader {
         CHAIN_HEAD_MESH.texture = NOTE_TEXTURE;
         CHAIN_LINK_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_link"), modelLoader);
         CHAIN_LINK_MESH.texture = NOTE_TEXTURE;
+
+        COLOR_NOTE_RENDER_MESH = COLOR_NOTE_MESH.toTriangleMesh();
+        CHAIN_HEAD_RENDER_MESH = CHAIN_HEAD_MESH.toTriangleMesh();
+        CHAIN_LINK_RENDER_MESH = CHAIN_LINK_MESH.toTriangleMesh();
     }
 
 

@@ -2,6 +2,7 @@ package com.beatcraft.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -113,11 +114,11 @@ public class ControllerProfile {
     }
 
     public Quaternionf getLeftRotation() {
-        return (new Quaternionf()).rotationYXZ(leftRotation.y, leftRotation.x, leftRotation.z);
+        return (new Quaternionf()).rotationYXZ(leftRotation.y * MathHelper.RADIANS_PER_DEGREE, leftRotation.x * MathHelper.RADIANS_PER_DEGREE, leftRotation.z * MathHelper.RADIANS_PER_DEGREE);
     }
 
     public Quaternionf getRightRotation() {
-        return (new Quaternionf()).rotationYXZ(rightRotation.y, rightRotation.x, rightRotation.z);
+        return (new Quaternionf()).rotationYXZ(rightRotation.y * MathHelper.RADIANS_PER_DEGREE, rightRotation.x * MathHelper.RADIANS_PER_DEGREE, rightRotation.z * MathHelper.RADIANS_PER_DEGREE);
     }
 
     public void setLeftTranslation(Vector3f pos) {

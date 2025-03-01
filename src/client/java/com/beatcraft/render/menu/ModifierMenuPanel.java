@@ -3,6 +3,7 @@ package com.beatcraft.render.menu;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.data.types.Stash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.render.HUDRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,11 +92,43 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         // particles on/off
         // trail intensity
         // vivecraft: show player arms
+        // show minecraft hud (F1)
         // cut sound volume
         // custom jump distance maybe?
         // player height?
         // dynamic volume adjustment (idk how to even implement this as a feature tbh)
-        //
+
+        playerOptionsPage.children.addAll(List.of(
+            SettingsMenuPanel.getOptionModifier("Reduced Debris",
+                () -> BeatCraftClient.playerConfig.setReducedDebris(false),
+                () -> BeatCraftClient.playerConfig.setReducedDebris(true),
+                () -> BeatCraftClient.playerConfig.isReducedDebris() ? "ON" : "OFF",
+                new Vector3f(-100, -180, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Particles",
+                () -> BeatCraftClient.playerConfig.setSparkParticles(false),
+                () -> BeatCraftClient.playerConfig.setSparkParticles(true),
+                () -> BeatCraftClient.playerConfig.doSparkParticles() ? "ON" : "OFF",
+                new Vector3f(-100, -130, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Trail Intensity",
+                () -> Stash.updateTrailSize(Math.max(10, Stash.getTrailSize()-10)),
+                () -> Stash.updateTrailSize(Math.min(200, Stash.getTrailSize()+10)),
+                () -> String.valueOf(Stash.getTrailSize()),
+                new Vector3f(-100, -80, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Show Arms",
+                () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands = false,
+                () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands = true,
+                () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands ? "SHOW" : "HIDE",
+                new Vector3f(-100, -30, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Show Hotbar",
+                () -> MinecraftClient.getInstance().options.hudHidden = true,
+                () -> MinecraftClient.getInstance().options.hudHidden = false,
+                () -> MinecraftClient.getInstance().options.hudHidden ? "HIDE" : "SHOW",
+                new Vector3f(-100, 20, 0))
+        ));
 
     }
 

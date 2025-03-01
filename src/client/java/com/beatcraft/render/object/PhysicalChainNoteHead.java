@@ -48,10 +48,11 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
 
 
         if (!isBaseDissolved()) {
-            BeatcraftRenderer.recordNoteRenderCall((tri, quad, cam) -> {
-                if (quad == null) return;
-                MeshLoader.CHAIN_HEAD_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_HEAD_MESH.drawToBuffer(quad, localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()), localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf()), cam);
+            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
+            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+            BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+                MeshLoader.CHAIN_HEAD_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_HEAD_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
         }
 

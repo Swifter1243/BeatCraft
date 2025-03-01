@@ -9,6 +9,7 @@ import com.beatcraft.items.group.ModItemGroup;
 import com.beatcraft.networking.BeatCraftNetworking;
 import com.beatcraft.networking.s2c.MapSyncS2CPayload;
 import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
+import com.beatcraft.world.FirstJoinState;
 import com.beatcraft.world.gen.BeatCraftWorldGeneration;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
@@ -21,11 +22,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.joml.Vector3f;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.PersistentState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +44,13 @@ public class BeatCraft implements ModInitializer {
 	public static String currentTrackId = null;
 	public static String currentSet = null;
 	public static String currentDiff = null;
+
+	private static final PersistentState.Type<FirstJoinState> joinStateType = new PersistentState.Type<>(
+		FirstJoinState::new,
+		FirstJoinState::fromNbt,
+		null
+	);
+
 
 	@Override
 	public void onInitialize() {
@@ -72,10 +83,45 @@ public class BeatCraft implements ModInitializer {
 
 		ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
 			BeatCraft.LOGGER.info("player connect!");
+
+			ServerPlayerEntity player = handler.player;
+			ServerWorld world = player.getServerWorld();
+			var stateManager = world.getPersistentStateManager();
+
+			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
+
+			if (!state.hasJoined()) {
+				state.markJoin();
+
+				placePlayArea(world);
+				BeatCraft.LOGGER.info("Auto-placed playarea");
+
+				player.teleport(world, 0.0, 0.0, 0.0, 0, 0);
+
+				ItemStack lSaber = new ItemStack(ModItems.SABER_ITEM);
+				ItemStack rSaber = new ItemStack(ModItems.SABER_ITEM);
+				lSaber.set(ModComponents.AUTO_SYNC_COLOR, 0);
+				lSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0xc03030);
+				rSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
+				rSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
+
+				player.getInventory().offHand.set(0, lSaber);
+				player.getInventory().setStack(0, rSaber);
+
+				server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
+				world.setTimeOfDay(18_000);
+				server.setDifficulty(Difficulty.PEACEFUL, true);
+
+				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle §7 set to §4false§7;"));
+
+			}
+
 			if (currentTrackedPlayer != null) {
 				packetSender.sendPacket(new MapSyncS2CPayload(currentTrackedPlayer, currentTrackId, currentSet, currentDiff));
 			}
 		});
+
+
 
 	}
 
@@ -117,6 +163,14 @@ public class BeatCraft implements ModInitializer {
 
 		ServerWorld world = context.getSource().getWorld();
 
+		placePlayArea(world);
+
+		context.getSource().sendFeedback(() -> Text.of("Generated play area at world origin"), true);
+
+		return 1;
+	}
+
+	private static void placePlayArea(ServerWorld world) {
 		// play area tower
 		fillBlocks(world, new BlockPos(-2, -64, -2), new BlockPos(1, -1, 1), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
 
@@ -150,9 +204,6 @@ public class BeatCraft implements ModInitializer {
 		world.setBlockState(new BlockPos(-1, -1, 7), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.SOUTH).with(EdgeLightTileBlock.ROTATION, Direction.DOWN));
 		world.setBlockState(new BlockPos(-2, -1, 7), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.SOUTH).with(CornerLightTileBlock.ROTATION, Direction.DOWN));
 
-		context.getSource().sendFeedback(() -> Text.of("Generated play area at world origin"), true);
-
-		return 1;
 	}
 
 

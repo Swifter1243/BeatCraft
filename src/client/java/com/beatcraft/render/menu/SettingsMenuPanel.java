@@ -3,7 +3,6 @@ package com.beatcraft.render.menu;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.menu.SettingsMenu;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.util.Pair;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -140,7 +139,7 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
     }
 
-    private ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size) {
+    private static ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size) {
         return new ButtonWidget(
             position, size, onClick,
             new HoverWidget(new Vector3f(), new Vector2f(size), List.of(
@@ -152,7 +151,7 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
         );
     }
 
-    private Widget getOptionModifier(String label, Runnable down, Runnable up, Callable<String> getter, Vector3f position) {
+    protected static Widget getOptionModifier(String label, Runnable down, Runnable up, Callable<String> getter, Vector3f position) {
         Vector2f SIZE = new Vector2f();
 
         try {
