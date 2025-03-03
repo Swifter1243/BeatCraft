@@ -10,6 +10,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
@@ -24,6 +25,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import io.wispforest.owo.ui.event.WindowResizeCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -120,6 +122,11 @@ public class BeatCraftClient implements ClientModInitializer {
                 return true;
             }
             return false;
+        });
+
+
+        WindowResizeCallback.EVENT.register((client, window) -> {
+            BeatcraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
         });
 
     }

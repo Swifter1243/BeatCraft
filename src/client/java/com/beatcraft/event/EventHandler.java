@@ -1,5 +1,6 @@
 package com.beatcraft.event;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.utils.MathUtil;
 
 import java.util.ArrayList;

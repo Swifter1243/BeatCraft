@@ -177,10 +177,10 @@ public class MathUtil {
 
     public static Color lerpColor(Color a, Color b, float time) {
         return new Color(
-            Math.lerp(a.getRed(), b.getRed(), time),
-            Math.lerp(a.getGreen(), b.getGreen(), time),
-            Math.lerp(a.getBlue(), b.getBlue(), time),
-            Math.lerp(a.getAlpha(), b.getAlpha(), time)
+            Math.clamp(Math.lerp(a.getRed(), b.getRed(), time), 0, 255),
+            Math.clamp(Math.lerp(a.getGreen(), b.getGreen(), time), 0, 255),
+            Math.clamp(Math.lerp(a.getBlue(), b.getBlue(), time), 0, 255),
+            Math.clamp(Math.lerp(a.getAlpha(), b.getAlpha(), time), 0, 255)
         );
     }
 

@@ -90,6 +90,11 @@ public class Color {
         return alpha;
     }
 
+    public Color withAlpha(float alpha) {
+        this.alpha = alpha;
+        return this;
+    }
+
     public void set(float red, float green, float blue) {
         this.red = red;
         this.green = green;
@@ -110,6 +115,34 @@ public class Color {
         color <<= 8;
         color += (int) (blue * 255);
         return color;
+    }
+
+    public int lerpBrightness(float brightness) {
+        float newRed;
+        float newGreen;
+        float newBlue;
+
+        if (brightness <= 1.0f) {
+            newRed = red * brightness;
+            newGreen = green * brightness;
+            newBlue = blue * brightness;
+        } else {
+            float overBright = brightness - 1.0f;
+            newRed = red + (1.0f - red) * overBright;
+            newGreen = green + (1.0f - green) * overBright;
+            newBlue = blue + (1.0f - blue) * overBright;
+        }
+
+        newRed = Math.max(0.0f, Math.min(1.0f, newRed));
+        newGreen = Math.max(0.0f, Math.min(1.0f, newGreen));
+        newBlue = Math.max(0.0f, Math.min(1.0f, newBlue));
+
+        int intRed = (int) (newRed * 255);
+        int intGreen = (int) (newGreen * 255);
+        int intBlue = (int) (newBlue * 255);
+        int intAlpha = (int) (alpha * 255);
+
+        return (intAlpha << 24) | (intRed << 16) | (intGreen << 8) | intBlue;
     }
 
 }

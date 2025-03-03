@@ -29,6 +29,20 @@ public class WorldRendererMixin {
         method = "render",
         at = @At(
             value = "INVOKE",
+            target = "Lnet/minecraft/client/render/BackgroundRenderer;applyFog(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/BackgroundRenderer$FogType;FZF)V"
+        )
+    )
+    public void bloomFogInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+        if (BeatcraftRenderer.bloomfog != null) {
+            BeatcraftRenderer.bloomfog.render();
+        }
+    }
+
+
+    @Inject(
+        method = "render",
+        at = @At(
+            value = "INVOKE",
             target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/render/Camera;)V"
         )
     )

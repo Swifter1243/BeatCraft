@@ -80,7 +80,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         modifierPage.children.addAll(List.of(
                 //getModifierToggle("Pro Mode", 3, 0, this::toggleProMode, "Zen Mode"),
                 //getModifierToggle("Strict Angles", 3, 1, this::toggleStrictAngles, "Zen Mode"),
-                //getModifierToggle("Zen Mode", 3, 2, this::toggleZenMode, "No Fail", "1 Life", "4 Lives", "No Bombs", "No Walls", "No Arrows", "Ghost Notes", "Disappearing Arrows", "Small Notes", "Pro Mode", "Strict Angles"),
+                getModifierToggle("Zen Mode", 3, 2, this::toggleZenMode, "No Fail", "1 Life", "4 Lives", "No Bombs", "No Walls", "No Arrows", "Ghost Notes", "Disappearing Arrows", "Small Notes", "Pro Mode", "Strict Angles"),
 
                 getModifierToggle("Slower Song", 4, 0, this::toggleSlowerSong, "Faster Song", "Super Fast Song"),
                 getModifierToggle("Faster Song", 4, 1, this::toggleFasterSong, "Slower Song", "Super Fast Song"),

@@ -10,10 +10,12 @@ import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Info {
     private float bpm;
+    private String version;
     private String environmentName;
     private String songFilename;
     private String mapDirectory;
@@ -73,10 +75,24 @@ public class Info {
         return Path.of(this.getMapDirectory(), path).toString();
     }
 
+    public int getMajorVersion() {
+        return Integer.parseInt((Arrays.stream(version.split("\\.")).toList()).getFirst());
+    }
+
+    public int getMinorVersion() {
+        return Integer.parseInt((Arrays.stream(version.split("\\.")).toList()).get(1));
+    }
+
     public static Info from(JsonObject json, String path) throws IOException {
         Info info = new Info();
 
         info.mapDirectory = Path.of(path).getParent().toString();
+
+        if (json.has("version")) {
+            info.version = json.get("version").getAsString();
+        } else {
+            info.version = json.get("_version").getAsString();
+        }
 
         if (json.has("audio")) {
             JsonObject audio = json.get("audio").getAsJsonObject();

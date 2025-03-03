@@ -128,7 +128,7 @@ public class BeatmapPlayer {
             elapsedNanoTime += (long) (deltaNanoSeconds * playbackSpeed);
 
             if (currentBeatmap != null) {
-                currentBeatmap.update(getCurrentBeat());
+                currentBeatmap.update(getCurrentBeat(), (double) deltaNanoSeconds / 1_000_000_000d);
             }
         }
 

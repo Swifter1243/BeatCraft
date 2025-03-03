@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.beatmap.data.event.*;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
@@ -8,6 +9,7 @@ import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
+import com.beatcraft.lightshow.environment.Environment;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
@@ -41,12 +43,14 @@ public abstract class Difficulty {
     public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
 
+    public Environment lightShowEnvironment;
+
     public Difficulty(Info info, Info.SetDifficulty setDifficulty) {
         this.info = info;
         this.setDifficulty = setDifficulty;
     }
 
-    protected int compareObjects(BeatmapObject o1, BeatmapObject o2) {
+    public int compareObjects(BeatmapObject o1, BeatmapObject o2) {
         float a = o1.getBeat();
         float b = o2.getBeat();
 
@@ -147,6 +151,8 @@ public abstract class Difficulty {
 
     public void render(MatrixStack matrices, Camera camera) {
         if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
+        if (lightShowEnvironment != null) lightShowEnvironment.render(matrices, camera);
+        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.render(matrices, camera));
         bombNotes.forEach(o -> o.render(matrices, camera));
         chainHeadNotes.forEach(o -> o.render(matrices, camera));
@@ -158,6 +164,7 @@ public abstract class Difficulty {
     public void seek(float beat) {
         trackLibrary.seek(beat);
         parentHandler.seek(beat);
+        if (lightShowEnvironment != null) lightShowEnvironment.seek(beat);
         colorNotes.forEach(o -> o.seek(beat));
         bombNotes.forEach(o -> o.seek(beat));
         chainHeadNotes.forEach(o -> o.seek(beat));
@@ -168,9 +175,11 @@ public abstract class Difficulty {
         Replayer.seek(beat);
     }
 
-    public void update(float beat) {
+    public void update(float beat, double deltaTime) {
         trackLibrary.update(beat);
         parentHandler.update(beat);
+        if (lightShowEnvironment != null) lightShowEnvironment.update(beat, deltaTime);
+        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.update(beat));
         bombNotes.forEach(o -> o.update(beat));
         chainHeadNotes.forEach(o -> o.update(beat));

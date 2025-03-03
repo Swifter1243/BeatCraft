@@ -109,10 +109,11 @@ public class BeatCraft implements ModInitializer {
 				player.getInventory().setStack(0, rSaber);
 
 				server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
+				server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
 				world.setTimeOfDay(18_000);
 				server.setDifficulty(Difficulty.PEACEFUL, true);
 
-				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle §7 set to §4false§7;"));
+				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7/§fDoWeatherCycle §7 set to §4false§7;"));
 
 			}
 
@@ -192,11 +193,11 @@ public class BeatCraft implements ModInitializer {
 		world.setBlockState(new BlockPos(0, 0, -2), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.NORTH));
 
 		// runway
-		fillBlocks(world, new BlockPos(-2, -1, 8), new BlockPos(1, -1, 44), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
+		fillBlocks(world, new BlockPos(-2, -1, 8), new BlockPos(1, -1, 300), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
 
 		// runway lights
-		fillBlocks(world, new BlockPos(-2, 0, 8), new BlockPos(-2, 0, 39), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.WEST));
-		fillBlocks(world, new BlockPos(1, 0, 8), new BlockPos(1, 0, 39), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.EAST));
+		fillBlocks(world, new BlockPos(-2, 0, 8), new BlockPos(-2, 0, 290), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.WEST));
+		fillBlocks(world, new BlockPos(1, 0, 8), new BlockPos(1, 0, 290), ModBlocks.EDGE_LIGHT_TILE_BLOCK.getDefaultState().with(EdgeLightTileBlock.FACE, Direction.DOWN).with(EdgeLightTileBlock.ROTATION, Direction.EAST));
 
 		// runway front lights
 		world.setBlockState(new BlockPos(1, -1, 7), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.SOUTH).with(CornerLightTileBlock.ROTATION, Direction.EAST));

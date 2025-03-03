@@ -3,6 +3,7 @@ package com.beatcraft.render;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,10 +22,17 @@ import java.util.function.Consumer;
 
 public class BeatcraftRenderer {
 
+    public static Bloomfog bloomfog = new Bloomfog();
+
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
+
+    public static void updateBloomfogSize(int width, int height) {
+
+    }
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         BeatmapPlayer.onRender(matrices, camera, tickDelta);
@@ -43,6 +51,10 @@ public class BeatcraftRenderer {
         laserRenderCalls.add(call);
     }
 
+    public static void recordLightRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        lightRenderCalls.add(call);
+    }
+
     public static void recordEarlyRenderCall(Consumer<VertexConsumerProvider> call) {
         earlyRenderCalls.add(call);
     }
@@ -50,9 +62,34 @@ public class BeatcraftRenderer {
     public static void earlyRender(VertexConsumerProvider vcp) {
 
         Tessellator tessellator = Tessellator.getInstance();
+        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        lightRenderCalls.clear();
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+            BufferRenderer.drawWithGlobalProgram(buff);
+        }
+
+
+
+
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
@@ -102,7 +139,7 @@ public class BeatcraftRenderer {
         }
         earlyRenderCalls.clear();
 
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
@@ -116,7 +153,7 @@ public class BeatcraftRenderer {
 
         laserRenderCalls.clear();
 
-        var buff = buffer.endNullable();
+        buff = buffer.endNullable();
         if (buff == null) return;
 
 

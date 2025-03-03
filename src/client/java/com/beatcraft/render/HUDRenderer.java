@@ -2,6 +2,7 @@ package com.beatcraft.render;
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.NoteType;
@@ -133,6 +134,12 @@ public class HUDRenderer {
     public static void renderGameHud(VertexConsumerProvider immediate) {
 
         if (!showHUD) return;
+
+        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) {
+            renderTime(null, null, null, null, null);
+            return;
+        }
+
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -528,6 +535,8 @@ public class HUDRenderer {
         if (progress > 1 && BeatmapPlayer.currentInfo != null) {
             GameLogicHandler.triggerSongEnd();
         }
+
+        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
 
         String display = currentTime + " | " + length;
 
