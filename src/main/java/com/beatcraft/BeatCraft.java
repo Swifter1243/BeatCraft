@@ -110,10 +110,11 @@ public class BeatCraft implements ModInitializer {
 
 				server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
 				server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
+				server.getGameRules().get(GameRules.DO_TRADER_SPAWNING).set(false, server);
 				world.setTimeOfDay(18_000);
 				server.setDifficulty(Difficulty.PEACEFUL, true);
 
-				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7/§fDoWeatherCycle §7 set to §4false§7;"));
+				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, and §fDoTraderSpawning §7 set to §4false§7;"));
 
 			}
 
