@@ -183,7 +183,7 @@ public class Environments {
 
         var chevron = new Chevron();
 
-        chevron.setPosition(new Vector3f(0, 4, 30));
+        chevron.setPosition(new Vector3f(0, 4, 55));
 
         tg.lights.add(chevron);
 

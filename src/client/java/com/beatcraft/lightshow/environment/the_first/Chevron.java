@@ -15,8 +15,8 @@ public class Chevron extends LightObject {
 
     private static final GlowingCuboid arm1 = new GlowingCuboid(
         new Hitbox(
-            new Vector3f(-0.03f, -1.25f, -0.03f),
-            new Vector3f(0.03f, 0.02f, 0.03f)
+            new Vector3f(-0.06f, -1.5f, -0.06f),
+            new Vector3f(0.06f, 0.03f, 0.06f)
         ),
         new Vector3f(),
         new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
@@ -24,8 +24,8 @@ public class Chevron extends LightObject {
 
     private static final GlowingCuboid arm2 = new GlowingCuboid(
         new Hitbox(
-            new Vector3f(-0.03f, -1.25f, -0.03f),
-            new Vector3f(0.03f, 0.02f, 0.03f)
+            new Vector3f(-0.06f, -1.5f, -0.06f),
+            new Vector3f(0.06f, 0.03f, 0.06f)
         ),
         new Vector3f(),
         new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
