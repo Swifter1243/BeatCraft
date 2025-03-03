@@ -130,6 +130,10 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector3f(-100, 20, 0))
         ));
 
+
+        downloaderPage.children.add(new TextWidget("(Go to minecraft settings > beatcraft > beatsaver)", new Vector3f(0, -11, -0.01f), 3));
+        replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
+
     }
 
     private Widget getOptionButton(String label, int index, int count, Runnable onClick, SongSelectPage page) {
