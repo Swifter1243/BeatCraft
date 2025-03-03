@@ -2,6 +2,7 @@ package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
+import com.beatcraft.lightshow.environment.the_first.Chevron;
 import com.beatcraft.lightshow.environment.the_first.RotatingLightsGroup;
 import com.beatcraft.lightshow.environment.the_first.StaticLightsGroup;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -179,6 +180,12 @@ public class Environments {
 
         bg.lights.addAll(r1);
         tg.lights.addAll(r2);
+
+        var chevron = new Chevron();
+
+        chevron.setPosition(new Vector3f(0, 4, 30));
+
+        tg.lights.add(chevron);
 
         theFirst.bindLightGroup(EventGroup.BACK_LASERS, bg);
         theFirst.bindLightGroup(EventGroup.CENTER_LASERS, tg);
