@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 
 public class BeatcraftRenderer {
 
-    public static Bloomfog bloomfog = new Bloomfog();
+    public static Bloomfog bloomfog;
 
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
@@ -30,8 +30,12 @@ public class BeatcraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
 
-    public static void updateBloomfogSize(int width, int height) {
+    public static void init() {
+        bloomfog = new Bloomfog();
+    }
 
+    public static void updateBloomfogSize(int width, int height) {
+        if (bloomfog != null && bloomfog.framebuffer != null) bloomfog.resize(width, height);
     }
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {

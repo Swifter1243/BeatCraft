@@ -40,28 +40,32 @@ public class GlowingCuboid extends LightObject {
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
-        bloomfog.record((b, c) -> _render(b, c, true));
+        if (bloomfog != null) bloomfog.record((b, c, r) -> _render(b, c, true, r));
 
-        BeatcraftRenderer.recordLightRenderCall((b, c) -> _render(b, c, false));
+        BeatcraftRenderer.recordLightRenderCall((b, c) -> _render(b, c, false, null));
 
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog) {
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation) {
         var color = isBloomfog ? lightState.getColor() : lightState.getEffectiveColor();
-        var posMod = isBloomfog ? lightState.getBrightness()+0.5f : 1;
 
         for (var face : faces) {
-
 
             if ((color & 0xFF000000) == 0) {
                 continue;
             }
 
+            var v0 = face[0].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
+            var v1 = face[1].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
+            var v2 = face[2].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
+            var v3 = face[3].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
 
-            var v0 = face[0].mul(posMod, new Vector3f()).rotate(orientation).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v1 = face[1].mul(posMod, new Vector3f()).rotate(orientation).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v2 = face[2].mul(posMod, new Vector3f()).rotate(orientation).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v3 = face[3].mul(posMod, new Vector3f()).rotate(orientation).rotate(rotation).add(position).add(offset).sub(cameraPos);
+            if (isBloomfog) {
+                v0.rotate(cameraRotation);
+                v1.rotate(cameraRotation);
+                v2.rotate(cameraRotation);
+                v3.rotate(cameraRotation);
+            }
 
             buffer.vertex(v0).color(color);
             buffer.vertex(v1).color(color);

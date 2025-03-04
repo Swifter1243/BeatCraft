@@ -186,6 +186,7 @@ public class GameLogicHandler {
         if (inWall) {
             processDamage(WALL_HP * (float) deltaTime);
             checkFail();
+            breakCombo();
         }
 
     }
