@@ -31,7 +31,7 @@ public class BeatcraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
 
     public static void init() {
-        bloomfog = new Bloomfog();
+        bloomfog = Bloomfog.create();
     }
 
     public static void updateBloomfogSize(int width, int height) {
