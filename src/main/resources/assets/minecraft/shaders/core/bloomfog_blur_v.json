@@ -1,5 +1,5 @@
 {
-    "vertex": "bloomfog_blur_v",
+    "vertex": "bloomfog_blur",
     "fragment": "bloomfog_blur_v",
     "samplers": [
         { "name": "Sampler0" }

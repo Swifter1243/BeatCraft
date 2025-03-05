@@ -19,8 +19,8 @@ public class MinecraftClientFramebufferMixin {
         cancellable = true
     )
     public void getFrameBuffer(CallbackInfoReturnable<Framebuffer> ci) {
-        if (BeatcraftRenderer.bloomfog != null && BeatcraftRenderer.bloomfog.overrideBuffer && BeatcraftRenderer.bloomfog.framebuffer != null) {
-            ci.setReturnValue(BeatcraftRenderer.bloomfog.framebuffer);
+        if (BeatcraftRenderer.bloomfog != null && BeatcraftRenderer.bloomfog.overrideBuffer && BeatcraftRenderer.bloomfog.overrideFramebuffer != null) {
+            ci.setReturnValue(BeatcraftRenderer.bloomfog.overrideFramebuffer);
             ci.cancel();
         }
     }

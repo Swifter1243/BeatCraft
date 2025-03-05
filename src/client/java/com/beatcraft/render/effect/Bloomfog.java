@@ -3,12 +3,10 @@ package com.beatcraft.render.effect;
 import com.beatcraft.BeatCraft;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.SimpleFramebuffer;
-import net.minecraft.client.gl.Uniform;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
@@ -16,16 +14,11 @@ import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-import org.vivecraft.client_vr.render.VRShaders;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.UUID;
-
 
 public class Bloomfog {
 
@@ -48,6 +41,8 @@ public class Bloomfog {
     }
 
     public boolean overrideBuffer = false;
+    public Framebuffer overrideFramebuffer = null;
+
     public SimpleFramebuffer framebuffer;
     private final ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> renderCalls = new ArrayList<>();
     private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
@@ -82,7 +77,7 @@ public class Bloomfog {
         }
         framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
 
-        pingPongBuffers[0] = new SimpleFramebuffer(1920/4, 1080/4, true, true);
+        pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
         pingPongBuffers[1] = new SimpleFramebuffer(1920, 1080, true, true);
         blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
 
@@ -134,6 +129,7 @@ public class Bloomfog {
         var window = MinecraftClient.getInstance().getWindow();
 
         overrideBuffer = true;
+        overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -162,6 +158,7 @@ public class Bloomfog {
 
         framebuffer.endWrite();
         overrideBuffer = false;
+        overrideFramebuffer = null;
 
 
         var oldProjMat = RenderSystem.getProjectionMatrix();
@@ -179,8 +176,8 @@ public class Bloomfog {
         float fov = (float) Math.toRadians(renderer.getFov(renderer.getCamera(), 0, true));
 
 
-        int prevMinFilter = GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER);
-        int prevMagFilter = GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER);
+        //int prevMinFilter = GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER);
+        //int prevMagFilter = GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER);
 
         //BeatCraft.LOGGER.info("Player FOV: {}", fov);
         float quadHeight = (float) Math.tan(fov / 2.0f);
@@ -202,23 +199,23 @@ public class Bloomfog {
         buffer.vertex(-quadWidth / 2,  quadHeight / 2, -0.5f).texture(0.0f, 1.0f); // Bottom-left
 
 
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderTexture(0, blurredTexId);
         RenderSystem.enableBlend();
 
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
         RenderSystem.setProjectionMatrix(oldProjMat, oldSort);
 
         RenderSystem.enableCull();
-        RenderSystem.disableBlend();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
 
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, prevMinFilter);
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, prevMagFilter);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, prevMinFilter);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, prevMagFilter);
 
     }
 
@@ -228,8 +225,8 @@ public class Bloomfog {
         // blur ping-pong to output
 
 
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-        GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+        //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
         //Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
         //Quaternionf cameraRot = MinecraftClient.getInstance().gameRenderer.getCamera().getRotation().conjugate(new Quaternionf());
@@ -252,24 +249,27 @@ public class Bloomfog {
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
         out.beginWrite(true);
+        overrideBuffer = true;
+        overrideFramebuffer = out;
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
-        RenderSystem.setShader(() -> verticalPass ? blurShaderV : blurShaderH);
+        RenderSystem.setShader(verticalPass ? () -> blurShaderV : () -> blurShaderH);
 
-        RenderSystem.enableBlend();
-
-
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(width, height, 0, 0);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(width, height, 0, 0);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(width, height, 0, 0);
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(width, height, 0, 0);
+        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(1/width, 1/height, 0, 0);
+        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(1/width, 1/height, 0, 0);
+        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(1/width, 1/height, 0, 0);
+        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(1/width, 1/height, 0, 0);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
         out.endWrite();
+
+        overrideBuffer = false;
+        overrideFramebuffer = null;
+
     }
 
 }
