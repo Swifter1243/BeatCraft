@@ -46,6 +46,15 @@ public class GlowingCuboid extends LightObject {
 
     }
 
+    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, boolean isBloomfog) {
+        return basePos
+            .rotate(orientation, new Vector3f())
+            .rotate(rotation)
+            .add(position)
+            .add(offset)
+            .sub(cameraPos);
+    }
+
     private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation) {
         var color = isBloomfog ? lightState.getColor() : lightState.getEffectiveColor();
 
