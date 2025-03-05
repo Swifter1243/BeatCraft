@@ -61,7 +61,7 @@ public class Bloomfog {
 
     private final ShaderProgram blurShaderH;
     private final ShaderProgram blurShaderV;
-    private final ShaderProgram modifiedPosColShader;
+    public static ShaderProgram bloomfog_solid_shader;
 
     //private final Uniform vTexSize;
     //private final Uniform hTexSize;
@@ -71,7 +71,7 @@ public class Bloomfog {
         try {
             blurShaderH = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_h", VertexFormats.POSITION_TEXTURE);
             blurShaderV = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_v", VertexFormats.POSITION_TEXTURE);
-            modifiedPosColShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_color", VertexFormats.POSITION_COLOR);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -129,16 +129,18 @@ public class Bloomfog {
         framebuffer.clear(true);
 
         var window = MinecraftClient.getInstance().getWindow();
+        float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
 
         overrideBuffer = true;
         overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
-        RenderSystem.setShader(() -> modifiedPosColShader);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        RenderSystem.lineWidth(window.getWidth()/250f);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -154,17 +156,11 @@ public class Bloomfog {
         MinecraftClient client = MinecraftClient.getInstance();
         GameRenderer renderer = client.gameRenderer;
 
-        float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
         float fov = (float) Math.toRadians(renderer.getFov(renderer.getCamera(), tickDelta, true));
 
 
         float quadHeight = (float) Math.tan(fov / 2.0f);
         float quadWidth = quadHeight * aspectRatio;
-
-        buffer.vertex(-quadWidth / 2, -quadHeight / 2, -0.5f).color(0x01000000); // Top-left
-        buffer.vertex( quadWidth / 2, -quadHeight / 2, -0.5f).color(0x01000000); // Top-right
-        buffer.vertex( quadWidth / 2,  quadHeight / 2, -0.5f).color(0x01000000); // Bottom-right
-        buffer.vertex(-quadWidth / 2,  quadHeight / 2, -0.5f).color(0x01000000); // Bottom-left
 
         renderCalls.clear();
 
@@ -217,6 +213,11 @@ public class Bloomfog {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
 
+        //try {
+        //    GameRenderer.getRenderTypeSolidProgram().addSampler("Bloomfog", blurredBuffer);
+        //} catch (Exception e) {
+        //    throw new RuntimeException(e);
+        //}
         //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, prevMinFilter);
         //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, prevMagFilter);
 
@@ -236,7 +237,7 @@ public class Bloomfog {
 
         applyBlurPass(framebuffer, pingPongBuffers[0], width, height, true);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 6; i++) {
             applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], width, height, false);
             applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], width, height, true);
         }
@@ -258,8 +259,8 @@ public class Bloomfog {
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a = (w/h) * 0.005f;
-        float a2 = 0.005f;
+        float a = (w/h) * 0.006f;
+        float a2 = 0.006f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(verticalPass ? (() -> blurShaderV) : (() -> blurShaderH));

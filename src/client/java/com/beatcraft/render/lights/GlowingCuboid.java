@@ -20,6 +20,7 @@ public class GlowingCuboid extends LightObject {
 
     private Hitbox dimensions;
     private List<Vector3f[]> faces;
+    private List<Vector3f[]> lines;
 
     public GlowingCuboid(Hitbox dimensions, Vector3f pos, Quaternionf rot) {
         position = pos;
@@ -35,6 +36,7 @@ public class GlowingCuboid extends LightObject {
     public void setDimensions(Hitbox dimensions) {
         this.dimensions = dimensions;
         faces = BeatcraftRenderer.getCubeFaces(dimensions.min, dimensions.max);
+        lines = BeatcraftRenderer.getCubeEdges(dimensions.min, dimensions.max);
     }
 
     @Override
@@ -46,7 +48,7 @@ public class GlowingCuboid extends LightObject {
 
     }
 
-    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, boolean isBloomfog) {
+    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos) {
         return basePos
             .rotate(orientation, new Vector3f())
             .rotate(rotation)
@@ -56,33 +58,46 @@ public class GlowingCuboid extends LightObject {
     }
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation) {
-        var color = isBloomfog ? lightState.getColor() : lightState.getEffectiveColor();
+        var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
-        for (var face : faces) {
-
-            if ((color & 0xFF000000) == 0) {
-                continue;
-            }
-
-            var v0 = processVertex(face[0], cameraPos, isBloomfog);
-            var v1 = processVertex(face[1], cameraPos, isBloomfog);
-            var v2 = processVertex(face[2], cameraPos, isBloomfog);
-            var v3 = processVertex(face[3], cameraPos, isBloomfog);
-
-            if (isBloomfog) {
-                v0.rotate(cameraRotation);
-                v1.rotate(cameraRotation);
-                v2.rotate(cameraRotation);
-                v3.rotate(cameraRotation);
-            }
-
-            buffer.vertex(v0).color(color);
-            buffer.vertex(v1).color(color);
-            buffer.vertex(v2).color(color);
-            buffer.vertex(v3).color(color);
-
+        if ((color & 0xFF000000) == 0) {
+            return;
         }
 
+        if (isBloomfog) { // line buffer
+
+            for (var line : lines) {
+                var v0 = processVertex(line[0], cameraPos);
+                var v1 = processVertex(line[1], cameraPos);
+                v0.rotate(cameraRotation);
+                v1.rotate(cameraRotation);
+
+                var n = v1.sub(v0, new Vector3f());
+
+
+                buffer.vertex(v0).color(color).normal(n.x, n.y, n.z);
+                buffer.vertex(v1).color(color).normal(-n.x, -n.y, -n.z);
+
+
+
+            }
+
+        } else { // quad buffer
+            for (var face : faces) {
+
+                var v0 = processVertex(face[0], cameraPos);
+                var v1 = processVertex(face[1], cameraPos);
+                var v2 = processVertex(face[2], cameraPos);
+                var v3 = processVertex(face[3], cameraPos);
+
+
+                buffer.vertex(v0).color(color);
+                buffer.vertex(v1).color(color);
+                buffer.vertex(v2).color(color);
+                buffer.vertex(v3).color(color);
+
+            }
+        }
 
     }
 

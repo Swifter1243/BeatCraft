@@ -10,25 +10,15 @@ out vec4 fragColor;
 
 
 vec4 scaleColor(vec4 color) {
-  float maxRGB = max(max(color.r, color.g), color.b);
+    float maxRGB = max(max(color.r, color.g), color.b);
 
-  if (maxRGB > 1.0) {
-    return color / maxRGB;
-  } else {
-    return color;
-  }
+    return vec4(color.rgb / maxRGB, color.a/1.475);
+//    if (maxRGB > 1) {
+//        return color / (maxRGB);
+//    } else {
+//        return color;
+//    }
 }
-
-bool isMonochrome(vec4 color, float tolerance) {
-  float diffRG = abs(color.r - color.g);
-  float diffRB = abs(color.r - color.b);
-  float diffGB = abs(color.g - color.b);
-
-  return diffRG < tolerance && diffRB < tolerance && diffGB < tolerance;
-}
-
-// Example usage:
-// bool isGray = isMonochrome(myColor.rgb, 0.01);
 
 void main() {
     float[] weights = float[](
@@ -55,7 +45,7 @@ void main() {
 
     blurColor = blurColor / 1.1;
 
-    if (blurColor.a <= 0.1 || isMonochrome(blurColor, 0.01)) {
+    if (blurColor.a <= 0.1) {
         discard;
     }
     fragColor = scaleColor(blurColor);

@@ -12,6 +12,10 @@ public class BlockRenderSettings {
 
     public static void init() {
 
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getSolid(),
+            ModBlocks.BLACK_MIRROR_BLOCK
+        );
+
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
             ModBlocks.COLUMN_LIGHT_TILE_BLOCK,
             ModBlocks.CORNER_LIGHT_TILE_BLOCK,

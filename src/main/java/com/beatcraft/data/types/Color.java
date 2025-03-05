@@ -91,7 +91,7 @@ public class Color {
     }
 
     public Color withAlpha(float alpha) {
-        this.alpha = alpha;
+        this.alpha = Math.clamp(alpha, 0, 1);
         return this;
     }
 
