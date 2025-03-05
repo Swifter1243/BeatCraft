@@ -64,10 +64,10 @@ public class GlowingCuboid extends LightObject {
                 continue;
             }
 
-            var v0 = face[0].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v1 = face[1].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v2 = face[2].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
-            var v3 = face[3].rotate(orientation, new Vector3f()).rotate(rotation).add(position).add(offset).sub(cameraPos);
+            var v0 = processVertex(face[0], cameraPos, isBloomfog);
+            var v1 = processVertex(face[1], cameraPos, isBloomfog);
+            var v2 = processVertex(face[2], cameraPos, isBloomfog);
+            var v3 = processVertex(face[3], cameraPos, isBloomfog);
 
             if (isBloomfog) {
                 v0.rotate(cameraRotation);

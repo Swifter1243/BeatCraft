@@ -61,6 +61,7 @@ public class Bloomfog {
 
     private final ShaderProgram blurShaderH;
     private final ShaderProgram blurShaderV;
+    private final ShaderProgram modifiedPosColShader;
 
     //private final Uniform vTexSize;
     //private final Uniform hTexSize;
@@ -70,6 +71,7 @@ public class Bloomfog {
         try {
             blurShaderH = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_h", VertexFormats.POSITION_TEXTURE);
             blurShaderV = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_v", VertexFormats.POSITION_TEXTURE);
+            modifiedPosColShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_color", VertexFormats.POSITION_COLOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -136,7 +138,7 @@ public class Bloomfog {
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(() -> modifiedPosColShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -256,18 +258,18 @@ public class Bloomfog {
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a = (w/h) / 350f;
-        //float a2 = 2f/350f;
+        float a = (w/h) * 0.005f;
+        float a2 = 0.005f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(verticalPass ? (() -> blurShaderV) : (() -> blurShaderH));
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(a, a, 0, 0);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(a, a, 0, 0);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(a, a, 0, 0);
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(a, a, 0, 0);
+        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(a2, a, 0, 0);
+        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(a2, a, 0, 0);
+        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(a2, a, 0, 0);
+        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(a2, a, 0, 0);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
