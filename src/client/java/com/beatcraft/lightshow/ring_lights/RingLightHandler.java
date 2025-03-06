@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.ring_lights;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -36,9 +37,11 @@ public class RingLightHandler extends LightObject {
         private RingLightHandler controller;
         private float rotation = 0;
         private Float startTime = null;
+        private Float zoomStart = null;
         private float startRotation = 0;
         private float targetRotation = 0;
         private RingHandler nextRing = null;
+        private float prevZoom = 1;
         private final int index;
 
         protected RingHandler(RingLightHandler controller, int index) {
@@ -50,15 +53,40 @@ public class RingLightHandler extends LightObject {
             startRotation = rotation;
             this.targetRotation = controller.ringRotation + (controller.rotationStep * index);
             startTime = songTime;
+            setNext = true;
         }
+
+        protected void setZoomStart(float songTime) {
+            prevZoom = controller.zoom;
+            zoomStart = songTime;
+            if (nextRing != null) {
+                nextRing.setZoomStart(songTime);
+            }
+        }
+
+        private float lerpZoom(float songTime) {
+            if (zoomStart == null) return prevZoom;
+
+            var dt = songTime - zoomStart;
+            if (dt >= 1) {
+                prevZoom = controller.zoom;
+                zoomStart = null;
+            }
+
+            return MathHelper.lerp(Easing.easeOutExpo(dt), prevZoom, controller.zoom);
+
+        }
+
+        private boolean setNext = false;
 
         protected void update(float songTime) {
             if (startTime != null) {
                 float dt = songTime - startTime;
-                rotation = MathHelper.lerp(startRotation, targetRotation, Easing.easeOutExpo(dt));
+                rotation = MathHelper.lerp(Easing.easeOutExpo(dt), startRotation, targetRotation);
 
-                if (dt > 0.1f && nextRing != null) {
+                if (nextRing != null && dt > 0.01f && setNext) {
                     nextRing.setTarget(songTime);
+                    setNext = false;
                 }
 
                 if (dt >= 1) {
@@ -76,12 +104,12 @@ public class RingLightHandler extends LightObject {
 
         protected void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
             controller.ringLight.setOffset(
-                new Vector3f(0, 0, controller.ringOffset * controller.zoom * index)
+                new Vector3f(0, 0, controller.ringOffset * lerpZoom(BeatmapPlayer.getCurrentSeconds()) * index)
                     .rotate(controller.orientation).rotate(controller.rotation)
                     .add(controller.position).add(controller.offset)
             );
             controller.ringLight.setRotation(
-                new Quaternionf(controller.orientation).mul(controller.rotation)
+                new Quaternionf().rotationZ(rotation).mul(controller.orientation).mul(controller.rotation)
             );
             controller.ringLight.render(matrices, camera, bloomfog);
             if (nextRing != null) {
@@ -149,11 +177,13 @@ public class RingLightHandler extends LightObject {
         var i = random.nextBetween(0, jumpOffsets.length-1);
 
         ringRotation += jumpOffsets[i];
+
         headRing.setTarget(BeatmapPlayer.getCurrentSeconds());
 
     }
 
     public void setZoom(float value) {
+        headRing.setZoomStart(BeatmapPlayer.getCurrentSeconds());
         zoom = value;
     }
 

@@ -1,6 +1,6 @@
 {
     "vertex": "bloomfog_blur",
-    "fragment": "bloomfog_blur_h",
+    "fragment": "bloomfog_blur_down",
     "samplers": [
         { "name": "Sampler0" }
     ],

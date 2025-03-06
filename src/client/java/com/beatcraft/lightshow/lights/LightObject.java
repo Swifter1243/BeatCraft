@@ -50,4 +50,9 @@ public abstract class LightObject {
         lightState.setBrightness(state.getBrightness());
     }
 
+    /// returns the absolute world-space position
+    public Vector3f getPos() {
+        return new Vector3f(position).rotate(rotation).add(offset);
+    }
+
 }

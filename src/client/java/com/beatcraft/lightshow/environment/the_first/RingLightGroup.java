@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.environment.the_first;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.LightGroupV2;
@@ -17,14 +18,14 @@ public class RingLightGroup extends LightGroupV2 {
     //private final RingLightHandler outerRing;
 
     public RingLightGroup() {
-        innerRing = new RingLightHandler(InnerRing.getInstance(), 30, new Vector3f(0, 2, 10), 1.333f);
+        innerRing = new RingLightHandler(InnerRing.getInstance(), 30, new Vector3f(0, 2, 10), 5);
         //outerRing = new RingLightHandler(null, 15, new Vector3f(0, 2, 7), 2.5f);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 
         innerRing.jumpOffsets = new float[]{
-            -45 * rpd,
-            45 * rpd
+            -90 * rpd,
+            90 * rpd
         };
 
         //outerRing.jumpOffsets = new float[]{
@@ -34,12 +35,12 @@ public class RingLightGroup extends LightGroupV2 {
 
         innerRing.rotationOffsets = new float[]{
             0,
-            5 * rpd,
-            -5 * rpd,
-            10 * rpd,
-            -10 * rpd,
-            15 * rpd,
-            -15 * rpd
+            3 * rpd,
+            -3 * rpd,
+            7 * rpd,
+            -7 * rpd,
+            11 * rpd,
+            -11 * rpd
         };
 
     }
@@ -50,13 +51,19 @@ public class RingLightGroup extends LightGroupV2 {
         //    outerRing.setLightState(lightState);
         //}
 
-        if (group == EventGroup.RING_SPIN && obj instanceof Integer i && i != -1000000000) {
-            innerRing.spinRandom();
-            //outerRing.spinRandom();
+        if (group == EventGroup.RING_SPIN && obj instanceof Integer i) {
+            //BeatCraft.LOGGER.info("SPIN {}", i);
+            if (i == 0) {
+                innerRing.spinRandom();
+                //outerRing.spinRandom();
+            }
         }
 
-        if (group == EventGroup.RING_ZOOM && obj instanceof Integer i && i != -1000000000) {
-            innerRing.setZoom(innerRing.getZoom() == 1 ? 0.4f : 1);
+        if (group == EventGroup.RING_ZOOM && obj instanceof Integer i) {
+            //BeatCraft.LOGGER.info("ZOOM {}", i);
+            if (i == 0) {
+                innerRing.setZoom(innerRing.getZoom() >= 0.99 ? 0.3f : 1);
+            }
         }
 
     }

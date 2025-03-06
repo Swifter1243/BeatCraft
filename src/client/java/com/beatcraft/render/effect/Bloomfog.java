@@ -1,7 +1,6 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
@@ -15,7 +14,6 @@ import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
@@ -60,9 +58,11 @@ public class Bloomfog {
     private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
     private BloomfogTex blurredTex;
 
-    private final ShaderProgram blurShaderH;
-    private final ShaderProgram blurShaderV;
+    private final ShaderProgram blurShaderUp;
+    private final ShaderProgram blurShaderDown;
     public static ShaderProgram bloomfog_solid_shader;
+
+    public static ShaderProgram bloomfogPositionColor;
 
     //private final Uniform vTexSize;
     //private final Uniform hTexSize;
@@ -70,17 +70,18 @@ public class Bloomfog {
     private Bloomfog() {
 
         try {
-            blurShaderH = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_h", VertexFormats.POSITION_TEXTURE);
-            blurShaderV = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_v", VertexFormats.POSITION_TEXTURE);
+            blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_up", VertexFormats.POSITION_TEXTURE);
+            blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_down", VertexFormats.POSITION_TEXTURE);
+            bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        framebuffer = new SimpleFramebuffer(1920*2, 1080*2, true, true);
 
-        pingPongBuffers[0] = new SimpleFramebuffer(1920/2, 1080/2, true, true);
-        pingPongBuffers[1] = new SimpleFramebuffer(1920/2, 1080/2, true, true);
-        blurredBuffer = new SimpleFramebuffer(1920/2, 1080/2, true, true);
+        framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
+        pingPongBuffers[1] = new SimpleFramebuffer(1920, 1080, true, true);
+        blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
 
         tex = new BloomfogTex(framebuffer);
         pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -105,10 +106,10 @@ public class Bloomfog {
 
     public void resize(int width, int height) {
         BeatCraft.LOGGER.info("resize to {} {}", width, height);
-        framebuffer.resize(width*2, height*2, true);
-        pingPongBuffers[0].resize(width/2, height/2, true);
-        pingPongBuffers[1].resize(width/2, height/2, true);
-        blurredBuffer.resize(width/2, height/2, true);
+        framebuffer.resize(width, height, true);
+        pingPongBuffers[0].resize(width, height, true);
+        pingPongBuffers[1].resize(width, height, true);
+        blurredBuffer.resize(width, height, true);
     }
 
     public void unload() {
@@ -125,6 +126,11 @@ public class Bloomfog {
     }
 
     public void render(float tickDelta) {
+
+        if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive()) {
+            renderCalls.clear();
+            return;
+        }
 
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
@@ -214,6 +220,11 @@ public class Bloomfog {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
 
+        //RenderSystem.setShader(() -> bloomfogPositionColor);
+        //blurredBuffer.beginRead();
+        //bloomfogPositionColor.addSampler("Sampler0", blurredBuffer.getColorAttachment());
+        //blurredBuffer.endRead();
+
         //try {
         //    GameRenderer.getRenderTypeSolidProgram().addSampler("Bloomfog", blurredBuffer);
         //} catch (Exception e) {
@@ -222,6 +233,10 @@ public class Bloomfog {
         //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, prevMinFilter);
         //GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, prevMagFilter);
 
+    }
+
+    public void loadTex() {
+        RenderSystem.setShaderTexture(0, blurredBuffer.getColorAttachment());
     }
 
     private void applyBlur(float width, float height) {
@@ -236,18 +251,25 @@ public class Bloomfog {
         //Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
         //Quaternionf cameraRot = MinecraftClient.getInstance().gameRenderer.getCamera().getRotation().conjugate(new Quaternionf());
 
-        applyBlurPass(framebuffer, pingPongBuffers[0], width, height, true);
+        applyBlurPass(framebuffer, pingPongBuffers[0], width, height, false);
 
-        for (int i = 0; i < 6; i++) {
+        int passes = 3;
+
+        for (int i = 0; i < passes; i++) {
             applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], width, height, false);
+            applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], width, height, false);
+        }
+
+        for (int i = 0; i < passes; i++) {
+            applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], width, height, true);
             applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], width, height, true);
         }
 
-        applyBlurPass(pingPongBuffers[0], blurredBuffer, width, height, false);
+        applyBlurPass(pingPongBuffers[0], blurredBuffer, width, height, true);
 
     }
 
-    private void applyBlurPass(Framebuffer in, Framebuffer out, float width, float height, boolean verticalPass) {
+    private void applyBlurPass(Framebuffer in, Framebuffer out, float width, float height, boolean upPass) {
 
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
@@ -260,11 +282,11 @@ public class Bloomfog {
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a = (w/h) * 0.006f;
-        float a2 = 0.006f;
+        float a = (w/h) * 0.003f;
+        float a2 = 0.004f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
-        RenderSystem.setShader(verticalPass ? (() -> blurShaderV) : (() -> blurShaderH));
+        RenderSystem.setShader(upPass ? (() -> blurShaderUp) : (() -> blurShaderDown));
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 

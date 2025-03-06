@@ -18,7 +18,7 @@ public class LightState {
 
     public LightState lerpFromTo(LightState to, float t) {
         var c = MathUtil.lerpColor(this.color, to.color, t);
-        var b = MathHelper.lerp(this.brightness, to.brightness, t);
+        var b = MathHelper.lerp(t, this.brightness, to.brightness);
         return new LightState(c, b);
     }
 

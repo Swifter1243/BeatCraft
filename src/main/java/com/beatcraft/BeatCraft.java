@@ -21,6 +21,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -30,6 +31,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,11 +86,16 @@ public class BeatCraft implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
 			BeatCraft.LOGGER.info("player connect!");
 
+
 			ServerPlayerEntity player = handler.player;
 			ServerWorld world = player.getServerWorld();
 			var stateManager = world.getPersistentStateManager();
 
 			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
+
+			if (!server.getSaveProperties().isFlatWorld() && !state.hasJoined()) {
+				state.markJoin();
+			}
 
 			if (!state.hasJoined()) {
 				state.markJoin();
@@ -98,21 +105,9 @@ public class BeatCraft implements ModInitializer {
 
 				player.teleport(world, 0.0, 0.0, 0.0, 0, 0);
 
-				ItemStack lSaber = new ItemStack(ModItems.SABER_ITEM);
-				ItemStack rSaber = new ItemStack(ModItems.SABER_ITEM);
-				lSaber.set(ModComponents.AUTO_SYNC_COLOR, 0);
-				lSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0xc03030);
-				rSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
-				rSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
+				initSabers(player);
 
-				player.getInventory().offHand.set(0, lSaber);
-				player.getInventory().setStack(0, rSaber);
-
-				server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
-				server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
-				server.getGameRules().get(GameRules.DO_TRADER_SPAWNING).set(false, server);
-				world.setTimeOfDay(18_000);
-				server.setDifficulty(Difficulty.PEACEFUL, true);
+				initGameRules(server, world);
 
 				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, and §fDoTraderSpawning §7 set to §4false§7;"));
 
@@ -123,10 +118,27 @@ public class BeatCraft implements ModInitializer {
 			}
 		});
 
-
-
 	}
 
+	private void initSabers(PlayerEntity player) {
+		ItemStack lSaber = new ItemStack(ModItems.SABER_ITEM);
+		ItemStack rSaber = new ItemStack(ModItems.SABER_ITEM);
+		lSaber.set(ModComponents.AUTO_SYNC_COLOR, 0);
+		lSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0xc03030);
+		rSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
+		rSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
+
+		player.getInventory().offHand.set(0, lSaber);
+		player.getInventory().setStack(0, rSaber);
+	}
+
+	private void initGameRules(MinecraftServer server, ServerWorld world) {
+		server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
+		server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
+		server.getGameRules().get(GameRules.DO_TRADER_SPAWNING).set(false, server);
+		world.setTimeOfDay(18_000);
+		server.setDifficulty(Difficulty.PEACEFUL, true);
+	}
 
 	private static int giveSabers(CommandContext<ServerCommandSource> context) {
 
