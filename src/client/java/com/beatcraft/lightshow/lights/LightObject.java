@@ -21,7 +21,7 @@ public abstract class LightObject {
     public abstract void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog);
 
     // Mainly used for light intensity, but also will work for spectrum visualizer elements
-    public abstract void setValue(float value);
+    public abstract void setBrightness(float value);
 
     public abstract void setColor(int color);
 

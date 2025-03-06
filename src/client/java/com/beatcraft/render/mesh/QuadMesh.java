@@ -92,7 +92,6 @@ public class QuadMesh implements Mesh {
     public void render(Vector3f position, Quaternionf orientation, boolean sortBuffer) {
         BufferBuilder buffer = createBuffer();
 
-
         int oldTexture = RenderSystem.getShaderTexture(0);
         RenderSystem.setShaderTexture(0, texture);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);

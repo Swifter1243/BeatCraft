@@ -1,12 +1,10 @@
 package com.beatcraft.render.lights;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
@@ -42,13 +40,23 @@ public class GlowingCuboid extends LightObject {
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
-        if (bloomfog != null) bloomfog.record((b, c, r) -> _render(b, c, true, r));
+        if (bloomfog != null) bloomfog.record(
+            (b, c, r) -> _render(
+                b, c, true, r,
+                new Quaternionf(orientation), new Quaternionf(rotation), new Vector3f(position), new Vector3f(offset)
+            )
+        );
 
-        BeatcraftRenderer.recordLightRenderCall((b, c) -> _render(b, c, false, null));
+        BeatcraftRenderer.recordLightRenderCall(
+            (b, c) -> _render(
+                b, c, false, null,
+                new Quaternionf(orientation), new Quaternionf(rotation), new Vector3f(position), new Vector3f(offset)
+            )
+        );
 
     }
 
-    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos) {
+    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Vector3f position, Vector3f offset) {
         return basePos
             .rotate(orientation, new Vector3f())
             .rotate(rotation)
@@ -57,7 +65,7 @@ public class GlowingCuboid extends LightObject {
             .sub(cameraPos);
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation) {
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Vector3f position, Vector3f offset) {
         var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
         if ((color & 0xFF000000) == 0) {
@@ -67,29 +75,25 @@ public class GlowingCuboid extends LightObject {
         if (isBloomfog) { // line buffer
 
             for (var line : lines) {
-                var v0 = processVertex(line[0], cameraPos);
-                var v1 = processVertex(line[1], cameraPos);
+                var v0 = processVertex(line[0], cameraPos, orientation, rotation, position, offset);
+                var v1 = processVertex(line[1], cameraPos, orientation, rotation, position, offset);
                 v0.rotate(cameraRotation);
                 v1.rotate(cameraRotation);
 
                 var n = v1.sub(v0, new Vector3f());
 
-
                 buffer.vertex(v0).color(color).normal(n.x, n.y, n.z);
                 buffer.vertex(v1).color(color).normal(-n.x, -n.y, -n.z);
-
-
 
             }
 
         } else { // quad buffer
             for (var face : faces) {
 
-                var v0 = processVertex(face[0], cameraPos);
-                var v1 = processVertex(face[1], cameraPos);
-                var v2 = processVertex(face[2], cameraPos);
-                var v3 = processVertex(face[3], cameraPos);
-
+                var v0 = processVertex(face[0], cameraPos, orientation, rotation, position, offset);
+                var v1 = processVertex(face[1], cameraPos, orientation, rotation, position, offset);
+                var v2 = processVertex(face[2], cameraPos, orientation, rotation, position, offset);
+                var v3 = processVertex(face[3], cameraPos, orientation, rotation, position, offset);
 
                 buffer.vertex(v0).color(color);
                 buffer.vertex(v1).color(color);
@@ -102,7 +106,7 @@ public class GlowingCuboid extends LightObject {
     }
 
     @Override
-    public void setValue(float value) {
+    public void setBrightness(float value) {
         lightState.setBrightness(value);
     }
 

@@ -42,7 +42,6 @@ public class BeatcraftRenderer {
         BeatmapPlayer.onRender(matrices, camera, tickDelta);
     }
 
-    // lambdas are passed, in order, the triangle buffer and the quad buffer
     public static void recordNoteRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
         noteRenderCalls.add(call);
     }
@@ -89,11 +88,7 @@ public class BeatcraftRenderer {
             BufferRenderer.drawWithGlobalProgram(buff);
         }
 
-
-
-
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
@@ -113,21 +108,6 @@ public class BeatcraftRenderer {
         if (triBuff != null) {
             BufferRenderer.drawWithGlobalProgram(triBuff);
         }
-
-        //BufferBuilder quadBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        //
-        //for (var renderCall : noteRenderCalls) {
-        //    try {
-        //        renderCall.accept(null, quadBuffer, cameraPos);
-        //    } catch (Exception e) {
-        //        BeatCraft.LOGGER.error("Render call failed! ", e);
-        //    }
-        //}
-        //
-        //var quadBuff = quadBuffer.endNullable();
-        //if (quadBuff != null) {
-        //    BufferRenderer.drawWithGlobalProgram(quadBuff);
-        //}
 
         RenderSystem.setShaderTexture(0, oldTexture);
 
@@ -182,6 +162,30 @@ public class BeatcraftRenderer {
         }
         renderCalls.clear();
 
+        renderFootPosIndicator();
+
+    }
+
+    private static void renderFootPosIndicator() {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        Vector3f camPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var col = BeatmapPlayer.currentBeatmap == null ? 0x7FFFFFFF : 0x38FFFFFF;
+
+        for (int i = 0; i < 2; i++) {
+            var x = (i-0.5f) * 0.25f;
+
+            buffer.vertex(new Vector3f(x-0.1f, 0.001f, -0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x-0.1f, 0.001f,  0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x+0.1f, 0.001f,  0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x+0.1f, 0.001f, -0.1f).sub(camPos)).color(col);
+
+        }
+        RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        RenderSystem.disableBlend();
     }
 
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {

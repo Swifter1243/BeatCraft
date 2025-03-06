@@ -48,6 +48,7 @@ public class BeatmapAudio {
     }
 
     public void play() {
+        setVolume(BeatCraftClient.playerConfig.getVolume());
         if (!isPlaying && isLoaded) {
             AL10.alSourcePlay(source);
             isPlaying = true;

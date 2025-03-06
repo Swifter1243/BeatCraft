@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.environment;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.the_first.Chevron;
+import com.beatcraft.lightshow.environment.the_first.RingLightGroup;
 import com.beatcraft.lightshow.environment.the_first.RotatingLightsGroup;
 import com.beatcraft.lightshow.environment.the_first.StaticLightsGroup;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -137,7 +138,7 @@ public class Environments {
         var topLeftLaser = new GlowingCuboid(
             new Hitbox(
                 new Vector3f(-0.05f, 0, -0.05f),
-                new Vector3f(0.05f, 150, 0.05f)
+                new Vector3f(0.05f, 200, 0.05f)
             ),
             new Vector3f(2f, -2, 45),
             new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
@@ -155,7 +156,7 @@ public class Environments {
         var topRightLaser = new GlowingCuboid(
             new Hitbox(
                 new Vector3f(-0.05f, 0, -0.05f),
-                new Vector3f(0.05f, 150, 0.05f)
+                new Vector3f(0.05f, 200, 0.05f)
             ),
             new Vector3f(-2f, -2, 45),
             new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
@@ -189,6 +190,14 @@ public class Environments {
 
         theFirst.bindLightGroup(EventGroup.BACK_LASERS, bg);
         theFirst.bindLightGroup(EventGroup.CENTER_LASERS, tg);
+
+        // ring lights
+
+        var rings = new RingLightGroup();
+
+        theFirst.bindLightGroup(EventGroup.RING_LIGHTS, rings);
+        theFirst.bindLightGroup(EventGroup.RING_SPIN, rings);
+        theFirst.bindLightGroup(EventGroup.RING_ZOOM, rings);
 
         return theFirst;
     }

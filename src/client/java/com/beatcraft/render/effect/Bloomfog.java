@@ -16,6 +16,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,11 +76,11 @@ public class Bloomfog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        framebuffer = new SimpleFramebuffer(1920*2, 1080*2, true, true);
 
         pingPongBuffers[0] = new SimpleFramebuffer(1920/2, 1080/2, true, true);
         pingPongBuffers[1] = new SimpleFramebuffer(1920/2, 1080/2, true, true);
-        blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        blurredBuffer = new SimpleFramebuffer(1920/2, 1080/2, true, true);
 
         tex = new BloomfogTex(framebuffer);
         pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -104,10 +105,10 @@ public class Bloomfog {
 
     public void resize(int width, int height) {
         BeatCraft.LOGGER.info("resize to {} {}", width, height);
-        framebuffer.resize(width, height, true);
+        framebuffer.resize(width*2, height*2, true);
         pingPongBuffers[0].resize(width/2, height/2, true);
         pingPongBuffers[1].resize(width/2, height/2, true);
-        blurredBuffer.resize(width, height, true);
+        blurredBuffer.resize(width/2, height/2, true);
     }
 
     public void unload() {
@@ -128,8 +129,12 @@ public class Bloomfog {
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
 
-        var window = MinecraftClient.getInstance().getWindow();
+        MinecraftClient client = MinecraftClient.getInstance();
+        GameRenderer renderer = client.gameRenderer;
+        var window = client.getWindow();
         float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
+        float fov = (float) Math.toRadians(renderer.getFov(renderer.getCamera(), tickDelta, true));
+
 
         overrideBuffer = true;
         overrideFramebuffer = framebuffer;
@@ -140,7 +145,7 @@ public class Bloomfog {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        RenderSystem.lineWidth(window.getWidth()/250f);
+        RenderSystem.lineWidth(window.getWidth()/225f);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -153,10 +158,6 @@ public class Bloomfog {
             call.accept(buffer, cameraPos, invCameraRotation);
         }
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        GameRenderer renderer = client.gameRenderer;
-
-        float fov = (float) Math.toRadians(renderer.getFov(renderer.getCamera(), tickDelta, true));
 
 
         float quadHeight = (float) Math.tan(fov / 2.0f);

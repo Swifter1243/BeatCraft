@@ -1,6 +1,7 @@
 package com.beatcraft.render.mesh;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.lightshow.environment.the_first.InnerRing;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElementFace;
@@ -23,13 +24,17 @@ public class MeshLoader {
 
     public static final Identifier NOTE_TEXTURE = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
 
+    private static ModelLoaderAccessor modelLoader;
+
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
-        COLOR_NOTE_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note"), modelLoader);
+        MeshLoader.modelLoader = modelLoader;
+
+        COLOR_NOTE_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note"));
         COLOR_NOTE_MESH.texture = NOTE_TEXTURE;
-        CHAIN_HEAD_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_head"), modelLoader);
+        CHAIN_HEAD_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_head"));
         CHAIN_HEAD_MESH.texture = NOTE_TEXTURE;
-        CHAIN_LINK_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_link"), modelLoader);
+        CHAIN_LINK_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_link"));
         CHAIN_LINK_MESH.texture = NOTE_TEXTURE;
 
         COLOR_NOTE_RENDER_MESH = COLOR_NOTE_MESH.toTriangleMesh();
@@ -38,7 +43,7 @@ public class MeshLoader {
     }
 
 
-    public static QuadMesh loadMesh(Identifier identifier, ModelLoaderAccessor modelLoader) {
+    public static QuadMesh loadMesh(Identifier identifier) {
         try {
             JsonUnbakedModel model = modelLoader.beatCraft$loadJsonModel(identifier);
 

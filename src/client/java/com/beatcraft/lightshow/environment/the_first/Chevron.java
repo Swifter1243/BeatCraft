@@ -1,6 +1,5 @@
 package com.beatcraft.lightshow.environment.the_first;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.effect.Bloomfog;
@@ -46,9 +45,9 @@ public class Chevron extends LightObject {
     }
 
     @Override
-    public void setValue(float value) {
-        arm1.setValue(value);
-        arm2.setValue(value);
+    public void setBrightness(float value) {
+        arm1.setBrightness(value);
+        arm2.setBrightness(value);
     }
 
     @Override

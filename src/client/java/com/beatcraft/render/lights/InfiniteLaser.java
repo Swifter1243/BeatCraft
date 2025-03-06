@@ -12,7 +12,7 @@ public class InfiniteLaser extends LightObject {
     }
 
     @Override
-    public void setValue(float value) {
+    public void setBrightness(float value) {
 
     }
 
