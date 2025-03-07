@@ -1,6 +1,5 @@
-package com.beatcraft.lightshow.environment.the_first;
+package com.beatcraft.lightshow.environment.thefirst;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;

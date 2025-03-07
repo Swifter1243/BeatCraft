@@ -1,7 +1,7 @@
 package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.beatmap.Difficulty;
-import com.beatcraft.lightshow.environment.the_first.TheFirstEnvironment;
+import com.beatcraft.lightshow.environment.thefirst.TheFirstEnvironment;
 import com.google.gson.JsonObject;
 
 public class EnvironmentUtils {

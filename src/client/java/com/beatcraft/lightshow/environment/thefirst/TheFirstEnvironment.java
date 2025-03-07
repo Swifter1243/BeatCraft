@@ -1,6 +1,5 @@
-package com.beatcraft.lightshow.environment.the_first;
+package com.beatcraft.lightshow.environment.thefirst;
 
-import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.EnvironmentV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.RingLightGroup;
@@ -13,10 +12,7 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class TheFirstEnvironment extends EnvironmentV2 {
     /*
