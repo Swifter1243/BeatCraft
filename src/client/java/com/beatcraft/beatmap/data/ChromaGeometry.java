@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 
 
 public class ChromaGeometry extends BeatmapObject{
-    enum GeometryType {
+    public enum GeometryType {
         Sphere,
         Capsule,
         Cylinder,
@@ -40,5 +40,23 @@ public class ChromaGeometry extends BeatmapObject{
         scale = json.getAsJsonArray("scale");
         track = difficulty.getTrackLibrary().getOrCreateTrack(json.get("track").getAsString());
         return this;
+    }
+    public GeometryType getType() {
+        return type;
+    }
+    public ChromaMaterial getMaterial() {
+        return material;
+    }
+    public JsonArray getPosition() {
+        return position;
+    }
+    public JsonArray getRotation() {
+        return rotation;
+    }
+    public JsonArray getScale() {
+        return scale;
+    }
+    public Track getTrack() {
+        return track;
     }
 }
