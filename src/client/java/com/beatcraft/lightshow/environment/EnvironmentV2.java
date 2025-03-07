@@ -35,8 +35,8 @@ public abstract class EnvironmentV2 extends Environment {
     private ActionEventHandlerV2 ringZoomHandler = null;
     private ActionEventHandlerV2 ringSpinHandler = null;
 
-    private final HashMap<EventGroup, LightGroupV2> lightGroups = new HashMap<>();
-    private final ArrayList<LightGroupV2> uniqueGroups = new ArrayList<>();
+    private HashMap<EventGroup, LightGroupV2> lightGroups = new HashMap<>();
+    private ArrayList<LightGroupV2> uniqueGroups = new ArrayList<>();
 
     public void bindLightGroup(EventGroup eventGroup, LightGroupV2 lightGroup) {
         lightGroups.put(eventGroup, lightGroup);
@@ -47,6 +47,9 @@ public abstract class EnvironmentV2 extends Environment {
 
     @Override
     public void setup() {
+        lightGroups = new HashMap<>();
+        uniqueGroups = new ArrayList<>();
+
         var leftLasers = setupLeftLasers();
         bindLightGroup(EventGroup.LEFT_LASERS, leftLasers);
         bindLightGroup(EventGroup.LEFT_ROTATING_LASERS, leftLasers);
