@@ -28,8 +28,6 @@ public class OuterRing extends LightObject {
     private static final float lightSize = 0.2f;
     private static final float lightOffset = 0.001f;
 
-
-
     public OuterRing(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
         orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
         lights = List.of(
@@ -39,7 +37,6 @@ public class OuterRing extends LightObject {
             lightFactory.apply(new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE))
         );
     }
-
 
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {

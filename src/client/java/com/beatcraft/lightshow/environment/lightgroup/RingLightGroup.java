@@ -133,7 +133,6 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     @Override
     public void render(MatrixStack matrices, Camera camera) {
-        super.render(matrices, camera);
         innerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
         outerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
     }

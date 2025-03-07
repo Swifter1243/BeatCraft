@@ -106,7 +106,6 @@ public class Bloomfog {
     }
 
     public void resize(int width, int height) {
-        BeatCraft.LOGGER.info("resize to {} {}", width, height);
         framebuffer.resize(width, height, true);
         pingPongBuffers[0].resize(width, height, true);
         pingPongBuffers[1].resize(width, height, true);
@@ -159,7 +158,13 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
-        var invCameraRotation = MinecraftClient.getInstance().gameRenderer.getCamera().getRotation().conjugate(new Quaternionf());
+        Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+
+        Vector3f up = camera.getVerticalPlane();
+        Vector3f left = camera.getDiagonalPlane();
+
+        var invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
+
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
