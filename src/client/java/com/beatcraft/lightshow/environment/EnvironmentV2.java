@@ -3,6 +3,8 @@ package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
+import com.beatcraft.lightshow.environment.lightgroup.LightGroup;
+import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.event.events.LightEvent;
 import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.event.handlers.LightEventHandler;

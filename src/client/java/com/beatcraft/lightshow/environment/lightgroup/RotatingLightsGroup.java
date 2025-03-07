@@ -1,8 +1,6 @@
-package com.beatcraft.lightshow.environment.the_first;
+package com.beatcraft.lightshow.environment.lightgroup;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.EventGroup;
-import com.beatcraft.lightshow.environment.LightGroupV2;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.BeatcraftRenderer;

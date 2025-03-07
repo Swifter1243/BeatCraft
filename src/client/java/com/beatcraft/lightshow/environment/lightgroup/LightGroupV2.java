@@ -1,4 +1,4 @@
-package com.beatcraft.lightshow.environment;
+package com.beatcraft.lightshow.environment.lightgroup;
 
 
 import com.beatcraft.beatmap.data.EventGroup;

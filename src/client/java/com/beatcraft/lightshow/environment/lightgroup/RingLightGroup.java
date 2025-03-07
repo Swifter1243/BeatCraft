@@ -1,10 +1,8 @@
-package com.beatcraft.lightshow.environment.the_first;
+package com.beatcraft.lightshow.environment.lightgroup;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.EventGroup;
-import com.beatcraft.lightshow.environment.LightGroupV2;
-import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.lightshow.environment.the_first.InnerRing;
 import com.beatcraft.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.render.BeatcraftRenderer;
 import net.minecraft.client.render.Camera;
