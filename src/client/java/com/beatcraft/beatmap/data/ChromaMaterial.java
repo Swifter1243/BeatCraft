@@ -12,7 +12,8 @@ public class ChromaMaterial extends BeatmapObject {
     protected Color color;
     protected String name;
 
-    public ChromaMaterial load(String name, JsonObject properties) {
+    public ChromaMaterial load(String matName, JsonObject properties) {
+        name = matName;
         shader = properties.get("shader").toString();
         try{
         color = Color.fromJsonArray(properties.get("color").getAsJsonArray());
