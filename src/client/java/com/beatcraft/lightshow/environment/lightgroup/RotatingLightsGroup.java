@@ -12,19 +12,23 @@ import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 public class RotatingLightsGroup extends LightGroupV2 {
     Random random = Random.create();
 
-    private ArrayList<Quaternionf> rotations = new ArrayList<>();
-    public ArrayList<LightObject> staticLights = new ArrayList<>();
+    private final List<Quaternionf> rotations;
+    private final Collection<LightObject> rotatingLights;
+    private final Collection<LightObject> staticLights;
 
-    public RotatingLightsGroup(HashMap<Integer, LightObject> lightObjects, HashMap<Integer, LightObject> staticLights) {
-        lights.putAll(lightObjects);
-        lights.forEach((k, l) -> rotations.add(new Quaternionf()));
-        this.staticLights.addAll(staticLights.values());
+    public RotatingLightsGroup(HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
+        lights.putAll(rotatingLights);
+        lights.putAll(staticLights);
+        this.rotatingLights = rotatingLights.values();
+        this.staticLights = staticLights.values();
+        this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
     }
 
     public boolean isLightEventGroup(EventGroup group) {
@@ -50,9 +54,6 @@ public class RotatingLightsGroup extends LightGroupV2 {
             lights.values().forEach(l -> {
                 l.setLightState(state);
             });
-            staticLights.forEach(l -> {
-                l.setLightState(state);
-            });
         }
         if (isValueEventGroup(group) && obj instanceof Integer v) {
             if (v == 0) {
@@ -62,7 +63,7 @@ public class RotatingLightsGroup extends LightGroupV2 {
                 rotations.forEach(rot -> {
                     rot.set(getYRotation(v, random.nextBoolean()));
                 });
-                lights.values().forEach(light -> {
+                rotatingLights.forEach(light -> {
                     light.setRotation(new Quaternionf().rotationY(random.nextBetween(-180, 180) * MathHelper.RADIANS_PER_DEGREE));
                 });
             }
