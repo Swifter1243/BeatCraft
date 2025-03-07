@@ -29,28 +29,15 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
         this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
     }
 
-    public boolean isLightEventGroup(EventGroup group) {
-        return group == EventGroup.LEFT_LASERS || group == EventGroup.RIGHT_LASERS;
-    }
-
-    public boolean isValueEventGroup(EventGroup group) {
-        return group == EventGroup.LEFT_ROTATING_LASERS || group == EventGroup.RIGHT_ROTATING_LASERS;
-    }
-
-    public static Quaternionf getYRotation(int v, boolean isCC) {
-        if (v < 1 || v > 9) throw new IllegalArgumentException("v must be between 1 and 9");
-
-        float baseSpeed = ((float) Math.PI) / (10.0f - v); // Degrees per second (9s for v=1, 1s for v=9)
-        if (isCC) baseSpeed = -baseSpeed; // Reverse direction if counterclockwise
-
-        return new Quaternionf().rotationY(baseSpeed);
+    public static Quaternionf getYRotation(int v) {
+        return new Quaternionf().rotationY((float) v);
     }
 
     @Override
     public void handleEvent(ValueEvent event, EventGroup eventGroup) {
         int v = event.getValue();
         rotations.forEach(rot -> {
-            rot.set(getYRotation(v, random.nextBoolean()));
+            rot.set(getYRotation(v));
         });
         rotatingLights.forEach(light -> {
             light.setRotation(new Quaternionf().rotationY(random.nextBetween(-180, 180) * MathHelper.RADIANS_PER_DEGREE));
