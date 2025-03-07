@@ -2,6 +2,7 @@ package com.beatcraft.lightshow.environment.lightgroup;
 
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.EventGroup;
+import com.beatcraft.lightshow.environment.the_first.OuterRing;
 import com.beatcraft.lightshow.environment.thefirst.InnerRing;
 import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.ring_lights.RingLightHandler;
