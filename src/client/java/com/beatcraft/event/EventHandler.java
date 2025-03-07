@@ -77,7 +77,7 @@ public abstract class EventHandler<D, E extends IEvent> {
         return state;
     }
 
-    public ArrayList<E> getEvents() {
+    public List<E> getEvents() {
         return events;
     }
 }
