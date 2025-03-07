@@ -160,22 +160,7 @@ public class DebugRenderer {
         renderHitbox(hitbox, position, orientation, color, false);
     }
 
-    private static List<Vector3f[]> chopEdge(Vector3f a, Vector3f b) {
-        ArrayList<Vector3f[]> segments = new ArrayList<>();
 
-        Vector3f direction = b.sub(a, new Vector3f());
-        direction.normalize();
-        direction.mul(5);
-        Vector3f c = a;
-        while (a.distance(b) > 5) {
-            c = new Vector3f(a).add(direction);
-            segments.add(new Vector3f[]{a, c});
-            a = c;
-        }
-        segments.add(new Vector3f[]{c, b});
-
-        return segments;
-    }
 
     private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest, int lineWidth) {
 
@@ -203,7 +188,7 @@ public class DebugRenderer {
 
             var normal = c2.sub(c1, new Vector3f()).normalize();
 
-            for (Vector3f[] segments : chopEdge(c1, c2)) {
+            for (Vector3f[] segments : RenderUtil.chopEdge(c1, c2)) {
                 buffer.vertex((float) (segments[0].x - cam.x), (float) (segments[0].y - cam.y), (float) (segments[0].z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
                 buffer.vertex((float) (segments[1].x - cam.x), (float) (segments[1].y - cam.y), (float) (segments[1].z - cam.z)).color(color).normal(normal.x, normal.y, normal.z);
             }

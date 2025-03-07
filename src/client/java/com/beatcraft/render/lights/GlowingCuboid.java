@@ -5,6 +5,8 @@ import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.RenderUtil;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
@@ -40,32 +42,42 @@ public class GlowingCuboid extends LightObject {
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
+        Vector3f pos = new Vector3f(position);
+        Vector3f off = new Vector3f(offset);
+        Quaternionf ori = new Quaternionf(orientation);
+        Quaternionf rot = new Quaternionf(rotation);
+        Quaternionf wrot = new Quaternionf(worldRotation);
+        LightState state = lightState.copy();
+
+        //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
+
         if (bloomfog != null) bloomfog.record(
             (b, c, r) -> _render(
                 b, c, true, r,
-                new Quaternionf(orientation), new Quaternionf(rotation), new Vector3f(position), new Vector3f(offset)
+                ori, rot, wrot, pos, off, state
             )
         );
 
         BeatcraftRenderer.recordLightRenderCall(
             (b, c) -> _render(
                 b, c, false, null,
-                new Quaternionf(orientation), new Quaternionf(rotation), new Vector3f(position), new Vector3f(offset)
+                ori, rot, wrot, pos, off, state
             )
         );
 
     }
 
-    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Vector3f position, Vector3f offset) {
+    private Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset) {
         return basePos
             .rotate(orientation, new Vector3f())
             .rotate(rotation)
             .add(position)
+            .rotate(worldRotation)
             .add(offset)
             .sub(cameraPos);
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Vector3f position, Vector3f offset) {
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
         var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
         if ((color & 0xFF000000) == 0) {
@@ -75,25 +87,30 @@ public class GlowingCuboid extends LightObject {
         if (isBloomfog) { // line buffer
 
             for (var line : lines) {
-                var v0 = processVertex(line[0], cameraPos, orientation, rotation, position, offset);
-                var v1 = processVertex(line[1], cameraPos, orientation, rotation, position, offset);
+
+
+                var v0 = processVertex(line[0], cameraPos, orientation, rotation, worldRotation, position, offset);
+                var v1 = processVertex(line[1], cameraPos, orientation, rotation, worldRotation, position, offset);
                 v0.rotate(cameraRotation);
                 v1.rotate(cameraRotation);
-
                 var n = v1.sub(v0, new Vector3f());
 
-                buffer.vertex(v0).color(color).normal(n.x, n.y, n.z);
-                buffer.vertex(v1).color(color).normal(-n.x, -n.y, -n.z);
+                List<Vector3f[]> segments = RenderUtil.chopEdge(v0, v1);
+
+                for (var segment : segments) {
+                    buffer.vertex(segment[0]).color(color).normal(n.x, n.y, n.z);
+                    buffer.vertex(segment[1]).color(color).normal(-n.x, -n.y, -n.z);
+                }
 
             }
 
         } else { // quad buffer
             for (var face : faces) {
 
-                var v0 = processVertex(face[0], cameraPos, orientation, rotation, position, offset);
-                var v1 = processVertex(face[1], cameraPos, orientation, rotation, position, offset);
-                var v2 = processVertex(face[2], cameraPos, orientation, rotation, position, offset);
-                var v3 = processVertex(face[3], cameraPos, orientation, rotation, position, offset);
+                var v0 = processVertex(face[0], cameraPos, orientation, rotation, worldRotation, position, offset);
+                var v1 = processVertex(face[1], cameraPos, orientation, rotation, worldRotation, position, offset);
+                var v2 = processVertex(face[2], cameraPos, orientation, rotation, worldRotation, position, offset);
+                var v3 = processVertex(face[3], cameraPos, orientation, rotation, worldRotation, position, offset);
 
                 buffer.vertex(v0).color(color);
                 buffer.vertex(v1).color(color);

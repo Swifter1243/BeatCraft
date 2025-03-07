@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.ring_lights;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.effect.Bloomfog;
@@ -150,17 +151,22 @@ public class RingLightHandler extends LightObject {
 
     @Override
     public void setBrightness(float value) {
+        lightState.setBrightness(value);
         ringLight.setBrightness(value);
     }
 
     @Override
     public void setColor(int color) {
+        lightState.setColor(new Color(color));
         ringLight.setColor(color);
     }
 
     @Override
     public void setLightState(LightState state) {
+        lightState = state;
         ringLight.setLightState(state);
+
+        BeatCraft.LOGGER.info("set light state to: {}", ringLight.getLightState());
     }
 
     public void spinRandom() {

@@ -15,6 +15,8 @@ public abstract class LightObject {
     protected Vector3f offset = new Vector3f();
     protected Quaternionf rotation = new Quaternionf();
 
+    protected Quaternionf worldRotation = new Quaternionf();
+
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
 
 
@@ -41,6 +43,14 @@ public abstract class LightObject {
         this.rotation = rotation;
     }
 
+    public void setWorldRotation(Quaternionf rotation) {
+        worldRotation = rotation;
+    }
+
+    public Quaternionf getWorldRotation() {
+        return worldRotation;
+    }
+
     public void addRotation(Quaternionf rotation) {
         this.rotation.mul(rotation);
     }
@@ -48,6 +58,10 @@ public abstract class LightObject {
     public void setLightState(LightState state) {
         lightState.setColor(new Color(state.getColor()));
         lightState.setBrightness(state.getBrightness());
+    }
+
+    public LightState getLightState() {
+        return lightState;
     }
 
     /// returns the absolute world-space position

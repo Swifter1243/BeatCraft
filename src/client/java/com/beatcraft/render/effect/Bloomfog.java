@@ -10,6 +10,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -136,11 +137,11 @@ public class Bloomfog {
         framebuffer.clear(true);
 
         MinecraftClient client = MinecraftClient.getInstance();
-        GameRenderer renderer = client.gameRenderer;
         var window = client.getWindow();
         float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
-        float fov = (float) Math.toRadians(renderer.getFov(renderer.getCamera(), tickDelta, true));
 
+        float t = RenderSystem.getProjectionMatrix().m11();
+        float fov = ((float) Math.atan(1.0f / t)) * 2.0f;
 
         overrideBuffer = true;
         overrideFramebuffer = framebuffer;
