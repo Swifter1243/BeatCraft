@@ -42,6 +42,34 @@ public abstract class EnvironmentV2 extends Environment {
         }
     }
 
+    @Override
+    public void setup() {
+        var leftLasers = setupLeftLasers();
+        bindLightGroup(EventGroup.LEFT_LASERS, leftLasers);
+        bindLightGroup(EventGroup.LEFT_ROTATING_LASERS, leftLasers);
+
+        var rightLasers = setupRightLasers();
+        bindLightGroup(EventGroup.RIGHT_LASERS, rightLasers);
+        bindLightGroup(EventGroup.RIGHT_ROTATING_LASERS, rightLasers);
+
+        var backLasers = setupBackLasers();
+        bindLightGroup(EventGroup.BACK_LASERS, backLasers);
+
+        var centerLasers = setupCenterLasers();
+        bindLightGroup(EventGroup.CENTER_LASERS, centerLasers);
+
+        var ringLights = setupRingLights();
+        bindLightGroup(EventGroup.RING_LIGHTS, ringLights);
+        bindLightGroup(EventGroup.RING_SPIN, ringLights);
+        bindLightGroup(EventGroup.RING_ZOOM, ringLights);
+    }
+
+    protected abstract LightGroupV2 setupLeftLasers();
+    protected abstract LightGroupV2 setupRightLasers();
+    protected abstract LightGroupV2 setupBackLasers();
+    protected abstract LightGroupV2 setupCenterLasers();
+    protected abstract LightGroupV2 setupRingLights();
+
 
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
         JsonArray events = json.getAsJsonArray("_events");
