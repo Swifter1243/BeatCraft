@@ -45,7 +45,7 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
             rot.set(getYRotation(v));
         });
         rotatingLights.forEach(light -> {
-            light.setRotation(new Quaternionf().rotationY(random.nextBetween(-180, 180) * MathHelper.RADIANS_PER_DEGREE));
+            light.setRotation(v == 0 ? new Quaternionf() : new Quaternionf().rotationY(random.nextBetween(-180, 180) * MathHelper.RADIANS_PER_DEGREE));
         });
     }
 
