@@ -23,7 +23,7 @@ public class LightGroupEventHandlerV2 {
     public void update(float beat) {
         handlers.forEach((id, handler) -> {
             var state = handler.update(beat);
-            lightGroupV2.lights.get(id).setLightState(state);
+            lightGroupV2.setLightState(id, state);
         });
     }
 }
