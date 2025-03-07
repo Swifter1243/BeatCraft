@@ -3,12 +3,13 @@ package com.beatcraft.event;
 import com.beatcraft.utils.MathUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class VoidEventHandler<E extends IEvent> {
-    private final ArrayList<E> events;
-    private final ArrayList<E> upcoming = new ArrayList<>();
+    private final List<E> events;
+    private final List<E> upcoming = new ArrayList<>();
 
-    public VoidEventHandler(ArrayList<E> events) {
+    public VoidEventHandler(List<E> events) {
         this.events = events;
         reset();
     }
@@ -69,7 +70,7 @@ public abstract class VoidEventHandler<E extends IEvent> {
         }
     }
 
-    public ArrayList<E> getEvents() {
+    public List<E> getEvents() {
         return events;
     }
 }

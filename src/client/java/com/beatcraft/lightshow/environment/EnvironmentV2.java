@@ -3,10 +3,12 @@ package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
+import com.beatcraft.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroup;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.event.events.LightEvent;
 import com.beatcraft.lightshow.event.events.ValueEvent;
+import com.beatcraft.lightshow.event.handlers.ActionEventHandlerV2;
 import com.beatcraft.lightshow.event.handlers.LightEventHandler;
 import com.beatcraft.lightshow.event.handlers.LightGroupEventHandlerV2;
 import com.beatcraft.lightshow.event.handlers.ValueEventHandler;
@@ -23,15 +25,15 @@ public abstract class EnvironmentV2 extends Environment {
     private LightGroupEventHandlerV2 leftRotatingLaserLightHandler = null;
     private LightGroupEventHandlerV2 rightRotatingLaserLightHandler = null;
 
-    private ValueEventHandler leftRotatingLaserValueHandler = null;
-    private ValueEventHandler rightRotatingLaserValueHandler = null;
+    private ActionEventHandlerV2 leftRotatingLaserValueHandler = null;
+    private ActionEventHandlerV2 rightRotatingLaserValueHandler = null;
 
     private LightGroupEventHandlerV2 backLaserLightHandler = null;
     private LightGroupEventHandlerV2 centerLaserLightHandler = null;
 
     private LightGroupEventHandlerV2 ringLightHandler = null;
-    private ValueEventHandler ringZoomHandler = null;
-    private ValueEventHandler ringSpinHandler = null;
+    private ActionEventHandlerV2 ringZoomHandler = null;
+    private ActionEventHandlerV2 ringSpinHandler = null;
 
     private final HashMap<EventGroup, LightGroupV2> lightGroups = new HashMap<>();
     private final ArrayList<LightGroupV2> uniqueGroups = new ArrayList<>();
@@ -118,15 +120,15 @@ public abstract class EnvironmentV2 extends Environment {
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
 
-        leftRotatingLaserValueHandler = new ValueEventHandler(lrrEvents);
-        rightRotatingLaserValueHandler = new ValueEventHandler(rrrEvents);
+        leftRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
+        rightRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
         backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
         centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
 
         ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
-        ringSpinHandler = new ValueEventHandler(rlsEvents);
-        ringZoomHandler = new ValueEventHandler(rlzEvents);
+        ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
+        ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
     }
 
@@ -136,13 +138,13 @@ public abstract class EnvironmentV2 extends Environment {
 
         leftRotatingLaserLightHandler.update(beat);
         rightRotatingLaserLightHandler.update(beat);
-        leftRotatingLaserValueHandler.update(beat); // TODO
-        rightRotatingLaserValueHandler.update(beat); // TODO
+        leftRotatingLaserValueHandler.update(beat);
+        rightRotatingLaserValueHandler.update(beat);
         backLaserLightHandler.update(beat);
         centerLaserLightHandler.update(beat);
         ringLightHandler.update(beat);
-        ringSpinHandler.update(beat); // TODO
-        ringZoomHandler.update(beat); // TODO
+        ringSpinHandler.update(beat);
+        ringZoomHandler.update(beat);
 
         for (var group : uniqueGroups) {
             group.update(beat, deltaTime);
