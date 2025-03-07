@@ -4,8 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.data.types.Color;
 import com.google.gson.JsonObject;
-import org.apache.commons.compress.harmony.pack200.CpBands;
-import org.apache.commons.lang3.ObjectUtils;
+
 
 public class ChromaMaterial extends BeatmapObject {
     // currently shader does nothing, im not doing shaders for this everything will just be unlit :shrug:

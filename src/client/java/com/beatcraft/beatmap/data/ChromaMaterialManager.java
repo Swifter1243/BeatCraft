@@ -2,9 +2,10 @@ package com.beatcraft.beatmap.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ChromaMaterialManager {
-    private static List<ChromaMaterial> chromaMaterials = new ArrayList<ChromaMaterial>();
+    private static final List<ChromaMaterial> chromaMaterials = new ArrayList<>();
 
     public static void addChromaMaterial(ChromaMaterial chromaMaterial) {
         chromaMaterials.add(chromaMaterial);
@@ -14,7 +15,7 @@ public class ChromaMaterialManager {
     }
     public static ChromaMaterial getChromaMaterial(String name) {
         for (ChromaMaterial chromaMaterial : chromaMaterials) {
-            if (name == chromaMaterial.getName()){
+            if (Objects.equals(name, chromaMaterial.getName())){
                 return chromaMaterial;
             }
         }

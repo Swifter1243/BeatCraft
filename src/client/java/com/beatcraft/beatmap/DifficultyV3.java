@@ -14,9 +14,7 @@ import com.beatcraft.render.object.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Pair;
-import org.joml.Vector2f;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
