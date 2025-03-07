@@ -1,6 +1,5 @@
 package com.beatcraft.lightshow.event.events;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.data.types.Color;
@@ -16,6 +15,7 @@ public class LightEvent extends BeatmapObject implements IEvent {
     private int lightEventType = 0;
     private float eventValue = 0;
     private float duration = 0;
+    private int[] lightIDs;
 
     private LightState fadeFrom = null;
 
@@ -67,6 +67,19 @@ public class LightEvent extends BeatmapObject implements IEvent {
 
         lightState = new LightState(new Color(0), 0);
         process(difficulty, lightState);
+
+        var customData = JsonUtil.getOrDefault(json,"_customData", JsonElement::getAsJsonObject, null);
+        if (customData != null) {
+            var lightIDs = JsonUtil.getOrDefault(customData, "_lightID", JsonElement::getAsJsonArray, null);
+            if (lightIDs != null) {
+                this.lightIDs = new int[lightIDs.size()];
+
+                lightIDs.forEach(lightIDElem -> {
+                    int lightID = lightIDElem.getAsInt();
+                    this.lightIDs[lightID] = lightID;
+                });
+            }
+        }
 
         return this;
     }
