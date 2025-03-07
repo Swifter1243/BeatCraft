@@ -1,7 +1,6 @@
 package com.beatcraft.render.mesh;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.lightshow.environment.the_first.InnerRing;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElementFace;

@@ -165,7 +165,13 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
-        var invCameraRotation = MinecraftClient.getInstance().gameRenderer.getCamera().getRotation().conjugate(new Quaternionf());
+        Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+
+        Vector3f up = camera.getVerticalPlane();
+        Vector3f left = camera.getDiagonalPlane();
+
+        var invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
+
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);

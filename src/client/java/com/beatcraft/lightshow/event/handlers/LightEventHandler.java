@@ -8,9 +8,10 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LightEventHandler extends EventHandler<LightState, LightEvent> {
-    public LightEventHandler(ArrayList<LightEvent> events) {
+    public LightEventHandler(List<LightEvent> events) {
         super(events, new LightState(new Color(0, 0, 0, 0), 0));
     }
 
@@ -23,13 +24,15 @@ public class LightEventHandler extends EventHandler<LightState, LightEvent> {
     public void onInsideEvent(LightEvent event, float normalTime) {
         var ls = event.getLightState();
 
+        float fadeTime = 1 - (float)Math.pow(1 - normalTime, 3);
+
         if (event.isFlashType()) {
-            float brightness = MathHelper.lerp(normalTime, 1.2f, 1);
+            float brightness = MathHelper.lerp(fadeTime, 1.2f, 1);
             var s = ls.copy();
             s.setBrightness(brightness);
             state = s;
         } else if (event.isFadeType()) {
-            float brightness = MathHelper.lerp(normalTime, 1.2f, 0);
+            float brightness = MathHelper.lerp(fadeTime, 1.2f, 0);
             var s = ls.copy();
             s.setBrightness(brightness);
             state = s;
