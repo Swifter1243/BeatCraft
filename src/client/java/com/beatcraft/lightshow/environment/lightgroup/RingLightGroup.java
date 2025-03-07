@@ -61,27 +61,20 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     @Override
     public void handleEvent(ValueEvent event, EventGroup eventGroup) {
-        int v = event.getValue();
-
         switch (eventGroup)
         {
-            case RING_SPIN -> handleRingSpin(v);
-            case RING_ZOOM -> handleRingZoom(v);
+            case RING_SPIN -> handleRingSpin();
+            case RING_ZOOM -> handleRingZoom();
         }
     }
 
-    private void handleRingSpin(int v) {
-        if (v == 0) {
-            innerRing.spinRandom();
-            outerRing.spinRandom();
-        }
+    private void handleRingSpin() {
+        innerRing.spinRandom();
+        outerRing.spinRandom();
     }
 
-    private void handleRingZoom(int v) {
-        //BeatCraft.LOGGER.info("ZOOM {}", i);
-        if (v == 0) {
-            innerRing.setZoom(innerRing.getZoom() >= 0.99 ? 0.3f : 1);
-        }
+    private void handleRingZoom() {
+        innerRing.setZoom(innerRing.getZoom() >= 0.99 ? 0.3f : 1);
     }
 
     @Override
