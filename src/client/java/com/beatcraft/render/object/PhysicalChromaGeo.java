@@ -46,9 +46,6 @@ public class PhysicalChromaGeo extends WorldRenderer {
         worldRot = matrices.peek().getPositionMatrix().getUnnormalizedRotation(worldRot);
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         matrices.translate(-0.5, -0.5, -0.5);
-
-        var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
         mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, model, chromaGeometry.getMaterial().getColor().getRed(), chromaGeometry.getMaterial().getColor().getGreen(), chromaGeometry.getMaterial().getColor().getBlue(), 255, overlay);
 
 
