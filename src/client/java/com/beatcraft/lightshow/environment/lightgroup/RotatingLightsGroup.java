@@ -18,14 +18,14 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
     Random random = Random.create();
 
     private final List<Quaternionf> rotations;
-    private final Collection<LightObject> rotatingLights;
-    private final Collection<LightObject> staticLights;
+    private final List<LightObject> rotatingLights;
+    private final List<LightObject> staticLights;
 
     public RotatingLightsGroup(HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
         lights.putAll(rotatingLights);
         lights.putAll(staticLights);
-        this.rotatingLights = rotatingLights.values();
-        this.staticLights = staticLights.values();
+        this.rotatingLights = rotatingLights.values().stream().toList();
+        this.staticLights = staticLights.values().stream().toList();
         this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
     }
 
@@ -59,11 +59,10 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
 
     @Override
     public void update(float beat, double deltaTime) {
-        for (int i = 0; i < lights.size(); i++) {
-            LightObject light = lights.get(i);
+        for (int i = 0; i < rotatingLights.size(); i++) {
+            LightObject light = rotatingLights.get(i);
             Quaternionf rotation = rotations.get(i);
             light.addRotation(new Quaternionf().slerp(rotation, (float) deltaTime));
-
         }
     }
 
