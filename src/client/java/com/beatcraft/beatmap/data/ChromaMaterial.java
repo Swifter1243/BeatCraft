@@ -1,17 +1,16 @@
 package com.beatcraft.beatmap.data;
 
-import com.google.gson.JsonArray;
+import com.beatcraft.data.types.Color;
 import com.google.gson.JsonObject;
 
 public class ChromaMaterial {
     // currently shader does nothing, im not doing shaders for this everything will just be unlit :shrug:
-
     protected String shader;
-    protected JsonArray color;
+    protected Color color;
 
     public ChromaMaterial load(JsonObject json) {
         shader = json.get("shader").toString();
-        color = json.get("colour").getAsJsonArray();
+        color = Color.fromJsonArray(json.get("color").getAsJsonArray());
         return this;
     }
 }
