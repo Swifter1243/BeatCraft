@@ -56,6 +56,11 @@ public class RingLightGroup extends ActionLightGroupV2 {
         return light;
     }
 
+    public void reset() {
+        innerRing.reset();
+        outerRing.reset();
+    }
+
     public RingLightGroup() {
         // start at idx 1
         super(buildRingLights());

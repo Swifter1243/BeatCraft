@@ -83,6 +83,18 @@ public class RingLightHandler extends LightObject {
 
         }
 
+        protected void reset() {
+            rotation = 0;
+            startTime = null;
+            zoomStart = null;
+            startRotation = 0;
+            targetRotation = 0;
+            prevZoom = 1;
+            if (nextRing != null) {
+                nextRing.reset();
+            }
+        }
+
         private boolean setNext = false;
 
         protected void update(float songTime) {
@@ -142,6 +154,14 @@ public class RingLightHandler extends LightObject {
             last = current;
         }
 
+    }
+
+    public void reset() {
+        ringRotation = 0;
+        rotationStep = 0;
+        currentOffset = 0;
+        zoom = 1;
+        headRing.reset();
     }
 
     public void update(float songTime) {

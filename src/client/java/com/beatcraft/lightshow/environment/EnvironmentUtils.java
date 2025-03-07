@@ -8,9 +8,9 @@ public class EnvironmentUtils {
     public static EnvironmentV2 theFirst = null;
 
     public static Environment setupEnvironment(String environment) {
-        return switch (environment) {
+        return (switch (environment) {
             default -> theFirst == null ? theFirst = new TheFirstEnvironment() : theFirst;
-        };
+        }).reset();
     }
 
 

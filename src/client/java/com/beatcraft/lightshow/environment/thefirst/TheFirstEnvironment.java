@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.environment.thefirst;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.lightshow.environment.EnvironmentV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.RingLightGroup;
@@ -33,6 +34,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
      * aboveTrackX: includes chevron and continues the 10 lasers from belowTrackX
      *
      */
+
+    private RingLightGroup ringLights;
 
     private static GlowingCuboid getRunway(boolean isLeft)
     {
@@ -230,7 +233,13 @@ public class TheFirstEnvironment extends EnvironmentV2 {
 
     @Override
     protected LightGroupV2 setupRingLights() {
-        // TODO
-        return new RingLightGroup();
+        ringLights = new RingLightGroup();
+        return ringLights;
+    }
+
+    @Override
+    public TheFirstEnvironment reset() {
+        ringLights.reset();
+        return this;
     }
 }

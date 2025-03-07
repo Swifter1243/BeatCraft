@@ -22,4 +22,6 @@ public abstract class Environment {
 
     public abstract void setup();
 
+    public abstract Environment reset();
+
 }
