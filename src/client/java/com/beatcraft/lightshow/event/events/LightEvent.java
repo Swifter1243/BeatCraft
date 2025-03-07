@@ -74,10 +74,10 @@ public class LightEvent extends BeatmapObject implements IEvent {
             if (lightIDs != null) {
                 this.lightIDs = new int[lightIDs.size()];
 
-                lightIDs.forEach(lightIDElem -> {
-                    int lightID = lightIDElem.getAsInt();
-                    this.lightIDs[lightID] = lightID;
-                });
+                for (int i = 0; i < lightIDs.size(); i++) {
+                    int lightID = lightIDs.get(i).getAsInt();
+                    this.lightIDs[i] = lightID;
+                }
             }
         }
 
