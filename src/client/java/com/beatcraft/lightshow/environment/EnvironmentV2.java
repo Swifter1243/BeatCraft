@@ -17,7 +17,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class EnvironmentV2 extends Environment {
+public abstract class EnvironmentV2 extends Environment {
 
     private LightEventHandler leftRotatingLaserLightHandler = null;
     private LightEventHandler rightRotatingLaserLightHandler = null;
