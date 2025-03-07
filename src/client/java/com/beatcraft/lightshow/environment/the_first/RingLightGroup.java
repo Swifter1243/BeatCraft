@@ -15,11 +15,11 @@ import org.joml.Vector3f;
 public class RingLightGroup extends LightGroupV2 {
 
     private final RingLightHandler innerRing;
-    //private final RingLightHandler outerRing;
+    private final RingLightHandler outerRing;
 
     public RingLightGroup() {
         innerRing = new RingLightHandler(InnerRing.getInstance(), 30, new Vector3f(0, 2, 10), 5);
-        //outerRing = new RingLightHandler(null, 15, new Vector3f(0, 2, 7), 2.5f);
+        outerRing = new RingLightHandler(OuterRing.getInstance(), 15, new Vector3f(0, 2, 7), 8.75f);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 
@@ -28,10 +28,10 @@ public class RingLightGroup extends LightGroupV2 {
             90 * rpd
         };
 
-        //outerRing.jumpOffsets = new float[]{
-        //    -45 * rpd,
-        //    45 * rpd
-        //};
+        outerRing.jumpOffsets = new float[]{
+            -90 * rpd,
+            90 * rpd
+        };
 
         innerRing.rotationOffsets = new float[]{
             0,
@@ -43,19 +43,34 @@ public class RingLightGroup extends LightGroupV2 {
             -11 * rpd
         };
 
+        outerRing.rotationOffsets = new float[]{
+            0,
+            1 * rpd,
+            2 * rpd,
+            3 * rpd,
+            4 * rpd,
+            5 * rpd,
+            -1 * rpd,
+            -2 * rpd,
+            -3 * rpd,
+            -4 * rpd,
+            -5 * rpd
+        };
+
     }
 
     @Override
     public void handleEvent(EventGroup group, Object obj) {
-        //if (group == EventGroup.RING_LIGHTS && obj instanceof LightState lightState) {
-        //    outerRing.setLightState(lightState);
-        //}
+
+        if (group == EventGroup.RING_LIGHTS && obj instanceof LightState lightState) {
+            outerRing.setLightState(lightState);
+        }
 
         if (group == EventGroup.RING_SPIN && obj instanceof Integer i) {
             //BeatCraft.LOGGER.info("SPIN {}", i);
             if (i == 0) {
                 innerRing.spinRandom();
-                //outerRing.spinRandom();
+                outerRing.spinRandom();
             }
         }
 
@@ -72,13 +87,14 @@ public class RingLightGroup extends LightGroupV2 {
     public void update(float beat, double deltaTime) {
         float t = BeatmapPlayer.getCurrentSeconds();
         innerRing.update(t);
-        //outerRing.update(t);
+        outerRing.update(t);
     }
 
     @Override
     public void render(MatrixStack matrices, Camera camera) {
         super.render(matrices, camera);
         innerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
-        //outerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
+        outerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
     }
+
 }

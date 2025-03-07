@@ -4,6 +4,9 @@ import net.minecraft.util.math.Direction;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RenderUtil {
     public static Quaternionf getBlockRenderOrientation(Direction face) {
         Quaternionf q = new Quaternionf();
@@ -58,5 +61,22 @@ public class RenderUtil {
         return Math.abs(v.x) > Math.abs(v.z) ? new Vector3f(-v.y, v.x, 0) : new Vector3f(0, -v.z, v.y);
     }
 
+
+    public static List<Vector3f[]> chopEdge(Vector3f a, Vector3f b) {
+        ArrayList<Vector3f[]> segments = new ArrayList<>();
+
+        Vector3f direction = b.sub(a, new Vector3f());
+        direction.normalize();
+        direction.mul(5);
+        Vector3f c = a;
+        while (a.distance(b) > 5) {
+            c = new Vector3f(a).add(direction);
+            segments.add(new Vector3f[]{a, c});
+            a = c;
+        }
+        segments.add(new Vector3f[]{c, b});
+
+        return segments;
+    }
 
 }
