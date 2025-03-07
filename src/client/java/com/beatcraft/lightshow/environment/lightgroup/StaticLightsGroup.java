@@ -13,10 +13,6 @@ public class StaticLightsGroup extends LightGroupV2 {
         this.lights.putAll(lights);
     }
 
-    public boolean isLightEventGroup(EventGroup group) {
-        return group == EventGroup.BACK_LASERS || group == EventGroup.CENTER_LASERS;
-    }
-
     @Override
     public void update(float beat, double deltaTime) {
 
