@@ -67,7 +67,13 @@ public class BeatcraftRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
+        // other stuff, including structure objects
+        for (var call : earlyRenderCalls) {
+            call.accept(vcp);
+        }
+        earlyRenderCalls.clear();
 
+        // environment lights
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
@@ -88,6 +94,7 @@ public class BeatcraftRenderer {
             BufferRenderer.drawWithGlobalProgram(buff);
         }
 
+        // notes and debris
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
         RenderSystem.enableDepthTest();
@@ -118,11 +125,7 @@ public class BeatcraftRenderer {
         noteRenderCalls.clear();
 
 
-        for (var call : earlyRenderCalls) {
-            call.accept(vcp);
-        }
-        earlyRenderCalls.clear();
-
+        // floor tiles and walls
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);

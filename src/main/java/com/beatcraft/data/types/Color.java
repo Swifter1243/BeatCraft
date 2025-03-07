@@ -124,26 +124,30 @@ public class Color {
         float newRed;
         float newGreen;
         float newBlue;
+        float newAlpha;
 
         if (brightness <= 1.0f) {
             newRed = red * brightness;
             newGreen = green * brightness;
             newBlue = blue * brightness;
+            newAlpha = alpha * brightness;
         } else {
             float overBright = brightness - 1.0f;
             newRed = red + (1.0f - red) * overBright;
             newGreen = green + (1.0f - green) * overBright;
             newBlue = blue + (1.0f - blue) * overBright;
+            newAlpha = alpha + (1 - alpha) * overBright;
         }
 
-        newRed = Math.max(0.0f, Math.min(1.0f, newRed));
-        newGreen = Math.max(0.0f, Math.min(1.0f, newGreen));
-        newBlue = Math.max(0.0f, Math.min(1.0f, newBlue));
+        newRed = Math.clamp(newRed, 0, 1);
+        newGreen = Math.clamp(newGreen, 0, 1);
+        newBlue = Math.clamp(newBlue, 0, 1);
+        newAlpha = Math.clamp(newAlpha, 0, 1);
 
         int intRed = (int) (newRed * 255);
         int intGreen = (int) (newGreen * 255);
         int intBlue = (int) (newBlue * 255);
-        int intAlpha = (int) (alpha * 255);
+        int intAlpha = (int) (newAlpha * 255);
 
         return (intAlpha << 24) | (intRed << 16) | (intGreen << 8) | intBlue;
     }
