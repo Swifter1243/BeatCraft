@@ -2,6 +2,8 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.ChromaGeometry;
+import com.beatcraft.beatmap.data.ChromaMaterial;
+import com.beatcraft.beatmap.data.ChromaMaterialManager;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
@@ -34,6 +36,7 @@ public class DifficultyV3 extends Difficulty {
         loadRotationEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
+        loadChromaMaterials(json);
         loadEnvironmentEnhancements(json);
         doPostLoad();
         return this;
@@ -194,5 +197,14 @@ public class DifficultyV3 extends Difficulty {
            BeatCraft.LOGGER.warn("ENVIROMENT ENHANCEMENTS NOT SUPPORTED");
         }
 
+    }
+    private void loadChromaMaterials(JsonObject json) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+            if (customData.has("materials")) {
+                JsonObject materials = customData.getAsJsonObject("materials");
+                materials.asMap().forEach((s, jsonElement) -> ChromaMaterialManager.addChromaMaterial(new ChromaMaterial().load(s,jsonElement.getAsJsonObject())));
+            }
+        }
     }
 }

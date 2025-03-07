@@ -32,7 +32,7 @@ public class ChromaGeometry extends BeatmapObject{
         // geometry specific shi
         JsonObject geo = json.getAsJsonObject("geometry");
         type = GeometryType.valueOf(geo.get("type").getAsString());
-        material = new ChromaMaterial().load(geo.get("material").getAsJsonObject());
+        material = ChromaMaterialManager.getChromaMaterial(geo.get("material").getAsString());
 
         // chroma shit
         position = json.getAsJsonArray("position");
