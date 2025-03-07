@@ -8,9 +8,10 @@ import com.beatcraft.utils.MathUtil;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LightEventHandler extends EventHandler<LightState, LightEvent> {
-    public LightEventHandler(ArrayList<LightEvent> events) {
+    public LightEventHandler(List<LightEvent> events) {
         super(events, new LightState(new Color(0, 0, 0, 0), 0));
     }
 

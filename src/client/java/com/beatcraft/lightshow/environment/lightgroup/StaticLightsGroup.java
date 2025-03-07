@@ -18,15 +18,6 @@ public class StaticLightsGroup extends LightGroupV2 {
     }
 
     @Override
-    public void handleEvent(EventGroup group, Object obj) {
-        if (isLightEventGroup(group) && obj instanceof LightState state) {
-            lights.values().forEach(l -> {
-                l.setLightState(state);
-            });
-        }
-    }
-
-    @Override
     public void update(float beat, double deltaTime) {
 
     }

@@ -1,8 +1,10 @@
 package com.beatcraft.lightshow.environment.lightgroup;
 
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.lights.LightObject;
+import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.BeatcraftRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -15,9 +17,16 @@ import java.util.HashMap;
 //
 public abstract class LightGroupV2 extends LightGroup {
 
-    protected HashMap<Integer, LightObject> lights = new HashMap<>();
+    public final HashMap<Integer, LightObject> lights = new HashMap<>();
 
-    public abstract void handleEvent(EventGroup group, Object obj);
+    public void setLightState(int id, LightState state) {
+        if (lights.containsKey(id)) {
+            lights.get(id).setLightState(state);
+        }
+        else {
+            BeatCraft.LOGGER.error("LightGroupV2: No LightObject with id {} found", id);
+        }
+    }
 
     @Override
     public void render(MatrixStack matrices, Camera camera) {
