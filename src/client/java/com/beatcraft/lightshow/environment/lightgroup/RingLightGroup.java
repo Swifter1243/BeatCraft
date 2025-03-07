@@ -18,6 +18,8 @@ public class RingLightGroup extends ActionLightGroupV2 {
     private final RingLightHandler outerRing;
 
     public RingLightGroup() {
+        super(); // TODO: Provide LightObjects, with lightIDs!
+
         innerRing = new RingLightHandler(InnerRing.getInstance(), 30, new Vector3f(0, 2, 10), 5);
         outerRing = new RingLightHandler(OuterRing.getInstance(), 15, new Vector3f(0, 2, 7), 8.75f);
 

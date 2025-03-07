@@ -10,7 +10,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,11 +21,17 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
     private final List<LightObject> staticLights;
 
     public RotatingLightsGroup(HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
-        lights.putAll(rotatingLights);
-        lights.putAll(staticLights);
+        super(collectLights(rotatingLights, staticLights));
         this.rotatingLights = rotatingLights.values().stream().toList();
         this.staticLights = staticLights.values().stream().toList();
         this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
+    }
+
+    private static HashMap<Integer, LightObject> collectLights(HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
+        var lights = new HashMap<Integer, LightObject>();
+        lights.putAll(rotatingLights);
+        lights.putAll(staticLights);
+        return lights;
     }
 
     public static Quaternionf getYRotation(int v) {

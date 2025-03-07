@@ -17,7 +17,11 @@ import java.util.HashMap;
 //
 public abstract class LightGroupV2 extends LightGroup {
 
-    public final HashMap<Integer, LightObject> lights = new HashMap<>();
+    public final HashMap<Integer, LightObject> lights;
+
+    public LightGroupV2(HashMap<Integer, LightObject> lights) {
+        this.lights = lights;
+    }
 
     public void setLightState(int id, LightState state) {
         if (lights.containsKey(id)) {

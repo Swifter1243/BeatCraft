@@ -10,7 +10,7 @@ import java.util.List;
 public class StaticLightsGroup extends LightGroupV2 {
 
     public StaticLightsGroup(HashMap<Integer, LightObject> lights) {
-        this.lights.putAll(lights);
+        super(lights);
     }
 
     @Override
