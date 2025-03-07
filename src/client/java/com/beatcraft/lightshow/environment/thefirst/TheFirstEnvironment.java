@@ -210,7 +210,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                         new Vector3f(-0.06f, -1.5f, -0.06f),
                         new Vector3f(0.06f, 0.03f, 0.06f)
                 ),
-                new Vector3f(),
+                new Vector3f(0, 4, 55),
                 new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
         );
         lights.put(lightID++, chevronLeft);
@@ -220,7 +220,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                         new Vector3f(-0.06f, -1.5f, -0.06f),
                         new Vector3f(0.06f, 0.03f, 0.06f)
                 ),
-                new Vector3f(),
+                new Vector3f(0, 4, 55),
                 new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
         );
         lights.put(lightID++, chevronRight);

@@ -50,7 +50,6 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     private int linkIndex = 1;
     private LightObject linkLight(Vector3f position, Quaternionf orientation) {
-        BeatCraft.LOGGER.info("linking light {}", linkIndex);
         var light = lights.get(linkIndex++);
         light.setPosition(position);
         light.setRotation(orientation);
@@ -59,7 +58,7 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     public RingLightGroup() {
         // start at idx 1
-        super(buildRingLights()); // TODO: Provide LightObjects, with lightIDs!
+        super(buildRingLights());
 
         innerRing = new RingLightHandler(InnerRing::getInstance, (v, q) -> null, 30, new Vector3f(0, 2, 10), 5);
         outerRing = new RingLightHandler(OuterRing::new, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
