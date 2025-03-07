@@ -1,5 +1,7 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.BeatCraft;
+import com.beatcraft.beatmap.data.ChromaGeometry;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
@@ -32,6 +34,7 @@ public class DifficultyV3 extends Difficulty {
         loadRotationEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
+        loadEnvironmentEnhancements(json);
         doPostLoad();
         return this;
     }
@@ -172,5 +175,24 @@ public class DifficultyV3 extends Difficulty {
             case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV3(json, this));
             case "AssignTrackParent" -> assignTrackParents.add(new AssignTrackParent().loadV3(json, this));
         }
+    }
+    private void loadEnvironmentEnhancements(JsonObject json) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+            if (customData.has("environment")) {
+                JsonArray environments = customData.getAsJsonArray("environment");
+                environments.forEach(o -> loadEnvironmentEnhancement(o.getAsJsonObject()));
+            }
+        }
+    }
+
+    private void loadEnvironmentEnhancement(JsonObject json) {
+        if (json.has("geometry")) {
+            ChromaGeometry rawGeo = new ChromaGeometry().loadV3(json,this);
+            chromaGeometries.add(new PhysicalChromaGeo(rawGeo));
+        } else if (json.has("id")) {
+           BeatCraft.LOGGER.warn("ENVIROMENT ENHANCEMENTS NOT SUPPORTED");
+        }
+
     }
 }

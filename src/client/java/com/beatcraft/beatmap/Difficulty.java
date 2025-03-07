@@ -42,6 +42,7 @@ public abstract class Difficulty {
     public final ArrayList<AssignTrackParent> assignTrackParents = new ArrayList<>();
     public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
+    public final ArrayList<PhysicalChromaGeo> chromaGeometries = new ArrayList<>();
 
     public Environment lightShowEnvironment;
 
