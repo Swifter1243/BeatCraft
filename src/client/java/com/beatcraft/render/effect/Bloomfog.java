@@ -106,7 +106,6 @@ public class Bloomfog {
     }
 
     public void resize(int width, int height) {
-        BeatCraft.LOGGER.info("resize to {} {}", width, height);
         framebuffer.resize(width, height, true);
         pingPongBuffers[0].resize(width, height, true);
         pingPongBuffers[1].resize(width, height, true);
@@ -126,6 +125,7 @@ public class Bloomfog {
         renderCalls.add(call);
     }
 
+    private int[] lastSize = new int[]{1, 1};
     public void render(float tickDelta) {
 
         if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive()) {
@@ -138,6 +138,12 @@ public class Bloomfog {
 
         MinecraftClient client = MinecraftClient.getInstance();
         var window = client.getWindow();
+
+        if (window.getWidth() != lastSize[0] || window.getHeight() != lastSize[1]) {
+            lastSize = new int[]{Math.max(1, window.getWidth()), Math.max(1, window.getHeight())};
+            resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()));
+        }
+
         float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
 
         float t = RenderSystem.getProjectionMatrix().m11();

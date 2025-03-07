@@ -165,8 +165,6 @@ public class RingLightHandler extends LightObject {
     public void setLightState(LightState state) {
         lightState = state;
         ringLight.setLightState(state);
-
-        BeatCraft.LOGGER.info("set light state to: {}", ringLight.getLightState());
     }
 
     public void spinRandom() {
