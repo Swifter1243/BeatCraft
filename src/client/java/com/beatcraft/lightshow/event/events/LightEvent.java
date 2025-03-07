@@ -84,6 +84,15 @@ public class LightEvent extends BeatmapObject implements IEvent {
         return this;
     }
 
+    public boolean containsLightID(int lightID) {
+        if (lightIDs == null) return true;
+
+        for (int id : lightIDs) {
+            if (id == lightID) return true;
+        }
+        return false;
+    }
+
     public LightState getLightState() {
         return lightState;
     }
