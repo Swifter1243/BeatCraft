@@ -4,12 +4,13 @@ import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class StaticLightsGroup extends LightGroupV2 {
 
-    public StaticLightsGroup(List<LightObject> lights) {
-        this.lights.addAll(lights);
+    public StaticLightsGroup(HashMap<Integer, LightObject> lights) {
+        this.lights.putAll(lights);
     }
 
     public boolean isLightEventGroup(EventGroup group) {
@@ -19,7 +20,7 @@ public class StaticLightsGroup extends LightGroupV2 {
     @Override
     public void handleEvent(EventGroup group, Object obj) {
         if (isLightEventGroup(group) && obj instanceof LightState state) {
-            lights.forEach(l -> {
+            lights.values().forEach(l -> {
                 l.setLightState(state);
             });
         }

@@ -4,6 +4,7 @@ import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.BeatcraftRenderer;
+import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -11,6 +12,7 @@ import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RotatingLightsGroup extends LightGroupV2 {
@@ -19,12 +21,10 @@ public class RotatingLightsGroup extends LightGroupV2 {
     private ArrayList<Quaternionf> rotations = new ArrayList<>();
     public ArrayList<LightObject> staticLights = new ArrayList<>();
 
-    public RotatingLightsGroup(List<LightObject> lightObjects, List<LightObject> staticLights) {
-        lights.addAll(lightObjects);
-        lights.forEach(l -> {
-            rotations.add(new Quaternionf());
-        });
-        this.staticLights.addAll(staticLights);
+    public RotatingLightsGroup(HashMap<Integer, LightObject> lightObjects, HashMap<Integer, LightObject> staticLights) {
+        lights.putAll(lightObjects);
+        lights.forEach((k, l) -> rotations.add(new Quaternionf()));
+        this.staticLights.addAll(staticLights.values());
     }
 
     public boolean isLightEventGroup(EventGroup group) {
@@ -47,7 +47,7 @@ public class RotatingLightsGroup extends LightGroupV2 {
     @Override
     public void handleEvent(EventGroup group, Object obj) {
         if (isLightEventGroup(group) && obj instanceof LightState state) {
-            lights.forEach(l -> {
+            lights.values().forEach(l -> {
                 l.setLightState(state);
             });
             staticLights.forEach(l -> {
@@ -57,12 +57,12 @@ public class RotatingLightsGroup extends LightGroupV2 {
         if (isValueEventGroup(group) && obj instanceof Integer v) {
             if (v == 0) {
                 rotations.forEach(Quaternionf::identity);
-                lights.forEach(light -> light.setRotation(new Quaternionf()));
+                lights.values().forEach(light -> light.setRotation(new Quaternionf()));
             } else if (1 <= v && v <= 9) {
                 rotations.forEach(rot -> {
                     rot.set(getYRotation(v, random.nextBoolean()));
                 });
-                lights.forEach(light -> {
+                lights.values().forEach(light -> {
                     light.setRotation(new Quaternionf().rotationY(random.nextBetween(-180, 180) * MathHelper.RADIANS_PER_DEGREE));
                 });
             }
