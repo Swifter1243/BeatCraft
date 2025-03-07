@@ -160,6 +160,7 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.render(matrices, camera));
         obstacles.forEach(o -> o.render(matrices, camera));
         arcs.forEach(o -> o.render(matrices, camera));
+        chromaGeometries.forEach(o -> o.render(matrices, camera));
     }
 
     public void seek(float beat) {
