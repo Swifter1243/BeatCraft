@@ -27,11 +27,12 @@ Mod Dependencies: (these will be auto-downloaded if you get the mod with the mod
 - [x] Color notes, bombs, chains, arcs, walls
 - [x] Accurate spawning animations
 - [ ] Accurate scoring
-- [ ] AnimateTrack, AssignPathAnimation, AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
-- [ ] V2 lightshows
+- [x] AnimateTrack, AssignPathAnimation events
+- [ ] AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
+- [x] V2 lightshows
 - [ ] V3 lightshows
 - [ ] maybe V4 lightshows
-- [ ] Chroma coloring features
+- [x] Chroma coloring features
 - [x] Ingame song selection menu
 - [x] Ingame Beatsaver downloader
 - [ ] Level modifiers (song speed, ghost notes, etc.)
