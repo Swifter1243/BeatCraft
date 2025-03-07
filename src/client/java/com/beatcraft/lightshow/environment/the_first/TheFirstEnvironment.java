@@ -14,7 +14,9 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TheFirstEnvironment extends EnvironmentV2 {
     /*
@@ -36,9 +38,53 @@ public class TheFirstEnvironment extends EnvironmentV2 {
      *
      */
 
+    private static GlowingCuboid getRunway(boolean isLeft)
+    {
+        int sign = isLeft ? 1 : -1;
+
+        return new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.03f, -0.03f, 0),
+                        new Vector3f(0.03f, 0.03f, 500)
+                ),
+                new Vector3f(3.5f * sign, 0, 8),
+                new Quaternionf()
+        );
+    }
+    private static GlowingCuboid getTowerLight1(boolean isLeft)
+    {
+        int sign = isLeft ? 1 : -1;
+
+        return new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.1f, -20, -0.1f),
+                        new Vector3f(0.1f, 8.5f, 0.1f)
+                ),
+                new Vector3f(20 * sign, 0, 16),
+                new Quaternionf()
+        );
+    }
+    private static GlowingCuboid getTowerLight2(boolean isLeft)
+    {
+        int sign = isLeft ? 1 : -1;
+
+        return new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.1f, -15, -0.1f),
+                        new Vector3f(0.1f, 11.5f, 0.1f)
+                ),
+                new Vector3f(20 * sign, 0, 19),
+                new Quaternionf()
+        );
+    }
+
     @Override
-    public void setup() {
-        // left/right rotating light groups
+    protected LightGroupV2 setupLeftLasers() {
+        HashMap<Integer, LightObject> rotatingLights = new HashMap<>();
+        HashMap<Integer, LightObject> staticLights = new HashMap<>();
+        int lightID = 1;
+
+        var offset = new Vector3f(0, -0.01f, 5);
         var left1 = new GlowingCuboid(
                 new Hitbox(
                         new Vector3f(-0.03f, -10, -0.03f),
@@ -47,7 +93,33 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                 new Vector3f(15, 2, 30),
                 new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
         );
+        var left2 = left1.cloneOffset(offset);
+        var left3 = left2.cloneOffset(offset);
+        var left4 = left3.cloneOffset(offset);
 
+        rotatingLights.put(lightID++, left1);
+        rotatingLights.put(lightID++, left2);
+        rotatingLights.put(lightID++, left3);
+        rotatingLights.put(lightID++, left4);
+
+        var leftRunway = getRunway(true);
+        var leftTowerLight1 = getTowerLight1(true);
+        var leftTowerLight2 = getTowerLight2(true);
+
+        staticLights.put(lightID++, leftRunway);
+        staticLights.put(lightID++, leftTowerLight1);
+        staticLights.put(lightID++, leftTowerLight2);
+
+        return new RotatingLightsGroup(rotatingLights, staticLights);
+    }
+
+    @Override
+    protected LightGroupV2 setupRightLasers() {
+        HashMap<Integer, LightObject> rotatingLights = new HashMap<>();
+        HashMap<Integer, LightObject> staticLights = new HashMap<>();
+        int lightID = 1;
+
+        var offset = new Vector3f(0, -0.01f, 5);
         var right1 = new GlowingCuboid(
                 new Hitbox(
                         new Vector3f(-0.03f, -10, -0.03f),
@@ -56,134 +128,113 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                 new Vector3f(-15, 2, 30),
                 new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
         );
-
-        var offset = new Vector3f(0, -0.01f, 5);
-
-        var left2 = left1.cloneOffset(offset);
-        var left3 = left2.cloneOffset(offset);
-        var left4 = left3.cloneOffset(offset);
-
         var right2 = right1.cloneOffset(offset);
         var right3 = right2.cloneOffset(offset);
         var right4 = right3.cloneOffset(offset);
 
-        var leftRunway = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.03f, -0.03f, 0),
-                        new Vector3f(0.03f, 0.03f, 500)
-                ),
-                new Vector3f(3.5f, 0, 8),
-                new Quaternionf()
-        );
+        rotatingLights.put(lightID++, right1);
+        rotatingLights.put(lightID++, right2);
+        rotatingLights.put(lightID++, right3);
+        rotatingLights.put(lightID++, right4);
 
-        var rightRunway = leftRunway.cloneOffset(new Vector3f(-7, 0, 0));
+        var rightRunway = getRunway(false);
+        var rightTowerLight1 = getTowerLight1(false);
+        var rightTowerLight2 = getTowerLight2(false);
 
-        var leftTowerLight1 = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.1f, -20, -0.1f),
-                        new Vector3f(0.1f, 8.5f, 0.1f)
-                ),
-                new Vector3f(20, 0, 16),
-                new Quaternionf()
-        );
+        staticLights.put(lightID++, rightRunway);
+        staticLights.put(lightID++, rightTowerLight1);
+        staticLights.put(lightID++, rightTowerLight2);
 
-        var leftTowerLight2 = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.1f, -15, -0.1f),
-                        new Vector3f(0.1f, 11.5f, 0.1f)
-                ),
-                new Vector3f(20, 0, 19),
-                new Quaternionf()
-        );
+        return new RotatingLightsGroup(rotatingLights, staticLights);
+    }
 
-        var rightTowerLight1 = leftTowerLight1.cloneOffset(new Vector3f(-40, 0, 0));
-        var rightTowerLight2 = leftTowerLight2.cloneOffset(new Vector3f(-40, 0, 0));
+    @Override
+    protected LightGroupV2 setupBackLasers() {
+        HashMap<Integer, LightObject> lights = new HashMap<>();
+        int lightID = 1;
 
+        for (int i = 0; i < 6; i++)
+        {
+            float z = 45 + i * 10;
+            var bottomLeftLaser = new GlowingCuboid(
+                    new Hitbox(
+                            new Vector3f(-0.05f, -150, -0.05f),
+                            new Vector3f(0.05f, 0, 0.05f)
+                    ),
+                    new Vector3f(2f, -2, z),
+                    new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
+            );
+            lights.put(lightID++, bottomLeftLaser);
 
-        LightGroupV2 lg = new RotatingLightsGroup(List.of(left1, left2, left3, left4), List.of(leftRunway, leftTowerLight1, leftTowerLight2));
-        LightGroupV2 rg = new RotatingLightsGroup(List.of(right1, right2, right3, right4), List.of(rightRunway, rightTowerLight1, rightTowerLight2));
-
-        bindLightGroup(EventGroup.LEFT_LASERS, lg);
-        bindLightGroup(EventGroup.RIGHT_LASERS, rg);
-
-        bindLightGroup(EventGroup.LEFT_ROTATING_LASERS, lg);
-        bindLightGroup(EventGroup.RIGHT_ROTATING_LASERS, rg);
-
-        // above/below track X
-
-        // roughly 58 degrees on X, 33 on Z
-
-        var bottomLeftLaser = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.05f, -150, -0.05f),
-                        new Vector3f(0.05f, 0, 0.05f)
-                ),
-                new Vector3f(2f, -2, 45),
-                new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
-        );
-
-        var topLeftLaser = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.05f, 0, -0.05f),
-                        new Vector3f(0.05f, 200, 0.05f)
-                ),
-                new Vector3f(2f, -2, 45),
-                new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
-        );
-
-        var bottomRightLaser = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.05f, -150, -0.05f),
-                        new Vector3f(0.05f, 0, 0.05f)
-                ),
-                new Vector3f(-2f, -2, 45),
-                new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
-        );
-
-        var topRightLaser = new GlowingCuboid(
-                new Hitbox(
-                        new Vector3f(-0.05f, 0, -0.05f),
-                        new Vector3f(0.05f, 200, 0.05f)
-                ),
-                new Vector3f(-2f, -2, 45),
-                new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
-        );
-
-        offset = new Vector3f(0, 0, 10);
-
-        ArrayList<LightObject> l1 = new ArrayList<>(List.of(bottomLeftLaser));
-        ArrayList<LightObject> l2 = new ArrayList<>(List.of(topLeftLaser));
-        ArrayList<LightObject> r1 = new ArrayList<>(List.of(bottomRightLaser));
-        ArrayList<LightObject> r2 = new ArrayList<>(List.of(topRightLaser));
-
-        for (int i = 0; i < 5; i++) {
-            l1.add(((GlowingCuboid) l1.getLast()).cloneOffset(offset));
-            l2.add(((GlowingCuboid) l2.getLast()).cloneOffset(offset));
-            r1.add(((GlowingCuboid) r1.getLast()).cloneOffset(offset));
-            r2.add(((GlowingCuboid) r2.getLast()).cloneOffset(offset));
+            var bottomRightLaser = new GlowingCuboid(
+                    new Hitbox(
+                            new Vector3f(-0.05f, -150, -0.05f),
+                            new Vector3f(0.05f, 0, 0.05f)
+                    ),
+                    new Vector3f(-2f, -2, z),
+                    new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
+            );
+            lights.put(lightID++, bottomRightLaser);
         }
 
-        var bg = new StaticLightsGroup(l1);
-        var tg = new StaticLightsGroup(l2);
+        return new StaticLightsGroup(lights);
+    }
 
-        bg.lights.addAll(r1);
-        tg.lights.addAll(r2);
+    @Override
+    protected LightGroupV2 setupCenterLasers() {
+        HashMap<Integer, LightObject> lights = new HashMap<>();
+        int lightID = 1;
 
-        var chevron = new Chevron();
+        for (int i = 0; i < 6; i++)
+        {
+            float z = 45 + i * 10;
+            var topLeftLaser = new GlowingCuboid(
+                    new Hitbox(
+                            new Vector3f(-0.05f, 0, -0.05f),
+                            new Vector3f(0.05f, 200, 0.05f)
+                    ),
+                    new Vector3f(2f, -2, z),
+                    new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
+            );
+            lights.put(lightID++, topLeftLaser);
 
-        chevron.setPosition(new Vector3f(0, 4, 55));
+            var topRightLaser = new GlowingCuboid(
+                    new Hitbox(
+                            new Vector3f(-0.05f, 0, -0.05f),
+                            new Vector3f(0.05f, 200, 0.05f)
+                    ),
+                    new Vector3f(-2f, -2, z),
+                    new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 60 * MathHelper.RADIANS_PER_DEGREE, 0)
+            );
+            lights.put(lightID++, topRightLaser);
+        }
 
-        tg.lights.add(chevron);
+        var chevronLeft = new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.06f, -1.5f, -0.06f),
+                        new Vector3f(0.06f, 0.03f, 0.06f)
+                ),
+                new Vector3f(),
+                new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
+        );
+        lights.put(lightID++, chevronLeft);
 
-        bindLightGroup(EventGroup.BACK_LASERS, bg);
-        bindLightGroup(EventGroup.CENTER_LASERS, tg);
+        var chevronRight = new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.06f, -1.5f, -0.06f),
+                        new Vector3f(0.06f, 0.03f, 0.06f)
+                ),
+                new Vector3f(),
+                new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
+        );
+        lights.put(lightID++, chevronRight);
 
-        // ring lights
+        return new StaticLightsGroup(lights);
+    }
 
-        var rings = new RingLightGroup();
-
-        bindLightGroup(EventGroup.RING_LIGHTS, rings);
-        bindLightGroup(EventGroup.RING_SPIN, rings);
-        bindLightGroup(EventGroup.RING_ZOOM, rings);
+    @Override
+    protected LightGroupV2 setupRingLights() {
+        // TODO
+        return new RingLightGroup();
     }
 }
