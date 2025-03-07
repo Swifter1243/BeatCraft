@@ -1,27 +1,68 @@
 package com.beatcraft.lightshow.environment.lightgroup;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.thefirst.OuterRing;
 import com.beatcraft.lightshow.environment.thefirst.InnerRing;
 import com.beatcraft.lightshow.event.events.ValueEvent;
+import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.ring_lights.RingLightHandler;
+import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.lights.GlowingCuboid;
+import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.util.HashMap;
 
 public class RingLightGroup extends ActionLightGroupV2 {
 
     private final RingLightHandler innerRing;
     private final RingLightHandler outerRing;
 
-    public RingLightGroup() {
-        super(); // TODO: Provide LightObjects, with lightIDs!
 
-        innerRing = new RingLightHandler(InnerRing.getInstance(), 30, new Vector3f(0, 2, 10), 5);
-        outerRing = new RingLightHandler(OuterRing.getInstance(), 15, new Vector3f(0, 2, 7), 8.75f);
+
+    private static final float ringRadius = 27;
+    private static final float lightLength = 6;
+    private static final float lightSize = 0.2f;
+
+    private static HashMap<Integer, LightObject> buildRingLights() {
+        HashMap<Integer, LightObject> map = new HashMap<>();
+
+        for (int i = 1; i <= 30*4; i++) {
+            map.put(i, new GlowingCuboid(
+                new Hitbox(
+                    new Vector3f(-lightLength/2, -lightSize, -lightSize),
+                    new Vector3f(lightLength/2, lightSize, lightSize)
+                ),
+                new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
+                new Quaternionf()
+            ));
+        }
+
+        return map;
+    }
+
+    private int linkIndex = 1;
+    private LightObject linkLight(Vector3f position, Quaternionf orientation) {
+        BeatCraft.LOGGER.info("linking light {}", linkIndex);
+        var light = lights.get(linkIndex++);
+        light.setPosition(position);
+        light.setRotation(orientation);
+        return light;
+    }
+
+    public RingLightGroup() {
+        // start at idx 1
+        super(buildRingLights()); // TODO: Provide LightObjects, with lightIDs!
+
+        innerRing = new RingLightHandler(InnerRing::getInstance, (v, q) -> null, 30, new Vector3f(0, 2, 10), 5);
+        outerRing = new RingLightHandler(OuterRing::new, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 

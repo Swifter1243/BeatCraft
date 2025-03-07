@@ -14,20 +14,32 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.List;
+import java.util.function.BiFunction;
+
 public class OuterRing extends LightObject {
 
+    private List<LightObject> lights;
 
-    private OuterRing() {
+    private static final float ringRadius = 27;
+    private static final float ringWidth = 1;
+    private static final float ringDepth = 0.5f;
+    private static final int color = 0xFF000000;
+    private static final float lightSize = 0.2f;
+    private static final float lightOffset = 0.001f;
+
+
+
+    public OuterRing(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
         orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
+        lights = List.of(
+            lightFactory.apply(new Vector3f( 0                           ,  ringRadius-(lightSize+0.01f), lightSize+lightOffset), new Quaternionf()),
+            lightFactory.apply(new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)),
+            lightFactory.apply(new Vector3f( 0                           , -ringRadius+(lightSize+0.01f), lightSize+lightOffset), new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)),
+            lightFactory.apply(new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE))
+        );
     }
 
-    private static OuterRing INSTANCE;
-    public static OuterRing getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new OuterRing();
-        }
-        return INSTANCE;
-    }
 
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
@@ -41,21 +53,11 @@ public class OuterRing extends LightObject {
             _render(pos, off, ori, rot, bloomfog)
         );
 
-        light.setWorldRotation(new Quaternionf(orientation).mul(rotation));
-        light.setOffset(new Vector3f(position).rotate(rotation).add(offset));
-        light.render(matrices, camera, bloomfog);
-
-        light.setWorldRotation(new Quaternionf(orientation).mul(rotation).rotateZ(-90*MathHelper.RADIANS_PER_DEGREE));
-        light.setOffset(new Vector3f(position).rotateZ(-90*MathHelper.RADIANS_PER_DEGREE).rotate(orientation).rotate(rotation).add(offset));
-        light.render(matrices, camera, bloomfog);
-
-        light.setWorldRotation(new Quaternionf(orientation).mul(rotation).rotateZ(90*MathHelper.RADIANS_PER_DEGREE));
-        light.setOffset(new Vector3f(position).rotateZ(-90*MathHelper.RADIANS_PER_DEGREE).rotate(orientation).rotate(rotation).add(offset));
-        light.render(matrices, camera, bloomfog);
-
-        light.setWorldRotation(new Quaternionf(orientation).mul(rotation).rotateZ(180*MathHelper.RADIANS_PER_DEGREE));
-        light.setOffset(new Vector3f(position).rotateZ(-90*MathHelper.RADIANS_PER_DEGREE).rotate(orientation).rotate(rotation).add(offset));
-        light.render(matrices, camera, bloomfog);
+        for (var light : lights) {
+            light.setWorldRotation(new Quaternionf(orientation).mul(rotation));
+            light.setOffset(new Vector3f(position).rotate(rotation).add(offset).rotate(worldRotation));
+            light.render(matrices, camera, bloomfog);
+        }
 
     }
 
@@ -66,12 +68,6 @@ public class OuterRing extends LightObject {
             .sub(camera);
     }
 
-    private static final float ringRadius = 27;
-    private static final float ringWidth = 1;
-    private static final float ringDepth = 0.5f;
-    private static final int color = 0xFF000000;
-    private static final float lightLength = 6;
-    private static final float lightSize = 0.2f;
 
     private static final Vector3f[] vertices = new Vector3f[]{
         // front vertical face
@@ -98,16 +94,6 @@ public class OuterRing extends LightObject {
         new Vector3f(0, ringRadius, ringDepth),
         new Vector3f(ringRadius, ringRadius, ringDepth)
     };
-
-    private final GlowingCuboid light = new GlowingCuboid(
-        new Hitbox(
-            new Vector3f(-lightLength/2, -lightSize, -lightSize),
-            new Vector3f(lightLength/2, lightSize, lightSize)
-        ),
-        new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
-        new Quaternionf()
-    );
-
 
     private static final Vector3f[] modifiers = new Vector3f[]{
             new Vector3f(1, 1, 1),
@@ -143,17 +129,17 @@ public class OuterRing extends LightObject {
 
     @Override
     public void setBrightness(float value) {
-        light.setBrightness(value);
+        //light.setBrightness(value);
     }
 
     @Override
     public void setColor(int color) {
-        light.setColor(color);
+        //light.setColor(color);
     }
 
     @Override
     public void setLightState(LightState state) {
-        lightState = state;
-        light.setLightState(lightState);
+        //lightState = state;
+        //light.setLightState(lightState);
     }
 }

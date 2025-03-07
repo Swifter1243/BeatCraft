@@ -11,6 +11,8 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.function.BiFunction;
+
 public class InnerRing extends LightObject {
 
 
@@ -19,7 +21,7 @@ public class InnerRing extends LightObject {
     }
 
     private static InnerRing INSTANCE;
-    public static InnerRing getInstance() {
+    public static InnerRing getInstance(BiFunction<Vector3f, Quaternionf, LightObject> ignored) {
         if (INSTANCE == null) {
             INSTANCE = new InnerRing();
         }
