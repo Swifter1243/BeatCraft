@@ -10,7 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class LightEvent extends BeatmapObject implements IEvent {
-
+    private static final float FADE_DURATION = 4;
     private LightState lightState;
     private int lightEventType = 0;
     private float eventValue = 0;
@@ -110,7 +110,7 @@ public class LightEvent extends BeatmapObject implements IEvent {
             case 2, 3, 4 -> {
                 lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentRightColor().withAlpha(1f));
                 lightState.setBrightness(eventValue);
-                duration = 1;
+                duration = FADE_DURATION;
             }
             case 5 -> {
                 lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentLeftColor().withAlpha(1f));
@@ -119,7 +119,7 @@ public class LightEvent extends BeatmapObject implements IEvent {
             case 6, 7, 8 -> {
                 lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentLeftColor().withAlpha(1f));
                 lightState.setBrightness(eventValue);
-                duration = 1;
+                duration = FADE_DURATION;
             }
             case 9 -> {
                 lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1f));
@@ -128,7 +128,7 @@ public class LightEvent extends BeatmapObject implements IEvent {
             case 10, 11, 12 -> {
                 lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1f));
                 lightState.setBrightness(eventValue);
-                duration = 1;
+                duration = FADE_DURATION;
             }
 
             default -> {}
