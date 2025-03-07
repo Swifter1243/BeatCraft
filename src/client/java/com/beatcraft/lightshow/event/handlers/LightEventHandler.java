@@ -24,13 +24,15 @@ public class LightEventHandler extends EventHandler<LightState, LightEvent> {
     public void onInsideEvent(LightEvent event, float normalTime) {
         var ls = event.getLightState();
 
+        float fadeTime = 1 - (float)Math.pow(1 - normalTime, 3);
+
         if (event.isFlashType()) {
-            float brightness = MathHelper.lerp(normalTime, 1.2f, 1);
+            float brightness = MathHelper.lerp(fadeTime, 1.2f, 1);
             var s = ls.copy();
             s.setBrightness(brightness);
             state = s;
         } else if (event.isFadeType()) {
-            float brightness = MathHelper.lerp(normalTime, 1.2f, 0);
+            float brightness = MathHelper.lerp(fadeTime, 1.2f, 0);
             var s = ls.copy();
             s.setBrightness(brightness);
             state = s;
