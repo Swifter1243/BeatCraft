@@ -54,7 +54,10 @@ public class Color {
         color.setRed(json.get(0).getAsFloat());
         color.setGreen(json.get(1).getAsFloat());
         color.setBlue(json.get(2).getAsFloat());
-        color.setAlpha(1);
+        if (json.size() == 4)
+            color.setAlpha(json.get(3).getAsFloat());
+        else
+            color.setAlpha(1);
         return color;
     }
 

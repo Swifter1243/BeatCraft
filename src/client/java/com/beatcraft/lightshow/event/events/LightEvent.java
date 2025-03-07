@@ -1,6 +1,7 @@
 package com.beatcraft.lightshow.event.events;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.beatmap.data.EnvironmentColor;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.event.IEvent;
@@ -16,6 +17,7 @@ public class LightEvent extends BeatmapObject implements IEvent {
     private float eventValue = 0;
     private float duration = 0;
     private int[] lightIDs;
+    private Color chromaColor = null;
 
     private LightState fadeFrom = null;
 
@@ -66,7 +68,6 @@ public class LightEvent extends BeatmapObject implements IEvent {
         eventValue = JsonUtil.getOrDefault(json, "_floatValue", JsonElement::getAsFloat, 1f);
 
         lightState = new LightState(new Color(0), 0);
-        process(difficulty, lightState);
 
         var customData = JsonUtil.getOrDefault(json,"_customData", JsonElement::getAsJsonObject, null);
         if (customData != null) {
@@ -79,9 +80,30 @@ public class LightEvent extends BeatmapObject implements IEvent {
                     this.lightIDs[i] = lightID;
                 }
             }
+
+            var chromaColor = JsonUtil.getOrDefault(customData, "_color", JsonElement::getAsJsonArray, null);
+            if (chromaColor != null) {
+                this.chromaColor = Color.fromJsonArray(chromaColor);
+            }
         }
 
+        process(difficulty, lightState);
+
         return this;
+    }
+
+    private Color getColor(Difficulty difficulty, EnvironmentColor environmentColor) {
+        var colorScheme = difficulty.getSetDifficulty().getColorScheme();
+
+        if (chromaColor != null) {
+            return chromaColor;
+        }
+
+        return switch (environmentColor) {
+            case LEFT -> colorScheme.getEnvironmentLeftColor().withAlpha(1);
+            case RIGHT -> colorScheme.getEnvironmentRightColor().withAlpha(1);
+            case WHITE -> colorScheme.getEnvironmentWhiteColor().withAlpha(1);
+        };
     }
 
     public boolean containsLightID(int lightID) {
@@ -104,29 +126,29 @@ public class LightEvent extends BeatmapObject implements IEvent {
                 lightState.setColor(new Color(0));
             }
             case 1 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentRightColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.RIGHT));
                 lightState.setBrightness(eventValue);
             }
             case 2, 3, 4 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentRightColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.RIGHT));
                 lightState.setBrightness(eventValue);
                 duration = FADE_DURATION;
             }
             case 5 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentLeftColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.LEFT));
                 lightState.setBrightness(eventValue);
             }
             case 6, 7, 8 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentLeftColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.LEFT));
                 lightState.setBrightness(eventValue);
                 duration = FADE_DURATION;
             }
             case 9 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.WHITE));
                 lightState.setBrightness(eventValue);
             }
             case 10, 11, 12 -> {
-                lightState.setColor(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1f));
+                lightState.setColor(getColor(difficulty, EnvironmentColor.WHITE));
                 lightState.setBrightness(eventValue);
                 duration = FADE_DURATION;
             }
