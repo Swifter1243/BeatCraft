@@ -8,6 +8,7 @@
     "GameRendererMixin",
     "ItemEntityRendererMixin",
     "MinecraftClientFramebufferMixin",
+    "MinecraftClientMixin",
     "OptionsScreenMixin",
     "PlayerHeldItemFeatureRendererMixin",
     "WorldRendererMixin"
@@ -16,6 +17,7 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "HeldItemRendererMixin"
+    "HeldItemRendererMixin",
+    "vivecraft.MCVRMixin"
   ]
 }

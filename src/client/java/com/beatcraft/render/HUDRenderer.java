@@ -64,6 +64,8 @@ public class HUDRenderer {
 
     private static final Function<Float, Float> opacityEasing = Easing.getEasing("easeInExpo");
 
+    private static final TextRenderer.TextLayerType TEXT_LAYER = TextRenderer.TextLayerType.NORMAL;
+
     public static final int TEXT_COLOR = 0xFFFFFFFF;
     public static final int TEXT_LIGHT = 255;
 
@@ -152,6 +154,7 @@ public class HUDRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
 
         matrices.translate(0, 0, 8);
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
@@ -351,7 +354,7 @@ public class HUDRenderer {
             Text.literal(rank),
             -w/2f, 12, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -366,7 +369,7 @@ public class HUDRenderer {
             Text.literal("COMBO"),
             -w/2f, -28, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
         matrices.push();
@@ -408,7 +411,7 @@ public class HUDRenderer {
             Text.literal(combo),
             -w/2f, -12, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -427,7 +430,7 @@ public class HUDRenderer {
             Text.literal(score),
             -w/2f, 2, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
 
@@ -448,7 +451,7 @@ public class HUDRenderer {
             Text.literal(accuracy),
             -w/2f, 18, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
 
@@ -483,7 +486,7 @@ public class HUDRenderer {
             Text.literal("x"),
             -8.5f, -20, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
         matrices.push();
@@ -493,7 +496,7 @@ public class HUDRenderer {
             Text.literal(mod),
             -1, -8, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH, 0, TEXT_LIGHT
+            TEXT_LAYER, 0, TEXT_LIGHT
         );
 
         matrices.pop();
@@ -564,7 +567,7 @@ public class HUDRenderer {
             Text.literal(display),
             -w/2f, 32, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
-            TextRenderer.TextLayerType.SEE_THROUGH,
+            TEXT_LAYER,
             0, TEXT_LIGHT
         );
 

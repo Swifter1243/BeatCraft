@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.List;
 import java.util.function.BiFunction;

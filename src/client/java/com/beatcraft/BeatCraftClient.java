@@ -7,6 +7,7 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
@@ -104,8 +105,11 @@ public class BeatCraftClient implements ClientModInitializer {
                 client.setScreen(screen);
                 while (songSearchKeybind.wasPressed());
             } else if (pauseLevelKeybind.wasPressed()) {
-                HUDRenderer.scene = HUDRenderer.MenuScene.Paused;
-                BeatmapPlayer.pause();
+                if (GameLogicHandler.isPaused()) {
+                    GameLogicHandler.unpauseMap();
+                } else {
+                    GameLogicHandler.pauseMap();
+                }
             }
         });
 
