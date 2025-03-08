@@ -70,7 +70,7 @@ dependencies {
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-linux"))
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-macos"))
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-windows"))
-	implementation("com.illposed.osc:javaosc-core:0.9")
+	include(implementation("com.illposed.osc:javaosc-core:0.9"))
 
 	// Geckolib
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
