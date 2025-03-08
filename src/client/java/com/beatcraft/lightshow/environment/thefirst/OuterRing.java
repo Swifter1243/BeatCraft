@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -116,8 +117,9 @@ public class OuterRing extends LightObject {
         RenderSystem.disableCull();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
-        bloomfog.loadTex();
+        boolean inVr = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
+        RenderSystem.setShader(inVr ? GameRenderer::getPositionColorProgram : () -> Bloomfog.bloomfogPositionColor);
+        if (!inVr) bloomfog.loadTex();
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.enableCull();
         RenderSystem.depthMask(false);

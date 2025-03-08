@@ -54,11 +54,11 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 public class GameLogicHandler {
@@ -437,7 +437,7 @@ public class GameLogicHandler {
                 breakCombo();
                 addScore(0, 115);
                 Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
-                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.1f, 7).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
 
                 HUDRenderer.postScore(-1, startPos, endPos, cut.note.score$getLaneRotation());
             }
@@ -451,7 +451,7 @@ public class GameLogicHandler {
                 addScore(finalScore, 115);
 
                 Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
-                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.1f, 7).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
 
                 HUDRenderer.postScore(finalScore, startPos, endPos, cut.note.score$getLaneRotation());
             }
@@ -463,7 +463,7 @@ public class GameLogicHandler {
                 breakCombo();
                 addScore(0, 115);
                 Vector3f startPos = cut.contactPosition.mul(1, 0, 1, new Vector3f());
-                Vector3f endPos = startPos.add(new Vector3f(0, 0.5f, 5).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
+                Vector3f endPos = startPos.add(new Vector3f(0, 0.1f, 7).rotate(cut.note.score$getLaneRotation().invert(new Quaternionf())), new Vector3f());
 
                 HUDRenderer.postScore(0, startPos, endPos, cut.note.score$getLaneRotation());
             }
@@ -666,6 +666,37 @@ public class GameLogicHandler {
         BeatmapPlayer.reset();
         BeatmapAudioPlayer.unload();
         reset();
+    }
+
+    public static boolean isPaused() {
+        return HUDRenderer.scene == HUDRenderer.MenuScene.Paused;
+    }
+
+    public static void unpauseMap() {
+        InputSystem.lockHotbar();
+        CompletableFuture.runAsync(() -> {
+            HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
+            double start = System.nanoTime() / 1_000_000_000d;
+
+            while ((System.nanoTime() / 1_000_000_000d) - start < 1) {
+                double dt = 1-(System.nanoTime() / 1_000_000_000d);
+                if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                    return;
+                }
+            }
+
+            if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                return;
+            }
+            BeatmapPlayer.play();
+
+        });
+    }
+
+    public static void pauseMap() {
+        InputSystem.unlockHotbar();
+        HUDRenderer.scene = HUDRenderer.MenuScene.Paused;
+        BeatmapPlayer.pause();
     }
 
 }

@@ -1,6 +1,7 @@
 package com.beatcraft.render.menu;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.HUDRenderer;
 import org.joml.Vector2f;
@@ -28,6 +29,7 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                     () -> {
                         HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                         BeatmapAudioPlayer.unmuteVanillaMusic();
+                        InputSystem.unlockHotbar();
                     },
                     new HoverWidget(
                             new Vector3f(),
@@ -62,6 +64,7 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                         () -> {
                             HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                             BeatmapAudioPlayer.unmuteVanillaMusic();
+                            InputSystem.unlockHotbar();
                         },
                         new HoverWidget(
                                 new Vector3f(),

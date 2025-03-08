@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ConfirmSongDeleteMenu;
 import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
@@ -268,6 +269,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         GameLogicHandler.reset();
                         BeatmapAudioPlayer.muteVanillaMusic();
                         ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
+                        InputSystem.lockHotbar();
 
                     } catch (IOException e) {
                         BeatCraft.LOGGER.error("There was a tragic failure whilst loading a beatmap", e);
