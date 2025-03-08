@@ -9,7 +9,7 @@ import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
 import com.beatcraft.beatmap.data.object.Obstacle;
-import com.beatcraft.lightshow.environment.Environments;
+import com.beatcraft.lightshow.environment.EnvironmentUtils;
 import com.beatcraft.render.object.PhysicalArc;
 import com.beatcraft.render.object.PhysicalBombNote;
 import com.beatcraft.render.object.PhysicalColorNote;
@@ -128,7 +128,7 @@ public class DifficultyV2 extends Difficulty {
     }
 
     private void loadLightshow(JsonObject json) {
-        lightShowEnvironment = Environments.loadV2(this, json);
+        lightShowEnvironment = EnvironmentUtils.loadV2(this, json);
     }
 
 }

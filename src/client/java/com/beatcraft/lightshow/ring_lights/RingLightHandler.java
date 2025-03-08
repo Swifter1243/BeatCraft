@@ -14,11 +14,14 @@ import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 public class RingLightHandler extends LightObject {
 
     Random random = Random.create();
 
-    private LightObject ringLight;
     private int ringCount;
     private float ringOffset;
     private float zoom = 1;
@@ -44,8 +47,10 @@ public class RingLightHandler extends LightObject {
         private RingHandler nextRing = null;
         private float prevZoom = 1;
         private final int index;
+        private LightObject ringLight;
 
-        protected RingHandler(RingLightHandler controller, int index) {
+        protected RingHandler(RingLightHandler controller, int index, LightObject ringLight) {
+            this.ringLight = ringLight;
             this.controller = controller;
             this.index = index;
         }
@@ -78,6 +83,18 @@ public class RingLightHandler extends LightObject {
 
         }
 
+        protected void reset() {
+            rotation = 0;
+            startTime = null;
+            zoomStart = null;
+            startRotation = 0;
+            targetRotation = 0;
+            prevZoom = 1;
+            if (nextRing != null) {
+                nextRing.reset();
+            }
+        }
+
         private boolean setNext = false;
 
         protected void update(float songTime) {
@@ -104,15 +121,15 @@ public class RingLightHandler extends LightObject {
         }
 
         protected void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
-            controller.ringLight.setOffset(
+            ringLight.setOffset(
                 new Vector3f(0, 0, controller.ringOffset * lerpZoom(BeatmapPlayer.getCurrentSeconds()) * index)
                     .rotate(controller.orientation).rotate(controller.rotation)
                     .add(controller.position).add(controller.offset)
             );
-            controller.ringLight.setRotation(
+            ringLight.setRotation(
                 new Quaternionf().rotationZ(rotation).mul(controller.orientation).mul(controller.rotation)
             );
-            controller.ringLight.render(matrices, camera, bloomfog);
+            ringLight.render(matrices, camera, bloomfog);
             if (nextRing != null) {
                 nextRing.render(matrices, camera, bloomfog);
             }
@@ -122,22 +139,29 @@ public class RingLightHandler extends LightObject {
 
     private final RingHandler headRing;
 
-    public RingLightHandler(LightObject ringLight, int count, Vector3f position, float ringGap) {
-        this.ringLight = ringLight;
+    public RingLightHandler(Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> ringFactory, BiFunction<Vector3f, Quaternionf, LightObject> lightBuilder, int count, Vector3f position, float ringGap) {
         ringCount = count;
         this.position = position;
         ringOffset = ringGap;
 
-        headRing = new RingHandler(this, 0);
+        headRing = new RingHandler(this, 0, ringFactory.apply(lightBuilder));
 
         var last = headRing;
 
         for (int i = 1; i < ringCount; i++) {
-            var current = new RingHandler(this, i);
+            var current = new RingHandler(this, i, ringFactory.apply(lightBuilder));
             last.nextRing = current;
             last = current;
         }
 
+    }
+
+    public void reset() {
+        ringRotation = 0;
+        rotationStep = 0;
+        currentOffset = 0;
+        zoom = 1;
+        headRing.reset();
     }
 
     public void update(float songTime) {
@@ -149,22 +173,15 @@ public class RingLightHandler extends LightObject {
         headRing.render(matrices, camera, bloomfog);
     }
 
+
     @Override
     public void setBrightness(float value) {
         lightState.setBrightness(value);
-        ringLight.setBrightness(value);
     }
 
     @Override
     public void setColor(int color) {
         lightState.setColor(new Color(color));
-        ringLight.setColor(color);
-    }
-
-    @Override
-    public void setLightState(LightState state) {
-        lightState = state;
-        ringLight.setLightState(state);
     }
 
     public void spinRandom() {

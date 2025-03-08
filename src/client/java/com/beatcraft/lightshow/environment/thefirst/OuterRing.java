@@ -1,9 +1,11 @@
-package com.beatcraft.lightshow.environment.the_first;
+package com.beatcraft.lightshow.environment.thefirst;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.lightshow.lights.LightObject;
+import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.lights.GlowingCuboid;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
@@ -12,19 +14,28 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class InnerRing extends LightObject {
+import java.util.List;
+import java.util.function.BiFunction;
 
+public class OuterRing extends LightObject {
 
-    private InnerRing() {
+    private List<LightObject> lights;
+
+    private static final float ringRadius = 27;
+    private static final float ringWidth = 1;
+    private static final float ringDepth = 0.5f;
+    private static final int color = 0xFF000000;
+    private static final float lightSize = 0.2f;
+    private static final float lightOffset = 0.001f;
+
+    public OuterRing(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
         orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
-    }
-
-    private static InnerRing INSTANCE;
-    public static InnerRing getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new InnerRing();
-        }
-        return INSTANCE;
+        lights = List.of(
+            lightFactory.apply(new Vector3f( 0                           ,  ringRadius-(lightSize+0.01f), lightSize+lightOffset), new Quaternionf()),
+            lightFactory.apply(new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)),
+            lightFactory.apply(new Vector3f( 0                           , -ringRadius+(lightSize+0.01f), lightSize+lightOffset), new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)),
+            lightFactory.apply(new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE))
+        );
     }
 
     @Override
@@ -38,6 +49,13 @@ public class InnerRing extends LightObject {
         BeatcraftRenderer.recordEarlyRenderCall((vcp) ->
             _render(pos, off, ori, rot, bloomfog)
         );
+
+        for (var light : lights) {
+            light.setWorldRotation(new Quaternionf(orientation).mul(rotation));
+            light.setOffset(new Vector3f(position).rotate(rotation).add(offset).rotate(worldRotation));
+            light.render(matrices, camera, bloomfog);
+        }
+
     }
 
     private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot, Vector3f camera) {
@@ -47,11 +65,6 @@ public class InnerRing extends LightObject {
             .sub(camera);
     }
 
-    private static final float ringRadius = 7;
-    private static final float ringWidth = 0.3f;
-    private static final float ringDepth = 0.1f;
-    private static final float ringGap = 4;
-    private static final int color = 0xFF000000;
 
     private static final Vector3f[] vertices = new Vector3f[]{
         // front vertical face
@@ -68,20 +81,14 @@ public class InnerRing extends LightObject {
 
         // front horizontal face
         new Vector3f(ringRadius+ringWidth, ringRadius+ringWidth, 0),
-        new Vector3f(ringGap/2, ringRadius+ringWidth, 0),
-        new Vector3f(ringGap/2, ringRadius, 0),
+        new Vector3f(0, ringRadius+ringWidth, 0),
+        new Vector3f(0, ringRadius, 0),
         new Vector3f(ringRadius, ringRadius, 0),
-
-        // gap end face
-        new Vector3f(ringGap/2, ringRadius, 0),
-        new Vector3f(ringGap/2, ringRadius+ringWidth, 0),
-        new Vector3f(ringGap/2, ringRadius+ringWidth, ringDepth),
-        new Vector3f(ringGap/2, ringRadius, ringDepth),
 
         // front horizontal inner face
         new Vector3f(ringRadius, ringRadius, 0),
-        new Vector3f(ringGap/2, ringRadius, 0),
-        new Vector3f(ringGap/2, ringRadius, ringDepth),
+        new Vector3f(0, ringRadius, 0),
+        new Vector3f(0, ringRadius, ringDepth),
         new Vector3f(ringRadius, ringRadius, ringDepth)
     };
 
@@ -106,8 +113,6 @@ public class InnerRing extends LightObject {
             }
         }
 
-
-
         RenderSystem.disableCull();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
@@ -121,11 +126,17 @@ public class InnerRing extends LightObject {
 
     @Override
     public void setBrightness(float value) {
-
+        //light.setBrightness(value);
     }
 
     @Override
     public void setColor(int color) {
+        //light.setColor(color);
+    }
 
+    @Override
+    public void setLightState(LightState state) {
+        //lightState = state;
+        //light.setLightState(lightState);
     }
 }
