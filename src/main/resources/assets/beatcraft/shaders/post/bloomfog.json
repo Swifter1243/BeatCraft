@@ -1,0 +1,85 @@
+{
+  "targets": [
+    "final",
+    "swap"
+  ],
+  "passes": [
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": []
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": []
+    },
+    {
+      "name": "blit",
+      "intarget": "swap",
+      "outtarget": "final"
+    }
+  ]
+}

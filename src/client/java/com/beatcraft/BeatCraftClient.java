@@ -15,6 +15,7 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.render.shader.BeatCraftRenderLayers;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
@@ -34,6 +35,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -83,6 +85,9 @@ public class BeatCraftClient implements ClientModInitializer {
         GeckolibRenderInit.init();
 
         BeatCraftClientNetworking.init();
+
+        CoreShaderRegistrationCallback.EVENT.register(BeatCraftRenderLayers::init);
+
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;

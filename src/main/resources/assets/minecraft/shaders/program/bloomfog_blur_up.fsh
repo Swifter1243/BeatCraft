@@ -1,6 +1,7 @@
 #version 150
 
 uniform sampler2D Sampler0;
+uniform vec4 ColorModulator;
 
 in vec2 texCoord0;
 in vec4 vertexColor;
@@ -25,4 +26,14 @@ void main() {
         + 2.0*texture(Sampler0, texCoord0 + vec2(-vertexColor.x    , -vertexColor.y    ))
     ) / 8);
 
+    /*
+    gl_FragColor = (    texture2D(gm_BaseTexture, v_vTexcoord + vec2( 2.0*u_vTexel.x,            0.0))
+                 +      texture2D(gm_BaseTexture, v_vTexcoord + vec2(-2.0*u_vTexel.x,            0.0))
+                 +      texture2D(gm_BaseTexture, v_vTexcoord + vec2(            0.0, 2.0*u_vTexel.y))
+                 +      texture2D(gm_BaseTexture, v_vTexcoord + vec2(            0.0,-2.0*u_vTexel.y))
+                 +  2.0*texture2D(gm_BaseTexture, v_vTexcoord + vec2(     u_vTexel.x,     u_vTexel.y))
+                 +  2.0*texture2D(gm_BaseTexture, v_vTexcoord + vec2(    -u_vTexel.x,     u_vTexel.y))
+                 +  2.0*texture2D(gm_BaseTexture, v_vTexcoord + vec2(     u_vTexel.x,    -u_vTexel.y))
+                 +  2.0*texture2D(gm_BaseTexture, v_vTexcoord + vec2(    -u_vTexel.x,    -u_vTexel.y))) / 12.0;
+*/
 }
