@@ -113,9 +113,7 @@ public class InnerRing extends LightObject {
         RenderSystem.disableCull();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
-        boolean inVr = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
-        RenderSystem.setShader(inVr ? GameRenderer::getPositionColorProgram : () -> Bloomfog.bloomfogPositionColor);
-        if (!inVr) bloomfog.loadTex();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.enableCull();
         RenderSystem.depthMask(false);
