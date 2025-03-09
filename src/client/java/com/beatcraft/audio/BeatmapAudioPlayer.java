@@ -8,10 +8,15 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class BeatmapAudioPlayer {
-    private static final MinecraftClient mc = MinecraftClient.getInstance();
-    private static double currentMusicVolume = mc.options.getSoundVolume(SoundCategory.MUSIC);
-    public static BeatmapAudio beatmapAudio = new BeatmapAudio();
+    private static MinecraftClient mc;
+    private static double currentMusicVolume = 1;
+    public static BeatmapAudio beatmapAudio = null;
     public static CompletableFuture<Void> loadRequest = null;
+
+    public static void init() {
+        mc = MinecraftClient.getInstance();
+        beatmapAudio = new BeatmapAudio();
+    }
 
     public static void muteVanillaMusic() {
         currentMusicVolume = mc.options.getSoundVolume(SoundCategory.MUSIC);
