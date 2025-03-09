@@ -1,85 +1,85 @@
 {
   "targets": [
-    "final",
+    "beatcraft:bloomfog",
     "swap"
   ],
   "passes": [
     {
       "name": "bloomfog_blur_down",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_down",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_down",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_down",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_down",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_down",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
       "intarget": "swap",
-      "outtarget": "final",
+      "outtarget": "beatcraft:bloomfog",
       "uniforms": []
     },
     {
       "name": "bloomfog_blur_up",
-      "intarget": "final",
+      "intarget": "beatcraft:bloomfog",
       "outtarget": "swap",
       "uniforms": []
     },
     {
       "name": "blit",
       "intarget": "swap",
-      "outtarget": "final"
+      "outtarget": "beatcraft:bloomfog"
     }
   ]
 }

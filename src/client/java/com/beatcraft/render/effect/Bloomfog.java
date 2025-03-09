@@ -104,12 +104,10 @@ public class Bloomfog {
             postEffectProcessor = new PostEffectProcessor(
                 MinecraftClient.getInstance().getTextureManager(),
                 MinecraftClient.getInstance().getResourceManager(),
-                framebuffer,
+                blurredBuffer,
                 Identifier.of(BeatCraft.MOD_ID, "shaders/post/bloomfog.json")
             );
 
-            postEffectProcessor.addTarget("final", 1920, 1080);
-            postEffectProcessor.addTarget("swap", 1920, 1080);
             postEffectProcessor.setupDimensions(1920, 1080);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -178,9 +176,9 @@ public class Bloomfog {
         float t = RenderSystem.getProjectionMatrix().m11();
         float fov = ((float) Math.atan(1.0f / t)) * 2.0f;
 
-        //overrideBuffer = true;
-        //overrideFramebuffer = framebuffer;
-        //framebuffer.beginWrite(true);
+        overrideBuffer = true;
+        overrideFramebuffer = blurredBuffer;
+        blurredBuffer.beginWrite(true);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -226,13 +224,13 @@ public class Bloomfog {
             layer.draw(buff);
         }
 
-        //framebuffer.endWrite();
+        blurredBuffer.endWrite();
         overrideBuffer = false;
         overrideFramebuffer = null;
 
         postEffectProcessor.render(tickDelta);
 
-        postEffectProcessor.getSecondaryTarget("final").draw(width, height, false);
+        //postEffectProcessor.getSecondaryTarget("minecraft:main").draw(width, height, false);
 
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
         //var oldProjMat = RenderSystem.getProjectionMatrix();
