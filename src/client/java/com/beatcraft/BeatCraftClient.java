@@ -16,7 +16,6 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.item.GeckolibRenderInit;
-import com.beatcraft.render.shader.BeatCraftRenderLayers;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
@@ -88,10 +87,6 @@ public class BeatCraftClient implements ClientModInitializer {
         BeatCraftClientNetworking.init();
 
         playerConfig = PlayerConfig.loadFromFile();
-
-
-        CoreShaderRegistrationCallback.EVENT.register(BeatCraftRenderLayers::init);
-
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
