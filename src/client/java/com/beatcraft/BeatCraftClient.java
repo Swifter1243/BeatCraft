@@ -58,7 +58,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 
 public class BeatCraftClient implements ClientModInitializer {
 
-    public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
+    public static PlayerConfig playerConfig = null;
     public static final SongList songs = new SongList();
 
     public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
@@ -87,6 +87,9 @@ public class BeatCraftClient implements ClientModInitializer {
 
         BeatCraftClientNetworking.init();
 
+        playerConfig = PlayerConfig.loadFromFile();
+
+
         CoreShaderRegistrationCallback.EVENT.register(BeatCraftRenderLayers::init);
 
 
@@ -114,6 +117,8 @@ public class BeatCraftClient implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            BeatmapAudioPlayer.init();
+
             songs.loadSongs();
             HUDRenderer.initSongSelectMenuPanel();
         });
