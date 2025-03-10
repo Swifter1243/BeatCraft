@@ -88,7 +88,7 @@ public class Bloomfog {
         framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
         //pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
         //pingPongBuffers[1] = new SimpleFramebuffer(1920, 1080, true, true);
-        //blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
         //
         tex = new BloomfogTex(framebuffer);
         //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -108,7 +108,7 @@ public class Bloomfog {
             );
 
             postEffectProcessor.setupDimensions(1920, 1080);
-            blurredBuffer = (SimpleFramebuffer) postEffectProcessor.getSecondaryTarget("bloomfog");
+            //blurredBuffer = (SimpleFramebuffer) postEffectProcessor.getSecondaryTarget("bloomfog");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
