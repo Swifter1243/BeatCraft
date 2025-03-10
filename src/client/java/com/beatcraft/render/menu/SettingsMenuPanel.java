@@ -180,10 +180,10 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
             return new ContainerWidget(
                 position, new Vector2f(SIZE),
-                new TextWidget(label, new Vector3f(-160, -11, 0)).withScale(1.5f),
-                getButton(new TextWidget("<", new Vector3f(0, -11, 0), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50)),
+                new TextWidget(label, new Vector3f(-160, -11, -0.01f)).withScale(1.5f),
+                getButton(new TextWidget("<", new Vector3f(0, -11, -0.01f), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50)),
                 valueDisplay,
-                getButton(new TextWidget(">", new Vector3f(0, -11, 0), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50))
+                getButton(new TextWidget(">", new Vector3f(0, -11, -0.01f), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50))
             );
         } catch (Exception e) {
             return new TextWidget("ERROR creating widget!", new Vector3f());

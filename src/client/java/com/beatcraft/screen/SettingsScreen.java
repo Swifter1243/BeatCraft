@@ -55,15 +55,15 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 .child(Components.spacer(15))
                 .child(
                     Components.button(Text.translatable("gui.beatcraft.button.general_settings"), this::gotoGeneralPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(5)).child(
+                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.quality_settings"), this::gotoQualityPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(5)).child(
+                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.audio_settings"), this::gotoAudioPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(5)).child(
+                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.controllers_settings"), this::gotoControllersPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(5)).child(
+                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(5)).child(
+                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 )
         ).child(settingPage);
@@ -120,7 +120,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private void setAudioPage() {
-        var slider = Components.discreteSlider(Sizing.fill(50), 1, 100).value(BeatCraftClient.playerConfig.getVolume()).message(str -> Text.of(str + "%"));
+        var slider = Components.discreteSlider(Sizing.fill(50), 0, 100).value(BeatCraftClient.playerConfig.getVolume()).message(str -> Text.of(str + "%"));
         slider.onChanged().subscribe(this::updateVolume);
 
         settingPage.child(Components.spacer(10)).child(
@@ -147,19 +147,19 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 DebugRenderer.doDebugRendering,
                 this::toggleMainDebugRenderer
             )
-        ).child(
+        ).child(Components.spacer(2)).child(
             toggleOption(
                 "setting.beatcraft.debug.saber_renderer",
                 DebugRenderer.debugSaberRendering,
                 this::toggleSaberDebugRenderer
             )
-        ).child(
+        ).child(Components.spacer(2)).child(
             toggleOption(
                 "setting.beatcraft.debug.hitboxes",
                 DebugRenderer.renderHitboxes,
                 this::toggleHitboxRenderer
             )
-        ).child(
+        ).child(Components.spacer(2)).child(
             toggleOption(
                 "setting.beatcraft.debug.arc_lines",
                 DebugRenderer.renderArcDebugLines,
