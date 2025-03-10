@@ -188,9 +188,11 @@ public class BeatcraftRenderer {
 
         }
         RenderSystem.enableBlend();
+        RenderSystem.enableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.disableBlend();
+        RenderSystem.disableDepthTest();
     }
 
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {
