@@ -80,7 +80,7 @@ public class GlowingCuboid extends LightObject {
     private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
         var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
-        if ((color & 0xFF000000) == 0) {
+        if (((color >> 24) & 0xFF) == 0) {
             return;
         }
 

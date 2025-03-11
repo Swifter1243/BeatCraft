@@ -64,7 +64,7 @@ public class GameRendererMixin {
     //
     //    return true;
     //}
-    //
+
     //@Inject(
     //    method = "loadPrograms",
     //    at = @At("TAIL")
@@ -73,13 +73,14 @@ public class GameRendererMixin {
     //    this.programs.put("rendertype_solid", Bloomfog.bloomfog_solid_shader);
     //    renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
     //}
-    //
+
     //@Inject(
     //    method = "getRenderTypeSolidProgram",
     //    at = @At("HEAD"),
     //    cancellable = true
     //)
     //private static void overrideRendertypeSolid(CallbackInfoReturnable<ShaderProgram> cir) {
+    //
     //    cir.setReturnValue(Bloomfog.bloomfog_solid_shader);
     //    cir.cancel();
     //}

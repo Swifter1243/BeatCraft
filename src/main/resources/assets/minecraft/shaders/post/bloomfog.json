@@ -36,11 +36,6 @@
     },
     {
       "name": "bloomfog_blur_up",
-      "intarget": "swap",
-      "outtarget": "bloomfog"
-    },
-    {
-      "name": "bloomfog_blur_up",
       "intarget": "bloomfog",
       "outtarget": "swap"
     },
