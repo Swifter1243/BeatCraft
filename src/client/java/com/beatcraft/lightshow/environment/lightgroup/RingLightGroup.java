@@ -65,7 +65,7 @@ public class RingLightGroup extends ActionLightGroupV2 {
         // start at idx 1
         super(buildRingLights());
 
-        innerRing = new RingLightHandler(InnerRing::getInstance, (v, q) -> null, 30, new Vector3f(0, 2, 10), 5);
+        innerRing = new RingLightHandler(InnerRing::getInstance, (v, q) -> null, 30, new Vector3f(0, 2, 14), 5);
         outerRing = new RingLightHandler(OuterRing::new, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;

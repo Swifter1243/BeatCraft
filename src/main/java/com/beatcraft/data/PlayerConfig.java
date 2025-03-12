@@ -39,6 +39,8 @@ public class PlayerConfig {
 
     private boolean option_reducedDebris = false;
 
+    private boolean setting_placeEnvironmentStructures = true;
+
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
 
@@ -62,6 +64,8 @@ public class PlayerConfig {
         }
 
         controller_selectedProfile_index = JsonUtil.getOrDefault(json, "controller.selectedProfile.index", JsonElement::getAsInt, controller_selectedProfile_index);
+
+        setting_placeEnvironmentStructures = JsonUtil.getOrDefault(json, "setting.placeEnvironmentStructures", JsonElement::getAsBoolean, setting_placeEnvironmentStructures);
 
         if (json.has("controller.profiles")) {
             JsonArray rawProfiles = json.getAsJsonArray("controller.profiles");
@@ -89,6 +93,8 @@ public class PlayerConfig {
         json.addProperty("option.reduced_debris", option_reducedDebris);
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
+
+        json.addProperty("setting.placeEnvironmentStructures", setting_placeEnvironmentStructures);
 
         JsonArray array = new JsonArray();
 
@@ -199,6 +205,14 @@ public class PlayerConfig {
 
     public boolean doSparkParticles() {
         return quality_sparkParticles;
+    }
+
+    public boolean doEnvironmentPlacing() {
+        return setting_placeEnvironmentStructures;
+    }
+
+    public void setEnvironmentPlacing(boolean value) {
+        setting_placeEnvironmentStructures = value;
     }
 
     public ControllerProfile getActiveControllerProfile() {

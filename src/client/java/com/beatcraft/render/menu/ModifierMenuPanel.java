@@ -136,7 +136,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> updateVolume((int) (BeatCraftClient.playerConfig.getVolume()*100)-5),
                 () -> updateVolume((int) (BeatCraftClient.playerConfig.getVolume()*100)+5),
                 this::getVolume,
-                new Vector3f(-100, -175, 0))
+                new Vector3f(-100, -175, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Place Environments",
+                () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(false),
+                () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(true),
+                () -> BeatCraftClient.playerConfig.doEnvironmentPlacing() ? "ON" : "OFF",
+                new Vector3f(-100, -123, 0))
         ));
 
 

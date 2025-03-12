@@ -3,6 +3,7 @@ package com.beatcraft.utils;
 import com.beatcraft.data.types.Color;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3i;
 import org.joml.*;
 import org.joml.Math;
 
@@ -71,6 +72,14 @@ public class MathUtil {
 
     public static Vector3f lerpVector3(Vector3f a, Vector3f b, float time) {
         return new Vector3f(a).lerp(b, time);
+    }
+
+    public static Vec3i lerpVec3i(Vec3i a, Vec3i b, float time) {
+        return new Vec3i(
+            (int) Math.lerp(a.getX(), b.getX(), time),
+            (int) Math.lerp(a.getY(), b.getY(), time),
+            (int) Math.lerp(a.getZ(), b.getZ(), time)
+        );
     }
 
     public static float inverseLerpVector3(Vector3f a, Vector3f b, Vector3f t) {

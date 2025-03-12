@@ -10,6 +10,7 @@ import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ConfirmSongDeleteMenu;
 import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
+import com.beatcraft.networking.c2s.PlaceEnvironmentStructureC2SPayload;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -264,6 +265,11 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         currentDisplay = null;
                         HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                         BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
+                        // send structure place method so it can happen while the song loads client-side
+                        if (BeatCraftClient.playerConfig.doEnvironmentPlacing()) {
+                            String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
+                            ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
+                        }
                         BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
                         BeatmapPlayer.restart();
                         GameLogicHandler.reset();

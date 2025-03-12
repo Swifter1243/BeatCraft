@@ -4,6 +4,7 @@ import com.beatcraft.blocks.CornerLightTileBlock;
 import com.beatcraft.blocks.EdgeLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.data.components.ModComponents;
+import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.group.ModItemGroup;
 import com.beatcraft.networking.BeatCraftNetworking;
@@ -26,6 +27,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Difficulty;
@@ -46,12 +48,17 @@ public class BeatCraft implements ModInitializer {
 	public static String currentTrackId = null;
 	public static String currentSet = null;
 	public static String currentDiff = null;
+	public static boolean isFlatWorld = false;
 
 	private static final PersistentState.Type<FirstJoinState> joinStateType = new PersistentState.Type<>(
 		FirstJoinState::new,
 		FirstJoinState::fromNbt,
 		null
 	);
+
+	public static Identifier id(String path) {
+		return Identifier.of(MOD_ID, path);
+	}
 
 
 	@Override
@@ -66,6 +73,8 @@ public class BeatCraft implements ModInitializer {
 		BeatCraftWorldGeneration.generateWorldGen();
 
 		BeatCraftNetworking.init();
+
+		StructurePlacer.init();
 
 		registerCommands();
 
@@ -93,7 +102,9 @@ public class BeatCraft implements ModInitializer {
 
 			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
 
-			if (!server.getSaveProperties().isFlatWorld() && !state.hasJoined()) {
+			isFlatWorld = server.getSaveProperties().isFlatWorld();
+
+			if (!isFlatWorld && !state.hasJoined()) {
 				state.markJoin();
 			}
 
@@ -109,7 +120,7 @@ public class BeatCraft implements ModInitializer {
 
 				initGameRules(server, world);
 
-				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, and §fDoTraderSpawning §7 set to §4false§7;"));
+				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, §fDoMobSpawning§7, and §fDoTraderSpawning §7 set to §4false§7;"));
 
 			}
 
@@ -136,6 +147,7 @@ public class BeatCraft implements ModInitializer {
 		server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
 		server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
 		server.getGameRules().get(GameRules.DO_TRADER_SPAWNING).set(false, server);
+		server.getGameRules().get(GameRules.DO_MOB_SPAWNING).set(false, server);
 		world.setTimeOfDay(18_000);
 		server.setDifficulty(Difficulty.PEACEFUL, true);
 	}

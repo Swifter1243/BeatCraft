@@ -1,12 +1,14 @@
 package com.beatcraft.networking;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.networking.c2s.*;
 import com.beatcraft.networking.s2c.*;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
 import java.util.UUID;
@@ -27,6 +29,7 @@ public class BeatCraftNetworking {
     public static final Identifier BEAT_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "beat_sync_c2s");
     public static final Identifier SPEED_SYNC_C2S = Identifier.of(BeatCraft.MOD_ID, "speed_sync_c2s");
     public static final Identifier SONG_PAUSE_C2S = Identifier.of(BeatCraft.MOD_ID, "song_pause_c2s");
+    public static final Identifier PLACE_ENVIRONMENT_C2S = Identifier.of(BeatCraft.MOD_ID, "place_environment_c2s");
 
     public static void init() {
 
@@ -44,6 +47,7 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playC2S().register(BeatSyncC2SPayload.ID, BeatSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SpeedSyncC2SPayload.ID, SpeedSyncC2SPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SongPauseC2SPayload.ID, SongPauseC2SPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(PlaceEnvironmentStructureC2SPayload.ID, PlaceEnvironmentStructureC2SPayload.CODEC);
 
         // receivers
         ServerPlayNetworking.registerGlobalReceiver(SaberSyncC2SPayload.ID, BeatCraftNetworking::handleSaberSyncPayload);
@@ -51,6 +55,7 @@ public class BeatCraftNetworking {
         ServerPlayNetworking.registerGlobalReceiver(BeatSyncC2SPayload.ID, BeatCraftNetworking::handleBeatSyncPayload);
         ServerPlayNetworking.registerGlobalReceiver(SpeedSyncC2SPayload.ID, BeatCraftNetworking::handleSpeedSyncPayload);
         ServerPlayNetworking.registerGlobalReceiver(SongPauseC2SPayload.ID, BeatCraftNetworking::handlePausePayload);
+        ServerPlayNetworking.registerGlobalReceiver(PlaceEnvironmentStructureC2SPayload.ID, BeatCraftNetworking::placeStructure);
 
     }
 
@@ -116,6 +121,16 @@ public class BeatCraftNetworking {
             PlayerLookup.tracking(player).forEach(pl -> {
                 ServerPlayNetworking.send(pl, new SongPauseS2CPayload());
             });
+        });
+    }
+
+    private static void placeStructure(PlaceEnvironmentStructureC2SPayload payload, ServerPlayNetworking.Context context) {
+        context.server().execute(() -> {
+            PlayerEntity player = context.player();
+            ServerWorld world = (ServerWorld) player.getWorld();
+            String struct = payload.struct();
+
+            StructurePlacer.placeStructure(struct, world);
         });
     }
 

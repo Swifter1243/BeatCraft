@@ -8,6 +8,10 @@ public abstract class Environment {
         setup();
     }
 
+    public String getID() {
+        return "Default";
+    }
+
     public void render(MatrixStack matrices, Camera camera) {
 
     }
