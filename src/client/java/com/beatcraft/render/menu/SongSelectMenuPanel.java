@@ -266,9 +266,10 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                         BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
                         // send structure place method so it can happen while the song loads client-side
-                        String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
-                        ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
-
+                        if (BeatCraftClient.playerConfig.doEnvironmentPlacing()) {
+                            String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
+                            ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
+                        }
                         BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
                         BeatmapPlayer.restart();
                         GameLogicHandler.reset();
