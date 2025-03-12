@@ -57,7 +57,13 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         }
 
         if (!isArrowDissolved()) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
+            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+            BeatcraftRenderer.recordArrowRenderCall((tri, cam) -> {
+                MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
+                MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+            });
+            //mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
         }
     }
 

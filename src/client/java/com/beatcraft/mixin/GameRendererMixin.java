@@ -1,6 +1,7 @@
 package com.beatcraft.mixin;
 
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -47,42 +48,41 @@ public class GameRendererMixin {
         camera.getRotation().mul(BeatCraftClient.playerCameraRotation).mul(BeatCraftClient.playerGlobalRotation).normalize();
     }
 
-    //@WrapOperation(
-    //    method = "loadPrograms",
-    //    at = @At(
-    //        value = "INVOKE",
-    //        target = "Ljava/util/List;add(Ljava/lang/Object;)Z",
-    //        ordinal = 7 // 7 = solid, 8 = cutout mipped, 9 = cutout, 10 = translucent
-    //    )
-    //)
-    //private<E> boolean loadBloomfogShaders(List<E> instance, E e, Operation<Boolean> original, @Local(argsOnly = true) ResourceFactory factory) {
-    //    try {
-    //        Bloomfog.bloomfog_solid_shader = new ShaderProgram(factory, "rendertype_solid_bloomfog", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
-    //    } catch (IOException ex) {
-    //        throw new RuntimeException(ex);
-    //    }
-    //
-    //    return true;
-    //}
+    @WrapOperation(
+        method = "loadPrograms",
+        at = @At(
+            value = "INVOKE",
+            target = "Ljava/util/List;add(Ljava/lang/Object;)Z",
+            ordinal = 7 // 7 = solid, 8 = cutout mipped, 9 = cutout, 10 = translucent
+        )
+    )
+    private<E> boolean loadBloomfogShaders(List<E> instance, E e, Operation<Boolean> original, @Local(argsOnly = true) ResourceFactory factory) {
+        try {
+            Bloomfog.bloomfog_solid_shader = new ShaderProgram(factory, "rendertype_solid_bloomfog", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
-    //@Inject(
-    //    method = "loadPrograms",
-    //    at = @At("TAIL")
-    //)
-    //private void addPrograms(ResourceFactory factory, CallbackInfo ci) {
-    //    this.programs.put("rendertype_solid", Bloomfog.bloomfog_solid_shader);
-    //    renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
-    //}
+        return true;
+    }
 
-    //@Inject(
-    //    method = "getRenderTypeSolidProgram",
-    //    at = @At("HEAD"),
-    //    cancellable = true
-    //)
-    //private static void overrideRendertypeSolid(CallbackInfoReturnable<ShaderProgram> cir) {
-    //
-    //    cir.setReturnValue(Bloomfog.bloomfog_solid_shader);
-    //    cir.cancel();
-    //}
+    @Inject(
+        method = "loadPrograms",
+        at = @At("TAIL")
+    )
+    private void addPrograms(ResourceFactory factory, CallbackInfo ci) {
+        this.programs.put("rendertype_solid", Bloomfog.bloomfog_solid_shader);
+        renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
+    }
+
+    @Inject(
+        method = "getRenderTypeSolidProgram",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private static void overrideRendertypeSolid(CallbackInfoReturnable<ShaderProgram> cir) {
+        cir.setReturnValue(Bloomfog.bloomfog_solid_shader);
+        cir.cancel();
+    }
 
 }

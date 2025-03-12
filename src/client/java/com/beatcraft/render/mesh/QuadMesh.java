@@ -13,6 +13,8 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class QuadMesh implements Mesh {
 
@@ -77,8 +79,30 @@ public class QuadMesh implements Mesh {
         addIfNotPresent(new Vector3f(max.x, max.y, max.z));
     }
 
+    public void addUniquePermutedVertices(Vector3f min, Vector3f max) {
+        addUnique(new Vector3f(min.x, min.y, min.z));
+        addUnique(new Vector3f(min.x, min.y, max.z));
+        addUnique(new Vector3f(min.x, max.y, min.z));
+        addUnique(new Vector3f(min.x, max.y, max.z));
+        addUnique(new Vector3f(max.x, min.y, min.z));
+        addUnique(new Vector3f(max.x, min.y, max.z));
+        addUnique(new Vector3f(max.x, max.y, min.z));
+        addUnique(new Vector3f(max.x, max.y, max.z));
+    }
+
     public void addIfNotPresent(Vector3f vec) {
         if (!vertices.contains(vec)) vertices.add(vec);
+    }
+
+    public void addUnique(Vector3f vec) {
+        vertices.add(vec);
+    }
+
+    /// transformer modifies vertices in-place for simplicity
+    public void transformVertices(int start, int end, Consumer<Vector3f> transformer) {
+        for (var vert : vertices.subList(start, end)) {
+            transformer.accept(vert);
+        }
     }
 
     @Override

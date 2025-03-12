@@ -124,6 +124,10 @@ public class Bloomfog {
         return framebuffer.getColorAttachment();
     }
 
+    public Identifier getId() {
+        return blurredTexId;
+    }
+
     public void record(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
         renderCalls.add(call);
     }
@@ -254,6 +258,11 @@ public class Bloomfog {
 
     public void loadTex() {
         RenderSystem.setShaderTexture(0, blurredBuffer.getColorAttachment());
+    }
+
+    public void loadTexSecondary() {
+        RenderSystem.setShaderTexture(0, blurredBuffer.getColorAttachment());
+        //throw new RuntimeException("I wanna see where code is calling from!!!!11!!!1!");
     }
 
     private void applyBlur(float width, float height) {

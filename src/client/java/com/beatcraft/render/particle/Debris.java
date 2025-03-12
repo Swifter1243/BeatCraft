@@ -1,6 +1,7 @@
 package com.beatcraft.render.particle;
 
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
