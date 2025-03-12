@@ -46,6 +46,7 @@ public class BeatCraft implements ModInitializer {
 	public static String currentTrackId = null;
 	public static String currentSet = null;
 	public static String currentDiff = null;
+	public static boolean isFlatWorld = false;
 
 	private static final PersistentState.Type<FirstJoinState> joinStateType = new PersistentState.Type<>(
 		FirstJoinState::new,
@@ -93,7 +94,9 @@ public class BeatCraft implements ModInitializer {
 
 			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
 
-			if (!server.getSaveProperties().isFlatWorld() && !state.hasJoined()) {
+			isFlatWorld = server.getSaveProperties().isFlatWorld();
+
+			if (!isFlatWorld && !state.hasJoined()) {
 				state.markJoin();
 			}
 

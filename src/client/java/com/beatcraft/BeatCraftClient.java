@@ -432,6 +432,13 @@ public class BeatCraftClient implements ClientModInitializer {
         context.getSource().sendFeedback(Text.of("Disabled FPFC"));
         return 1;
     }
+    private int toggleFPFC(CommandContext<FabricClientCommandSource> context) {
+
+        GameLogicHandler.FPFC = !GameLogicHandler.FPFC;
+        context.getSource().sendFeedback(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+        return 1;
+    }
+
 
     private CompletableFuture<Suggestions> songDifficultySuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
         String songName = StringArgumentType.getString(context, "song");
@@ -606,6 +613,7 @@ public class BeatCraftClient implements ClientModInitializer {
             dispatcher.register(literal("fpfc")
                     .then(literal("enable").executes(this::enableFPFC))
                     .then(literal("disable").executes(this::disableFPFC))
+                    .executes(this::toggleFPFC)
             );
         }));
     }
