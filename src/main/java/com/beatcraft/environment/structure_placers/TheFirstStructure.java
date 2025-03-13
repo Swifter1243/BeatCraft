@@ -95,8 +95,8 @@ public class TheFirstStructure implements EnvironmentPlacer {
         } else {
             removeStructure(world, leftTowerTop, leftPos1);
             removeStructure(world, leftTowerTop, leftPos2);
-            placeStructure(world, rightTowerTop, rightPos1);
-            placeStructure(world, rightTowerTop, rightPos2);
+            removeStructure(world, rightTowerTop, rightPos1);
+            removeStructure(world, rightTowerTop, rightPos2);
         }
 
         placeTowerSupport(world, leftPos1.add(leftPillarOffset), place);

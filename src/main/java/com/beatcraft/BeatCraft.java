@@ -12,7 +12,13 @@ import com.beatcraft.networking.s2c.MapSyncS2CPayload;
 import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
 import com.beatcraft.world.FirstJoinState;
 import com.beatcraft.world.gen.BeatCraftWorldGeneration;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.Message;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.SuggestionContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -37,8 +43,11 @@ import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class BeatCraft implements ModInitializer {
@@ -232,6 +241,47 @@ public class BeatCraft implements ModInitializer {
 
 	}
 
+	private static int outputCurrentEnvironment(CommandContext<ServerCommandSource> context) {
+		if (StructurePlacer.currentStructure.isEmpty()) {
+			context.getSource().sendFeedback(() -> Text.of("No environment is currently placed"), false);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of(String.format("Current environment: %s", StructurePlacer.currentStructure)), false);
+		}
+		return 1;
+	}
+
+	private static int removeEnvironment(CommandContext<ServerCommandSource> context) {
+
+		if (StructurePlacer.removeStructure(context.getSource().getWorld())) {
+			context.getSource().sendFeedback(() -> Text.of("Removed environment structure"), false);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of("No environment to remove"), false);
+		}
+
+		return 1;
+	}
+
+	private static int placeEnvironment(CommandContext<ServerCommandSource> context) {
+
+		String environment = StringArgumentType.getString(context, "environment");
+
+		if (StructurePlacer.placeStructureForced(environment, context.getSource().getWorld())) {
+			context.getSource().sendFeedback(() -> Text.of(String.format("Placed environment '%s'", environment)), true);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of(String.format("'%s' is not a valid environment", environment)), true);
+		}
+
+		return 1;
+	}
+
+	private CompletableFuture<Suggestions> environmentSuggester(CommandContext<ServerCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+		String partial = suggestionsBuilder.getRemaining();
+
+		StructurePlacer.matchEnvironments(partial).forEach(suggestionsBuilder::suggest);
+
+		return suggestionsBuilder.buildFuture();
+	}
+
 
 	private void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -240,6 +290,17 @@ public class BeatCraft implements ModInitializer {
 			);
 			dispatcher.register(literal("playarea").requires(source -> source.hasPermissionLevel(2))
 					.executes(BeatCraft::generatePlayArea)
+			);
+			dispatcher.register(literal("environment").requires(source -> source.hasPermissionLevel(2))
+					.executes(BeatCraft::outputCurrentEnvironment)
+					.then(literal("remove")
+							.executes(BeatCraft::removeEnvironment)
+					)
+					.then(literal("place")
+							.then(argument("environment", StringArgumentType.string()).suggests(this::environmentSuggester)
+									.executes(BeatCraft::placeEnvironment)
+							)
+					)
 			);
 		});
 	}
