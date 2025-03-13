@@ -11,7 +11,7 @@ out vec4 fragColor;
 vec4 scaleColor(vec4 color) {
     float maxRGB = max(max(color.r, color.g), color.b);
 
-    return vec4(color.rgb / maxRGB, color.a / 1.476);
+    return vec4(color.rgb / maxRGB, color.a / 1.475);
 }
 
 void main() {

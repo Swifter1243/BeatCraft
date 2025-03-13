@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 @Mixin(MinecraftClient.class)
-@Debug(export = true)
+//@Debug(export = true)
 public class MinecraftClientMixin {
 
     @WrapOperation(

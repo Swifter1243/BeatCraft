@@ -1,5 +1,6 @@
 package com.beatcraft.mixin;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(GameRenderer.class)
-@Debug(export = true)
+//@Debug(export = true)
 public class GameRendererMixin {
 
     @Shadow @Final private Map<String, ShaderProgram> programs;
@@ -48,41 +49,46 @@ public class GameRendererMixin {
         camera.getRotation().mul(BeatCraftClient.playerCameraRotation).mul(BeatCraftClient.playerGlobalRotation).normalize();
     }
 
-    @WrapOperation(
-        method = "loadPrograms",
-        at = @At(
-            value = "INVOKE",
-            target = "Ljava/util/List;add(Ljava/lang/Object;)Z",
-            ordinal = 7 // 7 = solid, 8 = cutout mipped, 9 = cutout, 10 = translucent
-        )
-    )
-    private<E> boolean loadBloomfogShaders(List<E> instance, E e, Operation<Boolean> original, @Local(argsOnly = true) ResourceFactory factory) {
-        try {
-            Bloomfog.bloomfog_solid_shader = new ShaderProgram(factory, "rendertype_solid_bloomfog", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        return true;
-    }
-
-    @Inject(
-        method = "loadPrograms",
-        at = @At("TAIL")
-    )
-    private void addPrograms(ResourceFactory factory, CallbackInfo ci) {
-        this.programs.put("rendertype_solid", Bloomfog.bloomfog_solid_shader);
-        renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
-    }
-
-    @Inject(
-        method = "getRenderTypeSolidProgram",
-        at = @At("HEAD"),
-        cancellable = true
-    )
-    private static void overrideRendertypeSolid(CallbackInfoReturnable<ShaderProgram> cir) {
-        cir.setReturnValue(Bloomfog.bloomfog_solid_shader);
-        cir.cancel();
-    }
+    //@WrapOperation(
+    //    method = "loadPrograms",
+    //    at = @At(
+    //        value = "INVOKE",
+    //        target = "Ljava/util/List;add(Ljava/lang/Object;)Z",
+    //        ordinal = 7 // 7 = solid, 8 = cutout mipped, 9 = cutout, 10 = translucent
+    //    )
+    //)
+    //private<E> boolean loadBloomfogShaders(List<E> instance, E e, Operation<Boolean> original, @Local(argsOnly = true) ResourceFactory factory) {
+    //    try {
+    //        Bloomfog.bloomfog_solid_shader = new ShaderProgram(factory, "rendertype_solid_bloomfog", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+    //
+    //        BeatCraft.LOGGER.info("solid type fsh: {}", Bloomfog.bloomfog_solid_shader.getFragmentShader().getName());
+    //
+    //        renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
+    //
+    //    } catch (IOException ex) {
+    //        throw new RuntimeException(ex);
+    //    }
+    //
+    //    return true;
+    //}
+    //
+    //@Inject(
+    //    method = "loadPrograms",
+    //    at = @At("TAIL")
+    //)
+    //private void addPrograms(ResourceFactory factory, CallbackInfo ci) {
+    //    this.programs.put("rendertype_solid", Bloomfog.bloomfog_solid_shader);
+    //    renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
+    //}
+    //
+    //@Inject(
+    //    method = "getRenderTypeSolidProgram",
+    //    at = @At("HEAD"),
+    //    cancellable = true
+    //)
+    //private static void overrideRendertypeSolid(CallbackInfoReturnable<ShaderProgram> cir) {
+    //    cir.setReturnValue(Bloomfog.bloomfog_solid_shader);
+    //    cir.cancel();
+    //}
 
 }

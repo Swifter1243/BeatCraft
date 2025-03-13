@@ -58,7 +58,7 @@ public class Bloomfog {
     };
     private final BloomfogTex[] pingPongTextures = new BloomfogTex[2];
 
-    private final SimpleFramebuffer blurredBuffer;
+    public final SimpleFramebuffer blurredBuffer;
     private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
     private BloomfogTex blurredTex;
 
@@ -132,6 +132,12 @@ public class Bloomfog {
         renderCalls.add(call);
     }
 
+    //private BufferBuilder lineBuffer;
+    //
+    //public BufferBuilder getLineBuffer() {
+    //    return lineBuffer;
+    //}
+
     private int[] lastSize = new int[]{1, 1};
     public void render(float tickDelta) {
 
@@ -171,13 +177,11 @@ public class Bloomfog {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        //lineBuffer = new Tessellator().begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
-        RenderSystem.setShader(() -> bloomfogLineShader);
-        RenderSystem.lineWidth(window.getWidth()/225f);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
@@ -201,7 +205,15 @@ public class Bloomfog {
         renderCalls.clear();
 
         var buff = buffer.endNullable();
+        //if (buff != null) {
+        //    RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        //    BufferRenderer.drawWithGlobalProgram(buff);
+        //}
+
+        //buff = lineBuffer.endNullable();
         if (buff != null) {
+            RenderSystem.setShader(() -> bloomfogLineShader);
+            RenderSystem.lineWidth(window.getWidth()/225f);
             BufferRenderer.drawWithGlobalProgram(buff);
         }
 
@@ -261,8 +273,7 @@ public class Bloomfog {
     }
 
     public void loadTexSecondary() {
-        RenderSystem.setShaderTexture(0, blurredBuffer.getColorAttachment());
-        //throw new RuntimeException("I wanna see where code is calling from!!!!11!!!1!");
+        RenderSystem.setShaderTexture(1, blurredBuffer.getColorAttachment());
     }
 
     private void applyBlur(float width, float height) {
@@ -278,7 +289,7 @@ public class Bloomfog {
 
         applyBlurPass(framebuffer, pingPongBuffers[0], width, height, false);
 
-        int passes = 3;
+        int passes = 5;
 
         for (int i = 0; i < passes; i++) {
             applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], width, height, false);
@@ -307,8 +318,8 @@ public class Bloomfog {
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a = (w/h) * 0.003f;
-        float a2 = 0.004f;
+        float a =  9f/h;//(w/h) * 0.003f;
+        float a2 = 9f/w;//0.003f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(upPass ? (() -> blurShaderUp) : (() -> blurShaderDown));

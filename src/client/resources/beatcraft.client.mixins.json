@@ -11,6 +11,7 @@
     "MinecraftClientMixin",
     "OptionsScreenMixin",
     "PlayerHeldItemFeatureRendererMixin",
+    "RenderPhaseMixin",
     "WorldRendererMixin"
   ],
   "injectors": {

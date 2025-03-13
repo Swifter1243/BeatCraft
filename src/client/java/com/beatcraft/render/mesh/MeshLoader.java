@@ -81,9 +81,6 @@ public class MeshLoader {
                 } else {
                     origin = new Vector3f(0, 0, 0);
                 }
-
-                BeatCraft.LOGGER.info("pre: origin = {}", origin);
-
                 int start = mesh.vertices.size();
                 if (angleDegrees != 0) {
                     mesh.addUniquePermutedVertices(min, max);
@@ -152,11 +149,9 @@ public class MeshLoader {
                 });
 
                 if (angleDegrees != 0) {
-                    BeatCraft.LOGGER.info("model part rotation angle: {}", angleDegrees);
                     var rotationAxis = axis == Direction.Axis.X ? new Vector3f(1, 0, 0) : axis == Direction.Axis.Y ? new Vector3f(0, 1, 0) : new Vector3f(0, 0, 1);
                     var rotation = new Quaternionf().rotationAxis(angleDegrees * MathHelper.RADIANS_PER_DEGREE, rotationAxis);
                     mesh.transformVertices(start, end, vert -> {
-                        BeatCraft.LOGGER.info("transform: origin = {}", origin);
                         vert.sub(origin);
                         vert.rotate(rotation);
                         vert.add(origin);

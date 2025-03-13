@@ -103,14 +103,21 @@ public class GlowingCuboid extends LightObject {
                 }
 
             }
+        } else {
 
-        } else { // quad buffer
             for (var face : faces) {
 
                 var v0 = processVertex(face[0], cameraPos, orientation, rotation, worldRotation, position, offset);
                 var v1 = processVertex(face[1], cameraPos, orientation, rotation, worldRotation, position, offset);
                 var v2 = processVertex(face[2], cameraPos, orientation, rotation, worldRotation, position, offset);
                 var v3 = processVertex(face[3], cameraPos, orientation, rotation, worldRotation, position, offset);
+
+                //if (isBloomfog) {
+                //    v0.rotate(cameraRotation);
+                //    v1.rotate(cameraRotation);
+                //    v2.rotate(cameraRotation);
+                //    v3.rotate(cameraRotation);
+                //}
 
                 List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
 
@@ -120,7 +127,6 @@ public class GlowingCuboid extends LightObject {
                     buffer.vertex(quad[2]).color(color);
                     buffer.vertex(quad[3]).color(color);
                 }
-
             }
         }
 

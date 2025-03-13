@@ -20,6 +20,7 @@ vec4 lerpColor(vec4 c1, vec4 c2, float t) {
 
 void main() {
     vec4 color = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
-    vec4 bloomfog_color = texture(Bloomfog, screenUV.xy);
-    fragColor = lerpColor(color, bloomfog_color, screenUV.z);;//vec4(0.2, 0.2, 0.2, 1);
+    vec4 bloomfog_color = texture(Bloomfog, (screenUV.xy/(screenUV.z*2))+0.5);
+    color = lerpColor(color, bloomfog_color, abs(screenUV.z));
+    fragColor = color;vec4(0.2, 0.2, 0.2, 1);
 }
