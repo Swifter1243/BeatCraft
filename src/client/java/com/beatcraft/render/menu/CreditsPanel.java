@@ -60,7 +60,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
             new TextWidget(name, new Vector3f(TEXT_OFFSET, NAME_POS, -0.01f), 4).alignedLeft(),
             new TextWidget(role, new Vector3f(TEXT_OFFSET, ROLE_POS, -0.01f), 2).alignedLeft(),
             SettingsMenuPanel.getButton(
-                new TextureWidget(BeatCraft.id("textures/credits_menu/kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
+                new TextureWidget(BeatCraft.id("textures/credits_menu/minecraft_kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
                 () -> {
                     ConfirmLinkScreen.open(null, kofi);
                 },
