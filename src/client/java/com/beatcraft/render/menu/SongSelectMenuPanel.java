@@ -407,7 +407,6 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 )),
                 new TextWidget("DELETE", new Vector3f(0, -6, 0.05f)).withScale(1.5f)
             )
-            // TODO: set, difficulty, play button, delete button, practice button, level stats (note count, wall count, etc...)
         ));
 
         ArrayList<String> sets = new ArrayList<>(data.getDifficultySets());
