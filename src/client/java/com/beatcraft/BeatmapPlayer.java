@@ -16,11 +16,15 @@ import net.minecraft.client.util.math.MatrixStack;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 public class BeatmapPlayer {
     protected static final MinecraftClient mc = MinecraftClient.getInstance();
     public static Difficulty currentBeatmap = null;
     public static Info currentInfo = null;
+
+    private static ArrayList<Runnable> setupCalls = new ArrayList<>();
 
     private static long lastNanoTime = 0;
     private static long elapsedNanoTime = 0;
@@ -78,7 +82,11 @@ public class BeatmapPlayer {
     }
 
     public static void setPlaybackSpeed(float speed) {
-        setPlaybackSpeed(speed, false);
+        try {
+            setPlaybackSpeed(speed, false);
+        } catch (Exception e) {
+            setupCalls.add(() -> setPlaybackSpeed(speed));
+        }
     }
 
     public static void setPlaybackSpeed(float speed, boolean skipPacketSend) {
@@ -122,6 +130,13 @@ public class BeatmapPlayer {
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         // Progress time
         long deltaNanoSeconds = getNanoDeltaTime();
+
+        if (!setupCalls.isEmpty()) {
+            for (var call : setupCalls) {
+                call.run();
+            }
+            setupCalls.clear();
+        }
 
         boolean shouldMapPlay = isPlaying && !mc.isPaused() && BeatmapAudioPlayer.isReady();
         if (shouldMapPlay) {

@@ -128,7 +128,7 @@ public class Bloomfog {
     private int[] lastSize = new int[]{1, 1};
     public void render(float tickDelta) {
 
-        if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive()) {
+        if (true) {
             renderCalls.clear();
             return;
         }

@@ -4,6 +4,7 @@ import com.beatcraft.blocks.CornerLightTileBlock;
 import com.beatcraft.blocks.EdgeLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.data.components.ModComponents;
+import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.group.ModItemGroup;
 import com.beatcraft.networking.BeatCraftNetworking;
@@ -11,7 +12,13 @@ import com.beatcraft.networking.s2c.MapSyncS2CPayload;
 import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
 import com.beatcraft.world.FirstJoinState;
 import com.beatcraft.world.gen.BeatCraftWorldGeneration;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.Message;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.SuggestionContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -26,6 +33,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Difficulty;
@@ -35,8 +43,11 @@ import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class BeatCraft implements ModInitializer {
@@ -46,12 +57,17 @@ public class BeatCraft implements ModInitializer {
 	public static String currentTrackId = null;
 	public static String currentSet = null;
 	public static String currentDiff = null;
+	public static boolean isFlatWorld = false;
 
 	private static final PersistentState.Type<FirstJoinState> joinStateType = new PersistentState.Type<>(
 		FirstJoinState::new,
 		FirstJoinState::fromNbt,
 		null
 	);
+
+	public static Identifier id(String path) {
+		return Identifier.of(MOD_ID, path);
+	}
 
 
 	@Override
@@ -66,6 +82,8 @@ public class BeatCraft implements ModInitializer {
 		BeatCraftWorldGeneration.generateWorldGen();
 
 		BeatCraftNetworking.init();
+
+		StructurePlacer.init();
 
 		registerCommands();
 
@@ -93,7 +111,9 @@ public class BeatCraft implements ModInitializer {
 
 			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
 
-			if (!server.getSaveProperties().isFlatWorld() && !state.hasJoined()) {
+			isFlatWorld = server.getSaveProperties().isFlatWorld();
+
+			if (!isFlatWorld && !state.hasJoined()) {
 				state.markJoin();
 			}
 
@@ -109,7 +129,7 @@ public class BeatCraft implements ModInitializer {
 
 				initGameRules(server, world);
 
-				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, and §fDoTraderSpawning §7 set to §4false§7;"));
+				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, §fDoMobSpawning§7, and §fDoTraderSpawning §7 set to §4false§7;"));
 
 			}
 
@@ -136,6 +156,7 @@ public class BeatCraft implements ModInitializer {
 		server.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
 		server.getGameRules().get(GameRules.DO_WEATHER_CYCLE).set(false, server);
 		server.getGameRules().get(GameRules.DO_TRADER_SPAWNING).set(false, server);
+		server.getGameRules().get(GameRules.DO_MOB_SPAWNING).set(false, server);
 		world.setTimeOfDay(18_000);
 		server.setDifficulty(Difficulty.PEACEFUL, true);
 	}
@@ -220,6 +241,58 @@ public class BeatCraft implements ModInitializer {
 
 	}
 
+	private static int outputCurrentEnvironment(CommandContext<ServerCommandSource> context) {
+		if (StructurePlacer.currentStructure.isEmpty()) {
+			context.getSource().sendFeedback(() -> Text.of("No environment is currently placed"), false);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of(String.format("Current environment: %s", StructurePlacer.currentStructure)), false);
+		}
+		return 1;
+	}
+
+	private static int removeEnvironment(CommandContext<ServerCommandSource> context) {
+
+		if (StructurePlacer.removeStructure(context.getSource().getWorld())) {
+			context.getSource().sendFeedback(() -> Text.of("Removed environment structure"), false);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of("No environment to remove"), false);
+		}
+
+		return 1;
+	}
+
+	private static int placeEnvironment(CommandContext<ServerCommandSource> context) {
+
+		String environment = StringArgumentType.getString(context, "environment");
+
+		if (StructurePlacer.placeStructureForced(environment, context.getSource().getWorld())) {
+			context.getSource().sendFeedback(() -> Text.of(String.format("Placed environment '%s'", environment)), true);
+		} else {
+			context.getSource().sendFeedback(() -> Text.of(String.format("'%s' is not a valid environment", environment)), true);
+		}
+
+		return 1;
+	}
+
+	private CompletableFuture<Suggestions> environmentSuggester(CommandContext<ServerCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
+		String partial = suggestionsBuilder.getRemaining();
+
+		StructurePlacer.matchEnvironments(partial).forEach(suggestionsBuilder::suggest);
+
+		return suggestionsBuilder.buildFuture();
+	}
+
+	private int centerPlayer(CommandContext<ServerCommandSource> context) {
+
+		var player = context.getSource().getPlayer();
+
+		if (player != null) {
+			player.teleport(context.getSource().getWorld(), 0.0, 0.0, 0.0, 0, 0);
+			return 1;
+		}
+		return -1;
+	}
+
 
 	private void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -228,6 +301,20 @@ public class BeatCraft implements ModInitializer {
 			);
 			dispatcher.register(literal("playarea").requires(source -> source.hasPermissionLevel(2))
 					.executes(BeatCraft::generatePlayArea)
+			);
+			dispatcher.register(literal("environment").requires(source -> source.hasPermissionLevel(2))
+					.executes(BeatCraft::outputCurrentEnvironment)
+					.then(literal("remove")
+							.executes(BeatCraft::removeEnvironment)
+					)
+					.then(literal("place")
+							.then(argument("environment", StringArgumentType.string()).suggests(this::environmentSuggester)
+									.executes(BeatCraft::placeEnvironment)
+							)
+					)
+			);
+			dispatcher.register(literal("center").requires(source -> source.hasPermissionLevel(2))
+					.executes(this::centerPlayer)
 			);
 		});
 	}

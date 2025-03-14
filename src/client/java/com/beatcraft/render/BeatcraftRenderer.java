@@ -176,19 +176,23 @@ public class BeatcraftRenderer {
 
         var col = BeatmapPlayer.currentBeatmap == null ? 0x7FFFFFFF : 0x38FFFFFF;
 
+        float height = 0.01f;
+
         for (int i = 0; i < 2; i++) {
             var x = (i-0.5f) * 0.25f;
 
-            buffer.vertex(new Vector3f(x-0.1f, 0.001f, -0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x-0.1f, 0.001f,  0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x+0.1f, 0.001f,  0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x+0.1f, 0.001f, -0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x-0.1f, height, -0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x-0.1f, height,  0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x+0.1f, height,  0.1f).sub(camPos)).color(col);
+            buffer.vertex(new Vector3f(x+0.1f, height, -0.1f).sub(camPos)).color(col);
 
         }
         RenderSystem.enableBlend();
+        RenderSystem.enableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.disableBlend();
+        RenderSystem.disableDepthTest();
     }
 
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {

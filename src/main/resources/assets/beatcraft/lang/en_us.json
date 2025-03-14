@@ -1,6 +1,8 @@
 {
   "screen.beatcraft.settings": "BeatCraft Settings...",
   "screen.beatcraft.song_downloader": "BeatSaver",
+  "screen.beatcraft.close": "Close",
+  "screen.beatcraft.credits": "Credits",
 
   "gui.beatcraft.button.general_settings": "General",
   "gui.beatcraft.button.quality_settings": "Quality",

@@ -48,6 +48,8 @@ public class RingLightHandler extends LightObject {
         private float prevZoom = 1;
         private final int index;
         private LightObject ringLight;
+        private float cachedRingRotation = 0;
+        private float cachedRotationStep = 0;
 
         protected RingHandler(RingLightHandler controller, int index, LightObject ringLight) {
             this.ringLight = ringLight;
@@ -55,9 +57,11 @@ public class RingLightHandler extends LightObject {
             this.index = index;
         }
 
-        protected void setTarget(float songTime) {
+        protected void setTarget(float songTime, float ringRotation, float rotationStep) {
             startRotation = rotation;
-            this.targetRotation = controller.ringRotation + (controller.rotationStep * index);
+            cachedRingRotation = ringRotation;
+            cachedRotationStep = rotationStep;
+            this.targetRotation = ringRotation + (rotationStep * index);
             startTime = songTime;
             setNext = true;
         }
@@ -103,7 +107,7 @@ public class RingLightHandler extends LightObject {
                 rotation = MathHelper.lerp(Easing.easeOutExpo(dt), startRotation, targetRotation);
 
                 if (nextRing != null && dt > 0.01f && setNext) {
-                    nextRing.setTarget(songTime);
+                    nextRing.setTarget(songTime, cachedRingRotation+cachedRotationStep, cachedRotationStep);
                     setNext = false;
                 }
 
@@ -199,7 +203,7 @@ public class RingLightHandler extends LightObject {
 
         ringRotation += jumpOffsets[i];
 
-        headRing.setTarget(BeatmapPlayer.getCurrentSeconds());
+        headRing.setTarget(BeatmapPlayer.getCurrentSeconds(), ringRotation, rotationStep);
 
     }
 

@@ -3,6 +3,7 @@ package com.beatcraft.render.menu;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.menu.ModifierMenu;
@@ -46,6 +47,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         position.rotateY(angle);
         orientation.set(new Quaternionf().rotateY(angle));
         size.set(800, 500);
+        backgroundColor = 0;
 
         initLayout();
 
@@ -97,41 +99,54 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         // custom jump distance maybe?
         // player height?
         // dynamic volume adjustment (idk how to even implement this as a feature tbh)
-
         playerOptionsPage.children.addAll(List.of(
             SettingsMenuPanel.getOptionModifier("Reduced Debris",
                 () -> BeatCraftClient.playerConfig.setReducedDebris(false),
                 () -> BeatCraftClient.playerConfig.setReducedDebris(true),
                 () -> BeatCraftClient.playerConfig.isReducedDebris() ? "ON" : "OFF",
-                new Vector3f(-100, -180, 0)),
+                new Vector3f(-100, -175, 0)),
 
             SettingsMenuPanel.getOptionModifier("Particles",
                 () -> BeatCraftClient.playerConfig.setSparkParticles(false),
                 () -> BeatCraftClient.playerConfig.setSparkParticles(true),
                 () -> BeatCraftClient.playerConfig.doSparkParticles() ? "ON" : "OFF",
-                new Vector3f(-100, -130, 0)),
+                new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Trail Intensity",
                 () -> Stash.updateTrailSize(Math.max(10, Stash.getTrailSize()-10)),
                 () -> Stash.updateTrailSize(Math.min(200, Stash.getTrailSize()+10)),
                 () -> String.valueOf(Stash.getTrailSize()),
-                new Vector3f(-100, -80, 0)),
+                new Vector3f(-100, -71, 0)),
 
             SettingsMenuPanel.getOptionModifier("Show Arms",
                 () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands = false,
                 () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands = true,
                 () -> ClientDataHolderVR.getInstance().vrSettings.showPlayerHands ? "SHOW" : "HIDE",
-                new Vector3f(-100, -30, 0)),
+                new Vector3f(-100, -19, 0)),
 
             SettingsMenuPanel.getOptionModifier("Show Hotbar",
                 () -> MinecraftClient.getInstance().options.hudHidden = true,
                 () -> MinecraftClient.getInstance().options.hudHidden = false,
                 () -> MinecraftClient.getInstance().options.hudHidden ? "HIDE" : "SHOW",
-                new Vector3f(-100, 20, 0))
+                new Vector3f(-100, 32, 0))
+        ));
+
+        settingsPage.children.addAll(List.of(
+            SettingsMenuPanel.getOptionModifier("Volume",
+                () -> updateVolume((int) (BeatCraftClient.playerConfig.getVolume()*100)-5),
+                () -> updateVolume((int) (BeatCraftClient.playerConfig.getVolume()*100)+5),
+                this::getVolume,
+                new Vector3f(-100, -175, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Place Environments",
+                () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(false),
+                () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(true),
+                () -> BeatCraftClient.playerConfig.doEnvironmentPlacing() ? "ON" : "OFF",
+                new Vector3f(-100, -123, 0))
         ));
 
 
-        downloaderPage.children.add(new TextWidget("(Go to minecraft settings > beatcraft > beatsaver)", new Vector3f(0, -11, -0.01f), 3));
+        downloaderPage.children.add(new TextWidget("Go to Settings > Options > Beatcraft > Beatsaver", new Vector3f(0, -11, -0.01f), 3));
         replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
     }
@@ -187,7 +202,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
         float y = CENTER_Y - ((MAX_HEIGHT / 2.0f) - row * widget_height);
 
-        var toggle = new ToggleWidget(new Vector3f(0, 0, 0.05f), new Vector2f(widget_width-4, widget_height-4), List.of(
+        var toggle = new ToggleWidget(new Vector3f(0, 0, 0), new Vector2f(widget_width-4, widget_height-4), List.of(
             new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
                 new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F113399, 0x5F113399, 0)
             ), List.of(
@@ -326,6 +341,15 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     // ^ Modifier Toggles
 
+    private void updateVolume(int percent) {
+        percent = Math.clamp(percent, 0, 100);
+        BeatmapAudioPlayer.beatmapAudio.setVolume(percent/100f);
+        BeatCraftClient.playerConfig.setVolume(percent/100f);
+    }
+
+    private String getVolume() {
+        return String.format("%.0f", BeatCraftClient.playerConfig.getVolume() * 100);
+    }
 
     @Override
     public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {

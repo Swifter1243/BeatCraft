@@ -7,6 +7,7 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
@@ -55,13 +56,15 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 
 public class BeatCraftClient implements ClientModInitializer {
 
-    public static PlayerConfig playerConfig = PlayerConfig.loadFromFile();
+    public static PlayerConfig playerConfig = null;
     public static final SongList songs = new SongList();
 
     public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
     public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
 
     public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.beatcraft.keybindings"));
+
+    public static final KeyBinding toggleFPFCKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.toggle_fpfc", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_V, "category.beatcraft.keybindings"));
 
     public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerCameraRotation = new Quaternionf();
@@ -84,6 +87,9 @@ public class BeatCraftClient implements ClientModInitializer {
 
         BeatCraftClientNetworking.init();
 
+        playerConfig = PlayerConfig.loadFromFile();
+
+
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
         });
@@ -99,12 +105,24 @@ public class BeatCraftClient implements ClientModInitializer {
                 client.setScreen(screen);
                 while (songSearchKeybind.wasPressed());
             } else if (pauseLevelKeybind.wasPressed()) {
-                HUDRenderer.scene = HUDRenderer.MenuScene.Paused;
-                BeatmapPlayer.pause();
+                if (GameLogicHandler.isPaused()) {
+                    GameLogicHandler.unpauseMap();
+                } else {
+                    GameLogicHandler.pauseMap();
+                }
+                while (pauseLevelKeybind.wasPressed());
+            } else if (toggleFPFCKeybind.wasPressed()) {
+                if (client.player != null) {
+                    toggleFPFC();
+                    client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+                    while (toggleFPFCKeybind.wasPressed()) ;
+                }
             }
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            BeatmapAudioPlayer.init();
+
             songs.loadSongs();
             HUDRenderer.initSongSelectMenuPanel();
         });
@@ -423,6 +441,17 @@ public class BeatCraftClient implements ClientModInitializer {
         context.getSource().sendFeedback(Text.of("Disabled FPFC"));
         return 1;
     }
+    private int toggleFPFC(CommandContext<FabricClientCommandSource> context) {
+        toggleFPFC();
+        context.getSource().sendFeedback(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+        return 1;
+    }
+
+    private static void toggleFPFC() {
+        GameLogicHandler.FPFC = !GameLogicHandler.FPFC;
+
+    }
+
 
     private CompletableFuture<Suggestions> songDifficultySuggester(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder suggestionsBuilder) {
         String songName = StringArgumentType.getString(context, "song");
@@ -597,6 +626,7 @@ public class BeatCraftClient implements ClientModInitializer {
             dispatcher.register(literal("fpfc")
                     .then(literal("enable").executes(this::enableFPFC))
                     .then(literal("disable").executes(this::disableFPFC))
+                    .executes(this::toggleFPFC)
             );
         }));
     }
