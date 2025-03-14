@@ -18,26 +18,43 @@ public class DynamicTexture {
     private final Identifier textureID;
     private final int width;
     private final int height;
+    private final String path;
+    private NativeImage img;
+    private net.minecraft.client.texture.DynamicTexture tex;
 
     private String filterString(String in) {
         return in.replaceAll("[^a-z0-9/._-]", "_").replaceAll("(?i)\\.jpe?g$", ".png");
     }
 
     public DynamicTexture(String path) throws IOException {
-        path = path.replaceAll("(?i)\\.jpe?g$", ".png");
-        NativeImage img = NativeImage.read(new FileInputStream(path));
-        net.minecraft.client.texture.DynamicTexture tex = new NativeImageBackedTexture(img);
+        this.path = path.replaceAll("(?i)\\.jpe?g$", ".png");
+        img = NativeImage.read(new FileInputStream(this.path));
+        tex = new NativeImageBackedTexture(img);
 
         width = img.getWidth();
         height = img.getHeight();
 
-        textureID = Identifier.of(BeatCraft.MOD_ID, "dynamic/" + filterString(path.toLowerCase()));
+        textureID = Identifier.of(BeatCraft.MOD_ID, "dynamic/" + filterString(this.path.toLowerCase()));
 
         unloadTextureFromId(textureID);
 
         MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
 
         loadedTextures.add(textureID);
+    }
+
+    public void reload() {
+        MinecraftClient.getInstance().getTextureManager().destroyTexture(textureID);
+        try {
+            img = NativeImage.read(new FileInputStream(this.path));
+            tex = new NativeImageBackedTexture(img);
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to reload texture '{}'", this.path, e);
+        }
+        MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
+        if (!loadedTextures.contains(textureID)) {
+            loadedTextures.add(textureID);
+        }
     }
 
     public boolean isLoaded() {

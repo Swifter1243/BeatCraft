@@ -65,6 +65,10 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                     Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
+                ).child(Components.spacer(2)).child(
+                    Components.button(Text.translatable("screen.beatcraft.credits"), this::openCredits).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
+                ).child(Components.spacer(2)).child(
+                    Components.button(Text.translatable("screen.beatcraft.close"), (b) -> this.close()).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 )
         ).child(settingPage);
     }
@@ -246,6 +250,12 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
         } else {
             return Text.translatable("gui.beatcraft.option.off");
         }
+    }
+
+    private void openCredits(ButtonComponent button) {
+        var screen = new ContributorsScreen(this);
+        assert client != null;
+        client.setScreen(screen);
     }
 
     @Override

@@ -146,7 +146,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         ));
 
 
-        downloaderPage.children.add(new TextWidget("(Go to minecraft settings > beatcraft > beatsaver)", new Vector3f(0, -11, -0.01f), 3));
+        downloaderPage.children.add(new TextWidget("Go to Settings > Options > Beatcraft > Beatsaver", new Vector3f(0, -11, -0.01f), 3));
         replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
     }
@@ -202,7 +202,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
         float y = CENTER_Y - ((MAX_HEIGHT / 2.0f) - row * widget_height);
 
-        var toggle = new ToggleWidget(new Vector3f(0, 0, 0.05f), new Vector2f(widget_width-4, widget_height-4), List.of(
+        var toggle = new ToggleWidget(new Vector3f(0, 0, 0), new Vector2f(widget_width-4, widget_height-4), List.of(
             new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
                 new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F113399, 0x5F113399, 0)
             ), List.of(

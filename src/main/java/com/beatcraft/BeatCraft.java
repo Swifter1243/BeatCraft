@@ -282,6 +282,17 @@ public class BeatCraft implements ModInitializer {
 		return suggestionsBuilder.buildFuture();
 	}
 
+	private int centerPlayer(CommandContext<ServerCommandSource> context) {
+
+		var player = context.getSource().getPlayer();
+
+		if (player != null) {
+			player.teleport(context.getSource().getWorld(), 0.0, 0.0, 0.0, 0, 0);
+			return 1;
+		}
+		return -1;
+	}
+
 
 	private void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -301,6 +312,9 @@ public class BeatCraft implements ModInitializer {
 									.executes(BeatCraft::placeEnvironment)
 							)
 					)
+			);
+			dispatcher.register(literal("center").requires(source -> source.hasPermissionLevel(2))
+					.executes(this::centerPlayer)
 			);
 		});
 	}

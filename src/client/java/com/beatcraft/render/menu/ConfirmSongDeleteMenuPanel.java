@@ -26,7 +26,7 @@ public class ConfirmSongDeleteMenuPanel extends MenuPanel<ConfirmSongDeleteMenu>
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(130, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("CANCEL", new Vector3f(0, -11, 0)).withScale(3)
+                new TextWidget("CANCEL", new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(new Vector3f(70, 0, -0.05f), new Vector2f(130, 50), data::deleteSong,
                 new HoverWidget(new Vector3f(), new Vector2f(130, 50), List.of(
@@ -34,7 +34,7 @@ public class ConfirmSongDeleteMenuPanel extends MenuPanel<ConfirmSongDeleteMenu>
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(130, 50), 0x7FF03030, 0x7FF03030, 0)
                 )),
-                new TextWidget("DELETE", new Vector3f(0, -11, 0)).withScale(3)
+                new TextWidget("DELETE", new Vector3f(0, -11, 0.05f)).withScale(3)
             )
         ));
 

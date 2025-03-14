@@ -1,6 +1,7 @@
 package com.beatcraft.render.menu;
 
 import blue.endless.jankson.annotation.Nullable;
+import com.beatcraft.BeatCraft;
 import com.beatcraft.menu.Menu;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
@@ -88,6 +89,8 @@ public abstract class MenuPanel<T extends Menu> {
         public int color = 0xFFFFFFFF;
         private int alignment = 1;
         private int wrapWidth = 0;
+        private boolean doDynamicScaling = false;
+        private int scalingWidth = 0;
 
         protected TextWidget(String text, Vector3f position, float scale) {
             this.text = text;
@@ -121,19 +124,42 @@ public abstract class MenuPanel<T extends Menu> {
             return this;
         }
 
+        protected TextWidget withDynamicScaling(int maxWidth) {
+            this.scalingWidth = maxWidth;
+            this.doDynamicScaling = true;
+            return this;
+        }
+
         @Override
         protected void render(DrawContext context, @Nullable Vector2f pointerPosition) {
             context.translate(-position.x, -position.y, -position.z);
+
             context.scale(-scale, -scale, -scale);
+
+            if (doDynamicScaling) {
+                int currentWidth = MinecraftClient.getInstance().textRenderer.getWidth(text);
+                if (currentWidth > scalingWidth) {
+                    float rescale = ((float) scalingWidth) / ((float) currentWidth);
+                    context.push();
+                    context.scale(rescale, rescale, rescale);
+                }
+            }
             if (alignment == 0) {
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+                context.drawText(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color, false);
             } else if (alignment == 1) {
-                context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(text), 0, 0, color);
+                context.drawText(MinecraftClient.getInstance().textRenderer, Text.of(text), -MinecraftClient.getInstance().textRenderer.getWidth(text)/2, 0, color, false);
             } else if (alignment == -1) {
                 context.drawTextWrapped(MinecraftClient.getInstance().textRenderer, Text.of(text), -wrapWidth/2, 0, wrapWidth, color);
             }
             if (pointerPosition != null) {
                 pointerPosition.mul(scale);
+            }
+            // undo scaling
+            if (doDynamicScaling) {
+                int currentWidth = MinecraftClient.getInstance().textRenderer.getWidth(text);
+                if (currentWidth > scalingWidth) {
+                    context.pop();
+                }
             }
             context.scale(-1/scale, -1/scale, -1/scale);
 

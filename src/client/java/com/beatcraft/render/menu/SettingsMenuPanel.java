@@ -53,10 +53,10 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
             new Vector3f(0, 200-11, 0)
         ).withScale(3);
 
-        ButtonWidget profileBack = getButton(new TextWidget("<", new Vector3f(0, -11, 0)).withScale(3), this::back, new Vector3f(-100, 200, 0), new Vector2f(50, 50));
-        ButtonWidget profileNext = getButton(new TextWidget(">", new Vector3f(0, -11, 0)).withScale(3), this::next, new Vector3f(100, 200, 0), new Vector2f(50, 50));
+        ButtonWidget profileBack = getButton(new TextWidget("<", new Vector3f(0, -11, 0.05f)).withScale(3), this::back, new Vector3f(-100, 200, 0), new Vector2f(50, 50));
+        ButtonWidget profileNext = getButton(new TextWidget(">", new Vector3f(0, -11, 0.05f)).withScale(3), this::next, new Vector3f(100, 200, 0), new Vector2f(50, 50));
 
-        ButtonWidget newProfile = getButton(new TextWidget("NEW PROFILE", new Vector3f(0, -11, 0)).withScale(3), this::addProfile, new Vector3f(270, 200, 0), new Vector2f(200, 50));
+        ButtonWidget newProfile = getButton(new TextWidget("NEW PROFILE", new Vector3f(0, -11, 0.05f)).withScale(3), this::addProfile, new Vector3f(270, 200, 0), new Vector2f(200, 50));
 
         widgets.addAll(List.of(
             new TextWidget("CONTROLLER PROFILES", new Vector3f(0, -200, 0), 3),
@@ -139,7 +139,7 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
     }
 
-    private static ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size) {
+    protected static ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size) {
         return new ButtonWidget(
             position, size, onClick,
             new HoverWidget(new Vector3f(), new Vector2f(size), List.of(
@@ -181,9 +181,9 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
             return new ContainerWidget(
                 position, new Vector2f(SIZE),
                 new TextWidget(label, new Vector3f(-160, -11, -0.01f)).withScale(1.5f),
-                getButton(new TextWidget("<", new Vector3f(0, -11, -0.01f), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50)),
+                getButton(new TextWidget("<", new Vector3f(0, -11, 0.05f), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50)),
                 valueDisplay,
-                getButton(new TextWidget(">", new Vector3f(0, -11, -0.01f), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50))
+                getButton(new TextWidget(">", new Vector3f(0, -11, 0.05f), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50))
             );
         } catch (Exception e) {
             return new TextWidget("ERROR creating widget!", new Vector3f());
