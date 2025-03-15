@@ -90,7 +90,9 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.depthMask(false);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
+        ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
+        RenderSystem.setShaderTexture(0, MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
 
         for (Vector3f[] face : faces) {
             var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);
@@ -98,10 +100,10 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
             var c3 = face[2].rotate(orientation, new Vector3f()).add(pos).sub(cam);
             var c4 = face[3].rotate(orientation, new Vector3f()).add(pos).sub(cam);
 
-            buffer.vertex(c1.x, c1.y, c1.z).color(color);
-            buffer.vertex(c2.x, c2.y, c2.z).color(color);
-            buffer.vertex(c3.x, c3.y, c3.z).color(color);
-            buffer.vertex(c4.x, c4.y, c4.z).color(color);
+            buffer.vertex(c1.x, c1.y, c1.z).color(color).texture(0, 0);
+            buffer.vertex(c2.x, c2.y, c2.z).color(color).texture(0, 1);
+            buffer.vertex(c3.x, c3.y, c3.z).color(color).texture(1, 1);
+            buffer.vertex(c4.x, c4.y, c4.z).color(color).texture(1, 0);
 
         }
 

@@ -6,14 +6,27 @@ import com.beatcraft.render.BeatcraftRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
 public class ObstacleGlowRenderer {
+
+    public static ShaderProgram distortionShader;
+
+    public static void init() {
+        try {
+            distortionShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_distortion", VertexFormats.POSITION_TEXTURE_COLOR);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private static Vector3f[] buildEdge(Vector3f pos1, Vector3f pos2, Vector3f cameraPos) {
         Vector3f lineNormal = pos1.sub(pos2, new Vector3f()).normalize();
@@ -34,6 +47,7 @@ public class ObstacleGlowRenderer {
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
+        if (distortionShader == null) init();
         BeatcraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera));
     }
 

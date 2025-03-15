@@ -15,6 +15,7 @@ import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
