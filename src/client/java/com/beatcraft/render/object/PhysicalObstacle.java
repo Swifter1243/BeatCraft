@@ -1,5 +1,6 @@
 package com.beatcraft.render.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
@@ -13,6 +14,7 @@ import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
@@ -28,6 +30,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         new Vector3f(-0.3f, 0, 0),
         new Vector3f(0.3f, 0, 0)
     );
+
 
     public PhysicalObstacle(Obstacle data) {
         super(data);
@@ -90,9 +93,12 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.depthMask(false);
+
+        ObstacleGlowRenderer.grabScreen();
+
         RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
-        ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
-        RenderSystem.setShaderTexture(0, MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
+        ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", ObstacleGlowRenderer.framebuffer.getColorAttachment());
+        RenderSystem.setShaderTexture(0, ObstacleGlowRenderer.framebuffer.getColorAttachment());
 
         for (Vector3f[] face : faces) {
             var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);

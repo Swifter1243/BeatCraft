@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -18,15 +19,46 @@ import java.util.function.BiConsumer;
 public class ObstacleGlowRenderer {
 
     public static ShaderProgram distortionShader;
+    public static ShaderProgram blitShader;
+    public static SimpleFramebuffer framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
 
     public static void init() {
         try {
             distortionShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_distortion", VertexFormats.POSITION_TEXTURE_COLOR);
+            blitShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "blit_screen", VertexFormats.POSITION_TEXTURE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public static void grabScreen() {
+        framebuffer.setClearColor(0, 0, 0, 0);
+        framebuffer.clear(true);
+
+        RenderSystem.setShaderTexture(0, MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
+        framebuffer.beginWrite(true);
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
+
+
+        //ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
+        RenderSystem.setShader(() -> blitShader);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+
+        buffer.vertex(-1, -1, 0).texture(0, 0);
+        buffer.vertex(-1, 1, 0).texture(0, 1);
+        buffer.vertex(1, 1, 0).texture(1, 1);
+        buffer.vertex(1, -1, 0).texture(1, 0);
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+        framebuffer.endWrite();
+        BeatcraftRenderer.bloomfog.overrideBuffer = false;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
+
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+    }
 
     private static Vector3f[] buildEdge(Vector3f pos1, Vector3f pos2, Vector3f cameraPos) {
         Vector3f lineNormal = pos1.sub(pos2, new Vector3f()).normalize();

@@ -11,9 +11,9 @@ uniform vec4 ColorModulator;
 out vec4 fragColor;
 
 void main() {
-    vec2 uv = screenUV.xy*(-screenUV.z)+0.5;
+    vec2 uv = screenUV.xy/(screenUV.z*2.0)+0.5;
 
-//    vec4 color = 1.0-texture(Sampler0, uv);
+    vec4 color = texture(Sampler0, uv);
 
-    fragColor = vec4(0.0, 0.0, screenUV.z/50.0, 1.0);//vertexColor * ColorModulator + color;
+    fragColor = vertexColor + color;
 }
