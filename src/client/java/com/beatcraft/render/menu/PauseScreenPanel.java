@@ -34,11 +34,12 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("MENU", new Vector3f(0, -11, -0.005f)).withScale(3)
+                new TextWidget("MENU", new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
                 new Vector3f(0, 0, 0.01f), new Vector2f(150, 50),
                 () -> {
+                    GameLogicHandler.reset();
                     BeatmapPlayer.restart();
                     HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                     InputSystem.lockHotbar();
@@ -48,7 +49,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("RESTART", new Vector3f(0, -11, -0.005f)).withScale(3)
+                new TextWidget("RESTART", new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
                 new Vector3f(160, 0, 0.01f), new Vector2f(150, 50),
@@ -58,7 +59,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("CONTINUE", new Vector3f(0, -11, -0.005f)).withScale(3)
+                new TextWidget("CONTINUE", new Vector3f(0, -11, 0.05f)).withScale(3)
             )
         ));
 

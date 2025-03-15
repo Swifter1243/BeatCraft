@@ -65,6 +65,8 @@ public class BeatCraftClient implements ClientModInitializer {
 
     public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.beatcraft.keybindings"));
 
+    public static final KeyBinding toggleFPFCKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.toggle_fpfc", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_V, "category.beatcraft.keybindings"));
+
     public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerCameraRotation = new Quaternionf();
 
@@ -107,6 +109,13 @@ public class BeatCraftClient implements ClientModInitializer {
                     GameLogicHandler.unpauseMap();
                 } else {
                     GameLogicHandler.pauseMap();
+                }
+                while (pauseLevelKeybind.wasPressed());
+            } else if (toggleFPFCKeybind.wasPressed()) {
+                if (client.player != null) {
+                    toggleFPFC();
+                    client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+                    while (toggleFPFCKeybind.wasPressed()) ;
                 }
             }
         });
@@ -433,10 +442,14 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
     private int toggleFPFC(CommandContext<FabricClientCommandSource> context) {
-
-        GameLogicHandler.FPFC = !GameLogicHandler.FPFC;
+        toggleFPFC();
         context.getSource().sendFeedback(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
         return 1;
+    }
+
+    private static void toggleFPFC() {
+        GameLogicHandler.FPFC = !GameLogicHandler.FPFC;
+
     }
 
 

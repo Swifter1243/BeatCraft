@@ -86,6 +86,8 @@ public class HUDRenderer {
 
     private static final SettingsMenuPanel settingsMenuPanel = new SettingsMenuPanel();
 
+    private static final CreditsPanel creditsPanel = new CreditsPanel();
+
     public static void initSongSelectMenuPanel() {
         songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
     }
@@ -228,6 +230,19 @@ public class HUDRenderer {
         }
 
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
+        pair = creditsPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), creditsPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
     }
 
     private static void renderSettings(VertexConsumerProvider immediate) {
@@ -256,6 +271,19 @@ public class HUDRenderer {
         }
 
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        pair = creditsPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), creditsPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
     }
 
     private static void renderDownloader(VertexConsumerProvider immediate) {
@@ -284,6 +312,19 @@ public class HUDRenderer {
         }
 
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        pair = creditsPanel.raycast(saberPos, saberRot);
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), creditsPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
     }
 
     private static void renderEndScreen(VertexConsumerProvider immediate) {

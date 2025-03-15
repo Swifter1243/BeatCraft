@@ -15,6 +15,7 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.util.Identifier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -29,8 +30,12 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
     private static final int SONGS_PER_PAGE = 6;
     private static final float PREVIEW_FADE_TIME = 1.2f;
 
+    private static final int LIST_MAX_WIDTH = 110;
+    private static final int DISPLAY_MAX_WIDTH = 110;
+
     private static SongData currentDisplay = null;
     private static Identifier textureId = null;
+    private static DynamicTexture currentCover = null;
 
     private static String selectedSet = "Standard";
     private static String selectedDiff = "ExpertPlus";
@@ -66,9 +71,9 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                     ))
                 ),
                 new TextureWidget(coverId, new Vector3f(), new Vector2f(width, height)).withScale(75/(float) width, 75/(float) height),
-                new TextWidget(songData.getTitle(), new Vector3f(43, -35, 0)).alignedLeft().withScale(2),
-                new TextWidget(songData.getAuthor(), new Vector3f(43, -10, 0)).alignedLeft().withScale(1.5f).withColor(0xFFAAAAAA),
-                new TextWidget("[" + String.join(", ", songData.getMappers()) + "]", new Vector3f(43, 10, 0)).alignedLeft().withScale(1.2f).withColor(0xFF44CC22)
+                new TextWidget(songData.getTitle(), new Vector3f(43, -35, 0)).alignedLeft().withScale(2).withDynamicScaling(LIST_MAX_WIDTH),
+                new TextWidget(songData.getAuthor(), new Vector3f(43, -10, 0)).alignedLeft().withScale(1.5f).withColor(0xFFAAAAAA).withDynamicScaling((int) (LIST_MAX_WIDTH*1.3333f)),
+                new TextWidget("[" + String.join(", ", songData.getMappers()) + "]", new Vector3f(43, 10, 0)).alignedLeft().withScale(1.2f).withColor(0xFF44CC22).withDynamicScaling((int) (LIST_MAX_WIDTH*1.6666f))
             ));
 
         }
@@ -103,11 +108,17 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
     private void scrollDown() {
         scrollIndex = Math.min(scrollIndex+1, BeatCraftClient.songs.getSongs().size() / SONGS_PER_PAGE);
         updateList();
+        if (currentCover != null) {
+            currentCover.reload();
+        }
     }
 
     private void scrollUp() {
         scrollIndex = Math.max(0, scrollIndex-1);
         updateList();
+        if (currentCover != null) {
+            currentCover.reload();
+        }
     }
 
     public void initLayout() {
@@ -122,6 +133,14 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             ),
             new ButtonWidget(new Vector3f(-30, 200, 0.05f), new Vector2f(50, 50), this::scrollDown,
                 new TextureWidget(Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_selector/down_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
+            ),
+            SettingsMenuPanel.getButton(
+                new TextWidget("Report bugs", new Vector3f(0, -11, 0.05f), 3).withColor(0xFFBB2222),
+                () -> {
+                    ConfirmLinkScreen.open(null, "https://github.com/Swifter1243/BeatCraft/issues");
+                },
+                new Vector3f(140, -210, 0),
+                new Vector2f(210, 45)
             ),
             songListContainer, songDisplay, setDifficulties, difficultyStats
         ));
@@ -266,7 +285,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
                         BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
                         // send structure place method so it can happen while the song loads client-side
-                        if (BeatCraftClient.playerConfig.doEnvironmentPlacing()) {
+                        if (BeatCraftClient.playerConfig.doEnvironmentPlacing() && BeatmapPlayer.currentBeatmap.lightShowEnvironment != null) {
                             String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
                             ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
                         }
@@ -274,7 +293,9 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         BeatmapPlayer.restart();
                         GameLogicHandler.reset();
                         BeatmapAudioPlayer.muteVanillaMusic();
-                        ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
+                        if (data.getId() != null) {
+                            ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
+                        }
                         InputSystem.lockHotbar();
 
                     } catch (IOException e) {
@@ -291,7 +312,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F4270E0, 0x224270C0, 0)
                     )
                 ),
-                new TextWidget("PLAY", new Vector3f(0, -11, 0)).withScale(3)
+                new TextWidget("PLAY", new Vector3f(0, -11, 0.05f)).withScale(3)
             )
         );
 
@@ -321,7 +342,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
         }
         song_play_request = CompletableFuture.runAsync(() -> {
             while (!BeatmapAudioPlayer.isReady()) {}
-            if (currentDisplay != data) {
+            if (currentDisplay != data || BeatmapPlayer.currentBeatmap != null) {
                 return;
             }
             BeatmapAudioPlayer.beatmapAudio.play(data.getPreviewStartTime());
@@ -333,7 +354,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
             while ((System.nanoTime() / 1_000_000_000d) - start < fadeStartTime) {}
 
-            if (currentDisplay != data) {
+            if (currentDisplay != data || BeatmapPlayer.currentBeatmap != null) {
                 return;
             }
 
@@ -342,7 +363,8 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 float fadeProgress = (float) ((elapsed - fadeStartTime) / fadeTime);
                 float newVolume = BeatCraftClient.playerConfig.getVolume() * (1.0f - fadeProgress);
                 BeatmapAudioPlayer.beatmapAudio.setVolume(Math.max(newVolume, 0.0f));
-                if (currentDisplay != data) {
+                if (currentDisplay != data || BeatmapPlayer.currentBeatmap != null) {
+                    BeatmapAudioPlayer.beatmapAudio.setVolume(BeatCraftClient.playerConfig.getVolume());
                     return;
                 }
             }
@@ -359,6 +381,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             width = coverImage.width();
             height = coverImage.height();
             coverId = coverImage.id();
+            currentCover = coverImage;
         } catch (IOException e) {
             coverId = Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_selector/no_cover.png");
             width = 256;
@@ -367,23 +390,23 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
         textureId = coverId;
 
+
         songDisplay.children.addAll(List.of(
             new TextureWidget(coverId, new Vector3f(-85, -100, 0), new Vector2f(width, height)).withScale(150/(float) width, 150/(float) height),
-            new TextWidget(data.getTitle(), new Vector3f(0, -175, 0)).withScale(3).alignedLeft(),
-            new TextWidget(data.getAuthor(), new Vector3f(0, -145, 0)).withScale(2.5f).alignedLeft(),
-            new TextWidget("["+String.join(", ", data.getMappers())+"]", new Vector3f(0, -115, 0)).withScale(2).alignedLeft().withColor(0xFF44CC22),
+            new TextWidget(data.getTitle(), new Vector3f(0, -175, 0)).withScale(3).alignedLeft().withDynamicScaling(DISPLAY_MAX_WIDTH),
+            new TextWidget(data.getAuthor(), new Vector3f(0, -145, 0)).withScale(2.5f).alignedLeft().withDynamicScaling((int) (DISPLAY_MAX_WIDTH*1.2f)),
+            new TextWidget("["+String.join(", ", data.getMappers())+"]", new Vector3f(0, -115, 0)).withScale(2).alignedLeft().withColor(0xFF44CC22).withDynamicScaling((int) (DISPLAY_MAX_WIDTH*1.5f)),
             new ButtonWidget(new Vector3f(30, -35, 0), new Vector2f(60, 25), () -> {
                 HUDRenderer.confirmSongDeleteMenuPanel = new ConfirmSongDeleteMenuPanel(new ConfirmSongDeleteMenu(data));
                 HUDRenderer.scene = HUDRenderer.MenuScene.ConfirmSongDelete;
             },
                 new HoverWidget(new Vector3f(), new Vector2f(60, 25), List.of(
-                    new GradientWidget(new Vector3f(0, 0, 0.05f), new Vector2f(60, 25), 0x7FAA1111, 0x7F881111, 0)
+                    new GradientWidget(new Vector3f(0, 0, 0), new Vector2f(60, 25), 0x7FAA1111, 0x7F881111, 0)
                 ), List.of(
-                    new GradientWidget(new Vector3f(0, 0, 0.05f), new Vector2f(60, 25), 0x7FCC2222, 0x7FAA2222, 0)
+                    new GradientWidget(new Vector3f(0, 0, 0), new Vector2f(60, 25), 0x7FCC2222, 0x7FAA2222, 0)
                 )),
-                new TextWidget("DELETE", new Vector3f(0, -6, 0.01f)).withScale(1.5f)
+                new TextWidget("DELETE", new Vector3f(0, -6, 0.05f)).withScale(1.5f)
             )
-            // TODO: set, difficulty, play button, delete button, practice button, level stats (note count, wall count, etc...)
         ));
 
         ArrayList<String> sets = new ArrayList<>(data.getDifficultySets());
