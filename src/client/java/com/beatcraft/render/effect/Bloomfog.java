@@ -74,8 +74,8 @@ public class Bloomfog {
     private Bloomfog() {
 
         try {
-            blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_up", VertexFormats.POSITION_TEXTURE);
-            blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_down", VertexFormats.POSITION_TEXTURE);
+            blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_up", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+            blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_down", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
         } catch (IOException e) {
@@ -314,12 +314,12 @@ public class Bloomfog {
         overrideFramebuffer = out;
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a =  9f/h;//(w/h) * 0.003f;
-        float a2 = 9f/w;//0.003f;
+        float a2 = 0.015f;///w;//0.003f;
+        float a =  0.02f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(upPass ? (() -> blurShaderUp) : (() -> blurShaderDown));
@@ -327,10 +327,10 @@ public class Bloomfog {
         RenderSystem.defaultBlendFunc();
 
         // should also be 0/0 to screen width/height
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(a2, a, 0, 0);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(a2, a, 0, 0);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(a2, a, 0, 0);
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(a2, a, 0, 0);
+        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, 0);
+        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, 0);
+        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, 0);
+        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, 0);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 

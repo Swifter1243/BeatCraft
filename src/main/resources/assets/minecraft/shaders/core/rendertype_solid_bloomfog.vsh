@@ -21,8 +21,9 @@ out vec3 screenUV;
 
 void main() {
     vec3 pos = Position + ChunkOffset;
-    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
-    screenUV = gl_Position.xyz;
+    vec4 pos2 = vec4(ModelViewMat * vec4(pos, 1.0));
+    gl_Position = ProjMat * pos2;
+    screenUV = vec3(gl_Position.xyz);
 
     vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
     texCoord0 = UV0;

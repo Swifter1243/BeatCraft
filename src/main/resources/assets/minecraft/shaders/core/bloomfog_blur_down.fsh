@@ -4,7 +4,7 @@ uniform sampler2D Sampler0;
 uniform vec4 ColorModulator;
 
 in vec2 texCoord0;
-in vec4 vertexColor;
+in vec2 blur;
 
 out vec4 fragColor;
 
@@ -13,10 +13,10 @@ out vec4 fragColor;
 void main() {
     fragColor = (4.0 *
             texture(Sampler0, texCoord0)
-        +   texture(Sampler0, texCoord0 + vec2( vertexColor.x, 0.0           ))
-        +   texture(Sampler0, texCoord0 + vec2(-vertexColor.x, 0.0           ))
-        +   texture(Sampler0, texCoord0 + vec2(0.0           ,  vertexColor.y))
-        +   texture(Sampler0, texCoord0 + vec2(0.0           , -vertexColor.y))
+        +   texture(Sampler0, texCoord0 + vec2( blur.x, 0.0           ))
+        +   texture(Sampler0, texCoord0 + vec2(-blur.x, 0.0           ))
+        +   texture(Sampler0, texCoord0 + vec2(0.0           ,  blur.y))
+        +   texture(Sampler0, texCoord0 + vec2(0.0           , -blur.y))
     ) / 6.5;
 
     /*
