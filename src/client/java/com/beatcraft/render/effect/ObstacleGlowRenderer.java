@@ -35,12 +35,13 @@ public class ObstacleGlowRenderer {
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
 
-        RenderSystem.setShaderTexture(0, MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
+        var scene = MinecraftClient.getInstance().getFramebuffer().getColorAttachment();
         framebuffer.beginWrite(true);
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
 
 
+        RenderSystem.setShaderTexture(0, scene);
         //ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
         RenderSystem.setShader(() -> blitShader);
         Tessellator tessellator = Tessellator.getInstance();
