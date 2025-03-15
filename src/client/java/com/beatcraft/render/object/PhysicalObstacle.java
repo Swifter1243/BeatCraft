@@ -82,8 +82,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
             .getColorScheme().getObstacleColor().toARGB(0.15f);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
 
         Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
@@ -96,9 +95,13 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         ObstacleGlowRenderer.grabScreen();
 
+        var scene = ObstacleGlowRenderer.framebuffer;//MinecraftClient.getInstance().getFramebuffer();
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
         RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
-        ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", ObstacleGlowRenderer.framebuffer.getColorAttachment());
-        RenderSystem.setShaderTexture(0, ObstacleGlowRenderer.framebuffer.getColorAttachment());
+        RenderSystem.setShaderTexture(0, scene.getColorAttachment());
 
         for (Vector3f[] face : faces) {
             var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);

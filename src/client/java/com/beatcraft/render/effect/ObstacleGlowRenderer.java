@@ -6,6 +6,7 @@ import com.beatcraft.render.BeatcraftRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
@@ -32,17 +33,18 @@ public class ObstacleGlowRenderer {
     }
 
     public static void grabScreen() {
+        var scene = MinecraftClient.getInstance().getFramebuffer();
+;
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
-
-        var scene = MinecraftClient.getInstance().getFramebuffer().getColorAttachment();
         framebuffer.beginWrite(true);
+
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
 
+        ObstacleGlowRenderer.distortionShader.addSampler("DiffuseSampler", scene.getColorAttachment());
+        RenderSystem.setShaderTexture(0, scene.getColorAttachment());
 
-        RenderSystem.setShaderTexture(0, scene);
-        //ObstacleGlowRenderer.distortionShader.addSampler("Sampler0", MinecraftClient.getInstance().getFramebuffer().getColorAttachment());
         RenderSystem.setShader(() -> blitShader);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
