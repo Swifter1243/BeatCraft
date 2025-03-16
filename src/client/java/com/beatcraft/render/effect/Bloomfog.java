@@ -67,6 +67,7 @@ public class Bloomfog {
     public static ShaderProgram bloomfog_solid_shader;
     public static ShaderProgram bloomfogLineShader;
     public static ShaderProgram bloomfogPositionColor;
+    public static ShaderProgram bloomfogColorFix;
 
     //private final Uniform vTexSize;
     //private final Uniform hTexSize;
@@ -78,6 +79,7 @@ public class Bloomfog {
             blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_blur_down", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
+            bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -301,7 +303,9 @@ public class Bloomfog {
             applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], width, height, true);
         }
 
-        applyBlurPass(pingPongBuffers[0], blurredBuffer, width, height, true);
+        applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], width, height, true);
+
+        applyColorCorrectionPass(pingPongBuffers[1], blurredBuffer, width, height);
 
     }
 
@@ -318,8 +322,9 @@ public class Bloomfog {
 
         float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
-        float a2 = 0.015f;///w;//0.003f;
+        float a2 = 0.02f * (h/w);///w;//0.003f;
         float a =  0.02f;
+        float precision = 7f/127f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(upPass ? (() -> blurShaderUp) : (() -> blurShaderDown));
@@ -327,10 +332,10 @@ public class Bloomfog {
         RenderSystem.defaultBlendFunc();
 
         // should also be 0/0 to screen width/height
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, 0);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, 0);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, 0);
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, 0);
+        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
@@ -339,6 +344,41 @@ public class Bloomfog {
         overrideBuffer = false;
         overrideFramebuffer = null;
 
+    }
+
+    private void applyColorCorrectionPass(Framebuffer in, Framebuffer out, float width, float height) {
+        out.setClearColor(0, 0, 0, 0);
+        out.clear(true);
+        out.beginWrite(true);
+        overrideBuffer = true;
+        overrideFramebuffer = out;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        float w = (float) MinecraftClient.getInstance().getWindow().getWidth();
+        float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
+        float a2 = 0.02f * (h/w);///w;//0.003f;
+        float a =  0.02f;
+        float precision = 7f/127f;
+
+        RenderSystem.setShaderTexture(0, in.getColorAttachment());
+        RenderSystem.setShader(() -> bloomfogColorFix);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        // should also be 0/0 to screen width/height
+        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+        out.endWrite();
+
+        overrideBuffer = false;
+        overrideFramebuffer = null;
     }
 
 }
