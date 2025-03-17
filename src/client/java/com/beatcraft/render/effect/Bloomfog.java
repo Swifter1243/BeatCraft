@@ -260,6 +260,7 @@ public class Bloomfog {
         RenderSystem.enableCull();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
 
     }
 

@@ -156,7 +156,7 @@ public class HUDRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
+        RenderSystem.depthMask(false);
 
         matrices.translate(0, 0, 8);
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
