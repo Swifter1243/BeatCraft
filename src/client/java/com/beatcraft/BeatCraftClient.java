@@ -123,6 +123,13 @@ public class BeatCraftClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             BeatmapAudioPlayer.init();
 
+            var window = MinecraftClient.getInstance().getWindow();
+            var w = window.getWidth();
+            var h = window.getHeight();
+
+            if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
+            BeatcraftRenderer.bloomfog.resize(w, h);
+
             songs.loadSongs();
             HUDRenderer.initSongSelectMenuPanel();
         });
@@ -142,7 +149,6 @@ public class BeatCraftClient implements ClientModInitializer {
             }
             return false;
         });
-
 
         WindowResizeCallback.EVENT.register((client, window) -> {
             BeatcraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());

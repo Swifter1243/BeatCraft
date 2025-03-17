@@ -39,7 +39,7 @@ public class LightState {
     }
 
     public int getBloomColor() {
-        return color.withAlpha(brightness).toARGB();
+        return color.lerpBrightness(brightness);
     }
 
     public float getBrightness() {
