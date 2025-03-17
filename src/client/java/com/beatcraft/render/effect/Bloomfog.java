@@ -69,8 +69,6 @@ public class Bloomfog {
     public static ShaderProgram bloomfogPositionColor;
     public static ShaderProgram bloomfogColorFix;
 
-    //private final Uniform vTexSize;
-    //private final Uniform hTexSize;
 
     private Bloomfog() {
 
@@ -239,7 +237,6 @@ public class Bloomfog {
 
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
-        // in theory, the quad *should* be 0/0 to screen width/height if I had the right view matrix
         float z = 0;//-0.5f;
         buffer.vertex(-quadWidth / 2, -quadHeight / 2, z).texture(0.0f, 0.0f); // Top-left
         buffer.vertex( quadWidth / 2, -quadHeight / 2, z).texture(1.0f, 0.0f); // Top-right
@@ -335,14 +332,13 @@ public class Bloomfog {
         float h = (float) MinecraftClient.getInstance().getWindow().getHeight();
         float a2 = 0.02f * (h/w);///w;//0.003f;
         float a =  0.02f;
-        float precision = 7f/127f;
+        float precision = 6f/127f;
 
         RenderSystem.setShaderTexture(0, in.getColorAttachment());
         RenderSystem.setShader(upPass ? (() -> blurShaderUp) : (() -> blurShaderDown));
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // should also be 0/0 to screen width/height
         float z = 0;//-0.5f;
         buffer.vertex(new Vector3f(-width/2, -height/2, z)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
         buffer.vertex(new Vector3f( width/2, -height/2, z)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
@@ -379,7 +375,6 @@ public class Bloomfog {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // should also be 0/0 to screen width/height
         float z = 0;//-0.5f;
         buffer.vertex(new Vector3f(-width/2, -height/2, z)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
         buffer.vertex(new Vector3f( width/2, -height/2, z)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);

@@ -1,6 +1,7 @@
 package com.beatcraft.render.block;
 
 import com.beatcraft.blocks.ModBlocks;
+import com.beatcraft.render.BeatCraftRenderLayers;
 import com.beatcraft.render.block.entity.*;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -12,9 +13,9 @@ public class BlockRenderSettings {
 
     public static void init() {
 
-        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getSolid(),
-            ModBlocks.BLACK_MIRROR_BLOCK
-        );
+        //BlockRenderLayerMap.INSTANCE.putBlocks(BeatCraftRenderLayers.getBloomfogSolid(),
+        //    ModBlocks.BLACK_MIRROR_BLOCK
+        //);
 
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
             ModBlocks.COLUMN_LIGHT_TILE_BLOCK,
