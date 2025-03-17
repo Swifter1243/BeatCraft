@@ -12,7 +12,8 @@ out vec2 blur;
 out vec2 texCoord0;
 
 void main() {
-    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    vec4 pos = vec4(ModelViewMat * vec4(Position, 1.0));
+    gl_Position = pos;//vec4(Position, 1.0);
 
     texCoord0 = UV0;
     blur = Normal.xy/(Normal.z*64);

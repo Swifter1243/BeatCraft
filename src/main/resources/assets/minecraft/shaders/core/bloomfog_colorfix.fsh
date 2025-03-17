@@ -20,5 +20,5 @@ vec4 scaleColor(vec4 color) {
 void main() {
     vec4 color = texture(Sampler0, texCoord0);
 
-    fragColor = scaleColor(color);
+    fragColor = (color);
 }

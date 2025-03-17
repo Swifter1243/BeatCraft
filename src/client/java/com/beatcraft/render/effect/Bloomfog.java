@@ -140,13 +140,17 @@ public class Bloomfog {
     //    return lineBuffer;
     //}
 
+    public static float calculateRoll(Vector3f up, Vector3f left) {
+        return (float) Math.atan2(left.y, up.y);
+    }
+
     private int[] lastSize = new int[]{1, 1};
     public void render(float tickDelta) {
 
-        if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive()) {
-            renderCalls.clear();
-            return;
-        }
+        //if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive()) {
+        //    renderCalls.clear();
+        //    return;
+        //}
 
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
@@ -161,10 +165,6 @@ public class Bloomfog {
             resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()));
         }
 
-        var oldProjMat = RenderSystem.getProjectionMatrix();
-        var oldVertexSort = RenderSystem.getVertexSorting();
-        //var orthoMatrix = new Matrix4f().identity();//.ortho(0, width, height, 0, 1, -1);
-        //RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
 
         float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
 
@@ -192,8 +192,13 @@ public class Bloomfog {
         Vector3f up = camera.getVerticalPlane();
         Vector3f left = camera.getDiagonalPlane();
 
+        float roll = calculateRoll(up, left);
+
         var invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
 
+        Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
+
+        rollQuat.mul(invCameraRotation, invCameraRotation);
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
@@ -201,8 +206,8 @@ public class Bloomfog {
 
 
 
-        float quadHeight = (float) Math.tan(fov / 2.0f);
-        float quadWidth = quadHeight * aspectRatio;
+        float quadHeight = 2;//(float) Math.tan(fov / 2.0f);
+        float quadWidth = 2;//quadHeight * aspectRatio;
 
         renderCalls.clear();
 
@@ -235,13 +240,17 @@ public class Bloomfog {
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
         // in theory, the quad *should* be 0/0 to screen width/height if I had the right view matrix
-        buffer.vertex(-quadWidth / 2, -quadHeight / 2, -0.5f).texture(0.0f, 0.0f); // Top-left
-        buffer.vertex( quadWidth / 2, -quadHeight / 2, -0.5f).texture(1.0f, 0.0f); // Top-right
-        buffer.vertex( quadWidth / 2,  quadHeight / 2, -0.5f).texture(1.0f, 1.0f); // Bottom-right
-        buffer.vertex(-quadWidth / 2,  quadHeight / 2, -0.5f).texture(0.0f, 1.0f); // Bottom-left
+        float z = 0;//-0.5f;
+        buffer.vertex(-quadWidth / 2, -quadHeight / 2, z).texture(0.0f, 0.0f); // Top-left
+        buffer.vertex( quadWidth / 2, -quadHeight / 2, z).texture(1.0f, 0.0f); // Top-right
+        buffer.vertex( quadWidth / 2,  quadHeight / 2, z).texture(1.0f, 1.0f); // Bottom-right
+        buffer.vertex(-quadWidth / 2,  quadHeight / 2, z).texture(0.0f, 1.0f); // Bottom-left
 
-        RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+
+        var oldProjMat = RenderSystem.getProjectionMatrix();
+        var oldVertexSort = RenderSystem.getVertexSorting();
+        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
+        RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
         RenderSystem.setShaderTexture(0, blurredTexId);
         RenderSystem.enableBlend();
 
@@ -250,6 +259,8 @@ public class Bloomfog {
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
+        RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
 
         RenderSystem.enableCull();
         RenderSystem.disableDepthTest();
@@ -332,10 +343,11 @@ public class Bloomfog {
         RenderSystem.defaultBlendFunc();
 
         // should also be 0/0 to screen width/height
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
+        float z = 0;//-0.5f;
+        buffer.vertex(new Vector3f(-width/2, -height/2, z)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2, -height/2, z)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2,  height/2, z)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f(-width/2,  height/2, z)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
@@ -368,10 +380,11 @@ public class Bloomfog {
         RenderSystem.defaultBlendFunc();
 
         // should also be 0/0 to screen width/height
-        buffer.vertex(new Vector3f(-width/2, -height/2, -0.5f)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f( width/2, -height/2, -0.5f)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f( width/2,  height/2, -0.5f)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
-        buffer.vertex(new Vector3f(-width/2,  height/2, -0.5f)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
+        float z = 0;//-0.5f;
+        buffer.vertex(new Vector3f(-width/2, -height/2, z)).texture(0, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2, -height/2, z)).texture(1, 0).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f( width/2,  height/2, z)).texture(1, 1).color(0xFF020200).normal(a2, a, precision);
+        buffer.vertex(new Vector3f(-width/2,  height/2, z)).texture(0, 1).color(0xFF020200).normal(a2, a, precision);
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 

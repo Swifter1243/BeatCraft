@@ -11,7 +11,7 @@ out vec4 fragColor;
 
 
 void main() {
-    fragColor = (4.0 *
+    fragColor = (3.0 *
             texture(Sampler0, texCoord0)
         +   texture(Sampler0, texCoord0 + vec2( blur.x, 0.0    ))
         +   texture(Sampler0, texCoord0 + vec2(-blur.x, 0.0    ))
