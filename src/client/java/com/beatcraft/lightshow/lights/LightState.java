@@ -31,7 +31,7 @@ public class LightState {
     }
 
     private int calcEffectiveColor() {
-        return color.lerpBrightness(brightness * 1.5f);
+        return color.lerpBrightness(brightness * 1.2f);
     }
 
     public int getEffectiveColor() {

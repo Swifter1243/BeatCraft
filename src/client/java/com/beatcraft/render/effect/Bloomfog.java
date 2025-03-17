@@ -191,8 +191,7 @@ public class Bloomfog {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         RenderSystem.enableBlend();
-        //RenderSystem.defaultBlendFunc();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+        RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
@@ -229,6 +228,7 @@ public class Bloomfog {
 
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
 
         applyPyramidBlur();
 
