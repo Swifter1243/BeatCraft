@@ -6,6 +6,7 @@ import com.beatcraft.render.BeatCraftRenderLayers;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.SkyFogController;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
@@ -58,6 +59,7 @@ public abstract class WorldRendererMixin {
         )
     )
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
+        MirrorHandler.drawMirror();
         BeatcraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
         HUDRenderer.render(immediate);

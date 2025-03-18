@@ -22,6 +22,11 @@ import java.util.ArrayList;
 
 public class Bloomfog {
 
+    @FunctionalInterface
+    public interface QuadConsumer<T, U, S, V> {
+        void accept(T t, U u, S s, V v);
+    }
+
     public static class BloomfogTex extends AbstractTexture {
 
         private final SimpleFramebuffer buffer;
@@ -44,7 +49,7 @@ public class Bloomfog {
     public Framebuffer overrideFramebuffer = null;
 
     public SimpleFramebuffer framebuffer;
-    private final ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> renderCalls = new ArrayList<>();
+    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>();
     private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
     private final BloomfogTex tex;
 
@@ -83,6 +88,8 @@ public class Bloomfog {
     private BloomfogTex[] pyramidTextures = new BloomfogTex[16];
 
     private Bloomfog() {
+
+        MirrorHandler.init();
 
         try {
             blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_upsample", VertexFormats.POSITION_TEXTURE_COLOR);
@@ -155,6 +162,8 @@ public class Bloomfog {
             mod *= 2;
         }
 
+        MirrorHandler.resize();
+
     }
 
     public void unload() {
@@ -170,7 +179,7 @@ public class Bloomfog {
         return blurredTexId;
     }
 
-    public void record(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+    public void record(QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean> call) {
         renderCalls.add(call);
     }
 
@@ -223,7 +232,8 @@ public class Bloomfog {
         SkyFogController.render(buffer, cameraPos, invCameraRotation);
 
         for (var call : renderCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation);
+            call.accept(buffer, cameraPos, invCameraRotation, false);
+            MirrorHandler.recordMirrorLightDraw(call);
         }
 
         renderCalls.clear();
@@ -239,6 +249,7 @@ public class Bloomfog {
         overrideBuffer = false;
         overrideFramebuffer = null;
 
+        MirrorHandler.invCameraRotation = invCameraRotation.conjugate();
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
@@ -274,6 +285,7 @@ public class Bloomfog {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
+
 
     }
 

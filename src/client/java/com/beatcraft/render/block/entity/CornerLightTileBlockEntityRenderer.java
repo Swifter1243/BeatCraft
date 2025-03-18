@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -74,5 +75,10 @@ public class CornerLightTileBlockEntityRenderer implements BlockEntityRenderer<C
 
         });
 
+    }
+
+    @Override
+    public boolean isInRenderDistance(CornerLightTileBlockEntity blockEntity, Vec3d pos) {
+        return true;
     }
 }

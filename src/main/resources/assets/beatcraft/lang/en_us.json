@@ -36,6 +36,8 @@
   "item.beatcraft.saber": "Saber",
 
   "block.beatcraft.black_mirror_block": "Black Mirror Block",
+  "block.beatcraft.reflective_mirror_block": "Reflective Mirror Block",
+  "tooltip.beatcraft.reflective_mirror_block": "Only works when placed at Y = -1",
 
   "block.beatcraft.filled_light_tile": "Full Light Tile",
   "block.beatcraft.edge_light_tile": "Edge Light Tile",

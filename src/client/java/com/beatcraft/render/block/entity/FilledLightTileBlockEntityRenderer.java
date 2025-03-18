@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -162,5 +163,10 @@ public class FilledLightTileBlockEntityRenderer implements BlockEntityRenderer<F
 
         });
 
+    }
+
+    @Override
+    public boolean isInRenderDistance(FilledLightTileBlockEntity blockEntity, Vec3d pos) {
+        return true;
     }
 }

@@ -25,6 +25,7 @@ public class BlockRenderSettings {
             ModBlocks.FILLED_LIGHT_TILE_BLOCK
         );
 
+        BlockEntityRendererFactories.register(ModBlocks.REFLECTIVE_MIRROR_BLOCK_ENTITY, ctx -> new ReflectiveMirrorBlockEntityRenderer());
         BlockEntityRendererFactories.register(ModBlocks.EDGE_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new EdgeLightTileBlockEntityRenderer());
         BlockEntityRendererFactories.register(ModBlocks.CORNER_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new CornerLightTileBlockEntityRenderer());
         BlockEntityRendererFactories.register(ModBlocks.END_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new EndLightTileBlockEntityRenderer());
