@@ -6,6 +6,7 @@ import com.beatcraft.render.BeatCraftRenderLayers;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.effect.SkyFogController;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -31,6 +32,7 @@ public abstract class WorldRendererMixin {
         RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci
     ) {
         if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
+        SkyFogController.updateColor();
         BeatcraftRenderer.onRender(new MatrixStack(), camera, tickCounter.getTickDelta(true));
     }
 

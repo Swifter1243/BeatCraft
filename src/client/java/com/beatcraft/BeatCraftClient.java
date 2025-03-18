@@ -42,6 +42,7 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
@@ -56,6 +57,8 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.arg
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class BeatCraftClient implements ClientModInitializer {
+
+    public static Random random = Random.create();
 
     public static PlayerConfig playerConfig = null;
     public static final SongList songs = new SongList();

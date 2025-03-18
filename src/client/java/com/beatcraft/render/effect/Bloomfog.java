@@ -55,6 +55,7 @@ public class Bloomfog {
     //};
     //private final BloomfogTex[] pingPongTextures = new BloomfogTex[2];
 
+    private final SimpleFramebuffer extraBuffer;
     public final SimpleFramebuffer blurredBuffer;
     private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
     private BloomfogTex blurredTex;
@@ -67,8 +68,14 @@ public class Bloomfog {
     public static ShaderProgram bloomfogLineShader;
     public static ShaderProgram bloomfogPositionColor;
     public static ShaderProgram bloomfogColorFix;
+    public static ShaderProgram blueNoise;
 
-    private static final float radius = 6;
+    public static ShaderProgram blitShader;
+    public static ShaderProgram compositeShader;
+
+    private static final Identifier blueNoiseTexture = BeatCraft.id("textures/noise/blue_noise.png");
+
+    private static final float radius = 10;
 
     private Identifier[] pyramidTexIds = new Identifier[16];
     private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[16];
@@ -82,6 +89,9 @@ public class Bloomfog {
             blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_downsample", VertexFormats.POSITION_TEXTURE_COLOR);
             gaussianV = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "gaussian_v", VertexFormats.POSITION_TEXTURE_COLOR);
             gaussianH = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "gaussian_h", VertexFormats.POSITION_TEXTURE_COLOR);
+            blueNoise = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "blue_noise", VertexFormats.POSITION_TEXTURE_COLOR);
+            blitShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "beatcraft_blit", VertexFormats.POSITION_TEXTURE_COLOR);
+            compositeShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "composite", VertexFormats.POSITION_TEXTURE_COLOR);
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
@@ -93,6 +103,7 @@ public class Bloomfog {
         //pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
         //pingPongBuffers[1] = new SimpleFramebuffer(1920, 1080, true, true);
         blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        extraBuffer = new SimpleFramebuffer(1920, 1080, true, true);
 
         tex = new BloomfogTex(framebuffer);
         //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -129,6 +140,7 @@ public class Bloomfog {
     public void resize(int width, int height) {
         framebuffer.resize(width, height, true);
         blurredBuffer.resize(width, height, true);
+        extraBuffer.resize(width, height, true);
 
         //double num = (Math.log((float) Math.max(width, height)) / Math.log(2f)) + Math.min(radius, 10f) - 10f;
         //int num2 = (int) Math.floor(num);
@@ -208,10 +220,11 @@ public class Bloomfog {
 
         rollQuat.mul(invCameraRotation, invCameraRotation);
 
+        SkyFogController.render(buffer, cameraPos, invCameraRotation);
+
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
         }
-
 
         renderCalls.clear();
 
@@ -272,19 +285,33 @@ public class Bloomfog {
         RenderSystem.setShaderTexture(1, blurredBuffer.getColorAttachment());
     }
 
+    private int secondaryBindTex = 0;
+
     private void applyPyramidBlur() {
         var current = framebuffer;
         int l;
         for (l = 0; l < layers; l++) {
             applyBlurPass(current, pyramidBuffers[l], PassType.DOWNSAMPLE);
-            applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-            applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+            //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+            //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            if (l > 0) {
+                secondaryBindTex = pyramidBuffers[0].getColorAttachment();
+                applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.COMP);
+                applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.BLIT);
+            }
+
             current = pyramidBuffers[l];
+
         }
 
         applyBlurPass(current, blurredBuffer, PassType.UPSAMPLE);
         applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
-        applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
+        //applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
+        //applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
+        applyBlurPass(framebuffer, extraBuffer, PassType.GAUSSIAN_H);
+        applyBlurPass(extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
     }
 
     private void applyBlur() {
@@ -312,7 +339,10 @@ public class Bloomfog {
         DOWNSAMPLE,
         UPSAMPLE,
         GAUSSIAN_V,
-        GAUSSIAN_H
+        GAUSSIAN_H,
+        BLUE_NOISE,
+        BLIT,
+        COMP
     }
 
     private void applyBlurPass(Framebuffer in, Framebuffer out, PassType pass) {
@@ -336,11 +366,24 @@ public class Bloomfog {
             case UPSAMPLE -> blurShaderUp;
             case GAUSSIAN_V -> gaussianV;
             case GAUSSIAN_H -> gaussianH;
+            case BLUE_NOISE -> blueNoise;
+            case BLIT -> blitShader;
+            case COMP -> compositeShader;
         };
 
         RenderSystem.setShader(() -> shader);
 
-        shader.getUniform("texelSize").set(radius/w, radius/h);
+        if (pass == PassType.BLUE_NOISE) {
+            //shader.addSampler("Sampler1", blueNoiseTexture);
+            RenderSystem.setShaderTexture(1, blueNoiseTexture);
+            shader.getUniformOrDefault("texelSize").set(512f / w, 512f / h);
+            //shader.getUniformOrDefault("GameTime").set(BeatCraftClient.random.nextFloat());
+        } else if (pass == PassType.COMP) {
+            shader.addSampler("Sampler1", secondaryBindTex);
+            RenderSystem.setShaderTexture(1, secondaryBindTex);
+        } else {
+            shader.getUniformOrDefault("texelSize").set(radius / w, radius / h);
+        }
         RenderSystem.enableBlend();
         //RenderSystem.defaultBlendFunc();
 
