@@ -107,8 +107,6 @@ public class GlowingCuboid extends LightObject {
             }
         } else {
 
-            BeatCraft.LOGGER.info("Mirror draw? {}", mirrorDraw);
-
             for (var face : faces) {
 
                 var v0 = processVertex(face[0], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);

@@ -27,7 +27,7 @@ public class MirrorHandler {
 
     public static void init() {
         var window = MinecraftClient.getInstance().getWindow();
-        mirrorFramebuffer = new SimpleFramebuffer(window.getWidth(), window.getHeight(), true, true);
+        mirrorFramebuffer = new SimpleFramebuffer(window.getWidth(), window.getHeight(), true, MinecraftClient.IS_SYSTEM_MAC);
 
         try {
             mirrorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "light_mirror", VertexFormats.POSITION_COLOR);
@@ -69,7 +69,10 @@ public class MirrorHandler {
         var buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.depthMask(true);
             BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.depthMask(false);
+
         }
 
 
@@ -82,7 +85,7 @@ public class MirrorHandler {
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         for (var call : drawCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation);
+            call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
         }
         drawCalls.clear();
 
@@ -91,6 +94,9 @@ public class MirrorHandler {
             RenderSystem.setShader(() -> mirrorShader);
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
+            RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());
+            mirrorShader.addSampler("Sampler1", mirrorFramebuffer.getDepthAttachment());
+
             BufferRenderer.drawWithGlobalProgram(buff);
         }
 

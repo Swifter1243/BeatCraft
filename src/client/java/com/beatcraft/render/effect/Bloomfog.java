@@ -106,11 +106,11 @@ public class Bloomfog {
             throw new RuntimeException(e);
         }
 
-        framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        framebuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
         //pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
         //pingPongBuffers[1] = new SimpleFramebuffer(1920, 1080, true, true);
-        blurredBuffer = new SimpleFramebuffer(1920, 1080, true, true);
-        extraBuffer = new SimpleFramebuffer(1920, 1080, true, true);
+        blurredBuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
+        extraBuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
 
         tex = new BloomfogTex(framebuffer);
         //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -125,8 +125,8 @@ public class Bloomfog {
 
         int i;
         for (i = 0; i < 16; i++) {
-            pyramidBuffers[i] = new SimpleFramebuffer(512, 512, false, true);
-            pyramidBuffers2[i] = new SimpleFramebuffer(512, 512, false, true);
+            pyramidBuffers[i] = new SimpleFramebuffer(512, 512, false, MinecraftClient.IS_SYSTEM_MAC);
+            pyramidBuffers2[i] = new SimpleFramebuffer(512, 512, false, MinecraftClient.IS_SYSTEM_MAC);
             //pyramidTexIds[i] = BeatCraft.id("bloomfog/pyramid" + i);
             //pyramidTextures[i] = new BloomfogTex(pyramidBuffers[i]);
             //texManager.registerTexture(pyramidTexIds[i], pyramidTextures[i]);
@@ -156,8 +156,8 @@ public class Bloomfog {
         float mod = 2;
         for (int l = 0; l < layers; l++) {
             if ((int) (width / mod) > 0 && (int) (height / mod) > 0) {
-                pyramidBuffers[l].resize((int) (width / mod), (int) (height / mod), true);
-                pyramidBuffers2[l].resize((int) (width / mod), (int) (height / mod), true);
+                pyramidBuffers[l].resize((int) (width / mod), (int) (height / mod), MinecraftClient.IS_SYSTEM_MAC);
+                pyramidBuffers2[l].resize((int) (width / mod), (int) (height / mod), MinecraftClient.IS_SYSTEM_MAC);
             }
             mod *= 2;
         }
@@ -249,7 +249,7 @@ public class Bloomfog {
         overrideBuffer = false;
         overrideFramebuffer = null;
 
-        MirrorHandler.invCameraRotation = invCameraRotation.conjugate();
+        MirrorHandler.invCameraRotation = invCameraRotation;
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
