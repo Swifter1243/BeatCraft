@@ -70,8 +70,10 @@ public class MirrorHandler {
         if (buff != null) {
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.depthMask(true);
+            RenderSystem.disableCull();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.depthMask(false);
+            RenderSystem.enableCull();
 
         }
 
