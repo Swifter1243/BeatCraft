@@ -82,10 +82,12 @@ public class Bloomfog {
 
     private static final float radius = 10;
 
-    private Identifier[] pyramidTexIds = new Identifier[16];
-    private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[16];
-    private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[16];
-    private BloomfogTex[] pyramidTextures = new BloomfogTex[16];
+    private static final int LAYERS = 5;
+
+    private Identifier[] pyramidTexIds = new Identifier[LAYERS];
+    private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[LAYERS];
+    private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[LAYERS];
+private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
     private Bloomfog() {
 
@@ -124,7 +126,7 @@ public class Bloomfog {
         texManager.registerTexture(blurredTexId, blurredTex);
 
         int i;
-        for (i = 0; i < 16; i++) {
+        for (i = 0; i < LAYERS; i++) {
             pyramidBuffers[i] = new SimpleFramebuffer(512, 512, false, MinecraftClient.IS_SYSTEM_MAC);
             pyramidBuffers2[i] = new SimpleFramebuffer(512, 512, false, MinecraftClient.IS_SYSTEM_MAC);
             //pyramidTexIds[i] = BeatCraft.id("bloomfog/pyramid" + i);
