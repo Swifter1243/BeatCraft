@@ -1,3 +1,4 @@
+//// non-distortion mirror
 //#version 150
 //
 //in vec4 vertexColor;
@@ -23,19 +24,21 @@
 //        fragColor = color;
 //    }
 //}
+
+// distortion mirror
 #version 150
 
 in vec4 vertexColor;
 in vec4 screenUV;
 
-uniform sampler2D Sampler0;  // Color texture
-uniform sampler2D Sampler1;  // Depth texture
-uniform float GameTime;      // Time uniform for animation
-uniform vec3 WorldPos;       // World-space position of the fragment
+uniform sampler2D Sampler0;
+uniform sampler2D Sampler1;
+uniform float GameTime;
+uniform vec3 WorldPos;
 
 out vec4 fragColor;
 
-// Perlin Noise Functions (same as before)
+// Perlin Noise Functions
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
 vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
@@ -108,27 +111,22 @@ float cnoise(vec3 P){
     return 2.2 * n_xyz;
 }
 
-// Main Fragment Shader
 void main() {
     vec2 uv = (screenUV.xy / (screenUV.w * 2)) + 0.5;
 
-    // Time-based distortion calculation
-    float distortionStrength = 0.003;  // Adjust for stronger/weaker distortion
-    float timeFactor = GameTime * 0.5; // Adjust speed
-    vec3 noiseInput = WorldPos + vec3(timeFactor); // Scale world pos and add time shift
+    float distortionStrength = 0.001;
+    float timeFactor = GameTime * 0.5;
+    vec3 noiseInput = WorldPos + vec3(timeFactor);
     vec2 distortion = vec2(
     cnoise(noiseInput + vec3(23.1, 0.0, 0.0) + screenUV.xyz),
     cnoise(noiseInput + vec3(0.0, 23.1, 0.0) + screenUV.yxw)
     ) * distortionStrength;
 
-    // Apply distortion
     vec2 distortedUV = uv + distortion;
 
-    // Sample textures
     vec4 color = texture(Sampler0, distortedUV);
     float depthBuffer = texture(Sampler1, distortedUV).r;
 
-    // Cull fragments in front of stored depth
     if (gl_FragCoord.z > depthBuffer) {
         fragColor = vec4(0, 0, 0, 1);
     } else {
