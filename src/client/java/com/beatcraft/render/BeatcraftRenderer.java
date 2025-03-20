@@ -9,6 +9,7 @@ import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +37,20 @@ public class BeatcraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
 
+
+    public static ShaderProgram noteShader;
+    public static ShaderProgram arrowShader;
+
     public static void init() {
         bloomfog = Bloomfog.create();
+
+        try {
+            noteShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "note_shader", VertexFormats.POSITION_TEXTURE_COLOR);
+            arrowShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "arrow_shader", VertexFormats.POSITION_TEXTURE_COLOR);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static void updateBloomfogSize(int width, int height) {
@@ -182,7 +196,7 @@ public class BeatcraftRenderer {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.setShader(() -> noteShader);
         RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
         for (var renderCall : noteRenderCalls) {
             try {
@@ -198,6 +212,7 @@ public class BeatcraftRenderer {
 
         triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
+        RenderSystem.setShader(() -> arrowShader);
         RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
         for (var renderCall : arrowRenderCalls) {
             try {

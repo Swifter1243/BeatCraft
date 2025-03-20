@@ -146,7 +146,7 @@ public class MirrorHandler {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.setShader(() -> BeatcraftRenderer.noteShader);
         RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
         for (var renderCall : mirrorNotes) {
             try {
@@ -162,6 +162,7 @@ public class MirrorHandler {
 
         triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
+        RenderSystem.setShader(() -> BeatcraftRenderer.arrowShader);
         RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
         for (var renderCall : mirrorArrows) {
             try {
