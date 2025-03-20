@@ -76,8 +76,6 @@ public class MirrorHandler {
             BeatcraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
         }
 
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);

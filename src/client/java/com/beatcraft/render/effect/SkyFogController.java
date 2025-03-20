@@ -98,16 +98,15 @@ public class SkyFogController {
 
         var a = offsets[7];
 
-        for (int i = 0; i < offsets.length; i++) {
-            var o = offsets[i];
-            for (float f = 0; f < 0.24f; f += 0.03f) {
+        for (Vector3f o : offsets) {
+            for (float f = 0; f < 0.12f; f += 0.03f) {
                 var la = processVertex(a.add(0, f, 0, new Vector3f()), cameraRot);
                 var lo = processVertex(o.add(0, f, 0, new Vector3f()), cameraRot);
 
                 var n = la.sub(lo, new Vector3f());
 
-                buffer.vertex(la).normal(n.x, n.y, n.z).color(color.lerpBrightness(1-f));
-                buffer.vertex(lo).normal(-n.x, -n.y, -n.z).color(color.lerpBrightness(1-f));
+                buffer.vertex(la).normal(n.x, n.y, n.z).color(color.lerpBrightness(1 - (f * 2)));
+                buffer.vertex(lo).normal(-n.x, -n.y, -n.z).color(color.lerpBrightness(1 - (f * 2)));
             }
             a = o;
         }
