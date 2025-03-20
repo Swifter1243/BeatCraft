@@ -1,6 +1,7 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.render.BeatcraftRenderer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -87,11 +88,13 @@ public class Bloomfog {
     private Identifier[] pyramidTexIds = new Identifier[LAYERS];
     private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[LAYERS];
     private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[LAYERS];
-private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
+    private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
-    private Bloomfog() {
+    /// DO NOT CALL: use Bloomfog.create()
+    /// The exception is MirrorHandler, which needs a second instance of bloomfog
+    public Bloomfog(boolean initMirror) {
 
-        MirrorHandler.init();
+        if (initMirror) MirrorHandler.init();
 
         try {
             blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_upsample", VertexFormats.POSITION_TEXTURE_COLOR);
@@ -140,13 +143,13 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
     private static Bloomfog INSTANCE = null;
     public static Bloomfog create() {
         if (INSTANCE == null) {
-            INSTANCE = new Bloomfog();
+            INSTANCE = new Bloomfog(true);
         }
         return INSTANCE;
     }
 
     private float layers = 1;
-    public void resize(int width, int height) {
+    public void resize(int width, int height, boolean resizeMirror) {
         framebuffer.resize(width*2, height*2, true);
         blurredBuffer.resize(width*2, height*2, true);
         extraBuffer.resize(width*2, height*2, true);
@@ -164,7 +167,7 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
             mod *= 2;
         }
 
-        MirrorHandler.resize();
+        if (resizeMirror) MirrorHandler.resize();
 
     }
 
@@ -190,7 +193,7 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
     }
 
     private int[] lastSize = new int[]{1, 1};
-    public void render(float tickDelta) {
+    public void render(boolean isMirror) {
 
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
@@ -202,11 +205,11 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
         if (window.getWidth() != lastSize[0] || window.getHeight() != lastSize[1]) {
             lastSize = new int[]{Math.max(1, window.getWidth()), Math.max(1, window.getHeight())};
-            resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()));
+            resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
         }
 
-        overrideBuffer = true;
-        overrideFramebuffer = framebuffer;
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -248,15 +251,15 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
         }
 
         framebuffer.endWrite();
-        overrideBuffer = false;
-        overrideFramebuffer = null;
+        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
         MirrorHandler.invCameraRotation = invCameraRotation;
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
 
-        applyPyramidBlur();
+        applyPyramidBlur(isMirror);
 
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
 
@@ -301,13 +304,13 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
     private int secondaryBindTex = 0;
 
-    private void applyPyramidBlur() {
+    private void applyPyramidBlur(boolean isMirror) {
         var current = framebuffer;
         int l;
         for (l = 0; l < layers; l++) {
-            applyBlurPass(current, pyramidBuffers[l], PassType.DOWNSAMPLE);
-            applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-            applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            applyBlurPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE);
+            applyBlurPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+            applyBlurPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
             //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //if (l > 0) {
@@ -320,34 +323,14 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
         }
 
-        applyBlurPass(current, blurredBuffer, PassType.UPSAMPLE);
-        applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
+        applyBlurPass(isMirror, current, blurredBuffer, PassType.UPSAMPLE);
+        applyBlurPass(isMirror, blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
         //applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
         //applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
-        applyBlurPass(framebuffer, extraBuffer, PassType.GAUSSIAN_H);
-        applyBlurPass(extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
+        applyBlurPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H);
+        applyBlurPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
     }
 
-    private void applyBlur() {
-        //applyBlurPass(framebuffer, pingPongBuffers[0], false);
-        //
-        //int passes = 5;
-        //
-        //for (int i = 0; i < passes; i++) {
-        //    applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], false);
-        //    applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], false);
-        //}
-        //
-        //for (int i = 0; i < passes; i++) {
-        //    applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], true);
-        //    applyBlurPass(pingPongBuffers[1], pingPongBuffers[0], true);
-        //}
-        //
-        //applyBlurPass(pingPongBuffers[0], pingPongBuffers[1], true);
-        //
-        //applyColorCorrectionPass(pingPongBuffers[1], blurredBuffer);
-
-    }
 
     private enum PassType {
         DOWNSAMPLE,
@@ -359,13 +342,13 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
         COMP
     }
 
-    private void applyBlurPass(Framebuffer in, Framebuffer out, PassType pass) {
+    private void applyBlurPass(boolean isMirror, Framebuffer in, Framebuffer out, PassType pass) {
 
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
         out.beginWrite(true);
-        overrideBuffer = true;
-        overrideFramebuffer = out;
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -411,18 +394,17 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
         out.endWrite();
 
-        overrideBuffer = false;
-        overrideFramebuffer = null;
+        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
     }
 
-    private void applyColorCorrectionPass(Framebuffer in, Framebuffer out) {
+    private void applyColorCorrectionPass(boolean isMirror, Framebuffer in, Framebuffer out) {
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
         out.beginWrite(true);
-        overrideBuffer = true;
-        overrideFramebuffer = out;
-
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
@@ -447,8 +429,8 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
         out.endWrite();
 
-        overrideBuffer = false;
-        overrideFramebuffer = null;
+        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
     }
 
 }

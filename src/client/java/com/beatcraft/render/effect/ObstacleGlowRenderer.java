@@ -34,16 +34,22 @@ public class ObstacleGlowRenderer {
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
-        BeatcraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera));
+        BeatcraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
     }
 
-    public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos) {
+    public static void renderMirrored(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
+        Vector3f flippedPos = position.mul(1, -1, 1, new Vector3f());
+        Quaternionf flippedOrientation = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        MirrorHandler.recordMirrorLaserRenderCall((buffer, camera) -> _render(flippedPos, flippedOrientation, bounds, color, buffer, camera, true));
+    }
+
+    public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos, boolean mirrored) {
         var edges = BeatcraftRenderer.getCubeEdges(bounds.min, bounds.max);
 
         for (Vector3f[] edge : edges) {
 
-            var e0 = edge[0].rotate(orientation, new Vector3f()).add(position);
-            var e1 = edge[1].rotate(orientation, new Vector3f()).add(position);
+            var e0 = edge[0].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(position);
+            var e1 = edge[1].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(position);
             
             var mesh = buildEdge(e0, e1, cameraPos);
 

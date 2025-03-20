@@ -8,6 +8,7 @@ import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -74,6 +75,10 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
                 MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
+            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
+                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
         }
 
 
@@ -84,7 +89,10 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
                 MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
                 MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
-            //mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
         }
     }
 

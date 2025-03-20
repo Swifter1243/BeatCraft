@@ -131,7 +131,7 @@ public class BeatCraftClient implements ClientModInitializer {
             var h = window.getHeight();
 
             if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
-            BeatcraftRenderer.bloomfog.resize(w, h);
+            BeatcraftRenderer.bloomfog.resize(w, h, true);
 
             songs.loadSongs();
             HUDRenderer.initSongSelectMenuPanel();

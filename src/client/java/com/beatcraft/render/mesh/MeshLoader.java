@@ -19,6 +19,7 @@ public class MeshLoader {
     public static QuadMesh COLOR_NOTE_MESH;
     public static QuadMesh CHAIN_HEAD_MESH;
     public static QuadMesh CHAIN_LINK_MESH;
+    public static QuadMesh BOMB_MESH;
 
     public static TriangleMesh COLOR_NOTE_RENDER_MESH;
     public static TriangleMesh CHAIN_HEAD_RENDER_MESH;
@@ -26,6 +27,7 @@ public class MeshLoader {
     public static TriangleMesh NOTE_ARROW_RENDER_MESH;
     public static TriangleMesh NOTE_DOT_RENDER_MESH;
     public static TriangleMesh CHAIN_DOT_RENDER_MESH;
+    public static TriangleMesh BOMB_RENDER_MESH;
 
     public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
     public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
@@ -42,6 +44,8 @@ public class MeshLoader {
         CHAIN_HEAD_MESH.texture = NOTE_TEXTURE;
         CHAIN_LINK_MESH = loadMesh(BeatCraft.id("item/color_note_chain_link"));
         CHAIN_LINK_MESH.texture = NOTE_TEXTURE;
+        BOMB_MESH = loadMesh(BeatCraft.id("item/bomb_note"));
+        BOMB_MESH.texture = NOTE_TEXTURE;
 
         var arrow_mesh = loadMesh(BeatCraft.id("item/note_arrow"));
         arrow_mesh.texture = ARROW_TEXTURE;
@@ -53,6 +57,7 @@ public class MeshLoader {
         COLOR_NOTE_RENDER_MESH = COLOR_NOTE_MESH.toTriangleMesh();
         CHAIN_HEAD_RENDER_MESH = CHAIN_HEAD_MESH.toTriangleMesh();
         CHAIN_LINK_RENDER_MESH = CHAIN_LINK_MESH.toTriangleMesh();
+        BOMB_RENDER_MESH = BOMB_MESH.toTriangleMesh();
 
         NOTE_ARROW_RENDER_MESH = arrow_mesh.toTriangleMesh();
         NOTE_DOT_RENDER_MESH = dot_mesh.toTriangleMesh();

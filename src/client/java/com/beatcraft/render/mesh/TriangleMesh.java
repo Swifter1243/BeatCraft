@@ -44,6 +44,15 @@ public class TriangleMesh implements Mesh {
         });
     }
 
+    public void drawToBufferMirrored(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
+        Vector3f flippedPosition = position.mul(1, -1, 1, new Vector3f());
+        Quaternionf flippedOrientation = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        tris.forEach(tri -> {
+            tri.drawMirrored(buffer, color, this, flippedPosition, flippedOrientation, cameraPos);
+        });
+    }
+
+
     public void addTris(Triangle[] tris) {
         this.tris.addAll(Arrays.asList(tris));
     }

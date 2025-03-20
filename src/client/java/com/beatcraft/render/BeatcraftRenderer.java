@@ -27,7 +27,9 @@ public class BeatcraftRenderer {
     public static Bloomfog bloomfog;
 
     private static final ArrayList<Consumer<VertexConsumerProvider>> earlyRenderCalls = new ArrayList<>();
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
+    private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arrowRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
@@ -38,7 +40,7 @@ public class BeatcraftRenderer {
     }
 
     public static void updateBloomfogSize(int width, int height) {
-        if (bloomfog != null && bloomfog.framebuffer != null) bloomfog.resize(width, height);
+        if (bloomfog != null && bloomfog.framebuffer != null) bloomfog.resize(width, height, true);
     }
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
@@ -51,6 +53,10 @@ public class BeatcraftRenderer {
 
     public static void recordArrowRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
         arrowRenderCalls.add(call);
+    }
+
+    public static void recordObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
+        obstacleRenderCalls.add(call);
     }
 
     public static void recordRenderCall(Runnable call) {
@@ -69,12 +75,79 @@ public class BeatcraftRenderer {
         earlyRenderCalls.add(call);
     }
 
+    public static void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        bloomfogPosColCalls.add(call);
+    }
+
     private static void renderEarly(VertexConsumerProvider vcp) {
-        // other stuff, including structure objects
+        // other stuff
         for (var call : earlyRenderCalls) {
             call.accept(vcp);
         }
         earlyRenderCalls.clear();
+    }
+
+    private static void renderObstacles(Tessellator tessellator, Vector3f cameraPos) {
+        if (BeatmapPlayer.currentBeatmap == null) {
+            obstacleRenderCalls.clear();
+            return;
+        }
+
+        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
+            .getColorScheme().getObstacleColor().toARGB(0.15f);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : obstacleRenderCalls) {
+            call.accept(buffer, cameraPos, color);
+        }
+        obstacleRenderCalls.clear();
+
+        var buff = buffer.endNullable();
+
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+            RenderSystem.enableBlend();
+            RenderSystem.depthMask(false);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
+            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+
+            BufferRenderer.drawWithGlobalProgram(buff);
+
+            RenderSystem.disableDepthTest();
+            RenderSystem.disableDepthTest();
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+
+        }
+
+    }
+
+    private static void renderBloomfogPosCol(Tessellator tessellator, Vector3f cameraPos) {
+
+        var buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : bloomfogPosColCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        bloomfogPosColCalls.clear();
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
+            bloomfog.loadTex();
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.enableCull();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableDepthTest();
+        }
+
+
+
     }
 
     private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
@@ -184,12 +257,15 @@ public class BeatcraftRenderer {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         renderEarly(vcp);
+        renderBloomfogPosCol(tessellator, cameraPos);
 
         renderEnvironmentLights(tessellator, cameraPos);
 
         renderNotes(tessellator, cameraPos);
 
         renderFloorLights(tessellator, cameraPos);
+
+        renderObstacles(tessellator, cameraPos);
 
     }
 

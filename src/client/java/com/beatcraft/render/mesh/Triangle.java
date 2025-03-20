@@ -68,6 +68,16 @@ public class Triangle implements Geometry {
 
     }
 
+    public void drawMirrored(BufferBuilder buffer, int color, TriangleMesh mesh, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
+        Vector3f v0 = mesh.vertices.get(indices[0]).mul(1, -1, 1, new Vector3f()).rotate(orientation).add(position).sub(cameraPos);
+        Vector3f v1 = mesh.vertices.get(indices[1]).mul(1, -1, 1, new Vector3f()).rotate(orientation).add(position).sub(cameraPos);
+        Vector3f v2 = mesh.vertices.get(indices[2]).mul(1, -1, 1, new Vector3f()).rotate(orientation).add(position).sub(cameraPos);
+
+        buffer.vertex(v0.x, v0.y, v0.z).texture(uvs[0].x, uvs[0].y).color(color);
+        buffer.vertex(v1.x, v1.y, v1.z).texture(uvs[1].x, uvs[1].y).color(color);
+        buffer.vertex(v2.x, v2.y, v2.z).texture(uvs[2].x, uvs[2].y).color(color);
+    }
+
     ///  this function requires the vertices list to be passed for proper indexing. the vertices list will be modified by this method
     public static List<Triangle> fromList(ArrayList<Vector3f> vertices, List<List<Pair<Vector3f, Vector2f>>> triData) {
         ArrayList<Triangle> tris = new ArrayList<>();

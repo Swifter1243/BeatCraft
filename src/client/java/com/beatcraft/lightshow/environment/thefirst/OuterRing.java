@@ -47,8 +47,8 @@ public class OuterRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        BeatcraftRenderer.recordEarlyRenderCall((vcp) ->
-            _render(pos, off, ori, rot, bloomfog)
+        BeatcraftRenderer.recordBloomfogPosColCall((b, c) ->
+            _render(b, c, pos, off, ori, rot, bloomfog)
         );
 
         for (var light : lights) {
@@ -100,12 +100,7 @@ public class OuterRing extends LightObject {
             new Vector3f(1, -1, 1)
     };
 
-    private void _render(Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         // manual mesh building since loading over-sized json model doesn't work >:(
 
         for (Vector3f mod : modifiers) {
@@ -114,15 +109,7 @@ public class OuterRing extends LightObject {
             }
         }
 
-        RenderSystem.disableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
-        bloomfog.loadTex();
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableDepthTest();
+
     }
 
     @Override

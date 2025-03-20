@@ -7,6 +7,7 @@ import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.Quad;
 import com.beatcraft.render.mesh.QuadMesh;
@@ -116,12 +117,6 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel arrowModel;
-        if (getData().getCutDirection() == CutDirection.DOT) {
-            arrowModel = mc.getBakedModelManager().getModel(noteDotModelID);
-        } else {
-            arrowModel = mc.getBakedModelManager().getModel(noteArrowModelID);
-        }
 
         if (!isBaseDissolved()) {
             var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
@@ -129,6 +124,10 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
             BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
                 MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+            });
+            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
+                MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
             });
         }
 
@@ -140,10 +139,18 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
                     MeshLoader.NOTE_DOT_RENDER_MESH.color = 0xFFFFFFFF;
                     MeshLoader.NOTE_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
                 });
+                MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+                });
             } else {
                 BeatcraftRenderer.recordArrowRenderCall((tri, cam) -> {
                     MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
                     MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+                });
+                MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
                 });
             }
 

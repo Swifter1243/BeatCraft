@@ -6,12 +6,9 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -50,10 +47,12 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         GameLogicHandler.checkObstacle(this, localPos, rotation);
 
         render(localPos, rotation);
+        renderMirrored(localPos, rotation);
 
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
         ObstacleGlowRenderer.render(localPos, rotation, bounds, color);
+        ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, color);
 
         //DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
         //DebugRenderer.renderHitbox(bounds, localPos, rotation, 0xFFFFFF, true);
@@ -70,53 +69,31 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void render(Vector3f pos, Quaternionf orientation) {
-        BeatcraftRenderer.recordEarlyRenderCall(
-            vcp -> _render(pos, orientation)
+        BeatcraftRenderer.recordObstacleRenderCall(
+            (b, c, i) -> _render(b, c, i, pos, orientation, false)
         );
     }
-    private void _render(Vector3f pos, Quaternionf orientation) {
-        if (BeatmapPlayer.currentBeatmap == null) return;
-        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
-            .getColorScheme().getObstacleColor().toARGB(0.15f);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+    private void renderMirrored(Vector3f pos, Quaternionf orientation) {
+        var flippedPos = pos.mul(1, -1, 1, new Vector3f());
+        var flippedRot = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
 
-        Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        MirrorHandler.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
+    }
 
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, int color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
         List<Vector3f[]> faces = BeatcraftRenderer.getCubeFaces(bounds.min, bounds.max);
-
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.depthMask(false);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-
         for (Vector3f[] face : faces) {
-            var c1 = face[0].rotate(orientation, new Vector3f()).add(pos).sub(cam);
-            var c2 = face[1].rotate(orientation, new Vector3f()).add(pos).sub(cam);
-            var c3 = face[2].rotate(orientation, new Vector3f()).add(pos).sub(cam);
-            var c4 = face[3].rotate(orientation, new Vector3f()).add(pos).sub(cam);
+            var c1 = face[0].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
+            var c2 = face[1].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
+            var c3 = face[2].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
+            var c4 = face[3].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
 
             buffer.vertex(c1.x, c1.y, c1.z).color(color);
             buffer.vertex(c2.x, c2.y, c2.z).color(color);
             buffer.vertex(c3.x, c3.y, c3.z).color(color);
             buffer.vertex(c4.x, c4.y, c4.z).color(color);
-
         }
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
-        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.disableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-
     }
 
     @Override
