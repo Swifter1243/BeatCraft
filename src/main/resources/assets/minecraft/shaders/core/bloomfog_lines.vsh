@@ -38,9 +38,9 @@ void main() {
     }
 
     if (gl_VertexID % 2 == 0) {
-        gl_Position = vec4((ndc1 + vec3(lineOffset, 0.0)) * linePosStart.w, linePosStart.w);
+        gl_Position = vec4(((ndc1 + vec3(lineOffset, 0.0)) * linePosStart.w) / 2, linePosStart.w);
     } else {
-        gl_Position = vec4((ndc1 - vec3(lineOffset, 0.0)) * linePosStart.w, linePosStart.w);
+        gl_Position = vec4(((ndc1 - vec3(lineOffset, 0.0)) * linePosStart.w) / 2, linePosStart.w);
     }
 
     vertexDistance = fog_distance(Position, FogShape);

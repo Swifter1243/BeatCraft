@@ -19,6 +19,8 @@ public class MirrorHandler {
 
     public static Quaternionf invCameraRotation = new Quaternionf();
 
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> plainMirrorCalls = new ArrayList<>();
+
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> drawCalls = new ArrayList<>();
     private static final ArrayList<Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> mirrorDraws = new ArrayList<>();
     public static SimpleFramebuffer mirrorFramebuffer;
@@ -49,11 +51,37 @@ public class MirrorHandler {
         drawCalls.add(call);
     }
 
+    public static void recordPlainCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        plainMirrorCalls.add(call);
+    }
 
     public static void drawMirror() {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+
+        for (var call : plainMirrorCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        plainMirrorCalls.clear();
+
+        var buff = buffer.endNullable();
+
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(true);
+            RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
+            BeatcraftRenderer.bloomfog.loadTex();
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.enableCull();
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+        }
+
+        buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
 
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
         mirrorFramebuffer.clear(true);
@@ -66,7 +94,7 @@ public class MirrorHandler {
             call.accept(buffer, cameraPos, invCameraRotation, true);
         }
         mirrorDraws.clear();
-        var buff = buffer.endNullable();
+        buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             RenderSystem.depthMask(true);

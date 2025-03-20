@@ -17,7 +17,7 @@ void main() {
     if (color.a == 0.0) {
         discard;
     }
-    vec4 bloomfog_color = texture(Sampler0, (screenUV.xy/(screenUV.z*2))+0.5);
+    vec4 bloomfog_color = texture(Sampler0, (screenUV.xy/(screenUV.z*4))+0.5);
     color = lerpColor(color, bloomfog_color, abs(screenUV.z));
     fragColor = color;
 }

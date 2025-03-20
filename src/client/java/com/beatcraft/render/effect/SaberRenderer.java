@@ -300,8 +300,8 @@ public class SaberRenderer {
 
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        //RenderSystem.enableBlend();
+        //RenderSystem.defaultBlendFunc();
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();

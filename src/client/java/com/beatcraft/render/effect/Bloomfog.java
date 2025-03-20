@@ -147,9 +147,9 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
     private float layers = 1;
     public void resize(int width, int height) {
-        framebuffer.resize(width, height, true);
-        blurredBuffer.resize(width, height, true);
-        extraBuffer.resize(width, height, true);
+        framebuffer.resize(width*2, height*2, true);
+        blurredBuffer.resize(width*2, height*2, true);
+        extraBuffer.resize(width*2, height*2, true);
 
         //double num = (Math.log((float) Math.max(width, height)) / Math.log(2f)) + Math.min(radius, 10f) - 10f;
         //int num2 = (int) Math.floor(num);
@@ -158,8 +158,8 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
         float mod = 2;
         for (int l = 0; l < layers; l++) {
             if ((int) (width / mod) > 0 && (int) (height / mod) > 0) {
-                pyramidBuffers[l].resize((int) (width / mod), (int) (height / mod), MinecraftClient.IS_SYSTEM_MAC);
-                pyramidBuffers2[l].resize((int) (width / mod), (int) (height / mod), MinecraftClient.IS_SYSTEM_MAC);
+                pyramidBuffers[l].resize((int) (width * 2 / mod), (int) (height * 2 / mod), MinecraftClient.IS_SYSTEM_MAC);
+                pyramidBuffers2[l].resize((int) (width * 2 / mod), (int) (height * 2 / mod), MinecraftClient.IS_SYSTEM_MAC);
             }
             mod *= 2;
         }
@@ -265,10 +265,10 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
         float z = 0;
-        buffer.vertex(-1, -1, z).texture(0.0f, 0.0f);
-        buffer.vertex( 1, -1, z).texture(1.0f, 0.0f);
-        buffer.vertex( 1,  1, z).texture(1.0f, 1.0f);
-        buffer.vertex(-1,  1, z).texture(0.0f, 1.0f);
+        buffer.vertex(-2, -2, z).texture(0.0f, 0.0f);
+        buffer.vertex( 2, -2, z).texture(1.0f, 0.0f);
+        buffer.vertex( 2,  2, z).texture(1.0f, 1.0f);
+        buffer.vertex(-2,  2, z).texture(0.0f, 1.0f);
 
 
         var oldProjMat = RenderSystem.getProjectionMatrix();
@@ -306,15 +306,15 @@ private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
         int l;
         for (l = 0; l < layers; l++) {
             applyBlurPass(current, pyramidBuffers[l], PassType.DOWNSAMPLE);
+            applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+            applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
             //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
-            //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-            //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
-            if (l > 0) {
-                secondaryBindTex = pyramidBuffers[0].getColorAttachment();
-                applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.COMP);
-                applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.BLIT);
-            }
+            //if (l > 0) {
+            //    secondaryBindTex = pyramidBuffers[0].getColorAttachment();
+            //    applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.COMP);
+            //    applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.BLIT);
+            //}
 
             current = pyramidBuffers[l];
 

@@ -80,6 +80,7 @@ public abstract class WorldRendererMixin {
     private void startBloomfogSolidRender(WorldRenderer instance, RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, Operation<Void> original) {
         original.call(instance, renderLayer, x, y, z, matrix4f, positionMatrix);
         renderLayer(BeatCraftRenderLayers.getBloomfogSolid(), x, y, z, matrix4f, positionMatrix);
+
     }
 
     @Inject(

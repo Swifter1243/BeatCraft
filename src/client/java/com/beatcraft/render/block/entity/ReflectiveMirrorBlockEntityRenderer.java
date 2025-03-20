@@ -32,7 +32,7 @@ public class ReflectiveMirrorBlockEntityRenderer implements BlockEntityRenderer<
 
     private static final int[][] faces = new int[][]{
         {1, 0, 3, 2},
-        {1, 0, 4, 5},
+        {0, 1, 5, 4},
         {2, 3, 7, 6},
         {3, 0, 4, 7},
         {1, 2, 6, 5},
@@ -52,28 +52,15 @@ public class ReflectiveMirrorBlockEntityRenderer implements BlockEntityRenderer<
         var v2 = center.add(localVertices[face[2]], new Vector3f()).sub(cameraPos);
         var v3 = center.add(localVertices[face[3]], new Vector3f()).sub(cameraPos);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        var vc = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        MirrorHandler.recordPlainCall((b, _c) -> _drawQuad(v0, v1, v2, v3, b));
 
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
+    }
 
-        vc.vertex(v0).color(0xFF000000);
-        vc.vertex(v1).color(0xFF000000);
-        vc.vertex(v2).color(0xFF000000);
-        vc.vertex(v3).color(0xFF000000);
-
-        RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
-
-        BeatcraftRenderer.bloomfog.loadTex();
-
-        BufferRenderer.drawWithGlobalProgram(vc.end());
-
-
-        RenderSystem.enableCull();
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
+    private void _drawQuad(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3, BufferBuilder buffer) {
+        buffer.vertex(v0).color(0xFF000000);
+        buffer.vertex(v1).color(0xFF000000);
+        buffer.vertex(v2).color(0xFF000000);
+        buffer.vertex(v3).color(0xFF000000);
     }
 
     @Override

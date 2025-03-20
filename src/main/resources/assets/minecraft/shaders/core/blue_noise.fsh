@@ -15,7 +15,7 @@ out vec4 fragColor;
 void main() {
     vec4 texColor = texture(Sampler0, texCoord0);
 
-    float mask = texture(Sampler1, fract((texCoord0 / texelSize))).r;
+    float mask = texture(Sampler1, fract((texCoord0 / (texelSize/2)))).r;
 
     mask = (mask * 0.25) + 0.75;
 

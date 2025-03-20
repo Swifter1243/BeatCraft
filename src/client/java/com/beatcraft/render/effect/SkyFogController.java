@@ -4,6 +4,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.environment.Environment;
 import com.beatcraft.utils.MathUtil;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.util.math.Vec3d;
@@ -88,33 +89,30 @@ public class SkyFogController {
     private static final Color blank = new Color(0);
     public static void render(BufferBuilder buffer, Vector3f cameraPos, Quaternionf cameraRot) {
 
-        var color = getGradientColor(blank).toARGB();
-        var color2 = getGradientColor(blank).lerpBrightness(0.5f);
+        var color = getGradientColor(blank);
+        RenderSystem.depthMask(false);
 
-        if (((color >> 24) & 0xFF) == 0) {
+        if (((color.toARGB() >> 24) & 0xFF) == 0) {
             return;
         }
 
         var a = offsets[7];
 
         for (int i = 0; i < offsets.length; i++) {
-            var la = processVertex(a, cameraRot);
-            var la2 = processVertex(a.add(0, 0.2f, 0, new Vector3f()), cameraRot);
             var o = offsets[i];
-            var lo = processVertex(o, cameraRot);
-            var lo2 = processVertex(o.add(0, 0.2f, 0, new Vector3f()), cameraRot);
+            for (float f = 0; f < 0.24f; f += 0.03f) {
+                var la = processVertex(a.add(0, f, 0, new Vector3f()), cameraRot);
+                var lo = processVertex(o.add(0, f, 0, new Vector3f()), cameraRot);
+
+                var n = la.sub(lo, new Vector3f());
+
+                buffer.vertex(la).normal(n.x, n.y, n.z).color(color.lerpBrightness(1-f));
+                buffer.vertex(lo).normal(-n.x, -n.y, -n.z).color(color.lerpBrightness(1-f));
+            }
             a = o;
-
-            var n = la.sub(lo, new Vector3f());
-            var n2 = la2.sub(lo2, new Vector3f());
-
-            buffer.vertex(la).normal(n.x, n.y, n.z).color(color);
-            buffer.vertex(lo).normal(-n.x, -n.y, -n.z).color(color);
-
-
-            buffer.vertex(la2).normal(n2.x, n2.y, n2.z).color(color2);
-            buffer.vertex(lo2).normal(-n2.x, -n2.y, -n2.z).color(color2);
         }
+
+        RenderSystem.depthMask(true);
 
     }
 
