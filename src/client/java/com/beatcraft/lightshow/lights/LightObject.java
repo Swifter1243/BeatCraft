@@ -20,7 +20,7 @@ public abstract class LightObject {
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
 
 
-    public abstract void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog);
+    public abstract void render(MatrixStack matrices, Camera camera);
 
     // Mainly used for light intensity, but also will work for spectrum visualizer elements
     public abstract void setBrightness(float value);

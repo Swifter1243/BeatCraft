@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.environment.thefirst;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.render.BeatcraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
@@ -30,7 +31,7 @@ public class InnerRing extends LightObject {
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(MatrixStack matrices, Camera camera) {
 
         var pos = new Vector3f(position);
         var off = new Vector3f(offset);
@@ -38,14 +39,22 @@ public class InnerRing extends LightObject {
         var rot = new Quaternionf(rotation);
 
         BeatcraftRenderer.recordBloomfogPosColCall((b, c) ->
-            _render(b, c, pos, off, ori, rot, bloomfog)
+            _render(b, c, pos, off, ori, rot, false)
         );
+        MirrorHandler.recordBloomfogPosColCall((b, c) ->
+            _render(b, c, pos, off, ori, rot, true)
+        );
+
     }
 
-    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot, Vector3f camera) {
-        return new Vector3f(base)
-            .rotate(ori).add(pos)
-            .rotate(rot).add(off)
+    private Quaternionf mirrorQuaternion(Quaternionf quat, boolean mirrored) {
+        return mirrored ? new Quaternionf(-quat.x, quat.y, -quat.z, quat.w) : quat;
+    }
+
+    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot, Vector3f camera, boolean mirrored) {
+        return new Vector3f(base).mul(1, mirrored ? -1 : 1, 1)
+            .rotate(mirrorQuaternion(ori, mirrored)).add(pos.mul(1, mirrored ? -1 : 1, 1, new Vector3f()))
+            .rotate(mirrorQuaternion(rot, mirrored)).add(off.mul(1, mirrored ? -1 : 1, 1, new Vector3f()))
             .sub(camera);
     }
 
@@ -94,14 +103,12 @@ public class InnerRing extends LightObject {
             new Vector3f(1, -1, 1)
     };
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
-        // manual mesh building since loading over-sized json model doesn't work >:(
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, boolean mirrored) {
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
-                buffer.vertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos)).color(color);
+                buffer.vertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos, mirrored)).color(color);
             }
         }
-
     }
 
     @Override

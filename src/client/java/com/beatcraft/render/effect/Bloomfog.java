@@ -13,6 +13,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -24,35 +25,16 @@ import java.util.ArrayList;
 public class Bloomfog {
 
     @FunctionalInterface
-    public interface QuadConsumer<T, U, S, V> {
-        void accept(T t, U u, S s, V v);
-    }
-
-    public static class BloomfogTex extends AbstractTexture {
-
-        private final SimpleFramebuffer buffer;
-        protected BloomfogTex(SimpleFramebuffer buffer) {
-            this.buffer = buffer;
-        }
-
-        @Override
-        public int getGlId() {
-            return buffer.getColorAttachment();
-        }
-
-        @Override
-        public void load(ResourceManager manager) throws IOException {
-
-        }
+    public interface PentaConsumer<T, U, S, V, D> {
+        void accept(T t, U u, S s, V v, D d);
     }
 
     public boolean overrideBuffer = false;
     public Framebuffer overrideFramebuffer = null;
 
     public SimpleFramebuffer framebuffer;
-    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>();
-    private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
-    private final BloomfogTex tex;
+    private final ArrayList<PentaConsumer<BufferBuilder, Vector3f, Quaternionf, Bloomfog, Boolean>> renderCalls = new ArrayList<>();
+    //private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
 
     //private final SimpleFramebuffer[] pingPongBuffers = new SimpleFramebuffer[2];
     //private final Identifier[] pingPongTexIds = new Identifier[]{
@@ -63,8 +45,8 @@ public class Bloomfog {
 
     private final SimpleFramebuffer extraBuffer;
     public final SimpleFramebuffer blurredBuffer;
-    private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
-    private BloomfogTex blurredTex;
+    //private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
+    //private BloomfogTex blurredTex;
 
     private final ShaderProgram blurShaderUp;
     private final ShaderProgram blurShaderDown;
@@ -85,10 +67,10 @@ public class Bloomfog {
 
     private static final int LAYERS = 5;
 
-    private Identifier[] pyramidTexIds = new Identifier[LAYERS];
+    //private Identifier[] pyramidTexIds = new Identifier[LAYERS];
     private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[LAYERS];
     private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[LAYERS];
-    private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
+    //private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
     /// DO NOT CALL: use Bloomfog.create()
     /// The exception is MirrorHandler, which needs a second instance of bloomfog
@@ -117,16 +99,10 @@ public class Bloomfog {
         blurredBuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
         extraBuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
 
-        tex = new BloomfogTex(framebuffer);
-        //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
-        //pingPongTextures[1] = new BloomfogTex(pingPongBuffers[1]);
-        blurredTex = new BloomfogTex(blurredBuffer);
-        var texManager = MinecraftClient.getInstance().getTextureManager();
-
-        texManager.registerTexture(textureId, tex);
+        //texManager.registerTexture(textureId, tex);
         //MinecraftClient.getInstance().getTextureManager().registerTexture(pingPongTexIds[0], pingPongTextures[0]);
         //MinecraftClient.getInstance().getTextureManager().registerTexture(pingPongTexIds[1], pingPongTextures[1]);
-        texManager.registerTexture(blurredTexId, blurredTex);
+        //texManager.registerTexture(blurredTexId, blurredTex);
 
         int i;
         for (i = 0; i < LAYERS; i++) {
@@ -134,7 +110,6 @@ public class Bloomfog {
             pyramidBuffers2[i] = new SimpleFramebuffer(512, 512, false, MinecraftClient.IS_SYSTEM_MAC);
             //pyramidTexIds[i] = BeatCraft.id("bloomfog/pyramid" + i);
             //pyramidTextures[i] = new BloomfogTex(pyramidBuffers[i]);
-            //texManager.registerTexture(pyramidTexIds[i], pyramidTextures[i]);
         }
 
     }
@@ -172,7 +147,7 @@ public class Bloomfog {
     }
 
     public void unload() {
-        MinecraftClient.getInstance().getTextureManager().destroyTexture(textureId);
+        //MinecraftClient.getInstance().getTextureManager().destroyTexture(textureId);
         framebuffer.delete();
     }
 
@@ -180,11 +155,11 @@ public class Bloomfog {
         return framebuffer.getColorAttachment();
     }
 
-    public Identifier getId() {
-        return blurredTexId;
-    }
+    //public Identifier getId() {
+    //    return blurredTexId;
+    //}
 
-    public void record(QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean> call) {
+    public void record(PentaConsumer<BufferBuilder, Vector3f, Quaternionf, Bloomfog, Boolean> call) {
         renderCalls.add(call);
     }
 
@@ -196,7 +171,7 @@ public class Bloomfog {
     public void render(boolean isMirror) {
 
         framebuffer.setClearColor(0, 0, 0, 0);
-        framebuffer.clear(true);
+        framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         MinecraftClient client = MinecraftClient.getInstance();
         var window = client.getWindow();
@@ -234,11 +209,15 @@ public class Bloomfog {
 
         rollQuat.mul(invCameraRotation, invCameraRotation);
 
-        SkyFogController.render(buffer, cameraPos, invCameraRotation);
+        if (!isMirror) {
+            SkyFogController.render(buffer, cameraPos, invCameraRotation);
+        }
 
         for (var call : renderCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation, false);
-            MirrorHandler.recordMirrorLightDraw(call);
+            call.accept(buffer, cameraPos, invCameraRotation, this, isMirror);
+            if (!isMirror) {
+                MirrorHandler.recordMirrorLightDraw(call);
+            }
         }
 
         renderCalls.clear();
@@ -259,33 +238,36 @@ public class Bloomfog {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
 
+        RenderSystem.disableDepthTest();
         applyPyramidBlur(isMirror);
+        RenderSystem.enableDepthTest();
 
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
 
-        RenderSystem.depthMask(false);
+        if (!isMirror) {
+            RenderSystem.depthMask(false);
 
-        buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+            buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
-        float z = 0;
-        buffer.vertex(-2, -2, z).texture(0.0f, 0.0f);
-        buffer.vertex( 2, -2, z).texture(1.0f, 0.0f);
-        buffer.vertex( 2,  2, z).texture(1.0f, 1.0f);
-        buffer.vertex(-2,  2, z).texture(0.0f, 1.0f);
+            float z = 0;
+            buffer.vertex(-2, -2, z).texture(0.0f, 0.0f);
+            buffer.vertex(2, -2, z).texture(1.0f, 0.0f);
+            buffer.vertex(2, 2, z).texture(1.0f, 1.0f);
+            buffer.vertex(-2, 2, z).texture(0.0f, 1.0f);
 
 
-        var oldProjMat = RenderSystem.getProjectionMatrix();
-        var oldVertexSort = RenderSystem.getVertexSorting();
-        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
-        RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
-        RenderSystem.setShaderTexture(0, blurredTexId);
-        RenderSystem.enableBlend();
+            var oldProjMat = RenderSystem.getProjectionMatrix();
+            var oldVertexSort = RenderSystem.getVertexSorting();
+            var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
+            RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
+            RenderSystem.setShaderTexture(0, blurredBuffer.getColorAttachment());
+            RenderSystem.enableBlend();
 
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+            BufferRenderer.drawWithGlobalProgram(buffer.end());
 
-        RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-
+            RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
+            //RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        }
         RenderSystem.enableCull();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
@@ -328,7 +310,7 @@ public class Bloomfog {
         //applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
         //applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
         applyBlurPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H);
-        applyBlurPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
+        applyBlurPass(false, extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
     }
 
 
@@ -345,7 +327,7 @@ public class Bloomfog {
     private void applyBlurPass(boolean isMirror, Framebuffer in, Framebuffer out, PassType pass) {
 
         out.setClearColor(0, 0, 0, 0);
-        out.clear(true);
+        out.clear(MinecraftClient.IS_SYSTEM_MAC);
         out.beginWrite(true);
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
@@ -401,7 +383,7 @@ public class Bloomfog {
 
     private void applyColorCorrectionPass(boolean isMirror, Framebuffer in, Framebuffer out) {
         out.setClearColor(0, 0, 0, 0);
-        out.clear(true);
+        out.clear(MinecraftClient.IS_SYSTEM_MAC);
         out.beginWrite(true);
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = out;

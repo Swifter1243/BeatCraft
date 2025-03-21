@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.environment.lightgroup;
 
+import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 

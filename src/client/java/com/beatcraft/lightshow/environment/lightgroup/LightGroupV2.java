@@ -6,6 +6,7 @@ import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 
@@ -35,7 +36,7 @@ public abstract class LightGroupV2 extends LightGroup {
     @Override
     public void render(MatrixStack matrices, Camera camera) {
         lights.forEach((key, light) -> {
-            light.render(matrices, camera, BeatcraftRenderer.bloomfog);
+            light.render(matrices, camera);
         });
     }
 }

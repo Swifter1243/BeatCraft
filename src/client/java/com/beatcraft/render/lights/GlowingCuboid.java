@@ -41,7 +41,7 @@ public class GlowingCuboid extends LightObject {
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(MatrixStack matrices, Camera camera) {
 
         Vector3f pos = new Vector3f(position);
         Vector3f off = new Vector3f(offset);
@@ -52,16 +52,16 @@ public class GlowingCuboid extends LightObject {
 
         //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
 
-        if (bloomfog != null) bloomfog.record(
-            (b, c, r, m) -> _render(
-                b, c, true, r,
+        if (BeatcraftRenderer.bloomfog != null) BeatcraftRenderer.bloomfog.record(
+            (b, c, r, f, m) -> _render(
+                b, c, f, r,
                 ori, rot, wrot, pos, off, state, m
             )
         );
 
         BeatcraftRenderer.recordLightRenderCall(
             (b, c) -> _render(
-                b, c, false, null,
+                b, c, null, null,
                 ori, rot, wrot, pos, off, state, false
             )
         );
@@ -82,20 +82,22 @@ public class GlowingCuboid extends LightObject {
             .sub(cameraPos);
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
-        var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, Bloomfog bloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
+        var color = bloomfog != null ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
         if (((color >> 24) & 0xFF) == 0) {
             return;
         }
 
-        if (isBloomfog && !mirrorDraw) {
+        if ((bloomfog != null)) {
 
             for (var line : lines) {
-                var v0 = processVertex(line[0], cameraPos, orientation, rotation, worldRotation, position, offset, false);
-                var v1 = processVertex(line[1], cameraPos, orientation, rotation, worldRotation, position, offset, false);
+                var v0 = processVertex(line[0],cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v1 = processVertex(line[1],cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+
                 v0.rotate(cameraRotation);
                 v1.rotate(cameraRotation);
+
                 var n = v1.sub(v0, new Vector3f());
 
                 List<Vector3f[]> segments = RenderUtil.chopEdge(v0, v1);

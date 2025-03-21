@@ -136,7 +136,7 @@ public class Color {
             newRed = red + (1.0f - red) * overBright;
             newGreen = green + (1.0f - green) * overBright;
             newBlue = blue + (1.0f - blue) * overBright;
-            newAlpha = alpha + (1 - alpha) * overBright;
+            newAlpha = alpha + (1.0f - alpha) * overBright;
         }
 
         newRed = Math.clamp(newRed, 0, 1);

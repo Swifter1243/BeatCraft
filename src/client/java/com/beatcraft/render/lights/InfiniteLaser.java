@@ -7,7 +7,7 @@ import net.minecraft.client.util.math.MatrixStack;
 
 public class InfiniteLaser extends LightObject {
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(MatrixStack matrices, Camera camera) {
 
     }
 

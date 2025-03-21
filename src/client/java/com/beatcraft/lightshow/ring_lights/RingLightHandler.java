@@ -124,7 +124,7 @@ public class RingLightHandler extends LightObject {
 
         }
 
-        protected void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+        protected void render(MatrixStack matrices, Camera camera) {
             ringLight.setOffset(
                 new Vector3f(0, 0, controller.ringOffset * lerpZoom(BeatmapPlayer.getCurrentSeconds()) * index)
                     .rotate(controller.orientation).rotate(controller.rotation)
@@ -133,9 +133,9 @@ public class RingLightHandler extends LightObject {
             ringLight.setRotation(
                 new Quaternionf().rotationZ(rotation).mul(controller.orientation).mul(controller.rotation)
             );
-            ringLight.render(matrices, camera, bloomfog);
+            ringLight.render(matrices, camera);
             if (nextRing != null) {
-                nextRing.render(matrices, camera, bloomfog);
+                nextRing.render(matrices, camera);
             }
         }
 
@@ -173,8 +173,8 @@ public class RingLightHandler extends LightObject {
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
-        headRing.render(matrices, camera, bloomfog);
+    public void render(MatrixStack matrices, Camera camera) {
+        headRing.render(matrices, camera);
     }
 
 

@@ -19,7 +19,6 @@ import org.joml.Vector3f;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class MirrorHandler {
 
@@ -32,12 +31,14 @@ public class MirrorHandler {
 
     // lists for mirrored renders
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> drawCalls = new ArrayList<>();
-    private static final ArrayList<Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> mirrorDraws = new ArrayList<>();
+    private static final ArrayList<Bloomfog.PentaConsumer<BufferBuilder, Vector3f, Quaternionf, Bloomfog, Boolean>> mirrorDraws = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorNotes = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorArrows = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorWallGlows = new ArrayList<>();
     private static final ArrayList<Runnable> earlyCalls = new ArrayList<>();
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
+
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
 
     public static SimpleFramebuffer mirrorFramebuffer;
 
@@ -45,7 +46,7 @@ public class MirrorHandler {
 
     public static void init() {
         var window = MinecraftClient.getInstance().getWindow();
-        mirrorFramebuffer = new SimpleFramebuffer(window.getWidth(), window.getHeight(), true, MinecraftClient.IS_SYSTEM_MAC);
+        mirrorFramebuffer = new SimpleFramebuffer(window.getWidth()*2, window.getHeight()*2, true, MinecraftClient.IS_SYSTEM_MAC);
 
         mirrorBloomfog = new Bloomfog(false);
 
@@ -58,11 +59,11 @@ public class MirrorHandler {
 
     public static void resize() {
         var window = MinecraftClient.getInstance().getWindow();
-        mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
+        mirrorFramebuffer.resize(Math.max(1, window.getWidth()*2), Math.max(1, window.getHeight()*2), true);
         mirrorBloomfog.resize(window.getWidth(), window.getHeight(), false);
     }
 
-    public static void recordMirrorLightDraw(Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean> call) {
+    public static void recordMirrorLightDraw(Bloomfog.PentaConsumer<BufferBuilder, Vector3f, Quaternionf, Bloomfog, Boolean> call) {
         mirrorDraws.add(call);
     }
 
@@ -80,6 +81,11 @@ public class MirrorHandler {
 
     public static void recordEarlyRenderCall(Runnable call) {
         earlyCalls.add(call);
+    }
+
+
+    public static void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        bloomfogPosColCalls.add(call);
     }
 
     public static void recordCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
@@ -137,6 +143,31 @@ public class MirrorHandler {
 
     }
 
+    private static void renderBloomfogPosCol(Tessellator tessellator, Vector3f cameraPos) {
+
+        var buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : bloomfogPosColCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        bloomfogPosColCalls.clear();
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
+            mirrorBloomfog.loadTex();
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.enableCull();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableDepthTest();
+        }
+
+
+
+    }
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
         // notes and debris
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -215,12 +246,42 @@ public class MirrorHandler {
         RenderSystem.depthMask(true);
     }
 
-    public static void drawMirror() {
-        Tessellator tessellator = Tessellator.getInstance();
+    private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
+        var buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : mirrorDraws) {
+            call.accept(buffer, cameraPos, invCameraRotation, null, true);
+            mirrorBloomfog.record(call);
+        }
+        mirrorDraws.clear();
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.depthMask(true);
+            RenderSystem.disableCull();
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.depthMask(false);
+            RenderSystem.enableCull();
+        }
+
+        //buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        //for (var call : mirrorDraws) {
+        //    call.accept(buffer, cameraPos, invCameraRotation, mirrorBloomfog, true);
+        //}
+        //buff = buffer.endNullable();
+        //if (buff != null) {
+        //    RenderSystem.setShader(() -> Bloomfog.bloomfogLineShader);
+        //    RenderSystem.depthMask(true);
+        //    RenderSystem.disableCull();
+        //    BufferRenderer.drawWithGlobalProgram(buff);
+        //    RenderSystem.depthMask(false);
+        //    RenderSystem.enableCull();
+        //}
+
+    }
+
+    private static void renderMirrorBlockFaces(Tessellator tessellator, Vector3f cameraPos) {
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
-
         // render mirror block non-reflective faces
         for (var call : plainMirrorCalls) {
             call.accept(buffer, cameraPos);
@@ -238,33 +299,39 @@ public class MirrorHandler {
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();
         }
+    }
+
+    public static void drawMirror() {
+        Tessellator tessellator = Tessellator.getInstance();
+        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+
+        renderMirrorBlockFaces(tessellator, cameraPos);
 
 
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
-        mirrorFramebuffer.clear(true);
+        mirrorFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
+        mirrorBloomfog.overrideFramebuffer = mirrorFramebuffer;
+        mirrorFramebuffer.beginWrite(true);
+
+        renderEarly(tessellator, cameraPos);
+
+        renderEnvironmentLights(tessellator, cameraPos);
+
+        //BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
+        //BeatcraftRenderer.bloomfog.overrideBuffer = false;
+        //mirrorFramebuffer.endWrite();
+
+        mirrorBloomfog.render(true);
 
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.beginWrite(true);
 
-        renderEarly(tessellator, cameraPos);
-
-        buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-
-        for (var call : mirrorDraws) {
-            call.accept(buffer, cameraPos, invCameraRotation, true);
-        }
-        mirrorDraws.clear();
-        buff = buffer.endNullable();
-        if (buff != null) {
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-            RenderSystem.depthMask(true);
-            RenderSystem.disableCull();
-            BufferRenderer.drawWithGlobalProgram(buff);
-            RenderSystem.depthMask(false);
-            RenderSystem.enableCull();
-
-        }
+        renderBloomfogPosCol(tessellator, cameraPos);
 
         renderNotes(tessellator, cameraPos);
 
@@ -277,15 +344,20 @@ public class MirrorHandler {
         mirrorFramebuffer.endWrite();
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
 
+        renderPhysicalMirror(tessellator, cameraPos);
 
-        buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+    }
+
+    private static void renderPhysicalMirror(Tessellator tessellator, Vector3f cameraPos) {
+        var buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         for (var call : drawCalls) {
             call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
         }
         drawCalls.clear();
 
-        buff = buffer.endNullable();
+        var buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(() -> mirrorShader);
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
@@ -296,7 +368,6 @@ public class MirrorHandler {
             mirrorShader.getUniformOrDefault("GameTime").set(BeatCraftClient.random.nextFloat());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
-
     }
 
 

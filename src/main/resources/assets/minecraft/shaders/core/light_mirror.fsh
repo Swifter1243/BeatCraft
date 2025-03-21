@@ -128,7 +128,7 @@ void main() {
     float depthBuffer = texture(Sampler1, distortedUV).r;
 
     if (gl_FragCoord.z > depthBuffer) {
-        fragColor = vec4(0, 0, 0, 1);
+        discard;
     } else {
         fragColor = color;
     }
