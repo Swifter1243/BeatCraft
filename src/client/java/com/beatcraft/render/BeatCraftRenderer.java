@@ -4,7 +4,6 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
-import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -12,19 +11,16 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-public class BeatcraftRenderer {
+public class BeatCraftRenderer {
 
     public static Bloomfog bloomfog;
 

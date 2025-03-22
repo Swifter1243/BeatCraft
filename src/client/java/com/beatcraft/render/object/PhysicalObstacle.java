@@ -6,10 +6,9 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
@@ -69,7 +68,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void render(Vector3f pos, Quaternionf orientation) {
-        BeatcraftRenderer.recordObstacleRenderCall(
+        BeatCraftRenderer.recordObstacleRenderCall(
             (b, c, i) -> _render(b, c, i, pos, orientation, false)
         );
     }
@@ -82,7 +81,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, int color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
-        List<Vector3f[]> faces = BeatcraftRenderer.getCubeFaces(bounds.min, bounds.max);
+        List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
         for (Vector3f[] face : faces) {
             var c1 = face[0].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
             var c2 = face[1].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);

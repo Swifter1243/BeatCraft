@@ -1,12 +1,10 @@
 package com.beatcraft.render.lights;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.BufferBuilder;
@@ -36,8 +34,8 @@ public class GlowingCuboid extends LightObject {
 
     public void setDimensions(Hitbox dimensions) {
         this.dimensions = dimensions;
-        faces = BeatcraftRenderer.getCubeFaces(dimensions.min, dimensions.max);
-        lines = BeatcraftRenderer.getCubeEdges(dimensions.min, dimensions.max);
+        faces = BeatCraftRenderer.getCubeFaces(dimensions.min, dimensions.max);
+        lines = BeatCraftRenderer.getCubeEdges(dimensions.min, dimensions.max);
     }
 
     @Override
@@ -59,7 +57,7 @@ public class GlowingCuboid extends LightObject {
             )
         );
 
-        BeatcraftRenderer.recordLightRenderCall(
+        BeatCraftRenderer.recordLightRenderCall(
             (b, c) -> _render(
                 b, c, false, null,
                 ori, rot, wrot, pos, off, state, false

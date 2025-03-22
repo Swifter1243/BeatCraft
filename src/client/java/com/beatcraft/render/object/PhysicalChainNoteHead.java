@@ -7,7 +7,7 @@ import com.beatcraft.beatmap.data.object.ChainNoteHead;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
@@ -51,7 +51,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         if (!isBaseDissolved()) {
             var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
             var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+            BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
                 MeshLoader.CHAIN_HEAD_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_HEAD_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
@@ -64,7 +64,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         if (!isArrowDissolved()) {
             var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
             var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatcraftRenderer.recordArrowRenderCall((tri, cam) -> {
+            BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
                 MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
                 MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });

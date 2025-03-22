@@ -1,6 +1,5 @@
 package com.beatcraft.lightshow.environment.lightgroup;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.thefirst.OuterRing;
@@ -9,9 +8,8 @@ import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.lights.GlowingCuboid;
-import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -133,7 +131,7 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     @Override
     public void render(MatrixStack matrices, Camera camera) {
-        innerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
-        outerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
+        innerRing.render(matrices, camera, BeatCraftRenderer.bloomfog);
+        outerRing.render(matrices, camera, BeatCraftRenderer.bloomfog);
     }
 }

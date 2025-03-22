@@ -7,11 +7,10 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
-import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
@@ -35,7 +34,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -130,8 +128,8 @@ public class BeatCraftClient implements ClientModInitializer {
             var w = window.getWidth();
             var h = window.getHeight();
 
-            if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
-            BeatcraftRenderer.bloomfog.resize(w, h, true);
+            if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
+            BeatCraftRenderer.bloomfog.resize(w, h, true);
 
             songs.loadSongs();
             HUDRenderer.initSongSelectMenuPanel();
@@ -139,7 +137,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
-            BeatcraftRenderer.bloomfog.unload();
+            BeatCraftRenderer.bloomfog.unload();
             BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();
         });
@@ -154,7 +152,7 @@ public class BeatCraftClient implements ClientModInitializer {
         });
 
         WindowResizeCallback.EVENT.register((client, window) -> {
-            BeatcraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+            BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
         });
 
     }

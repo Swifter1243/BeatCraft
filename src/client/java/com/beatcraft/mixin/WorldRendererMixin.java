@@ -3,7 +3,7 @@ package com.beatcraft.mixin;
 
 import com.beatcraft.logic.HapticsHandler;
 import com.beatcraft.render.BeatCraftRenderLayers;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
@@ -32,9 +32,9 @@ public abstract class WorldRendererMixin {
     public void render(
         RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci
     ) {
-        if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
+        if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
         SkyFogController.updateColor();
-        BeatcraftRenderer.onRender(new MatrixStack(), camera, tickCounter.getTickDelta(true));
+        BeatCraftRenderer.onRender(new MatrixStack(), camera, tickCounter.getTickDelta(true));
     }
 
     @Inject(
@@ -45,8 +45,8 @@ public abstract class WorldRendererMixin {
         )
     )
     public void bloomFogInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
-        if (BeatcraftRenderer.bloomfog != null) {
-            BeatcraftRenderer.bloomfog.render(false);
+        if (BeatCraftRenderer.bloomfog != null) {
+            BeatCraftRenderer.bloomfog.render(false);
         }
     }
 
@@ -60,11 +60,11 @@ public abstract class WorldRendererMixin {
     )
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
         MirrorHandler.drawMirror();
-        BeatcraftRenderer.earlyRender(immediate);
+        BeatCraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
         HUDRenderer.render(immediate);
         BeatcraftParticleRenderer.renderParticles();
-        BeatcraftRenderer.render();
+        BeatCraftRenderer.render();
         SaberRenderer.renderAll();
         HapticsHandler.endFrame();
     }

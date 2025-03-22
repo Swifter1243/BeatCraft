@@ -1,6 +1,6 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import org.spongepowered.asm.mixin.Debug;
@@ -19,8 +19,8 @@ public class MinecraftClientFramebufferMixin {
         cancellable = true
     )
     public void getFrameBuffer(CallbackInfoReturnable<Framebuffer> ci) {
-        if (BeatcraftRenderer.bloomfog != null && BeatcraftRenderer.bloomfog.overrideBuffer && BeatcraftRenderer.bloomfog.overrideFramebuffer != null) {
-            ci.setReturnValue(BeatcraftRenderer.bloomfog.overrideFramebuffer);
+        if (BeatCraftRenderer.bloomfog != null && BeatCraftRenderer.bloomfog.overrideBuffer && BeatCraftRenderer.bloomfog.overrideFramebuffer != null) {
+            ci.setReturnValue(BeatCraftRenderer.bloomfog.overrideFramebuffer);
             ci.cancel();
         }
     }

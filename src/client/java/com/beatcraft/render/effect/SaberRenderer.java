@@ -11,7 +11,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayFrame;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -90,7 +90,7 @@ public class SaberRenderer {
         matrices.multiply(orientation);
         matrices.scale(0.3333f, 0.3333f, 0.3333f);
 
-        BeatcraftRenderer.recordRenderCall(() -> {
+        BeatCraftRenderer.recordRenderCall(() -> {
             MinecraftClient.getInstance().getItemRenderer().renderItem(
                 item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
                 matrices, HUDRenderer.vertexConsumerProvider, MinecraftClient.getInstance().world, 0
@@ -300,8 +300,8 @@ public class SaberRenderer {
 
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        //RenderSystem.enableBlend();
-        //RenderSystem.defaultBlendFunc();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();

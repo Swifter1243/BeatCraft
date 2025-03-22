@@ -1,7 +1,6 @@
 package com.beatcraft.render.particle;
 
-import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
@@ -35,7 +34,7 @@ public class Debris implements Particle {
         velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
         velocity.mul(decay);
 
-        BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+        BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
             mesh.drawToBuffer(tri, position, orientation, cam);
         });
 

@@ -1,7 +1,7 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -13,7 +13,6 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -208,8 +207,8 @@ public class Bloomfog {
             resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
         }
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -251,8 +250,8 @@ public class Bloomfog {
         }
 
         framebuffer.endWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
         MirrorHandler.invCameraRotation = invCameraRotation;
 
@@ -347,8 +346,8 @@ public class Bloomfog {
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
         out.beginWrite(true);
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = out;
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -394,8 +393,8 @@ public class Bloomfog {
 
         out.endWrite();
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
     }
 
@@ -403,8 +402,8 @@ public class Bloomfog {
         out.setClearColor(0, 0, 0, 0);
         out.clear(true);
         out.beginWrite(true);
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = out;
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
@@ -429,8 +428,8 @@ public class Bloomfog {
 
         out.endWrite();
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = isMirror;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
     }
 
 }

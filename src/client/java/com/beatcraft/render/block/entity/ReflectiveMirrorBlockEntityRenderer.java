@@ -1,16 +1,11 @@
 package com.beatcraft.render.block.entity;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.blocks.entity.ReflectiveMirrorBlockEntity;
-import com.beatcraft.render.BeatcraftRenderer;
-import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;

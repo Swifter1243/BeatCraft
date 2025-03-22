@@ -4,13 +4,12 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
@@ -41,7 +40,7 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
 
         var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
         var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-        BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+        BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
             MeshLoader.BOMB_RENDER_MESH.color = data.getColor().toARGB();
             MeshLoader.BOMB_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
         });

@@ -3,7 +3,7 @@ package com.beatcraft.render.block.entity;
 import com.beatcraft.blocks.CornerLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.blocks.entity.CornerLightTileBlockEntity;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -66,7 +66,7 @@ public class CornerLightTileBlockEntityRenderer implements BlockEntityRenderer<C
 
         Quaternionf orientation = RenderUtil.getBlockRenderOrientation(state.get(CornerLightTileBlock.FACE), state.get(CornerLightTileBlock.ROTATION));
 
-        BeatcraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
+        BeatCraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
             for (var vertex : meshData) {
                 Vector3f pos = vertex.getLeft().rotate(orientation, new Vector3f()).add(blockEntity.getPos().toCenterPos().toVector3f()).sub(cameraPos);
                 int color = vertex.getRight();

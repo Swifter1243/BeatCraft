@@ -6,12 +6,11 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Arc;
 import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.data.types.ISplinePath;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -162,7 +161,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     public void render(ISplinePath path, Vector3f origin, int color) {
 
-        BeatcraftRenderer.recordRenderCall(() -> _render(path, origin, color));
+        BeatCraftRenderer.recordRenderCall(() -> _render(path, origin, color));
 
     }
 

@@ -4,7 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -19,7 +19,6 @@ import org.joml.Vector3f;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class MirrorHandler {
 
@@ -146,7 +145,7 @@ public class MirrorHandler {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(() -> BeatcraftRenderer.noteShader);
+        RenderSystem.setShader(() -> BeatCraftRenderer.noteShader);
         RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
         for (var renderCall : mirrorNotes) {
             try {
@@ -162,7 +161,7 @@ public class MirrorHandler {
 
         triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
-        RenderSystem.setShader(() -> BeatcraftRenderer.arrowShader);
+        RenderSystem.setShader(() -> BeatCraftRenderer.arrowShader);
         RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
         for (var renderCall : mirrorArrows) {
             try {
@@ -234,7 +233,7 @@ public class MirrorHandler {
             RenderSystem.enableDepthTest();
             RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
-            BeatcraftRenderer.bloomfog.loadTex();
+            BeatCraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();
         }
@@ -243,8 +242,8 @@ public class MirrorHandler {
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
         mirrorFramebuffer.clear(true);
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.beginWrite(true);
 
         renderEarly(tessellator, cameraPos);
@@ -272,8 +271,8 @@ public class MirrorHandler {
 
         renderObstacles(tessellator, cameraPos);
 
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
         mirrorFramebuffer.endWrite();
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
 

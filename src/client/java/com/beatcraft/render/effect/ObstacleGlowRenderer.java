@@ -1,17 +1,10 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.beatcraft.render.BeatcraftRenderer;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.client.MinecraftClient;
+import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.render.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-
-import java.util.ArrayList;
-import java.util.function.BiConsumer;
 
 public class ObstacleGlowRenderer {
 
@@ -34,7 +27,7 @@ public class ObstacleGlowRenderer {
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
-        BeatcraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
+        BeatCraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
     }
 
     public static void renderMirrored(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
@@ -44,7 +37,7 @@ public class ObstacleGlowRenderer {
     }
 
     public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos, boolean mirrored) {
-        var edges = BeatcraftRenderer.getCubeEdges(bounds.min, bounds.max);
+        var edges = BeatCraftRenderer.getCubeEdges(bounds.min, bounds.max);
 
         for (Vector3f[] edge : edges) {
 

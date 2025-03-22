@@ -3,7 +3,7 @@ package com.beatcraft.render.block.entity;
 import com.beatcraft.blocks.FilledLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.blocks.entity.FilledLightTileBlockEntity;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -148,7 +148,7 @@ public class FilledLightTileBlockEntityRenderer implements BlockEntityRenderer<F
 
         Quaternionf orientation = RenderUtil.getBlockRenderOrientation(state.get(FilledLightTileBlock.FACE));
 
-        BeatcraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
+        BeatCraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
             var meshData = switch (state.get(FilledLightTileBlock.PATTERN)) {
                 case 1 -> meshDataQuad;
                 case 2 -> meshDataCell;

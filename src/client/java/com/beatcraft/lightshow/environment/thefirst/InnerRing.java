@@ -1,16 +1,13 @@
 package com.beatcraft.lightshow.environment.thefirst;
 
 import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.function.BiFunction;
 
@@ -37,7 +34,7 @@ public class InnerRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        BeatcraftRenderer.recordBloomfogPosColCall((b, c) ->
+        BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
             _render(b, c, pos, off, ori, rot, bloomfog)
         );
     }
