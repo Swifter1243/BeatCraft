@@ -14,6 +14,7 @@ import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayFrame;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -302,6 +303,8 @@ public class SaberRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+
+        //RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();

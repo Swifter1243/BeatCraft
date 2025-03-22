@@ -22,7 +22,7 @@ public abstract class RenderPhaseMixin {
         at = @At("TAIL")
     )
     private void injectBloomfog(String name, Runnable beginAction, Runnable endAction, CallbackInfo ci) {
-        if (name.equals("bloomfog_solid")) {
+        if (name.equals("solid")) {
             this.beginAction = () -> {
                 beginAction.run();
                 //RenderSystem.setShader(() -> Bloomfog.bloomfog_solid_shader);

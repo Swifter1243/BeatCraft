@@ -69,31 +69,31 @@ public abstract class WorldRendererMixin {
         HapticsHandler.endFrame();
     }
 
-    @WrapOperation(
-        method = "render",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/render/WorldRenderer;renderLayer(Lnet/minecraft/client/render/RenderLayer;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
-            ordinal = 0
-        )
-    )
-    private void startBloomfogSolidRender(WorldRenderer instance, RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, Operation<Void> original) {
-        original.call(instance, renderLayer, x, y, z, matrix4f, positionMatrix);
-        renderLayer(BeatCraftRenderLayers.getBloomfogSolid(), x, y, z, matrix4f, positionMatrix);
-
-    }
-
-    @Inject(
-        method = "render",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw(Lnet/minecraft/client/render/RenderLayer;)V",
-            ordinal = 4
-        )
-    )
-    private void injectBloomfogSolid(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
-        immediate.draw(BeatCraftRenderLayers.getBloomfogSolid());
-    }
+    //@WrapOperation(
+    //    method = "render",
+    //    at = @At(
+    //        value = "INVOKE",
+    //        target = "Lnet/minecraft/client/render/WorldRenderer;renderLayer(Lnet/minecraft/client/render/RenderLayer;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
+    //        ordinal = 0
+    //    )
+    //)
+    //private void startBloomfogSolidRender(WorldRenderer instance, RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, Operation<Void> original) {
+    //    original.call(instance, renderLayer, x, y, z, matrix4f, positionMatrix);
+    //    //renderLayer(BeatCraftRenderLayers.getBloomfogSolid(), x, y, z, matrix4f, positionMatrix);
+    //
+    //}
+    //
+    //@Inject(
+    //    method = "render",
+    //    at = @At(
+    //        value = "INVOKE",
+    //        target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw(Lnet/minecraft/client/render/RenderLayer;)V",
+    //        ordinal = 4
+    //    )
+    //)
+    //private void injectBloomfogSolid(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
+    //    //immediate.draw(BeatCraftRenderLayers.getBloomfogSolid());
+    //}
 
 
 }
