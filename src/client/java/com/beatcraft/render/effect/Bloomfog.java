@@ -13,6 +13,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -192,7 +193,7 @@ public class Bloomfog {
     }
 
     private int[] lastSize = new int[]{1, 1};
-    public void render(boolean isMirror) {
+    public void render(boolean isMirror, float tickDelta) {
 
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
@@ -222,10 +223,13 @@ public class Bloomfog {
 
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
 
+        assert MinecraftClient.getInstance().player != null;
+        float pitch = MinecraftClient.getInstance().player.getPitch(tickDelta);
+
         Vector3f up = camera.getVerticalPlane();
         Vector3f left = camera.getDiagonalPlane();
 
-        float roll = calculateRoll(up, left);
+        float roll = Math.abs(pitch) >= 90 ? 0 : calculateRoll(up, left);
 
         var invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
 

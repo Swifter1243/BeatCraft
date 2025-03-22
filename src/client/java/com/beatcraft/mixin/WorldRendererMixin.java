@@ -46,7 +46,7 @@ public abstract class WorldRendererMixin {
     )
     public void bloomFogInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (BeatCraftRenderer.bloomfog != null) {
-            BeatCraftRenderer.bloomfog.render(false);
+            BeatCraftRenderer.bloomfog.render(false, tickCounter.getTickDelta(true));
         }
     }
 
