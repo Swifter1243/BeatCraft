@@ -20,6 +20,7 @@ Mod Dependencies: (these will be auto-downloaded if you get the mod with the mod
 - [GeckoLib](https://modrinth.com/mod/geckolib)
 - [owo-lib](https://modrinth.com/mod/owo-lib)
 - [fabric-api](https://modrinth.com/mod/fabric-api)
+- [sodium](https://modrinth.com/mod/sodium) (optional, but recommended)
 
 # Feature roadmap
 
