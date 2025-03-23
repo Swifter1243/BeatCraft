@@ -329,6 +329,8 @@ public class MirrorHandler {
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
             RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());
             mirrorShader.addSampler("Sampler1", mirrorFramebuffer.getDepthAttachment());
+            RenderSystem.setShaderTexture(2, BeatCraftRenderer.bloomfog.blurredBuffer.getColorAttachment());
+            mirrorShader.addSampler("Sampler2", BeatCraftRenderer.bloomfog.blurredBuffer.getColorAttachment());
             mirrorShader.getUniformOrDefault("WorldPos").set(cameraPos);
             mirrorShader.getUniformOrDefault("GameTime").set(BeatCraftClient.random.nextFloat());
             BufferRenderer.drawWithGlobalProgram(buff);

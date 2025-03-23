@@ -33,6 +33,7 @@ in vec4 screenUV;
 
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
+uniform sampler2D Sampler2;
 uniform float GameTime;
 uniform vec3 WorldPos;
 
@@ -111,6 +112,11 @@ float cnoise(vec3 P){
     return 2.2 * n_xyz;
 }
 
+
+vec4 lerpColor(vec4 c1, vec4 c2, float t) {
+    return c1 + (c2 * min(max(0, (t / 100) - 0.001), 0.8));
+}
+
 void main() {
     vec2 uv = (screenUV.xy / (screenUV.w * 2)) + 0.5;
 
@@ -127,11 +133,10 @@ void main() {
     vec4 color = texture(Sampler0, distortedUV);
     float depthBuffer = texture(Sampler1, distortedUV).r;
 
-//    if (gl_FragCoord.z > depthBuffer) {
-//        fragColor = vec4(0, 0, 0, 1);
-//    } else {
-        fragColor = color;
-//    }
+
+    vec4 bloomfog_color = texture(Sampler2, (screenUV.xy/(screenUV.z*4))+0.5);
+    color = lerpColor(color, bloomfog_color, abs(screenUV.z));
+    fragColor = color;
 }
 
 
