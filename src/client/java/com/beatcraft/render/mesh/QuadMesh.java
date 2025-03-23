@@ -3,6 +3,7 @@ package com.beatcraft.render.mesh;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
@@ -33,12 +34,6 @@ public class QuadMesh implements Mesh {
         this.vertices = new ArrayList<>();
         this.quads = new ArrayList<>();
         this.color = 0xFFFFFFFF;
-    }
-
-    @Override
-    public BufferBuilder createBuffer() {
-        Tessellator tessellator = Tessellator.getInstance();
-        return tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
     }
 
     public TriangleMesh toTriangleMesh() {
@@ -112,26 +107,4 @@ public class QuadMesh implements Mesh {
         });
     }
 
-    @Override
-    public void render(Vector3f position, Quaternionf orientation, boolean sortBuffer) {
-        BufferBuilder buffer = createBuffer();
-
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-
-        drawToBuffer(buffer, position, orientation, MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
-        if (sortBuffer) {
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-        }
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
-    }
 }
