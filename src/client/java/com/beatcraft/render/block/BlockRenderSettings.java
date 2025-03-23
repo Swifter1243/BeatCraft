@@ -6,7 +6,10 @@ import com.beatcraft.render.block.entity.*;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 
 public class BlockRenderSettings {
 

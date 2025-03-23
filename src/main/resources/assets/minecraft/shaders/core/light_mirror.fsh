@@ -127,11 +127,11 @@ void main() {
     vec4 color = texture(Sampler0, distortedUV);
     float depthBuffer = texture(Sampler1, distortedUV).r;
 
-    if (gl_FragCoord.z > depthBuffer) {
-        fragColor = vec4(0, 0, 0, 1);
-    } else {
+//    if (gl_FragCoord.z > depthBuffer) {
+//        fragColor = vec4(0, 0, 0, 1);
+//    } else {
         fragColor = color;
-    }
+//    }
 }
 
 

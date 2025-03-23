@@ -39,17 +39,21 @@ public class MirrorHandler {
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
 
     public static SimpleFramebuffer mirrorFramebuffer;
+    public static SimpleFramebuffer depthFramebuffer;
 
     public static ShaderProgram mirrorShader;
+    public static ShaderProgram mirrorPositionColorClip;
 
     public static void init() {
         var window = MinecraftClient.getInstance().getWindow();
         mirrorFramebuffer = new SimpleFramebuffer(window.getWidth(), window.getHeight(), true, MinecraftClient.IS_SYSTEM_MAC);
+        depthFramebuffer = new SimpleFramebuffer(window.getWidth(), window.getHeight(), true, MinecraftClient.IS_SYSTEM_MAC);
 
         mirrorBloomfog = new Bloomfog(false);
 
         try {
             mirrorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "light_mirror", VertexFormats.POSITION_COLOR);
+            mirrorPositionColorClip = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_clip", VertexFormats.POSITION_COLOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -58,6 +62,7 @@ public class MirrorHandler {
     public static void resize() {
         var window = MinecraftClient.getInstance().getWindow();
         mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
+        depthFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
         mirrorBloomfog.resize(window.getWidth(), window.getHeight(), false);
     }
 
@@ -214,11 +219,43 @@ public class MirrorHandler {
         RenderSystem.depthMask(true);
     }
 
+    private static void renderForDepth(Tessellator tessellator, Vector3f cameraPos) {
+        depthFramebuffer.setClearColor(0, 0, 0, 1);
+        depthFramebuffer.clear(true);
+
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = depthFramebuffer;
+        depthFramebuffer.beginWrite(true);
+
+        var buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        for (var call : drawCalls) {
+            call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
+        }
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(true);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+
+        }
+
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
+        depthFramebuffer.endWrite();
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+    }
+
     public static void drawMirror() {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
+        renderForDepth(tessellator, cameraPos);
 
         // render mirror block non-reflective faces
         for (var call : plainMirrorCalls) {
@@ -256,13 +293,14 @@ public class MirrorHandler {
         mirrorDraws.clear();
         buff = buffer.endNullable();
         if (buff != null) {
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.setShader(() -> mirrorPositionColorClip);
+            RenderSystem.setShaderTexture(0, depthFramebuffer.getDepthAttachment());
+            mirrorPositionColorClip.addSampler("Sampler0", depthFramebuffer.getDepthAttachment());
             RenderSystem.depthMask(true);
             RenderSystem.disableCull();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.depthMask(false);
             RenderSystem.enableCull();
-
         }
 
         renderNotes(tessellator, cameraPos);
