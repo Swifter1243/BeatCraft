@@ -14,6 +14,7 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
@@ -25,6 +26,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import dev.engine_room.flywheel.api.event.EndClientResourceReloadCallback;
 import io.wispforest.owo.ui.event.WindowResizeCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -95,6 +97,9 @@ public class BeatCraftClient implements ClientModInitializer {
             HUDRenderer.triggerPressed = false;
         });
 
+        EndClientResourceReloadCallback.EVENT.register((client, manager, b, e) -> {
+            Bloomfog.initShaders();
+        });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (settingsKeyBind.wasPressed()) {

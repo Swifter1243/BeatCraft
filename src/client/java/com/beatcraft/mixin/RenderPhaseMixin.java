@@ -1,6 +1,8 @@
 package com.beatcraft.mixin;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.effect.Bloomfog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.RenderPhase;
 import org.spongepowered.asm.mixin.Final;
@@ -17,18 +19,18 @@ public abstract class RenderPhaseMixin {
     @Shadow @Final private Runnable beginAction;
 
 
-    @Inject(
-        method = "<init>",
-        at = @At("TAIL")
-    )
-    private void injectBloomfog(String name, Runnable beginAction, Runnable endAction, CallbackInfo ci) {
-        if (name.equals("solid")) {
-            this.beginAction = () -> {
-                beginAction.run();
-                //RenderSystem.setShader(() -> Bloomfog.bloomfog_solid_shader);
-                RenderSystem.getShader().addSampler("Bloomfog", BeatCraftRenderer.bloomfog.blurredBuffer.getColorAttachment());
-                BeatCraftRenderer.bloomfog.loadTexSecondary();
-            };
-        }
-    }
+    //@Inject(
+    //    method = "<init>",
+    //    at = @At("TAIL")
+    //)
+    //private void injectBloomfog(String name, Runnable beginAction, Runnable endAction, CallbackInfo ci) {
+    //    if (name.equals("bloomfog_solid")) {
+    //        this.beginAction = () -> {
+    //            beginAction.run();
+    //            RenderSystem.setShader(() -> Bloomfog.bloomfogSolidShader);
+    //            BeatCraftRenderer.bloomfog.loadTexSecondary();
+    //            Bloomfog.bloomfogSolidShader.addSampler("Sampler1", BeatCraftRenderer.bloomfog.blurredBuffer.getColorAttachment());
+    //        };
+    //    }
+    //}
 }

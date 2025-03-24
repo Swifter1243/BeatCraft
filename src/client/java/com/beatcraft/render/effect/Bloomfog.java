@@ -13,7 +13,6 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -66,11 +65,11 @@ public class Bloomfog {
     private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
     private BloomfogTex blurredTex;
 
-    private final ShaderProgram blurShaderUp;
-    private final ShaderProgram blurShaderDown;
-    private final ShaderProgram gaussianV;
-    private final ShaderProgram gaussianH;
-    public static ShaderProgram bloomfog_solid_shader;
+    public static ShaderProgram blurShaderUp;
+    public static ShaderProgram blurShaderDown;
+    public static ShaderProgram gaussianV;
+    public static ShaderProgram gaussianH;
+    public static ShaderProgram bloomfogSolidShader;
     public static ShaderProgram bloomfogLineShader;
     public static ShaderProgram bloomfogPositionColor;
     public static ShaderProgram bloomfogColorFix;
@@ -90,12 +89,7 @@ public class Bloomfog {
     private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[LAYERS];
     private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
-    /// DO NOT CALL: use Bloomfog.create()
-    /// The exception is MirrorHandler, which needs a second instance of bloomfog
-    public Bloomfog(boolean initMirror) {
-
-        if (initMirror) MirrorHandler.init();
-
+    public static void initShaders() {
         try {
             blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_upsample", VertexFormats.POSITION_TEXTURE_COLOR);
             blurShaderDown = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_downsample", VertexFormats.POSITION_TEXTURE_COLOR);
@@ -107,9 +101,19 @@ public class Bloomfog {
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+            bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /// DO NOT CALL: use Bloomfog.create()
+    /// The exception is MirrorHandler, which needs a second instance of bloomfog
+    public Bloomfog(boolean initMirror) {
+
+        if (initMirror) MirrorHandler.init();
+
+        if (!initMirror) initShaders();
 
         framebuffer = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
         //pingPongBuffers[0] = new SimpleFramebuffer(1920, 1080, true, true);
@@ -303,6 +307,10 @@ public class Bloomfog {
 
     public void loadTexSecondary() {
         RenderSystem.setShaderTexture(1, blurredBuffer.getColorAttachment());
+    }
+
+    public int getBloomfogColorAttachment() {
+        return blurredBuffer.getColorAttachment();
     }
 
     private int secondaryBindTex = 0;
