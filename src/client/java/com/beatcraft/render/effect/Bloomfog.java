@@ -2,6 +2,7 @@ package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -80,10 +81,13 @@ public class Bloomfog {
     public static ShaderProgram compositeShader;
 
     public static ShaderProgram bloomMaskLightShader;
+    public static ShaderProgram bloomMaskLightTextureShader;
 
     private static final Identifier blueNoiseTexture = BeatCraft.id("textures/noise/blue_noise.png");
 
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> bloomCalls = new ArrayList<>();
+    public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> noteBloomCalls = new ArrayList<>();
+    public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> arrowBloomCalls = new ArrayList<>();
     public static SimpleFramebuffer bloomInput;
     private static SimpleFramebuffer bloomSwap;
     public static SimpleFramebuffer bloomOutput;
@@ -111,6 +115,7 @@ public class Bloomfog {
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
             bloomMaskLightShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_bloom_mask", VertexFormats.POSITION_COLOR);
+            bloomMaskLightTextureShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_texture_bloom_mask", VertexFormats.POSITION_TEXTURE_COLOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -430,7 +435,18 @@ public class Bloomfog {
         bloomCalls.add(call);
     }
 
+    public void recordNoteBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+        noteBloomCalls.add(call);
+    }
+
+    public void recordArrowBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+        arrowBloomCalls.add(call);
+    }
+
     public void renderBloom() {
+        var old = new Matrix4f(RenderSystem.getModelViewMatrix());
+        RenderSystem.getModelViewMatrix().identity();
+        RenderSystem.disableCull();
 
         bloomInput.setClearColor(0, 0, 0, 0);
         bloomInput.clear(true);
@@ -448,35 +464,69 @@ public class Bloomfog {
         var width = window.getWidth();
         var height = window.getHeight();
 
-        var buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
+        // untextured renders
+        var buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         for (var call : bloomCalls) {
-            call.accept(buffer, cameraPos, new Quaternionf());
+            call.accept(buffer, cameraPos, invCameraRotation);
         }
         bloomCalls.clear();
         var buff = buffer.endNullable();
+        RenderSystem.disableDepthTest();
 
         if (buff != null) {
-
-            RenderSystem.disableDepthTest();
             RenderSystem.setShader(() -> bloomMaskLightShader);
             RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
-
             RenderSystem.setShaderTexture(0, sceneDepthBuffer);
             bloomMaskLightShader.addSampler("Sampler0", sceneDepthBuffer);
-
             BufferRenderer.drawWithGlobalProgram(buff);
-
             RenderSystem.enableDepthTest();
-
         }
+
+        // note-textured renders
+        buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        for (var call : noteBloomCalls) {
+            call.accept(buffer, cameraPos, invCameraRotation);
+        }
+        noteBloomCalls.clear();
+        buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.setShader(() -> bloomMaskLightTextureShader);
+            RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+            RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
+            RenderSystem.setShaderTexture(1, sceneDepthBuffer);
+            bloomMaskLightShader.addSampler("Sampler1", sceneDepthBuffer);
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.enableDepthTest();
+        }
+
+        // arrow-textured renders
+        buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        for (var call : arrowBloomCalls) {
+            call.accept(buffer, cameraPos, invCameraRotation);
+        }
+        arrowBloomCalls.clear();
+        buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.setShader(() -> bloomMaskLightTextureShader);
+            RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+            RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
+            RenderSystem.setShaderTexture(1, sceneDepthBuffer);
+            bloomMaskLightShader.addSampler("Sampler1", sceneDepthBuffer);
+            BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.enableDepthTest();
+        }
+
 
         bloomInput.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
 
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+
 
         var r = radius;
         radius = 3;
@@ -496,22 +546,23 @@ public class Bloomfog {
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
 
+        var cr = invCameraRotation.conjugate(new Quaternionf());
         float z = 0;
-        buffer.vertex(-1, -1, z).texture(0.0f, 0.0f).color(0xFF020200);
-        buffer.vertex( 1, -1, z).texture(1.0f, 0.0f).color(0xFF020200);
-        buffer.vertex( 1,  1, z).texture(1.0f, 1.0f).color(0xFF020200);
-        buffer.vertex(-1,  1, z).texture(0.0f, 1.0f).color(0xFF020200);
+        buffer.vertex(new Vector3f(-1, -1, z)).texture(0.0f, 0.0f).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1, -1, z)).texture(1.0f, 0.0f).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1,  1, z)).texture(1.0f, 1.0f).color(0xFF020200);
+        buffer.vertex(new Vector3f(-1,  1, z)).texture(0.0f, 1.0f).color(0xFF020200);
 
 
         RenderSystem.setShader(() -> blitShader);
         RenderSystem.setShaderTexture(0, bloomOutput.getColorAttachment());
         RenderSystem.enableBlend();
-
-        RenderSystem.disableCull();
         var oldProjMat = RenderSystem.getProjectionMatrix();
         var oldVertexSort = RenderSystem.getVertexSorting();
-        var orthoMatrix = new Matrix4f().ortho(-1, 1, -1, 1, -1, 1);//.ortho(0, width, height, 0, -1000, 1000);
+        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
         RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
+
+
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
@@ -521,6 +572,7 @@ public class Bloomfog {
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
 
+        RenderSystem.getModelViewMatrix().set(old);
     }
 
 }

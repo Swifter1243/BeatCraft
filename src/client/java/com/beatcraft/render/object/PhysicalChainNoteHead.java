@@ -41,6 +41,13 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         baseDegrees = (baseDegrees + data.getAngleOffset()) % 360;
     }
 
+    public Vector3f worldToCameraSpace(Vector3f renderPos, Vector3f cameraPos, Quaternionf cameraRot) {
+        var a = renderPos.sub(cameraPos, new Vector3f());
+        a.rotate(cameraRot);
+        a.add(cameraPos);
+        return a;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
@@ -59,6 +66,10 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
                 MeshLoader.CHAIN_HEAD_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_HEAD_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
             });
+            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
+            //    MeshLoader.CHAIN_HEAD_RENDER_MESH.color = data.getColor().toARGB();
+            //    MeshLoader.CHAIN_HEAD_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            //});
         }
 
         if (!isArrowDissolved()) {
@@ -71,6 +82,10 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
             MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
                 MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
                 MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
+            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
             });
 
         }

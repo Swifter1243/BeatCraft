@@ -69,8 +69,8 @@ public class SkyFogController {
         return MathUtil.lerpColor(c2, original, (float) getColorModifier());
     }
 
-    private static final float sq2 =  3 * (float) (Math.sqrt(2f)/2f);
-    private static final float dst = 3;
+    private static final float dst = 10;
+    private static final float sq2 = dst * (float) (Math.sqrt(2f)/2f);
     private static final Vector3f[] offsets = new Vector3f[]{
         new Vector3f(-dst, 0, 0),
         new Vector3f(-sq2, 0, -sq2),

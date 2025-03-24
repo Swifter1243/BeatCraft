@@ -62,6 +62,13 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return !data.isNoteGravityDisabled();
     }
 
+    public Vector3f worldToCameraSpace(Vector3f renderPos, Vector3f cameraPos, Quaternionf cameraRot) {
+        var a = renderPos.sub(cameraPos, new Vector3f());
+        a.rotate(cameraRot);
+        a.add(cameraPos);
+        return a;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
@@ -79,6 +86,10 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
                 MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
             });
+            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
+            //    MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
+            //    MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            //});
         }
 
 
@@ -92,6 +103,10 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
             MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
                 MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
                 MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
+            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
             });
         }
     }

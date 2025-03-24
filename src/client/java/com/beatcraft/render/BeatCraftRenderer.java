@@ -32,7 +32,7 @@ public class BeatCraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arrowRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
-
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
 
     public static ShaderProgram noteShader;
     public static ShaderProgram arrowShader;
@@ -71,6 +71,10 @@ public class BeatCraftRenderer {
 
     public static void recordRenderCall(Runnable call) {
         renderCalls.add(call);
+    }
+
+    public static void recordArcRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        arcRenderCalls.add(call);
     }
 
     public static void recordLaserRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
@@ -262,6 +266,30 @@ public class BeatCraftRenderer {
         RenderSystem.depthMask(true);
     }
 
+    private static void renderArcs(Tessellator tessellator, Vector3f cameraPos) {
+
+        var buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+
+        for (var call : arcRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        arcRenderCalls.clear();
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+            RenderSystem.enableBlend();
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
+            BufferRenderer.drawWithGlobalProgram(buff);
+
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+            RenderSystem.disableDepthTest();
+        }
+
+    }
+
     public static void earlyRender(VertexConsumerProvider vcp) {
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -281,6 +309,10 @@ public class BeatCraftRenderer {
     }
 
     public static void render() {
+
+        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        renderArcs(Tessellator.getInstance(), cameraPos);
 
         for (Runnable renderCall : renderCalls) {
             try {

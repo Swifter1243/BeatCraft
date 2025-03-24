@@ -10,6 +10,7 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -161,30 +162,21 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     public void render(ISplinePath path, Vector3f origin, int color) {
 
-        BeatCraftRenderer.recordRenderCall(() -> _render(path, origin, color));
-
+        BeatCraftRenderer.recordArcRenderCall((b, c) -> _render(b, path, origin, color, new Quaternionf()));
+        BeatCraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, origin, color, r));
     }
 
-    public void _render(ISplinePath path, Vector3f origin, int color) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+    public void _render(BufferBuilder buffer, ISplinePath path, Vector3f origin, int color, Quaternionf cameraRotation) {
 
-        //Vector3f cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-
-        int segments = 50;
+        int segments = 35;
 
         for (int i = 0; i < segments; i++) {
             float f = ((float) i) / ((float) segments);
             float f2 = ((float) (i + 1)) / ((float) segments);
-            Vector3f p = path.evaluate(f).add(origin);
-            Vector3f p2 = path.evaluate(f2).add(origin);
-            Vector3f t = path.getTangent(f);
-            Vector3f t2 = path.getTangent(f2);
+            Vector3f p = path.evaluate(f).add(origin).rotate(cameraRotation);
+            Vector3f p2 = path.evaluate(f2).add(origin).rotate(cameraRotation);
+            Vector3f t = path.getTangent(f).rotate(cameraRotation);
+            Vector3f t2 = path.getTangent(f2).rotate(cameraRotation);
 
             var h1 = MathUtil.generateCircle(t, 0.075f, 6, p);
             var h2 = MathUtil.generateCircle(t2, 0.075f, 6, p2);
@@ -214,32 +206,31 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
             int col = (color + fade);
 
-            buffer.vertex(q1[0].x, q1[0].y, q1[0].z).color(col);
-            buffer.vertex(q1[1].x, q1[1].y, q1[1].z).color(col);
-            buffer.vertex(q1[2].x, q1[2].y, q1[2].z).color(col);
-            buffer.vertex(q1[3].x, q1[3].y, q1[3].z).color(col);
+            buffer.vertex(q1[0]).color(col);
+            buffer.vertex(q1[1]).color(col);
+            buffer.vertex(q1[2]).color(col);
 
-            buffer.vertex(q2[0].x, q2[0].y, q2[0].z).color(col);
-            buffer.vertex(q2[1].x, q2[1].y, q2[1].z).color(col);
-            buffer.vertex(q2[2].x, q2[2].y, q2[2].z).color(col);
-            buffer.vertex(q2[3].x, q2[3].y, q2[3].z).color(col);
+            buffer.vertex(q1[0]).color(col);
+            buffer.vertex(q1[2]).color(col);
+            buffer.vertex(q1[3]).color(col);
 
-            buffer.vertex(q3[0].x, q3[0].y, q3[0].z).color(col);
-            buffer.vertex(q3[1].x, q3[1].y, q3[1].z).color(col);
-            buffer.vertex(q3[2].x, q3[2].y, q3[2].z).color(col);
-            buffer.vertex(q3[3].x, q3[3].y, q3[3].z).color(col);
+            buffer.vertex(q2[0]).color(col);
+            buffer.vertex(q2[1]).color(col);
+            buffer.vertex(q2[2]).color(col);
+
+            buffer.vertex(q2[0]).color(col);
+            buffer.vertex(q2[2]).color(col);
+            buffer.vertex(q2[3]).color(col);
+
+            buffer.vertex(q3[0]).color(col);
+            buffer.vertex(q3[1]).color(col);
+            buffer.vertex(q3[2]).color(col);
+
+            buffer.vertex(q3[0]).color(col);
+            buffer.vertex(q3[2]).color(col);
+            buffer.vertex(q3[3]).color(col);
 
         }
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-        RenderSystem.disableDepthTest();
 
     }
 

@@ -105,6 +105,13 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
         this.baseRotation = new Quaternionf().rotateZ(radians);
     }
 
+    public Vector3f worldToCameraSpace(Vector3f renderPos, Vector3f cameraPos, Quaternionf cameraRot) {
+        var a = renderPos.sub(cameraPos, new Vector3f());
+        a.rotate(cameraRot);
+        a.add(cameraPos);
+        return a;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
@@ -121,6 +128,10 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
                 MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
             });
+            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
+            //    MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
+            //    MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            //});
         }
 
         if (!isArrowDissolved()) {
@@ -135,6 +146,10 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
                     MeshLoader.NOTE_DOT_RENDER_MESH.color = 0xFFFFFFFF;
                     MeshLoader.NOTE_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
                 });
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+                });
             } else {
                 BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
                     MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
@@ -143,6 +158,10 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
                 MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
                     MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
                     MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+                });
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
                 });
             }
 
