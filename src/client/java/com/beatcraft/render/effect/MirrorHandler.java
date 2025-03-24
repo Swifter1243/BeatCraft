@@ -63,7 +63,7 @@ public class MirrorHandler {
         var window = MinecraftClient.getInstance().getWindow();
         mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
         depthFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
-        mirrorBloomfog.resize(window.getWidth(), window.getHeight(), false);
+        mirrorBloomfog.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), false);
     }
 
     public static void recordMirrorLightDraw(Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean> call) {
@@ -325,6 +325,7 @@ public class MirrorHandler {
         buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(() -> mirrorShader);
+            RenderSystem.depthMask(true);
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
             RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());
@@ -334,6 +335,7 @@ public class MirrorHandler {
             mirrorShader.getUniformOrDefault("WorldPos").set(cameraPos);
             mirrorShader.getUniformOrDefault("GameTime").set(BeatCraftClient.random.nextFloat());
             BufferRenderer.drawWithGlobalProgram(buff);
+            RenderSystem.depthMask(false);
         }
 
     }

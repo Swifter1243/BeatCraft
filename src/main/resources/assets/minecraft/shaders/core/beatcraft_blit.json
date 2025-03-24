@@ -1,5 +1,5 @@
 {
-  "vertex": "bloomfog_blur",
+  "vertex": "beatcraft_blit",
   "fragment": "beatcraft_blit",
   "samplers": [
     { "name": "Sampler0" }

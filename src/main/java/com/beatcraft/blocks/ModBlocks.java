@@ -26,6 +26,10 @@ public class ModBlocks {
 
 
     // block entities
+    public static final BlockEntityType<BlackMirrorBlockEntity> BLACK_MIRROR_BLOCK_ENTITY = registerBlockEntity(
+        BLACK_MIRROR_BLOCK, BlackMirrorBlockEntity::new, "black_mirror_block_entity"
+    );
+
     public static final BlockEntityType<ReflectiveMirrorBlockEntity> REFLECTIVE_MIRROR_BLOCK_ENTITY = registerBlockEntity(
         REFLECTIVE_MIRROR_BLOCK, ReflectiveMirrorBlockEntity::new, "reflective_mirror_block_entity"
     );

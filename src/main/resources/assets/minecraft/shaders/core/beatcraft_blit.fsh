@@ -1,8 +1,6 @@
 #version 330
-// This was copied and translated from shadertoy
 
 uniform sampler2D Sampler0;
-uniform sampler2D Sampler1;
 
 uniform vec2 texelSize;
 uniform float GameTime;

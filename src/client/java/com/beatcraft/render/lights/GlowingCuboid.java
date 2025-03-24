@@ -50,13 +50,17 @@ public class GlowingCuboid extends LightObject {
 
         //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
 
-        if (bloomfog != null) bloomfog.record(
-            (b, c, r, m) -> _render(
-                b, c, true, r,
-                ori, rot, wrot, pos, off, state, m
-            )
-        );
-
+        if (bloomfog != null) {
+            bloomfog.record(
+                (b, c, r, m) -> _render(
+                    b, c, true, r,
+                    ori, rot, wrot, pos, off, state, m
+                )
+            );
+            bloomfog.recordBloomCall((b, v, q) -> {
+                _renderBloom(b, v, q, ori, rot, wrot, pos, off, state);
+            });
+        }
         BeatCraftRenderer.recordLightRenderCall(
             (b, c) -> _render(
                 b, c, false, null,
@@ -78,6 +82,38 @@ public class GlowingCuboid extends LightObject {
             .rotate(mirrorQuaternion(mirrorDraw, worldRotation))
             .add(offset.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
             .sub(cameraPos);
+    }
+
+    private void _renderBloom(BufferBuilder buffer, Vector3f cameraPos, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
+        var color = lightState.getBloomColor();
+
+        if (((color >> 24) & 0xFF) == 0) {
+            return;
+        }
+
+        for (var face : faces) {
+
+            var v0 = processVertex(face[0], cameraPos, orientation, rotation, worldRotation, position, offset, false);
+            var v1 = processVertex(face[1], cameraPos, orientation, rotation, worldRotation, position, offset, false);
+            var v2 = processVertex(face[2], cameraPos, orientation, rotation, worldRotation, position, offset, false);
+            var v3 = processVertex(face[3], cameraPos, orientation, rotation, worldRotation, position, offset, false);
+            v0.rotate(cameraRotation);
+            v1.rotate(cameraRotation);
+            v2.rotate(cameraRotation);
+            v3.rotate(cameraRotation);
+            List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
+
+            for (var quad : sections) {
+                buffer.vertex(quad[0]).color(color);
+                buffer.vertex(quad[1]).color(color);
+                buffer.vertex(quad[2]).color(color);
+
+                buffer.vertex(quad[0]).color(color);
+                buffer.vertex(quad[2]).color(color);
+                buffer.vertex(quad[3]).color(color);
+            }
+        }
+
     }
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {

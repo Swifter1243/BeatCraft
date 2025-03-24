@@ -146,7 +146,6 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
                 });
             }
 
-            //mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
         }
     }
 
@@ -158,7 +157,6 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     @Override
     public Hitbox getGoodCutBounds() {
         if (getData().getCutDirection() == CutDirection.DOT) {
-            // this hitbox may just need to be the normal one
             return DOT_GOOD_CUT_BOUNDS;
         } else {
             return NORMAL_GOOD_CUT_BOUNDS;
