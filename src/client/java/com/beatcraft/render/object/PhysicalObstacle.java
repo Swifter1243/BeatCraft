@@ -131,7 +131,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     protected Vector2f get2DPosition() {
         return new Vector2f(
-            data.getX() * 0.6f - 1.1f,
+            data.getX() * 0.6f - 1.15f,
             data.getY() * 0.6f - 0.45f
         );
     }
