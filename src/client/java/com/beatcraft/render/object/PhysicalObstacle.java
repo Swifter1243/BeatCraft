@@ -44,6 +44,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
         localPos.add(camPos);
+        MemoryPool.release(camPos);
         GameLogicHandler.checkObstacle(this, localPos, rotation);
 
         render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
@@ -54,8 +55,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, color);
         ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, color);
 
-        //DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
-        //DebugRenderer.renderHitbox(bounds, localPos, rotation, 0xFFFFFF, true);
     }
 
     @Override

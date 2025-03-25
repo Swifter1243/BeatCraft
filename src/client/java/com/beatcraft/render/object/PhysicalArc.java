@@ -6,6 +6,7 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Arc;
 import com.beatcraft.data.types.BezierPath;
 import com.beatcraft.data.types.ISplinePath;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.utils.MathUtil;
@@ -121,8 +122,8 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         updateCurve();
 
-        var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
-        var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
+        var localPos = matrices.peek().getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
         //localPos.x = 0;
         //localPos.y = 0;
         //localPos.add(0, 0, camPos.z + 0.25f);
@@ -131,8 +132,11 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         render(basePath, localPos, data.getColor().toARGB());
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
-            DebugRenderer.renderPath(basePath, localPos.add(camPos, new Vector3f()), segments, data.getColor().toARGB());
+            var offset = MemoryPool.newVector3f(localPos).add(camPos);
+            DebugRenderer.renderPath(basePath, offset, segments, data.getColor().toARGB());
+            MemoryPool.release(offset);
         }
+        MemoryPool.release(localPos, camPos);
     }
 
     @Override
@@ -162,8 +166,8 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     public void render(ISplinePath path, Vector3f origin, int color) {
 
-        BeatCraftRenderer.recordArcRenderCall((b, c) -> _render(b, path, origin, color, new Quaternionf()));
-        BeatCraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, origin, color, r));
+        BeatCraftRenderer.recordArcRenderCall((b, c) -> _render(b, path, MemoryPool.newVector3f(origin), color, MemoryPool.newQuaternionf()));
+        BeatCraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, MemoryPool.newVector3f(origin), color, MemoryPool.newQuaternionf(r)));
     }
 
     public void _render(BufferBuilder buffer, ISplinePath path, Vector3f origin, int color, Quaternionf cameraRotation) {
@@ -177,6 +181,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             Vector3f p2 = path.evaluate(f2).add(origin).rotate(cameraRotation);
             Vector3f t = path.getTangent(f).rotate(cameraRotation);
             Vector3f t2 = path.getTangent(f2).rotate(cameraRotation);
+
 
             var h1 = MathUtil.generateCircle(t, 0.075f, 6, p);
             var h2 = MathUtil.generateCircle(t2, 0.075f, 6, p2);
@@ -197,6 +202,8 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             };
 
             float dist = p.length();
+
+            MemoryPool.release(p, p2, t, t2);
 
             int fade = (int) (Math.clamp((12f - dist) / 9f, 0f, 1f) * 127f) << 24;
 
@@ -230,7 +237,13 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             buffer.vertex(q3[2]).color(col);
             buffer.vertex(q3[3]).color(col);
 
+            MemoryPool.release(h1);
+            MemoryPool.release(h2);
+
         }
+
+        MemoryPool.release(origin);
+        MemoryPool.release(cameraRotation);
 
     }
 

@@ -86,6 +86,12 @@ public class MemoryPool {
         }
     }
 
+    public static void release(Vector2f... vectors) {
+        for (var vec : vectors) {
+            release(vec);
+        }
+    }
+
     public static void release(Quaternionf quat) {
         sharedQuaternionfs.push(quat);
         sharedQuaternionfBalance--;

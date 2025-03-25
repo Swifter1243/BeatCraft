@@ -1,6 +1,7 @@
 package com.beatcraft.utils;
 
 import com.beatcraft.data.types.Color;
+import com.beatcraft.memory.MemoryPool;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
@@ -31,7 +32,7 @@ public class MathUtil {
         return beats * (60 / bpm);
     }
     public static Quaternionf eulerToQuaternion(Vector3f euler) {
-        Quaternionf q = new Quaternionf();
+        Quaternionf q = MemoryPool.newQuaternionf();
         q.rotateY(euler.y * DEG2RAD);
         q.rotateX(euler.x * DEG2RAD);
         q.rotateZ(euler.z * DEG2RAD);
@@ -63,15 +64,15 @@ public class MathUtil {
     public static Vector3f matrixTransformPoint3D(Matrix4f matrix, Vector3f point) {
         Vector4f newPoint = new Vector4f(point, 1);
         newPoint.mul(matrix);
-        return new Vector3f(newPoint.x, newPoint.y, newPoint.z);
+        return MemoryPool.newVector3f(newPoint.x, newPoint.y, newPoint.z);
     }
 
     public static Vector2f lerpVector2(Vector2f a, Vector2f b, float time) {
-        return new Vector2f(a).lerp(b, time);
+        return MemoryPool.newVector2f(a).lerp(b, time);
     }
 
     public static Vector3f lerpVector3(Vector3f a, Vector3f b, float time) {
-        return new Vector3f(a).lerp(b, time);
+        return MemoryPool.newVector3f(a).lerp(b, time);
     }
 
     public static Vec3i lerpVec3i(Vec3i a, Vec3i b, float time) {
@@ -97,7 +98,7 @@ public class MathUtil {
     }
 
     public static Quaternionf lerpQuaternion(Quaternionf a, Quaternionf b, float time) {
-        return new Quaternionf(a).slerp(b, time);
+        return MemoryPool.newQuaternionf(a).slerp(b, time);
     }
 
     public static Vector3f[] generateCircle(Vector3f normal, float radius, int pointsCount, Vector3f offset) {
@@ -107,28 +108,30 @@ public class MathUtil {
     public static Vector3f[] generateCircle(Vector3f normal, float radius, int pointsCount, Vector3f offset, float arcDegrees, float angleOffset) {
         normal.normalize();
 
-        Vector3f startPoint = new Vector3f(1, 0, 0);
+        Vector3f startPoint = MemoryPool.newVector3f(1, 0, 0);
         if (startPoint.dot(normal) > 0.99f) {
             startPoint.set(0, 1, 0);
         }
         startPoint.cross(normal).normalize().mul(radius);
 
         Vector3f[] points = new Vector3f[pointsCount+1];
-        Quaternionf rotation = new Quaternionf();
+        Quaternionf rotation = MemoryPool.newQuaternionf();
 
         for (int i = 0; i <= pointsCount; i++) {
             float angle = ((arcDegrees * MathHelper.RADIANS_PER_DEGREE) * i / pointsCount) + (angleOffset * MathHelper.RADIANS_PER_DEGREE);
             rotation.fromAxisAngleRad(normal.x, normal.y, normal.z, angle);
-            points[i] = new Vector3f(startPoint).rotate(rotation).add(offset);
+            points[i] = MemoryPool.newVector3f(startPoint).rotate(rotation).add(offset);
         }
+
+        MemoryPool.release(startPoint);
 
         return points;
     }
 
     public static Pair<Float, Vector3f> getLineDistance(Vector3f startA, Vector3f endA, Vector3f startB, Vector3f endB) {
-        Vector3f distA = new Vector3f(endA).sub(startA);
-        Vector3f distB = new Vector3f(endB).sub(startB);
-        Vector3f startDiff = new Vector3f(startA).sub(startB);
+        Vector3f distA = MemoryPool.newVector3f(endA).sub(startA);
+        Vector3f distB = MemoryPool.newVector3f(endB).sub(startB);
+        Vector3f startDiff = MemoryPool.newVector3f(startA).sub(startB);
 
         float distA2 = distA.dot(distA);
         float distB2 = distB.dot(distB);
@@ -138,7 +141,9 @@ public class MathUtil {
         float modB;
 
         if (distA2 <= Float.MIN_VALUE && distB2 <= Float.MIN_VALUE) {
-            return new Pair<>(startDiff.length(), new Vector3f());
+            var p = new Pair<>(startDiff.length(), MemoryPool.newVector3f());
+            MemoryPool.release(distA, distB, startDiff);
+            return p;
         }
 
         if (distA2 <= Float.MIN_VALUE) {
@@ -171,10 +176,14 @@ public class MathUtil {
             }
         }
 
-        Vector3f closestA = new Vector3f(distA).mul(modA).add(startA);
-        Vector3f closestB = new Vector3f(distB).mul(modB).add(startB);
+        Vector3f closestA = distA.mul(modA).add(startA);
+        Vector3f closestB = distB.mul(modB).add(startB);
 
-        return new Pair<>(closestA.distance(closestB), lerpVector3(closestA, closestB, 0.5f));
+        var out = new Pair<>(closestA.distance(closestB), lerpVector3(closestA, closestB, 0.5f));
+
+        MemoryPool.release(closestA, closestB, startDiff);
+
+        return out;
     }
 
     public static String timeToString(int t) {
@@ -194,36 +203,43 @@ public class MathUtil {
     }
 
     public static Pair<Vector3f, Vector2f> raycastPlane(Vector3f raycastOrigin, Quaternionf raycastOrientation, Vector3f planeCenter, Quaternionf planeOrientation, Vector2f planeSize) {
-        Vector3f planeNormal = new Vector3f(0, 0, 1).rotate(planeOrientation);
+        Vector3f planeNormal = MemoryPool.newVector3f(0, 0, 1).rotate(planeOrientation);
 
-        Vector3f rayDirection = new Vector3f(0, 1, 0).rotate(raycastOrientation);
+        Vector3f rayDirection = MemoryPool.newVector3f(0, 1, 0).rotate(raycastOrientation);
 
         float denominator = rayDirection.dot(planeNormal);
         if (Math.abs(denominator) < 0.000001) {
             return null;
         }
 
-        float t = planeCenter.sub(raycastOrigin, new Vector3f()).dot(planeNormal) / denominator;
+        Vector3f v = MemoryPool.newVector3f(planeCenter).sub(raycastOrigin);
+        float t = v.dot(planeNormal) / denominator;
+        MemoryPool.release(v, planeNormal);
         if (t < 0) {
             return null;
         }
 
-        Vector3f intersection = new Vector3f(raycastOrigin).fma(t, rayDirection);
+        Vector3f intersection = raycastOrigin.fma(t, rayDirection);
 
-        Vector3f localPoint = intersection.sub(planeCenter, new Vector3f()).rotate(new Quaternionf(planeOrientation).invert());
+        MemoryPool.release(rayDirection);
+
+        Vector3f localPoint = MemoryPool.newVector3f(intersection).sub(planeCenter).rotate(MemoryPool.newQuaternionf(planeOrientation).invert());
 
         if (Math.abs(localPoint.x) > planeSize.x / 2 || Math.abs(localPoint.y) > planeSize.y / 2) {
             return null;
         }
 
-        return new Pair<>(intersection, new Vector2f(localPoint.x, localPoint.y));
+        return new Pair<>(intersection, MemoryPool.newVector2f(localPoint.x, localPoint.y));
     }
 
     public static boolean check2DPointCollision(Vector2f point, Vector2f center, Vector2f size) {
-        Vector2f minCorner = center.sub(size.mul(0.5f, new Vector2f()), new Vector2f());
-        Vector2f maxCorner = center.add(size.mul(0.5f, new Vector2f()), new Vector2f());
-
-        return (minCorner.x <= point.x && point.x <= maxCorner.x && minCorner.y <= point.y && point.y <= maxCorner.y);
+        var s = MemoryPool.newVector2f(size).mul(0.5f);
+        Vector2f minCorner = MemoryPool.newVector2f(center).sub(s);
+        Vector2f maxCorner = MemoryPool.newVector2f(center).add(s);
+        MemoryPool.release(s);
+        var b = (minCorner.x <= point.x && point.x <= maxCorner.x && minCorner.y <= point.y && point.y <= maxCorner.y);
+        MemoryPool.release(minCorner, maxCorner);
+        return b;
     }
 
     /// Takes an array of vertices and generates a list of triangles that fills the closed loop formed by the vertices.

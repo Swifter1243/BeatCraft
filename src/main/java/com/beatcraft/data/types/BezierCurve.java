@@ -1,5 +1,6 @@
 package com.beatcraft.data.types;
 
+import com.beatcraft.memory.MemoryPool;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class BezierCurve implements ISplinePath {
         float y = num * num * p0.y + 2f * num * t * p1.y + t * t * p2.y;
         float z = num * num * p0.z + 2f * num * t * p1.z + t * t * p2.z;
 
-        return new Vector3f(x, y, z);
+        return MemoryPool.newVector3f(x, y, z);
     }
 
     public Vector3f getTangent(float t) {
@@ -32,7 +33,7 @@ public class BezierCurve implements ISplinePath {
         float y = 2f * (1f - t) * (p1.y - p0.y) + 2f * t * (p2.y - p1.y);
         float z = 2f * (1f - t) * (p1.z - p0.z) + 2f * t * (p2.z - p1.z);
 
-        return new Vector3f(x, y, z);
+        return MemoryPool.newVector3f(x, y, z);
     }
 
     @Override
