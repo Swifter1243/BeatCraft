@@ -207,7 +207,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
             float dist = p.length();
 
-            MemoryPool.release(p, p2, t, t2);
+            //MemoryPool.release(p, p2, t, t2);
 
             int fade = (int) (Math.clamp((12f - dist) / 9f, 0f, 1f) * 127f) << 24;
 

@@ -1,6 +1,7 @@
 package com.beatcraft.utils;
 
 import com.beatcraft.data.types.Color;
+import com.beatcraft.memory.MemoryPool;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
@@ -119,7 +120,7 @@ public class MathUtil {
         for (int i = 0; i <= pointsCount; i++) {
             float angle = ((arcDegrees * MathHelper.RADIANS_PER_DEGREE) * i / pointsCount) + (angleOffset * MathHelper.RADIANS_PER_DEGREE);
             rotation.fromAxisAngleRad(normal.x, normal.y, normal.z, angle);
-            points[i] = new Vector3f(startPoint).rotate(rotation).add(offset);
+            points[i] = MemoryPool.newVector3f(startPoint).rotate(rotation).add(offset);
         }
 
         return points;
