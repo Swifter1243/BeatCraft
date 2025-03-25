@@ -101,17 +101,26 @@ public class GlowingCuboid extends LightObject {
             v1.rotate(cameraRotation);
             v2.rotate(cameraRotation);
             v3.rotate(cameraRotation);
-            List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
 
-            for (var quad : sections) {
-                buffer.vertex(quad[0]).color(color);
-                buffer.vertex(quad[1]).color(color);
-                buffer.vertex(quad[2]).color(color);
+            buffer.vertex(v0).color(color);
+            buffer.vertex(v1).color(color);
+            buffer.vertex(v2).color(color);
 
-                buffer.vertex(quad[0]).color(color);
-                buffer.vertex(quad[2]).color(color);
-                buffer.vertex(quad[3]).color(color);
-            }
+            buffer.vertex(v0).color(color);
+            buffer.vertex(v2).color(color);
+            buffer.vertex(v3).color(color);
+
+            //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
+            //
+            //for (var quad : sections) {
+            //    buffer.vertex(quad[0]).color(color);
+            //    buffer.vertex(quad[1]).color(color);
+            //    buffer.vertex(quad[2]).color(color);
+            //
+            //    buffer.vertex(quad[0]).color(color);
+            //    buffer.vertex(quad[2]).color(color);
+            //    buffer.vertex(quad[3]).color(color);
+            //}
         }
 
     }
@@ -148,21 +157,19 @@ public class GlowingCuboid extends LightObject {
                 var v2 = processVertex(face[2], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
                 var v3 = processVertex(face[3], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
 
-                //if (isBloomfog) {
-                //    v0.rotate(cameraRotation);
-                //    v1.rotate(cameraRotation);
-                //    v2.rotate(cameraRotation);
-                //    v3.rotate(cameraRotation);
+                buffer.vertex(v0).color(color);
+                buffer.vertex(v1).color(color);
+                buffer.vertex(v2).color(color);
+                buffer.vertex(v3).color(color);
+
+                //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
+                //
+                //for (var quad : sections) {
+                //    buffer.vertex(quad[0]).color(color);
+                //    buffer.vertex(quad[1]).color(color);
+                //    buffer.vertex(quad[2]).color(color);
+                //    buffer.vertex(quad[3]).color(color);
                 //}
-
-                List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
-
-                for (var quad : sections) {
-                    buffer.vertex(quad[0]).color(color);
-                    buffer.vertex(quad[1]).color(color);
-                    buffer.vertex(quad[2]).color(color);
-                    buffer.vertex(quad[3]).color(color);
-                }
             }
         }
 

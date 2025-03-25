@@ -76,6 +76,7 @@ public class Bloomfog {
     public static ShaderProgram bloomfogPositionColor;
     public static ShaderProgram bloomfogColorFix;
     public static ShaderProgram blueNoise;
+    public static ShaderProgram lightsPositionColorShader;
 
     public static ShaderProgram blitShader;
     public static ShaderProgram compositeShader;
@@ -91,6 +92,8 @@ public class Bloomfog {
     public static SimpleFramebuffer bloomInput;
     private static SimpleFramebuffer bloomSwap;
     public static SimpleFramebuffer bloomOutput;
+
+    public static SimpleFramebuffer lightDepth;
 
     private static float radius = 10;
 
@@ -111,6 +114,7 @@ public class Bloomfog {
             blitShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "beatcraft_blit", VertexFormats.POSITION_TEXTURE_COLOR);
             compositeShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "composite", VertexFormats.POSITION_TEXTURE_COLOR);
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
+            lightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "lights_position_color", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
@@ -137,6 +141,8 @@ public class Bloomfog {
         bloomInput = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
         bloomSwap = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
         bloomOutput = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
+
+        lightDepth = new SimpleFramebuffer(1920, 1080, true, MinecraftClient.IS_SYSTEM_MAC);
 
         tex = new BloomfogTex(framebuffer);
         //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
@@ -178,6 +184,8 @@ public class Bloomfog {
         bloomInput.resize(width, height, true);
         bloomSwap.resize(width, height, true);
         bloomOutput.resize(width, height, true);
+
+        lightDepth.resize(width, height, true);
 
         //double num = (Math.log((float) Math.max(width, height)) / Math.log(2f)) + Math.min(radius, 10f) - 10f;
         //int num2 = (int) Math.floor(num);

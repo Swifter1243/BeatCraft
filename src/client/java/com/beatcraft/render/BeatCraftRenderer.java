@@ -165,15 +165,56 @@ public class BeatCraftRenderer {
 
     }
 
-    private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
-        // environment lights
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+    private static void renderLightDepth(Tessellator tessellator, Vector3f cameraPos) {
+
+        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
+        Bloomfog.lightDepth.clear(true);
+
+        bloomfog.overrideBuffer = true;
+        bloomfog.overrideFramebuffer = Bloomfog.lightDepth;
+
+        Bloomfog.lightDepth.beginWrite(true);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            BufferRenderer.drawWithGlobalProgram(buff);
+        }
+
+        Bloomfog.lightDepth.endWrite();
+
+        bloomfog.overrideFramebuffer = null;
+        bloomfog.overrideBuffer = false;
+
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+
+    }
+
+    private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
+        // environment lights
+
+        renderLightDepth(tessellator, cameraPos);
+
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.setShader(() -> Bloomfog.lightsPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -183,7 +224,9 @@ public class BeatCraftRenderer {
 
         var buff = buffer.endNullable();
         if (buff != null) {
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+            //buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+            Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
+            RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }
