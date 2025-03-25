@@ -42,6 +42,7 @@ public abstract class Difficulty {
     public final ArrayList<AssignTrackParent> assignTrackParents = new ArrayList<>();
     public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
+    public final ArrayList<PhysicalChromaGeo> chromaGeometries = new ArrayList<>();
 
     public Environment lightShowEnvironment;
 
@@ -159,6 +160,7 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.render(matrices, camera));
         if (!BeatCraftClient.playerConfig.isModifierActive("No Walls")) obstacles.forEach(o -> o.render(matrices, camera));
         arcs.forEach(o -> o.render(matrices, camera));
+        chromaGeometries.forEach(o -> o.render(matrices, camera));
     }
 
     public void seek(float beat) {
