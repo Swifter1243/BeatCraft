@@ -69,10 +69,10 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         modifierPage.children.addAll(List.of(
                 getModifierToggle("No Fail", 0, 0, this::toggleNoFail, "1 Life", "4 Lives", "Zen Mode"),
                 getModifierToggle("1 Life", 0, 1, this::toggle1Life, "No Fail", "4 Lives", "Zen Mode"),
-                getModifierToggle("4 Lives", 0, 2, this::toggle4Lives, "No Fail", "1 Life", "Zen Mode")
+                getModifierToggle("4 Lives", 0, 2, this::toggle4Lives, "No Fail", "1 Life", "Zen Mode"),
 
-        //        getModifierToggle("No Bombs", 1, 0, this::toggleNoBombs, "Zen Mode"),
-        //        getModifierToggle("No Walls", 1, 1, this::toggleNoObstacles, "Zen Mode"),
+                getModifierToggle("No Bombs", 1, 0, this::toggleNoBombs, "Zen Mode"),
+                getModifierToggle("No Walls", 1, 1, this::toggleNoObstacles, "Zen Mode")
         //        getModifierToggle("No Arrows", 1, 2, this::toggleNoArrows, "Zen Mode"),
 
         //        getModifierToggle("Ghost Notes", 2, 0, this::toggleGhostNotes, "Disappearing Arrows", "Zen Mode"),
