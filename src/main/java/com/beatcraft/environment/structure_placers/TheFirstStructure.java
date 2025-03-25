@@ -142,9 +142,10 @@ public class TheFirstStructure implements EnvironmentPlacer {
     private void generateRunway(ServerWorld world, boolean place) {
         BlockState state = place ? ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState() : Blocks.AIR.getDefaultState();
         BlockState state2 = place ? ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState() : Blocks.BARRIER.getDefaultState();
+        BlockState state3 = place ? ModBlocks.REFLECTIVE_MIRROR_BLOCK.getDefaultState() : Blocks.AIR.getDefaultState();
 
         fillArea(world, new BlockPos(-2, -1, 7), new BlockPos(1, 0, 300), Blocks.AIR.getDefaultState());
-        if (place) fillArea(world, new BlockPos(-2, -1, 8), new BlockPos(1, -1, 300), state);
+        if (place) fillArea(world, new BlockPos(-2, -1, 8), new BlockPos(1, -1, 300), state3);
 
         world.setBlockState(new BlockPos(1, -64, 8), state2);
         world.setBlockState(new BlockPos(-2, -64, 8), state2);

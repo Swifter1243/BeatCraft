@@ -3,6 +3,7 @@ package com.beatcraft.render.effect;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
@@ -13,6 +14,7 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -255,6 +257,13 @@ public class MirrorHandler {
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
+        Matrix4f worldTransform = new Matrix4f();
+        worldTransform.translate(cameraPos);
+
+        var q = MemoryPool.newQuaternionf(invCameraRotation).conjugate();
+        worldTransform.rotate(q);
+        MemoryPool.release(q);
+
         renderForDepth(tessellator, cameraPos);
 
         // render mirror block non-reflective faces
@@ -270,6 +279,7 @@ public class MirrorHandler {
             RenderSystem.enableDepthTest();
             RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
+            Bloomfog.bloomfogPositionColor.getUniformOrDefault("WorldTransform").set(worldTransform);
             BeatCraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();

@@ -5,6 +5,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -14,6 +15,8 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.IOException;
@@ -205,6 +208,10 @@ public class BeatCraftRenderer {
     private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
         // environment lights
 
+        Matrix4f worldTransform = new Matrix4f();
+        worldTransform.translate(cameraPos);
+        worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
+
         renderLightDepth(tessellator, cameraPos);
 
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -227,6 +234,7 @@ public class BeatCraftRenderer {
             //buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
             Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
+            Bloomfog.lightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }

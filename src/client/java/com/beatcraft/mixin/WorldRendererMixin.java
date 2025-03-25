@@ -9,7 +9,10 @@ import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.SkyFogController;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Debug;
@@ -18,10 +21,13 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.util.math.MatrixStack;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.function.Supplier;
+
 @Mixin(WorldRenderer.class)
-@Debug(export = true)
+//@Debug(export = true)
 public abstract class WorldRendererMixin {
     @Shadow protected abstract void renderLayer(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix);
 
@@ -66,5 +72,48 @@ public abstract class WorldRendererMixin {
         HapticsHandler.endFrame();
     }
 
+    @WrapOperation(
+        method = "renderSky",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V",
+            ordinal = 1
+        )
+    )
+    private void overrideSunMoonShader(Supplier<ShaderProgram> program, Operation<Void> original) {
+        original.call((Supplier<ShaderProgram>) GameRenderer::getPositionTexColorProgram);
+    }
+
+    @WrapOperation(
+        method = "renderSky",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/render/Tessellator;begin(Lnet/minecraft/client/render/VertexFormat$DrawMode;Lnet/minecraft/client/render/VertexFormat;)Lnet/minecraft/client/render/BufferBuilder;"
+        ),
+        slice = @Slice(
+            from = @At(value = "FIELD", target = "Lnet/minecraft/client/render/WorldRenderer;SUN:Lnet/minecraft/util/Identifier;")
+        )
+    )
+    private BufferBuilder modifyBufferFormat(Tessellator instance, VertexFormat.DrawMode drawMode, VertexFormat format, Operation<BufferBuilder> original) {
+        return instance.begin(drawMode, VertexFormats.POSITION_TEXTURE_COLOR);
+    }
+
+    @Inject(
+        method = "renderSky",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/render/BufferBuilder;vertex(Lorg/joml/Matrix4f;FFF)Lnet/minecraft/client/render/VertexConsumer;",
+            shift = At.Shift.AFTER
+        ),
+        slice = @Slice(
+            from = @At(value = "FIELD", target = "Lnet/minecraft/client/render/WorldRenderer;SUN:Lnet/minecraft/util/Identifier;")
+        )
+    )
+    private void addColorData(Matrix4f matrix4f, Matrix4f projectionMatrix, float tickDelta, Camera camera, boolean thickFog, Runnable fogCallback, CallbackInfo ci, @Local BufferBuilder bufferBuilder2) {
+        var fade = SkyFogController.getColorModifier();
+        var c = (int)(255 * fade);
+        var color = (c << 24) + 0xFFFFFF;
+        bufferBuilder2.color(color);
+    }
 
 }

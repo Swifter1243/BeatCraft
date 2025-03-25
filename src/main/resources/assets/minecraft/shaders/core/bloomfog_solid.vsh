@@ -18,6 +18,7 @@ uniform int FogShape;
 out vec4 vertexColor;
 out vec2 texCoord0;
 out vec3 screenUV;
+out vec3 worldPos;
 
 void main() {
     vec3 pos = Position + ChunkOffset;
@@ -25,6 +26,7 @@ void main() {
     gl_Position = ProjMat * pos2;
     screenUV = vec3(gl_Position.xyz);
 
+    worldPos = pos;
     vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
     texCoord0 = UV0;
 }

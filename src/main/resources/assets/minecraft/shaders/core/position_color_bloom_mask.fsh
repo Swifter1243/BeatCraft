@@ -4,6 +4,7 @@ uniform sampler2D Sampler0;
 
 in vec4 vertexColor;
 in vec3 screenUV;
+in vec3 worldPos;
 
 out vec4 fragColor;
 
@@ -20,6 +21,10 @@ void main() {
     if (color.a == 0.0) {
         discard;
     }
+
+    float fadeHeight = min(max(0, (worldPos.y + 50) / 35), 1);
+
+    color *= fadeHeight;
 
 //    float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722)); // Luminance
 //    if (brightness < 0.3) {

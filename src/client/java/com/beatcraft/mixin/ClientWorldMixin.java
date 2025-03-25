@@ -20,5 +20,12 @@ public class ClientWorldMixin {
         return original.multiply(SkyFogController.getColorModifier());
     }
 
+    @ModifyReturnValue(
+        method = "getStarBrightness",
+        at = @At("RETURN")
+    )
+    private float getSkyFogStarBrightness(float original) {
+        return original * (float) SkyFogController.getColorModifier();
+    }
 
 }

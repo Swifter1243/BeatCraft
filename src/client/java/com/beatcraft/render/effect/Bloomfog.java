@@ -484,10 +484,15 @@ public class Bloomfog {
         RenderSystem.disableDepthTest();
 
         if (buff != null) {
+            Matrix4f worldTransform = new Matrix4f();
+            worldTransform.translate(cameraPos);
+            worldTransform.rotate(invCameraRotation.conjugate(new Quaternionf()));
+
             RenderSystem.setShader(() -> bloomMaskLightShader);
             RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
             RenderSystem.setShaderTexture(0, sceneDepthBuffer);
             bloomMaskLightShader.addSampler("Sampler0", sceneDepthBuffer);
+            bloomMaskLightShader.getUniformOrDefault("WorldTransform").set(worldTransform);
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableDepthTest();
         }
