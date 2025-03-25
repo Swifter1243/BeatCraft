@@ -26,7 +26,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import dev.engine_room.flywheel.api.event.EndClientResourceReloadCallback;
 import io.wispforest.owo.ui.event.WindowResizeCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -97,9 +96,8 @@ public class BeatCraftClient implements ClientModInitializer {
             HUDRenderer.triggerPressed = false;
         });
 
-        EndClientResourceReloadCallback.EVENT.register((client, manager, b, e) -> {
-            Bloomfog.initShaders();
-        });
+
+
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (settingsKeyBind.wasPressed()) {
@@ -127,6 +125,7 @@ public class BeatCraftClient implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            Bloomfog.initShaders();
             BeatmapAudioPlayer.init();
 
             var window = MinecraftClient.getInstance().getWindow();

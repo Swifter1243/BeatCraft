@@ -34,10 +34,10 @@ repositories {
 
 	maven { url 'https://maven.wispforest.io/releases/' }
 
-	maven {
-		name "createmod maven"
-		url "https://maven.createmod.net/"
-	}
+//	maven {
+//		name "createmod maven"
+//		url "https://maven.createmod.net/"
+//	}
 }
 
 fabricApi {
@@ -86,8 +86,8 @@ dependencies {
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
 
 	// Flywheel
-	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"
-	modImplementation "dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_version}"
+//	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"
+//	modImplementation "dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_version}"
 }
 
 
@@ -98,7 +98,7 @@ processResources {
 	inputs.property "vivecraft_version", project.vivecraft_version
 	inputs.property "geckolib_version", project.geckolib_version
 	inputs.property "owo_version", project.owo_version
-	inputs.property "flywheel_version", project.flywheel_version
+//	inputs.property "flywheel_version", project.flywheel_version
 	filteringCharset "UTF-8"
 
 	filesMatching("fabric.mod.json") {
@@ -106,8 +106,8 @@ processResources {
 				"minecraft_version": project.minecraft_version,
 				"loader_version": project.loader_version,
 				"vivecraft_version": project.vivecraft_version,
-		  		"geckolib_version": project.geckolib_version,
-				"flywheel_version": project.flywheel_version
+		  		"geckolib_version": project.geckolib_version
+//				"flywheel_version": project.flywheel_version
 	}
 
 

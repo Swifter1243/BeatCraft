@@ -3,7 +3,6 @@ package com.beatcraft.render.mesh;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
-import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
