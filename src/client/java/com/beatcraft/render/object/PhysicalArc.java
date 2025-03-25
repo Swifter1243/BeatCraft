@@ -166,8 +166,12 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     public void render(ISplinePath path, Vector3f origin, int color) {
 
-        BeatCraftRenderer.recordArcRenderCall((b, c) -> _render(b, path, MemoryPool.newVector3f(origin), color, MemoryPool.newQuaternionf()));
-        BeatCraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, MemoryPool.newVector3f(origin), color, MemoryPool.newQuaternionf(r)));
+        var o = MemoryPool.newVector3f(origin);
+        var o2 = MemoryPool.newVector3f(origin);
+        var q = MemoryPool.newQuaternionf();
+
+        BeatCraftRenderer.recordArcRenderCall((b, c) -> _render(b, path, o, color, q));
+        BeatCraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, o2, color, MemoryPool.newQuaternionf(r)));
     }
 
     public void _render(BufferBuilder buffer, ISplinePath path, Vector3f origin, int color, Quaternionf cameraRotation) {
