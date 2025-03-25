@@ -6,6 +6,7 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
@@ -36,21 +37,21 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
-        var localPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
-        var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+        var localPos = matrices.peek().getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
         updateBounds();
 
 
-        var camPos = mc.gameRenderer.getCamera().getPos().toVector3f();
+        var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
         localPos.add(camPos);
         GameLogicHandler.checkObstacle(this, localPos, rotation);
 
-        render(localPos, rotation);
-        renderMirrored(localPos, rotation);
+        render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
+        renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
 
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
-        ObstacleGlowRenderer.render(localPos, rotation, bounds, color);
+        ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, color);
         ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, color);
 
         //DebugRenderer.renderHitbox(bounds, localPos, rotation, color, true, 6);
@@ -74,25 +75,29 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void renderMirrored(Vector3f pos, Quaternionf orientation) {
-        var flippedPos = pos.mul(1, -1, 1, new Vector3f());
-        var flippedRot = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
-
+        var flippedPos = pos.mul(1, -1, 1);
+        var flippedRot = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        MemoryPool.release(orientation);
         MirrorHandler.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
     }
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, int color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
         List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
         for (Vector3f[] face : faces) {
-            var c1 = face[0].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
-            var c2 = face[1].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
-            var c3 = face[2].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
-            var c4 = face[3].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(pos).sub(cameraPos);
+            var c1 = MemoryPool.newVector3f(face[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            var c2 = MemoryPool.newVector3f(face[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            var c3 = MemoryPool.newVector3f(face[2]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            var c4 = MemoryPool.newVector3f(face[3]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
 
             buffer.vertex(c1.x, c1.y, c1.z).color(color);
             buffer.vertex(c2.x, c2.y, c2.z).color(color);
             buffer.vertex(c3.x, c3.y, c3.z).color(color);
             buffer.vertex(c4.x, c4.y, c4.z).color(color);
+
+            MemoryPool.release(c1, c2, c3, c4);
         }
+        MemoryPool.release(pos);
+        MemoryPool.release(orientation);
     }
 
     @Override

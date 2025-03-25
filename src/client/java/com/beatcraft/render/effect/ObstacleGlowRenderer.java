@@ -1,6 +1,7 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.render.*;
 import org.joml.Quaternionf;
@@ -9,21 +10,24 @@ import org.joml.Vector3f;
 public class ObstacleGlowRenderer {
 
     private static Vector3f[] buildEdge(Vector3f pos1, Vector3f pos2, Vector3f cameraPos) {
-        Vector3f lineNormal = pos1.sub(pos2, new Vector3f()).normalize();
+        Vector3f lineNormal = MemoryPool.newVector3f(pos1).sub(pos2).normalize();
 
-        Vector3f p1normal = pos1.sub(cameraPos, new Vector3f()).normalize();
-        Vector3f p2normal = pos2.sub(cameraPos, new Vector3f()).normalize();
+        Vector3f p1normal = MemoryPool.newVector3f(pos1).sub(cameraPos).normalize();
+        Vector3f p2normal = MemoryPool.newVector3f(pos2).sub(cameraPos).normalize();
 
-        Vector3f p1offset = lineNormal.cross(p1normal, new Vector3f()).normalize().mul(0.05f);
-        Vector3f p2offset = lineNormal.cross(p2normal, new Vector3f()).normalize().mul(0.05f);
+        Vector3f p1offset = MemoryPool.newVector3f(lineNormal).cross(p1normal).normalize().mul(0.05f);
+        Vector3f p2offset = lineNormal.cross(p2normal).normalize().mul(0.05f); // lineNormal ownership transfer
 
-        return new Vector3f[]{
-            new Vector3f(pos1).add(p1offset),
-            new Vector3f(pos1).sub(p1offset),
-            new Vector3f(pos2).sub(p2offset),
-            new Vector3f(pos2).add(p2offset)
+        var out = new Vector3f[]{
+            MemoryPool.newVector3f(pos1).add(p1offset),
+            MemoryPool.newVector3f(pos1).sub(p1offset),
+            MemoryPool.newVector3f(pos2).sub(p2offset),
+            MemoryPool.newVector3f(pos2).add(p2offset)
         };
 
+        MemoryPool.release(p1normal, p2normal, p1offset, p2offset);
+
+        return out;
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
@@ -31,8 +35,9 @@ public class ObstacleGlowRenderer {
     }
 
     public static void renderMirrored(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
-        Vector3f flippedPos = position.mul(1, -1, 1, new Vector3f());
-        Quaternionf flippedOrientation = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        Vector3f flippedPos = position.mul(1, -1, 1);
+        Quaternionf flippedOrientation = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        MemoryPool.release(orientation);
         MirrorHandler.recordMirrorLaserRenderCall((buffer, camera) -> _render(flippedPos, flippedOrientation, bounds, color, buffer, camera, true));
     }
 
@@ -41,8 +46,8 @@ public class ObstacleGlowRenderer {
 
         for (Vector3f[] edge : edges) {
 
-            var e0 = edge[0].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(position);
-            var e1 = edge[1].mul(1, mirrored ? -1 : 1, 1, new Vector3f()).rotate(orientation).add(position);
+            var e0 = MemoryPool.newVector3f(edge[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
+            var e1 = MemoryPool.newVector3f(edge[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
             
             var mesh = buildEdge(e0, e1, cameraPos);
 
@@ -58,7 +63,12 @@ public class ObstacleGlowRenderer {
             buffer.vertex(mesh[2].x - cameraPos.x, mesh[2].y - cameraPos.y, mesh[2].z - cameraPos.z).color(fadeColor);
             buffer.vertex(mesh[1].x - cameraPos.x, mesh[1].y - cameraPos.y, mesh[1].z - cameraPos.z).color(fadeColor);
 
+            MemoryPool.release(e0, e1);
+            MemoryPool.release(mesh);
         }
+
+        MemoryPool.release(position);
+        MemoryPool.release(orientation);
 
     }
 

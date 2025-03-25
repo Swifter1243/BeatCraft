@@ -40,6 +40,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
@@ -630,6 +631,7 @@ public class GameLogicHandler {
         failed = false;
         health = maxHealth == 100 ? 50 : maxHealth == 4 ? 4 : 1;
         inWall = false;
+        MemoryPool.clear();
     }
 
 

@@ -2,6 +2,7 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.mesh.MeshLoader;
@@ -339,10 +340,10 @@ public class BeatCraftRenderer {
         for (int i = 0; i < 2; i++) {
             var x = (i-0.5f) * 0.25f;
 
-            buffer.vertex(new Vector3f(x-0.1f, height, -0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x-0.1f, height,  0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x+0.1f, height,  0.1f).sub(camPos)).color(col);
-            buffer.vertex(new Vector3f(x+0.1f, height, -0.1f).sub(camPos)).color(col);
+            buffer.vertex(MemoryPool.newVector3f(x - 0.1f, height, -0.1f).sub(camPos)).color(col);
+            buffer.vertex(MemoryPool.newVector3f(x - 0.1f, height, 0.1f).sub(camPos)).color(col);
+            buffer.vertex(MemoryPool.newVector3f(x + 0.1f, height, 0.1f).sub(camPos)).color(col);
+            buffer.vertex(MemoryPool.newVector3f(x + 0.1f, height, -0.1f).sub(camPos)).color(col);
 
         }
         RenderSystem.enableBlend();
@@ -357,14 +358,14 @@ public class BeatCraftRenderer {
         List<Vector3f[]> edges = new ArrayList<>();
 
         Vector3f[] corners = new Vector3f[] {
-            new Vector3f(minPos.x, minPos.y, minPos.z),
-            new Vector3f(maxPos.x, minPos.y, minPos.z),
-            new Vector3f(maxPos.x, maxPos.y, minPos.z),
-            new Vector3f(minPos.x, maxPos.y, minPos.z),
-            new Vector3f(minPos.x, minPos.y, maxPos.z),
-            new Vector3f(maxPos.x, minPos.y, maxPos.z),
-            new Vector3f(maxPos.x, maxPos.y, maxPos.z),
-            new Vector3f(minPos.x, maxPos.y, maxPos.z)
+            MemoryPool.newVector3f(minPos.x, minPos.y, minPos.z),
+            MemoryPool.newVector3f(maxPos.x, minPos.y, minPos.z),
+            MemoryPool.newVector3f(maxPos.x, maxPos.y, minPos.z),
+            MemoryPool.newVector3f(minPos.x, maxPos.y, minPos.z),
+            MemoryPool.newVector3f(minPos.x, minPos.y, maxPos.z),
+            MemoryPool.newVector3f(maxPos.x, minPos.y, maxPos.z),
+            MemoryPool.newVector3f(maxPos.x, maxPos.y, maxPos.z),
+            MemoryPool.newVector3f(minPos.x, maxPos.y, maxPos.z)
         };
 
         int[][] edgeIndices = new int[][] {
