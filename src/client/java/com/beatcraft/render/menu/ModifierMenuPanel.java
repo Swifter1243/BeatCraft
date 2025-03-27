@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.types.Stash;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.render.HUDRenderer;
 import net.minecraft.client.MinecraftClient;
@@ -128,7 +129,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> MinecraftClient.getInstance().options.hudHidden = true,
                 () -> MinecraftClient.getInstance().options.hudHidden = false,
                 () -> MinecraftClient.getInstance().options.hudHidden ? "HIDE" : "SHOW",
-                new Vector3f(-100, 32, 0))
+                new Vector3f(-100, 32, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Movement Lock",
+                InputSystem::unlockMovement,
+                InputSystem::lockMovement,
+                () -> InputSystem.isMovementLocked() ? "ON" : "OFF",
+                new Vector3f(-100, 84, 0))
         ));
 
         settingsPage.children.addAll(List.of(

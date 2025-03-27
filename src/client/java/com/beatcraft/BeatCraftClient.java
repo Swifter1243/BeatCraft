@@ -7,6 +7,7 @@ import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
@@ -64,10 +65,9 @@ public class BeatCraftClient implements ClientModInitializer {
 
     public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
     public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
-
-    public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.beatcraft.keybindings"));
-
+    public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.beatcraft.keybindings"));
     public static final KeyBinding toggleFPFCKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.toggle_fpfc", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_V, "category.beatcraft.keybindings"));
+    public static final KeyBinding toggleMovementLock = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.lock_movement", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.beatcraft.keybindings"));
 
     public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerCameraRotation = new Quaternionf();
@@ -104,22 +104,37 @@ public class BeatCraftClient implements ClientModInitializer {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
                 while (settingsKeyBind.wasPressed());
-            } else if (songSearchKeybind.wasPressed()) {
+            }
+            if (songSearchKeybind.wasPressed()) {
                 var screen = new SongDownloaderScreen(null);
                 client.setScreen(screen);
                 while (songSearchKeybind.wasPressed());
-            } else if (pauseLevelKeybind.wasPressed()) {
+            }
+            if (pauseLevelKeybind.wasPressed()) {
                 if (GameLogicHandler.isPaused()) {
                     GameLogicHandler.unpauseMap();
                 } else {
                     GameLogicHandler.pauseMap();
                 }
                 while (pauseLevelKeybind.wasPressed());
-            } else if (toggleFPFCKeybind.wasPressed()) {
+            }
+            if (toggleFPFCKeybind.wasPressed()) {
                 if (client.player != null) {
                     toggleFPFC();
                     client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
-                    while (toggleFPFCKeybind.wasPressed()) ;
+                    while (toggleFPFCKeybind.wasPressed());
+                }
+            }
+            if (toggleMovementLock.wasPressed()) {
+                if (client.player != null) {
+                    if (InputSystem.isMovementLocked()) {
+                        InputSystem.unlockMovement();
+                        client.player.sendMessage(Text.of("Player movement UNLOCKED!"));
+                    } else {
+                        InputSystem.lockMovement();
+                        client.player.sendMessage(Text.of(String.format("Player movement LOCKED! (press \"%s\" to unlock)", toggleMovementLock.getBoundKeyLocalizedText().getString())));
+                    }
+                    while (toggleMovementLock.wasPressed()) ;
                 }
             }
         });
