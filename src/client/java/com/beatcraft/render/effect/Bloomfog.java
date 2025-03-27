@@ -256,10 +256,10 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
+        // TODO: get camera position/rotation in a way that works with vivecraft's smooth camera
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
 
-        assert MinecraftClient.getInstance().player != null;
-        float pitch = MinecraftClient.getInstance().player.getPitch(tickDelta);
+        float pitch = camera.getPitch();
 
         Vector3f up = camera.getVerticalPlane();
         Vector3f left = camera.getDiagonalPlane();

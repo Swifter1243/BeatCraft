@@ -151,6 +151,7 @@ public class SaberRenderer {
         queueRender(hiltPos, tipPos, stash, color);
     }
 
+    // TODO: create unique saber trail per render-pass!!!!
     public static void renderTrail(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack) {
         if (stack.isOf(ModItems.SABER_ITEM)) {
 
