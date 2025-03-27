@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public abstract class Difficulty {
@@ -60,6 +61,21 @@ public abstract class Difficulty {
         else {
             return a > b ? 1 : -1;
         }
+    }
+
+    private void indexObjects() {
+        int i = 0;
+        for (var note : colorNotes) note.getData().setIndex(i++);
+        i = 0;
+        for (var bomb : bombNotes) bomb.getData().setIndex(i++);
+        i = 0;
+        for (var head : chainHeadNotes) head.getData().setIndex(i++);
+        i = 0;
+        for (var link : chainLinkNotes) link.getData().setIndex(i++);
+        i = 0;
+        for (var wall : obstacles) wall.getData().setIndex(i++);
+        i = 0;
+        for (var arc : arcs) arc.getData().setIndex(i++);
     }
 
     private void sortObjectsByTime() {
@@ -139,6 +155,7 @@ public abstract class Difficulty {
         finalizeBaseRotations();
         applyRotationEvents();
         setupAnimatedProperties();
+        indexObjects();
     }
 
     public Info getInfo() {

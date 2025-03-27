@@ -50,6 +50,7 @@ import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
@@ -134,6 +135,17 @@ public class GameLogicHandler {
         return trackedPlayerUuid == uuid;
     }
 
+    public static PlayerEntity getTrackedPlayer() {
+        if (trackedPlayerUuid != null) {
+            assert MinecraftClient.getInstance().world != null;
+            var p = MinecraftClient.getInstance().world.getPlayerByUuid(trackedPlayerUuid);
+
+            if (p != null) return p;
+        }
+
+        return MinecraftClient.getInstance().player;
+    }
+
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
         previousLeftSaberPos = leftSaberPos;
         previousLeftSaberRotation = leftSaberRotation;
@@ -153,13 +165,13 @@ public class GameLogicHandler {
     }
 
     public static void update(double deltaTime, float tickDelta) {
-        assert MinecraftClient.getInstance().player != null;
-        headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
-        if (FPFC) {
+        var player = getTrackedPlayer();
+        headPos = player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (player.getEyeY() - player.getPos().y), 0);
+        if (FPFC && isTrackingClient()) {
             Quaternionf rot = new Quaternionf()
-                    .rotateY(-MinecraftClient.getInstance().player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
+                    .rotateY(-player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize()
-                    .rotateX((90 + MinecraftClient.getInstance().player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
+                    .rotateX((90 + player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize();
             //Quaternionf rotation = new Quaternionf().rotateX(90 * MathHelper.RADIANS_PER_DEGREE).normalize().add(rot);
             rightSaberPos = new Vector3f(headPos);
@@ -314,8 +326,6 @@ public class GameLogicHandler {
                 DebugRenderer.renderHitbox(accurateHitbox, notePos, note.getWorldRot(), 0xFFFF00);
             }
         }
-
-        assert MinecraftClient.getInstance().player != null;
 
         if (note instanceof PhysicalScorableObject scorable) {
             if (scorable.score$getData().score$getNoteType() == saberColor) {

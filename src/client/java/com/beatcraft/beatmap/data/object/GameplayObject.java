@@ -18,6 +18,7 @@ public abstract class GameplayObject extends BeatmapObject {
     protected float offset;
     protected float x;
     protected float y;
+    protected int mapIndex;
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
@@ -84,6 +85,14 @@ public abstract class GameplayObject extends BeatmapObject {
                 pathAnimation.loadV3(customData.get("animation").getAsJsonObject(), difficulty);
             }
         }
+    }
+
+    public void setIndex(int index) {
+        mapIndex = index;
+    }
+
+    public int getMapIndex() {
+        return mapIndex;
     }
 
     @Override
