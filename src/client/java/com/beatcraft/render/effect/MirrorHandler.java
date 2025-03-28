@@ -63,8 +63,8 @@ public class MirrorHandler {
 
     public static void resize() {
         var window = MinecraftClient.getInstance().getWindow();
-        mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
-        depthFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
+        mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), MinecraftClient.IS_SYSTEM_MAC);
+        depthFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), MinecraftClient.IS_SYSTEM_MAC);
         mirrorBloomfog.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), false);
     }
 
@@ -223,7 +223,7 @@ public class MirrorHandler {
 
     private static void renderForDepth(Tessellator tessellator, Vector3f cameraPos) {
         depthFramebuffer.setClearColor(0, 0, 0, 1);
-        depthFramebuffer.clear(true);
+        depthFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = depthFramebuffer;
@@ -287,7 +287,7 @@ public class MirrorHandler {
 
 
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
-        mirrorFramebuffer.clear(true);
+        mirrorFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;

@@ -55,6 +55,7 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.Random;
@@ -153,6 +154,7 @@ public class GameLogicHandler {
     }
 
     public static void update(double deltaTime, float tickDelta) {
+        if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
         assert MinecraftClient.getInstance().player != null;
         headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
         if (FPFC) {

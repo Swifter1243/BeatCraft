@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.nio.file.Path;
