@@ -14,7 +14,6 @@ import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayFrame;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -36,6 +35,7 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -136,7 +136,7 @@ public class SaberRenderer {
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
         Vector3f hiltPos = new Vector3f(0, (7/8f)*0.2f, 0).rotate(rotation).add(basePos);
         Vector3f tipPos = new Vector3f(0, (41/8f)*0.2f, 0).rotate(rotation).add(basePos);
-        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
         int color;
 
         int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -151,7 +151,6 @@ public class SaberRenderer {
         queueRender(hiltPos, tipPos, stash, color);
     }
 
-    // TODO: create unique saber trail per render-pass!!!!
     public static void renderTrail(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack) {
         if (stack.isOf(ModItems.SABER_ITEM)) {
 
@@ -214,7 +213,7 @@ public class SaberRenderer {
                 }
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
-                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
                 int color;
 
                 int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -264,7 +263,7 @@ public class SaberRenderer {
             Vec3d pos = entity.getLerpedPos(tickDelta);
             blade_base = blade_base.add((float) pos.x, (float) pos.y, (float) pos.z);
             blade_tip = blade_tip.add((float) pos.x, (float) pos.y, (float) pos.z);
-            Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+            Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
             int color;
 
             int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);

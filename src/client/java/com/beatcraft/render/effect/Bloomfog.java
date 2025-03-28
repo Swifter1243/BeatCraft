@@ -18,6 +18,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -257,6 +258,10 @@ public class Bloomfog {
         RenderSystem.enableDepthTest();
 
         // TODO: get camera position/rotation in a way that works with vivecraft's smooth camera
+
+        //var cameraRotation = ClientDataHolderVR.getInstance().cameraTracker.getRotation();
+        //var cameraPos = ClientDataHolderVR.getInstance().cameraTracker.getPosition().toVector3f();
+
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
 
         float pitch = camera.getPitch();
