@@ -55,6 +55,8 @@
   "key.beatcraft.settings": "Open BeatCraft settings",
   "key.beatcraft.song_search": "Open BeatSaver download page",
   "key.beatcraft.pause_song": "Pause song",
+  "key.beatcraft.toggle_fpfc": "Toggle FPFC",
+  "key.beatcraft.lock_movement": "Toggle movement locking",
 
   "category.beatcraft.keybindings": "BeatCraft"
 }
