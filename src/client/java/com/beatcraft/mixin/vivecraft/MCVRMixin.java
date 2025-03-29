@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.provider.MCVR;
 
-@Mixin(MCVR.class)
+@Mixin(value = MCVR.class, remap = false)
 public abstract class MCVRMixin {
 
     @Shadow protected ClientDataHolderVR dh;
@@ -40,7 +40,8 @@ public abstract class MCVRMixin {
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/client/option/KeyBinding;isPressed()Z",
-            ordinal = 1
+            ordinal = 1,
+            remap = true
         ),
         remap = false
     )
@@ -53,7 +54,8 @@ public abstract class MCVRMixin {
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/client/option/KeyBinding;isPressed()Z",
-            ordinal = 2
+            ordinal = 2,
+            remap = true
         ),
         remap = false
     )
@@ -84,7 +86,8 @@ public abstract class MCVRMixin {
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/client/option/KeyBinding;wasPressed()Z",
-            ordinal = 20
+            ordinal = 20,
+            remap = true
         ),
         remap = false
     )

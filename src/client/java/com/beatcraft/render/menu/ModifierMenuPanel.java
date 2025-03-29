@@ -135,7 +135,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 InputSystem::unlockMovement,
                 InputSystem::lockMovement,
                 () -> InputSystem.isMovementLocked() ? "ON" : "OFF",
-                new Vector3f(-100, 84, 0))
+                new Vector3f(-100, 84, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Show HUD",
+                () -> HUDRenderer.showHUD = false,
+                () -> HUDRenderer.showHUD = true,
+                () -> HUDRenderer.showHUD ? "SHOW" : "HIDE",
+                new Vector3f(230, -175, 0))
         ));
 
         settingsPage.children.addAll(List.of(

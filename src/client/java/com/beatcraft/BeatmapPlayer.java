@@ -46,7 +46,7 @@ public class BeatmapPlayer {
         elapsedNanoTime = secondsToNano(seconds);
     }
 
-    private static void setCurrentBeat(float beat) {
+    public static void setCurrentBeat(float beat) {
         if (currentInfo == null) return;
         currentBeatmap.seek(beat);
         //float seconds = MathUtil.beatsToSeconds(beat, currentInfo.getBpm());

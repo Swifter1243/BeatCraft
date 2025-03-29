@@ -313,7 +313,8 @@ public class BeatCraftClient implements ClientModInitializer {
     private int songScrub(CommandContext<FabricClientCommandSource> context) {
         float beats = FloatArgumentType.getFloat(context, "beats");
         float newBeat = Math.max(0.0f, BeatmapPlayer.getCurrentBeat() + beats);
-        BeatmapPlayer.play(newBeat);
+        BeatmapPlayer.setCurrentBeat(newBeat);
+
 
         context.getSource().sendFeedback(Text.literal("Scrubbed to beat " + newBeat + "!"));
         return 1;

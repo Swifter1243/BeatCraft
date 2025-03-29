@@ -45,13 +45,12 @@ public class HUDRenderer {
 
     public static MenuScene scene = MenuScene.SongSelect;
     public static NoteType pointerSaber = NoteType.BLUE;
-    private static Vector3f pointerTarget = new Vector3f();
 
     public static boolean triggerPressed = false;
     public static boolean triggerWasPressed = false;
 
-    private static boolean showHUD = true;
-    private static boolean advancedHUD = true;
+    public static boolean showHUD = true;
+    public static boolean advancedHUD = true;
 
     // In-game UI positioning
     private static final Vector3f leftHudPosition = new Vector3f(3, 1, 0);
@@ -93,6 +92,7 @@ public class HUDRenderer {
     }
 
     public static void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
+        if (!showHUD) return;
         BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
     }
 
@@ -137,9 +137,7 @@ public class HUDRenderer {
 
     public static void renderGameHud(VertexConsumerProvider immediate) {
 
-        if (!showHUD) return;
-
-        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) {
+        if ((!showHUD) || BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) {
             renderTime(null, null, null, null, null);
             return;
         }
@@ -378,7 +376,6 @@ public class HUDRenderer {
     }
 
     private static void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
-        //BeatCraft.LOGGER.info("Pointer at {} {}", position, normal);
         BeatcraftParticleRenderer.addParticle(new MenuPointerParticle(position.add(normal.mul(0.01f, new Vector3f()), new Vector3f()), normal));
     }
 
@@ -580,7 +577,7 @@ public class HUDRenderer {
             GameLogicHandler.triggerSongEnd();
         }
 
-        if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
+        if ((!showHUD) || BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
 
         String display = currentTime + " | " + length;
 
