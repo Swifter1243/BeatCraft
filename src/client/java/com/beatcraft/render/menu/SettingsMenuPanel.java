@@ -155,14 +155,12 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
         Vector2f SIZE = new Vector2f();
 
         try {
-            var initial = getter.call();
-            TextWidget valueDisplay = new TextWidget(initial, new Vector3f(0, -11, 0)).withScale(3);
+            //var initial = getter.call();
+            TextWidget valueDisplay = new TextWidget(getter, new Vector3f(0, -11, 0)).withScale(3);
 
             Runnable left = () -> {
                 try {
                     down.run();
-                    valueDisplay.text = getter.call();
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -171,8 +169,6 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
             Runnable right = () -> {
                 try {
                     up.run();
-                    valueDisplay.text = getter.call();
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

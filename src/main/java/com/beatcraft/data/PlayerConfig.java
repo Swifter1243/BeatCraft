@@ -29,6 +29,7 @@ public class PlayerConfig {
     private boolean quality_doBloomfog = true;
     private boolean quality_doBloom = true;
     private boolean quality_doMirror = true;
+    private boolean quality_skyFog = true;
     private boolean quality_smokeGraphics = true;
     private boolean quality_burnMarkTrails = true;
     private boolean quality_sparkParticles = true;
@@ -57,6 +58,7 @@ public class PlayerConfig {
         quality_doBloomfog = JsonUtil.getOrDefault(json, "quality.bloomfog", JsonElement::getAsBoolean, quality_doBloomfog);
         quality_doBloom = JsonUtil.getOrDefault(json, "quality.bloom", JsonElement::getAsBoolean, quality_doBloom);
         quality_doMirror = JsonUtil.getOrDefault(json, "quality.mirror", JsonElement::getAsBoolean, quality_doMirror);
+        quality_skyFog = JsonUtil.getOrDefault(json, "quality.sky_fog", JsonElement::getAsBoolean, quality_skyFog);
 
         quality_smokeGraphics = JsonUtil.getOrDefault(json, "quality.smoke_graphics", JsonElement::getAsBoolean, quality_smokeGraphics);
         quality_burnMarkTrails = JsonUtil.getOrDefault(json, "quality.burn_mark_trails", JsonElement::getAsBoolean, quality_burnMarkTrails);
@@ -101,6 +103,7 @@ public class PlayerConfig {
         json.addProperty("quality.bloomfog", quality_doBloomfog);
         json.addProperty("quality.bloom", quality_doBloom);
         json.addProperty("quality.mirror", quality_doMirror);
+        json.addProperty("quality.sky_fog", quality_skyFog);
 
         json.addProperty("quality.smoke_graphics", quality_smokeGraphics);
         json.addProperty("quality.burn_mark_trails", quality_burnMarkTrails);
@@ -263,6 +266,14 @@ public class PlayerConfig {
 
     public boolean doMirror() {
         return quality_doMirror;
+    }
+
+    public void setSkyFogEnabled(boolean value) {
+        quality_skyFog = value;
+    }
+
+    public boolean doSkyFog() {
+        return quality_skyFog;
     }
 
 

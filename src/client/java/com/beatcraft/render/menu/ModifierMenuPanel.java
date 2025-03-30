@@ -173,7 +173,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatCraftClient.playerConfig.setMirrorEnabled(false),
                 () -> BeatCraftClient.playerConfig.setMirrorEnabled(true),
                 () -> BeatCraftClient.playerConfig.doMirror() ? "ON" : "OFF",
-                new Vector3f(230, -71, 0))
+                new Vector3f(230, -71, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Sky Fog",
+                () -> BeatCraftClient.playerConfig.setSkyFogEnabled(false),
+                () -> BeatCraftClient.playerConfig.setSkyFogEnabled(true),
+                () -> BeatCraftClient.playerConfig.doSkyFog() ? "ON" : "OFF",
+                new Vector3f(230, -19, 0))
 
         ));
 

@@ -129,6 +129,10 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
         mirrorToggle.checked(BeatCraftClient.playerConfig.doMirror());
         mirrorToggle.onChanged(BeatCraftClient.playerConfig::setMirrorEnabled);
 
+        var skyFogToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.sky_fog"));
+        skyFogToggle.checked(BeatCraftClient.playerConfig.doSkyFog());
+        skyFogToggle.onChanged(BeatCraftClient.playerConfig::setSkyFogEnabled);
+
         settingPage.child(Components.spacer(10)).child(
             Containers.grid(Sizing.fill(90), Sizing.content(), 2, 2)
                 .child(
@@ -142,6 +146,10 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 .child(
                     mirrorToggle,
                     1, 0
+                )
+                .child(
+                    skyFogToggle,
+                    1, 1
                 )
         );
 
