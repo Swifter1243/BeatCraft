@@ -9,6 +9,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.screen.SongDownloaderScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -184,7 +185,16 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         ));
 
 
-        downloaderPage.children.add(new TextWidget("Go to Settings > Options > Beatcraft > Beatsaver", new Vector3f(0, -11, -0.01f), 3));
+        downloaderPage.children.add(SettingsMenuPanel.getButton(
+            new TextWidget("Open download screen", new Vector3f(0, -11, 0.01f), 3),
+            () -> {
+                var screen = new SongDownloaderScreen(null);
+                MinecraftClient.getInstance().setScreen(screen);
+            },
+            new Vector3f(0, 0, 0),
+            new Vector2f(350, 50)
+        ));
+
         replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
     }
