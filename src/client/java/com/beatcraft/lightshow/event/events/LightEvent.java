@@ -71,13 +71,19 @@ public class LightEvent extends BeatmapObject implements IEvent {
 
         var customData = JsonUtil.getOrDefault(json,"_customData", JsonElement::getAsJsonObject, null);
         if (customData != null) {
-            var lightIDs = JsonUtil.getOrDefault(customData, "_lightID", JsonElement::getAsJsonArray, null);
-            if (lightIDs != null) {
-                this.lightIDs = new int[lightIDs.size()];
 
-                for (int i = 0; i < lightIDs.size(); i++) {
-                    int lightID = lightIDs.get(i).getAsInt();
-                    this.lightIDs[i] = lightID;
+            var lightIDs = JsonUtil.getOrDefault(customData, "_lightID", e -> e, null);
+            if (lightIDs != null) {
+                if (lightIDs.isJsonArray()) {
+                    var lightIDsArray = lightIDs.getAsJsonArray();
+                    this.lightIDs = new int[lightIDsArray.size()];
+                    for (int i = 0; i < lightIDsArray.size(); i++) {
+                        int lightID = lightIDsArray.get(i).getAsInt();
+                        this.lightIDs[i] = lightID;
+                    }
+                } else {
+                    this.lightIDs = new int[1];
+                    this.lightIDs[0] = lightIDs.getAsInt();
                 }
             }
 
