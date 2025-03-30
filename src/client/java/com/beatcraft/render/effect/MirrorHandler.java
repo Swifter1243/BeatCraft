@@ -62,6 +62,7 @@ public class MirrorHandler {
     }
 
     public static void resize() {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         var window = MinecraftClient.getInstance().getWindow();
         mirrorFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), MinecraftClient.IS_SYSTEM_MAC);
         depthFramebuffer.resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), MinecraftClient.IS_SYSTEM_MAC);
@@ -69,22 +70,27 @@ public class MirrorHandler {
     }
 
     public static void recordMirrorLightDraw(Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean> call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         mirrorDraws.add(call);
     }
 
     public static void recordMirrorNoteDraw(BiConsumer<BufferBuilder, Vector3f> call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         mirrorNotes.add(call);
     }
 
     public static void recordMirrorArrowDraw(BiConsumer<BufferBuilder, Vector3f> call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         mirrorArrows.add(call);
     }
 
     public static void recordMirrorLaserRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         mirrorWallGlows.add(call);
     }
 
     public static void recordEarlyRenderCall(Runnable call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         earlyCalls.add(call);
     }
 
@@ -97,6 +103,7 @@ public class MirrorHandler {
     }
 
     public static void recordMirroredObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
+        if (!BeatCraftClient.playerConfig.doMirror()) return;
         obstacleRenderCalls.add(call);
     }
 
@@ -262,15 +269,26 @@ public class MirrorHandler {
 
         var q = MemoryPool.newQuaternionf(invCameraRotation).conjugate();
         worldTransform.rotate(q);
-        MemoryPool.release(q);
 
-        renderForDepth(tessellator, cameraPos);
+        if (BeatCraftClient.playerConfig.doMirror()) {
+            renderForDepth(tessellator, cameraPos);
+        }
 
         // render mirror block non-reflective faces
         for (var call : plainMirrorCalls) {
             call.accept(buffer, cameraPos);
         }
         plainMirrorCalls.clear();
+        if (!BeatCraftClient.playerConfig.doMirror()) {
+            q.set(invCameraRotation);
+            q.conjugate();
+            for (var call : drawCalls) {
+                call.accept(buffer, cameraPos, q);
+            }
+            drawCalls.clear();
+        }
+        MemoryPool.release(q);
+
 
         var buff = buffer.endNullable();
 
@@ -285,9 +303,23 @@ public class MirrorHandler {
             RenderSystem.enableCull();
         }
 
-
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
         mirrorFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+
+        if (!BeatCraftClient.playerConfig.doMirror()) {
+            earlyCalls.clear();
+            mirrorDraws.clear();
+            mirrorNotes.clear();
+            mirrorArrows.clear();
+            mirrorWallGlows.clear();
+            obstacleRenderCalls.clear();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableCull();
+            RenderSystem.disableDepthTest();
+            MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+            return;
+        };
+
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;

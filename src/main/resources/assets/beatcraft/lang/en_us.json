@@ -16,6 +16,9 @@
 
   "setting.beatcraft.player_option.reduced_debris": "Reduced Debris",
 
+  "setting.beatcraft.quality.bloomfog": "Bloomfog",
+  "setting.beatcraft.quality.bloom": "Bloom",
+  "setting.beatcraft.quality.mirror": "Mirror",
   "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
   "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics",
   "setting.beatcraft.quality.burn_mark_trails": "Burn Mark Trails",

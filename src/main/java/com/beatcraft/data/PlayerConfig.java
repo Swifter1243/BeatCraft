@@ -2,6 +2,7 @@ package com.beatcraft.data;
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.data.types.Stash;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -25,6 +26,9 @@ public class PlayerConfig {
     private int audio_latency = 0; // measured in milliseconds
     private boolean audio_overrideLatency = false;
 
+    private boolean quality_doBloomfog = true;
+    private boolean quality_doBloom = true;
+    private boolean quality_doMirror = true;
     private boolean quality_smokeGraphics = true;
     private boolean quality_burnMarkTrails = true;
     private boolean quality_sparkParticles = true;
@@ -38,6 +42,7 @@ public class PlayerConfig {
     private static final ControllerProfile DEFAULT_CONTROLLER_PROFILE = new ControllerProfile();
 
     private boolean option_reducedDebris = false;
+    private int option_trailIntensity = 30;
 
     private boolean setting_placeEnvironmentStructures = true;
 
@@ -49,11 +54,18 @@ public class PlayerConfig {
         audio_latency = JsonUtil.getOrDefault(json, "audio.latency", JsonElement::getAsInt, audio_latency);
         audio_overrideLatency = JsonUtil.getOrDefault(json, "audio.override_latency", JsonElement::getAsBoolean, audio_overrideLatency);
 
+        quality_doBloomfog = JsonUtil.getOrDefault(json, "quality.bloomfog", JsonElement::getAsBoolean, quality_doBloomfog);
+        quality_doBloom = JsonUtil.getOrDefault(json, "quality.bloom", JsonElement::getAsBoolean, quality_doBloom);
+        quality_doMirror = JsonUtil.getOrDefault(json, "quality.mirror", JsonElement::getAsBoolean, quality_doMirror);
+
         quality_smokeGraphics = JsonUtil.getOrDefault(json, "quality.smoke_graphics", JsonElement::getAsBoolean, quality_smokeGraphics);
         quality_burnMarkTrails = JsonUtil.getOrDefault(json, "quality.burn_mark_trails", JsonElement::getAsBoolean, quality_burnMarkTrails);
         quality_sparkParticles = JsonUtil.getOrDefault(json, "quality.spark_particles", JsonElement::getAsBoolean, quality_sparkParticles);
 
         option_reducedDebris = JsonUtil.getOrDefault(json, "option.reduced_debris", JsonElement::getAsBoolean, option_reducedDebris);
+        option_trailIntensity = JsonUtil.getOrDefault(json, "option.trail_intensity", JsonElement::getAsInt, option_trailIntensity);
+
+        Stash.updateTrailSize(option_trailIntensity);
 
         if (json.has("active_modifiers")) {
             JsonArray rawModifiers = json.getAsJsonArray("active_modifiers");
@@ -86,11 +98,16 @@ public class PlayerConfig {
         json.addProperty("audio.latency", audio_latency);
         json.addProperty("audio.override_latency", audio_overrideLatency);
 
+        json.addProperty("quality.bloomfog", quality_doBloomfog);
+        json.addProperty("quality.bloom", quality_doBloom);
+        json.addProperty("quality.mirror", quality_doMirror);
+
         json.addProperty("quality.smoke_graphics", quality_smokeGraphics);
         json.addProperty("quality.burn_mark_trails", quality_burnMarkTrails);
         json.addProperty("quality.spark_particles", quality_sparkParticles);
 
         json.addProperty("option.reduced_debris", option_reducedDebris);
+        json.addProperty("option.trail_intensity", option_trailIntensity);
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
@@ -214,6 +231,40 @@ public class PlayerConfig {
     public void setEnvironmentPlacing(boolean value) {
         setting_placeEnvironmentStructures = value;
     }
+
+    public void setTrailIntensity(int value) {
+        option_trailIntensity = value;
+        Stash.updateTrailSize(value);
+    }
+
+    public int getTrailIntensity() {
+        return option_trailIntensity;
+    }
+
+    public void setBloomfogEnabled(boolean value) {
+        quality_doBloomfog = value;
+    }
+
+    public boolean doBloomfog() {
+        return quality_doBloomfog;
+    }
+
+    public void setBloomEnabled(boolean value) {
+        quality_doBloom = value;
+    }
+
+    public boolean doBloom() {
+        return quality_doBloom;
+    }
+
+    public void setMirrorEnabled(boolean value) {
+        quality_doMirror = value;
+    }
+
+    public boolean doMirror() {
+        return quality_doMirror;
+    }
+
 
     public ControllerProfile getActiveControllerProfile() {
         if (profiles.isEmpty() || controller_selectedProfile_index <= -1) {

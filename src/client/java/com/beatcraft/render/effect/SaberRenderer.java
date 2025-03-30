@@ -317,14 +317,15 @@ public class SaberRenderer {
         BuiltBuffer buffer = trail_buffer.endNullable();
         render_calls.clear();
 
-        if (buffer == null) return;
-
-        buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
-        BufferRenderer.drawWithGlobalProgram(buffer);
-        RenderSystem.enableDepthTest();
+        if (buffer != null) {
+            buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
+            BufferRenderer.drawWithGlobalProgram(buffer);
+        }
+        RenderSystem.disableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
 
 
     }

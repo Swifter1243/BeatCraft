@@ -114,9 +114,9 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Trail Intensity",
-                () -> Stash.updateTrailSize(Math.max(10, Stash.getTrailSize()-10)),
-                () -> Stash.updateTrailSize(Math.min(200, Stash.getTrailSize()+10)),
-                () -> String.valueOf(Stash.getTrailSize()),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(10, Stash.getTrailSize()-10)),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, Stash.getTrailSize()+10)),
+                () -> String.valueOf(BeatCraftClient.playerConfig.getTrailIntensity()),
                 new Vector3f(-100, -71, 0)),
 
             SettingsMenuPanel.getOptionModifier("Show Arms",
@@ -155,7 +155,26 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(false),
                 () -> BeatCraftClient.playerConfig.setEnvironmentPlacing(true),
                 () -> BeatCraftClient.playerConfig.doEnvironmentPlacing() ? "ON" : "OFF",
-                new Vector3f(-100, -123, 0))
+                new Vector3f(-100, -123, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Bloomfog",
+                () -> BeatCraftClient.playerConfig.setBloomfogEnabled(false),
+                () -> BeatCraftClient.playerConfig.setBloomfogEnabled(true),
+                () -> BeatCraftClient.playerConfig.doBloomfog() ? "ON" : "OFF",
+                new Vector3f(230, -175, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Bloom",
+                () -> BeatCraftClient.playerConfig.setBloomEnabled(false),
+                () -> BeatCraftClient.playerConfig.setBloomEnabled(true),
+                () -> BeatCraftClient.playerConfig.doBloom() ? "ON" : "OFF",
+                new Vector3f(230, -123, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Mirror",
+                () -> BeatCraftClient.playerConfig.setMirrorEnabled(false),
+                () -> BeatCraftClient.playerConfig.setMirrorEnabled(true),
+                () -> BeatCraftClient.playerConfig.doMirror() ? "ON" : "OFF",
+                new Vector3f(230, -71, 0))
+
         ));
 
 
