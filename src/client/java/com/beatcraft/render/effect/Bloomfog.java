@@ -255,7 +255,10 @@ public class Bloomfog {
         }
 
         if (!BeatCraftClient.playerConfig.doBloomfog()) {
-            MirrorHandler.resize();
+            if (width != lastSize[0] || height != lastSize[1]) {
+                lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
+                MirrorHandler.resize();
+            }
             renderCalls.forEach(MirrorHandler::recordMirrorLightDraw);
             renderCalls.clear();
             MirrorHandler.invCameraRotation = invCameraRotation;
