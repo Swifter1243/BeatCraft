@@ -35,11 +35,21 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         return new Quaternionf();
     }
 
+
+    private static final Vector3f MODEL_OFFSET = new Vector3f();
+    @Override
+    protected Vector3f getModelOffset() {
+        return MODEL_OFFSET;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek().getPositionMatrix().getTranslation(MemoryPool.newVector3f());
         var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
-        updateBounds();
+        var scale = matrices.peek().getPositionMatrix().getScale(MemoryPool.newVector3f());
+
+
+        updateBounds(scale);
 
 
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
@@ -111,14 +121,14 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     protected Vector2f get2DPosition() {
         return new Vector2f(
-            data.getX() * 0.6f - 1.15f,
-            data.getY() * 0.6f - 0.45f
+            data.getX() * 0.6f - 0.9f,
+            data.getY() * 0.6f - 0.6f
         );
     }
 
-    private void updateBounds() {
-        bounds.min.x = -((data.getWidth() * 0.6f) - 0.3f);
-        bounds.max.y = (data.getHeight() * 0.6f);
+    private void updateBounds(Vector3f scale) {
+        bounds.min.x = -(((data.getWidth()) * scale.x * 1.2f) - 0.3f);
+        bounds.max.y = (data.getHeight() * scale.y * 1.2f);
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
 

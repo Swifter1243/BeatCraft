@@ -249,6 +249,13 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         Matrix4f jumpMatrix = new Matrix4f();
 
         Vector3f v = getJumpsPosition(lifetime, time);
+
+        if (animationState.getDefinitePosition() != null) {
+            v.mul(1, 1, 0);
+            var v2 = animationState.getDefinitePosition();
+            v.add(v2);
+        }
+
         jumpMatrix.translate(v);
 
         m.translate(WORLD_OFFSET);
@@ -333,17 +340,23 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return data.getTrackContainer().getAnimatedPathState(lifetime);
     }
 
+
+    private static final Vector3f DEFAULT_MODEL_OFFSET = new Vector3f(-0.5f);
+    protected Vector3f getModelOffset() {
+        return DEFAULT_MODEL_OFFSET;
+    }
+
     @Override
     protected void worldRender(MatrixStack matrices, VertexConsumer vertexConsumer) {
         applyMatrixToRender(matrix, matrices);
 
-
-        worldPos = matrices.peek().getPositionMatrix().getTranslation(worldPos)
+        matrices.peek().getPositionMatrix().getTranslation(worldPos)
             .add(mc.gameRenderer.getCamera().getPos().toVector3f());
-        worldRot = matrices.peek().getPositionMatrix().getUnnormalizedRotation(worldRot);
+        matrices.peek().getPositionMatrix().getUnnormalizedRotation(worldRot);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
-        matrices.translate(-0.5, -0.5, -0.5);
+        var v = getModelOffset();
+        matrices.translate(v.x, v.y, v.z);
 
 
         GameLogicHandler.checkNote(this);
