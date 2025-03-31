@@ -20,8 +20,8 @@ public class Obstacle extends GameplayObject {
 
             if (customData.has("_coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("_coordinates");
-                x = coordinates.get(0).getAsInt() + 1.9f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("_position")) {
@@ -55,8 +55,8 @@ public class Obstacle extends GameplayObject {
 
             if (customData.has("coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("coordinates");
-                x = coordinates.get(0).getAsInt() + 1.9f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("position")) {
@@ -94,8 +94,8 @@ public class Obstacle extends GameplayObject {
         njs = difficulty.getSetDifficulty().getNjs();
 
         this.duration = json.get("_duration").getAsFloat();
-        this.x = json.get("_lineIndex").getAsInt();
-        this.width = (float) json.get("_width").getAsInt();
+        this.x = json.get("_lineIndex").getAsFloat();
+        this.width = json.get("_width").getAsFloat();
 
         int _type = json.get("_type").getAsInt();
 
@@ -110,7 +110,7 @@ public class Obstacle extends GameplayObject {
             }
             case 2 -> {
                 this.y = JsonUtil.getOrDefault(json, "_lineLayer", JsonElement::getAsFloat, 0f);
-                this.height = (float) JsonUtil.getOrDefault(json, "_height", JsonElement::getAsInt, 5);
+                this.height = (float) JsonUtil.getOrDefault(json, "_height", JsonElement::getAsFloat, 5f);
             }
         }
 
@@ -130,10 +130,10 @@ public class Obstacle extends GameplayObject {
         njs = difficulty.getSetDifficulty().getNjs();
 
         this.duration = JsonUtil.getOrDefault(json, "d", JsonElement::getAsFloat, 0f);
-        this.x = (float) JsonUtil.getOrDefault(json, "x", JsonElement::getAsInt, 0);
-        this.y = (float) JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
-        this.width = (float) JsonUtil.getOrDefault(json, "w", JsonElement::getAsInt, 0);
-        this.height = (float) JsonUtil.getOrDefault(json, "h", JsonElement::getAsInt, 0);
+        this.x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
+        this.y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
+        this.width = JsonUtil.getOrDefault(json, "w", JsonElement::getAsFloat, 0f);
+        this.height = JsonUtil.getOrDefault(json, "h", JsonElement::getAsFloat, 0f);
 
         loadCustomDataV3(json, difficulty);
         loadCustomObstacleDataV3(json, difficulty);
@@ -154,10 +154,10 @@ public class Obstacle extends GameplayObject {
         JsonObject data = obstaclesData.get(i).getAsJsonObject();
 
         this.duration = JsonUtil.getOrDefault(data, "d", JsonElement::getAsFloat, 0f);
-        this.x = (float) JsonUtil.getOrDefault(data, "x", JsonElement::getAsInt, 0);
-        this.y = (float) JsonUtil.getOrDefault(data, "y", JsonElement::getAsInt, 0);
-        this.width = (float) JsonUtil.getOrDefault(data, "w", JsonElement::getAsInt, 0);
-        this.height = (float) JsonUtil.getOrDefault(data, "h", JsonElement::getAsInt, 0);
+        this.x = JsonUtil.getOrDefault(data, "x", JsonElement::getAsFloat, 0f);
+        this.y = JsonUtil.getOrDefault(data, "y", JsonElement::getAsFloat, 0f);
+        this.width = JsonUtil.getOrDefault(data, "w", JsonElement::getAsFloat, 0f);
+        this.height = JsonUtil.getOrDefault(data, "h", JsonElement::getAsFloat, 0f);
 
         loadJumps(difficulty.getInfo());
 
