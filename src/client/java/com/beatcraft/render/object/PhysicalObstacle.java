@@ -60,10 +60,10 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
         renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
 
-        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
-        ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, color);
-        ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, color);
+
+        ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, data.getColor().toARGB(1.5f));
+        ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, data.getColor().toARGB(1.5f));
 
     }
 
@@ -90,8 +90,9 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         MirrorHandler.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, int color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, int _color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
         List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
+        var color = this.data.getColor().toARGB(0.15f);
         for (Vector3f[] face : faces) {
             var c1 = MemoryPool.newVector3f(face[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
             var c2 = MemoryPool.newVector3f(face[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);

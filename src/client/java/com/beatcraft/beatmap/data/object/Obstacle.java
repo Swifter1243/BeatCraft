@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,6 +13,7 @@ public class Obstacle extends GameplayObject {
     private float duration;
     private float width;
     private float height;
+    private Color color;
     private boolean noodleSizing = false;
 
     public void loadCustomObstacleDataV2(JsonObject json, Difficulty difficulty) {
@@ -28,6 +30,16 @@ public class Obstacle extends GameplayObject {
                 JsonArray coordinates = customData.getAsJsonArray("_position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("_color")) {
+                JsonArray color = customData.getAsJsonArray("_color");
+
+                var col = JsonUtil.getVector4(color);
+
+                this.color = new Color(col.x, col.y, col.z, col.w);
+            } else {
+                this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
             }
 
             if (customData.has("_scale")) {
@@ -63,6 +75,16 @@ public class Obstacle extends GameplayObject {
                 JsonArray coordinates = customData.getAsJsonArray("position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("color")) {
+                JsonArray color = customData.getAsJsonArray("color");
+
+                var col = JsonUtil.getVector4(color);
+
+                this.color = new Color(col.x, col.y, col.z, col.w);
+            } else {
+                this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
             }
 
             if (customData.has("size")) {
@@ -181,6 +203,10 @@ public class Obstacle extends GameplayObject {
 
     public float getHeight() {
         return height;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
 }
