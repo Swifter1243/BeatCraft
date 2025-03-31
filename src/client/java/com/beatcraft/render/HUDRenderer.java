@@ -8,6 +8,7 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Rank;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.menu.SongSelectMenu;
@@ -24,6 +25,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector2f;
@@ -55,7 +57,7 @@ public class HUDRenderer {
     // In-game UI positioning
     private static final Vector3f leftHudPosition = new Vector3f(3, 1, 0);
     private static final Vector3f rightHudPosition = new Vector3f(-3, 1, 0);
-    private static final Vector3f healthBarPosition = new Vector3f(0, -2, 0);
+    private static final Vector3f healthBarPosition = new Vector3f(0, -1.5f, 0);
 
     private static final Quaternionf leftHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
     private static final Quaternionf rightHudOrientation = new Quaternionf().rotateZ((float) Math.PI);
@@ -177,13 +179,6 @@ public class HUDRenderer {
         renderTime(matrices, textRenderer, buffer, cameraPos, immediate);
         matrices.pop();
 
-        matrices.push();
-        matrices.translate(healthBarPosition.x, healthBarPosition.y, healthBarPosition.z);
-        matrices.multiply(healthBarOrientation);
-        matrices.scale(1f/32f, 1f/32f, 1f/32f);
-        renderPlayerHealth(matrices, textRenderer, buffer, cameraPos, immediate);
-        matrices.pop();
-
         BuiltBuffer buff = buffer.endNullable();
         if (buff == null) return;
 
@@ -198,6 +193,15 @@ public class HUDRenderer {
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
+
+
+        matrices.push();
+        matrices.translate(healthBarPosition.x, healthBarPosition.y, healthBarPosition.z);
+        matrices.multiply(healthBarOrientation);
+        matrices.scale(1f/32f, 1f/32f, 1f/32f);
+        renderPlayerHealth(matrices, textRenderer, cameraPos, immediate);
+        matrices.pop();
+
     }
 
     private static void renderSongSelectHud(VertexConsumerProvider immediate) {
@@ -612,22 +616,159 @@ public class HUDRenderer {
         matrices.pop();
     }
 
-    private static void renderPlayerHealth(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
+    private static void renderPlayerHealth(MatrixStack matrices, TextRenderer textRenderer, Vector3f cameraPos, VertexConsumerProvider immediate) {
         float progress = GameLogicHandler.getHealthPercentage();
-        Vector3f leftPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f()).add(1.35f, 0, 0);
-        Vector3f rightPos = new Vector3f(leftPos.x - 2.7f, leftPos.y, leftPos.z);
-        Vector3f midPos = MathUtil.lerpVector3(leftPos, rightPos, progress);
 
-        buffer.vertex(leftPos.x, leftPos.y, leftPos.z).color(0xFFFFFFFF);
-        buffer.vertex(leftPos.x, leftPos.y+0.05f, leftPos.z).color(0xFFFFFFFF);
-        buffer.vertex(midPos.x, midPos.y+0.05f, midPos.z).color(0xFFFFFFFF);
-        buffer.vertex(midPos.x, midPos.y, midPos.z).color(0xFFFFFFFF);
+        switch (BeatCraftClient.playerConfig.getHealthStyle()) {
+            case Classic -> {
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(midPos.x, midPos.y, midPos.z).color(0x7F7F7F7F);
-        buffer.vertex(midPos.x, midPos.y+0.05f, midPos.z).color(0x7F7F7F7F);
-        buffer.vertex(rightPos.x, rightPos.y+0.05f, rightPos.z).color(0x7F7F7F7F);
-        buffer.vertex(rightPos.x, rightPos.y, rightPos.z).color(0x7F7F7F7F);
 
+                Vector3f leftPos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f()).add(1.35f, 0, 0);
+                Vector3f rightPos = new Vector3f(leftPos.x - 2.7f, leftPos.y, leftPos.z);
+                Vector3f midPos = MathUtil.lerpVector3(leftPos, rightPos, progress);
+
+                buffer.vertex(leftPos.x, leftPos.y, leftPos.z).color(0xFFFFFFFF);
+                buffer.vertex(leftPos.x, leftPos.y + 0.05f, leftPos.z).color(0xFFFFFFFF);
+                buffer.vertex(midPos.x, midPos.y + 0.05f, midPos.z).color(0xFFFFFFFF);
+                buffer.vertex(midPos.x, midPos.y, midPos.z).color(0xFFFFFFFF);
+
+                buffer.vertex(midPos.x, midPos.y, midPos.z).color(0x7F7F7F7F);
+                buffer.vertex(midPos.x, midPos.y + 0.05f, midPos.z).color(0x7F7F7F7F);
+                buffer.vertex(rightPos.x, rightPos.y + 0.05f, rightPos.z).color(0x7F7F7F7F);
+                buffer.vertex(rightPos.x, rightPos.y, rightPos.z).color(0x7F7F7F7F);
+
+
+                BuiltBuffer buff = buffer.endNullable();
+                if (buff == null) return;
+
+                RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableCull();
+                RenderSystem.enableDepthTest();
+                buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+                BufferRenderer.drawWithGlobalProgram(buff);
+                RenderSystem.disableDepthTest();
+                RenderSystem.enableCull();
+                RenderSystem.disableBlend();
+                RenderSystem.depthMask(true);
+
+            }
+            case Hearts -> {
+                // Style rules:
+                // normal health amount:
+                // - survival hearts / poison when in wall
+                // - shake at <= 8 hp
+                //
+                // 4 lives:
+                // - 4 hardcore hearts
+                // - shake at 1 heart left
+                //
+                // 1 life:
+                // - 1 hardcore heart, shaking
+
+                var maxHp = GameLogicHandler.maxHealth;
+                var hp = GameLogicHandler.health;
+                Vector3f pos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f());
+
+                // color red channel is used to identify heart index
+                var heart_buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+                boolean doShaking = false;
+                boolean inWall = GameLogicHandler.isInWall();
+
+                switch (maxHp) {
+                    case 1 -> {
+                        doShaking = true;
+                        if (hp == 1) {
+                            drawHeart(heart_buffer, pos, 1, 1, 1, inWall);
+                        }
+                    }
+                    case 4 -> {
+                        if (hp <= 2) {
+                            doShaking = true;
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            drawHeart(heart_buffer, pos, i, 4, progress, inWall);
+                        }
+                    }
+                    default -> {
+                        if (progress <= 0.275f) {
+                            doShaking = true;
+                        }
+                        for (int i = 0; i < 10; i++) {
+                            drawHeart(heart_buffer, pos, i, 10, progress, inWall);
+                        }
+                    }
+                }
+
+                var buff = heart_buffer.endNullable();
+                if (buff != null) {
+
+                    RenderSystem.setShader(() -> BeatCraftRenderer.heartHealthShader);
+                    RenderSystem.setShaderTexture(0, heartsTexture);
+                    BeatCraftRenderer.heartHealthShader.getUniformOrDefault("DoShaking").set(doShaking ? 1f : 0f);
+                    BeatCraftRenderer.heartHealthShader.getUniformOrDefault("GameTime").set(System.nanoTime() / 1_000_000_000f);
+
+                    RenderSystem.enableBlend();
+                    RenderSystem.defaultBlendFunc();
+                    RenderSystem.disableCull();
+                    RenderSystem.enableDepthTest();
+                    BufferRenderer.drawWithGlobalProgram(buff);
+                    RenderSystem.disableDepthTest();
+                    RenderSystem.enableCull();
+                    RenderSystem.disableBlend();
+                }
+
+
+
+            }
+        }
+
+    }
+
+    private static final Vector2f HEART_SIZE = new Vector2f(0.25f);
+
+    private static final Identifier heartsTexture = BeatCraft.id("textures/gui/hearts.png");
+
+    private static final Vector2f emptyHeartUV = new Vector2f(18f/36f, 0);
+
+    private static Vector2f getHeartUV(boolean hardcore, boolean halfHeart, boolean poisoned, boolean blinking) {
+        float x = hardcore ? 9f : 0f;
+        x += blinking ? 18f : 0f;
+
+        float y = halfHeart ? 27f : 9f;
+        y += poisoned ? 9f : 0f;
+
+        return new Vector2f(x/36f, y/45f);
+    }
+
+    private static void drawHeart(BufferBuilder buffer, Vector3f pos, int heartId, int heartCount, float hpPercent, boolean poisoned) {
+        float x = ((float) heartId) * HEART_SIZE.x - (((float) heartCount) * HEART_SIZE.x * 0.5f);
+
+        var v0 = pos.add(-x, HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+        var v1 = pos.add(-x, -HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+        var v2 = pos.add(-x+HEART_SIZE.x, -HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+        var v3 = pos.add(-x+HEART_SIZE.x, HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+
+        float filled = hpPercent * heartCount * 2f;
+
+        filled -= heartId * 2f;
+
+        Vector2f uv;
+
+        if (filled <= 0) {
+            uv = emptyHeartUV;
+        } else {
+            uv = getHeartUV(heartCount <= 4, filled <= 1, poisoned, false);
+        }
+
+        buffer.vertex(v0).texture(uv.x + 9f/36f, uv.y).color(heartId, 0, 0, 0);
+        buffer.vertex(v1).texture(uv.x + 9f/36f, uv.y + 9f/45f).color(heartId, 0, 0, 0);
+        buffer.vertex(v2).texture(uv.x, uv.y + 9f/45f).color(heartId, 0, 0, 0);
+        buffer.vertex(v3).texture(uv.x, uv.y).color(heartId, 0, 0, 0);
 
     }
 

@@ -45,6 +45,13 @@ public class PlayerConfig {
     private boolean option_reducedDebris = false;
     private int option_trailIntensity = 30;
 
+    public enum HealthStyle {
+        Classic,
+        Hearts
+    }
+
+    private HealthStyle option_healthStyle = HealthStyle.Hearts;
+
     private boolean setting_placeEnvironmentStructures = true;
 
     public PlayerConfig(JsonObject json) {
@@ -66,6 +73,7 @@ public class PlayerConfig {
 
         option_reducedDebris = JsonUtil.getOrDefault(json, "option.reduced_debris", JsonElement::getAsBoolean, option_reducedDebris);
         option_trailIntensity = JsonUtil.getOrDefault(json, "option.trail_intensity", JsonElement::getAsInt, option_trailIntensity);
+        option_healthStyle = HealthStyle.values()[Math.clamp(JsonUtil.getOrDefault(json, "option.health_style", JsonElement::getAsInt, 0), 0, HealthStyle.values().length-1)];
 
         Stash.updateTrailSize(option_trailIntensity);
 
@@ -111,6 +119,7 @@ public class PlayerConfig {
 
         json.addProperty("option.reduced_debris", option_reducedDebris);
         json.addProperty("option.trail_intensity", option_trailIntensity);
+        json.addProperty("option.health_style", option_healthStyle.ordinal());
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
@@ -276,6 +285,17 @@ public class PlayerConfig {
         return quality_skyFog;
     }
 
+    public HealthStyle getHealthStyle() {
+        return option_healthStyle;
+    }
+
+    public void setHealthStyle(HealthStyle style) {
+        option_healthStyle = style;
+    }
+
+    public void setHealthStyle(int style) {
+        option_healthStyle = HealthStyle.values()[Math.clamp(style, 0, HealthStyle.values().length-1)];
+    }
 
     public ControllerProfile getActiveControllerProfile() {
         if (profiles.isEmpty() || controller_selectedProfile_index <= -1) {

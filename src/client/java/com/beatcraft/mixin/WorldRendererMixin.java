@@ -17,6 +17,7 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Debug;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,6 +32,8 @@ import java.util.function.Supplier;
 //@Debug(export = true)
 public abstract class WorldRendererMixin {
     @Shadow protected abstract void renderLayer(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix);
+
+    @Shadow @Final private BufferBuilderStorage bufferBuilders;
 
     @Inject(method="render", at=@At("HEAD"))
     public void render(
@@ -51,7 +54,9 @@ public abstract class WorldRendererMixin {
     public void bloomFogInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (BeatCraftRenderer.bloomfog != null) {
             BeatCraftRenderer.bloomfog.render(false, tickCounter.getTickDelta(true));
+
         }
+
     }
 
     @Inject(
@@ -63,9 +68,9 @@ public abstract class WorldRendererMixin {
     )
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
         MirrorHandler.drawMirror();
+        HUDRenderer.render(immediate);
         BeatCraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
-        HUDRenderer.render(immediate);
         BeatcraftParticleRenderer.renderParticles();
         BeatCraftRenderer.render();
         SaberRenderer.renderAll();

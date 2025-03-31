@@ -149,6 +149,10 @@ public class GameLogicHandler {
         rightSaberRotation = rotation;
     }
 
+    public static boolean isInWall() {
+        return inWall;
+    }
+
     public static void preUpdate(double deltaTime, float tickDelta) {
         inWall = false;
     }

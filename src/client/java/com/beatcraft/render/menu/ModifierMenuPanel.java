@@ -142,7 +142,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> HUDRenderer.showHUD = false,
                 () -> HUDRenderer.showHUD = true,
                 () -> HUDRenderer.showHUD ? "SHOW" : "HIDE",
-                new Vector3f(230, -175, 0))
+                new Vector3f(230, -175, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Health Style",
+                () -> BeatCraftClient.playerConfig.setHealthStyle(BeatCraftClient.playerConfig.getHealthStyle().ordinal()-1),
+                () -> BeatCraftClient.playerConfig.setHealthStyle(BeatCraftClient.playerConfig.getHealthStyle().ordinal()+1),
+                () -> BeatCraftClient.playerConfig.getHealthStyle().name(),
+                new Vector3f(230, -123, 0))
         ));
 
         settingsPage.children.addAll(List.of(
