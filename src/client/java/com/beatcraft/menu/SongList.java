@@ -71,7 +71,7 @@ public class SongList {
                 SongData data = new SongData(songFolder.getAbsolutePath());
                 songs.add(data);
 
-                //SongDownloader.convertAllToPng(songFolder.getAbsolutePath()); // this will convert existing beatmaps to only contain png images instead of jpeg/jpg
+                SongDownloader.convertAllToPng(songFolder.getAbsolutePath()); // this will convert existing beatmaps to only contain png images instead of jpeg/jpg
 
             } catch (IOException e) {
                 BeatCraft.LOGGER.error("Failed to load beatmap ", e);
