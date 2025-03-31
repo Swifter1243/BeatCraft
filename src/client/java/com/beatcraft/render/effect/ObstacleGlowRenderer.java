@@ -44,10 +44,13 @@ public class ObstacleGlowRenderer {
     public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos, boolean mirrored) {
         var edges = BeatCraftRenderer.getCubeEdges(bounds.min, bounds.max);
 
+        var e0 = MemoryPool.newVector3f();
+        var e1 = MemoryPool.newVector3f();
+
         for (Vector3f[] edge : edges) {
 
-            var e0 = MemoryPool.newVector3f(edge[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
-            var e1 = MemoryPool.newVector3f(edge[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
+            e0.set(edge[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
+            e1.set(edge[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(position);
             
             var mesh = buildEdge(e0, e1, cameraPos);
 
@@ -63,12 +66,12 @@ public class ObstacleGlowRenderer {
             buffer.vertex(mesh[2].x - cameraPos.x, mesh[2].y - cameraPos.y, mesh[2].z - cameraPos.z).color(fadeColor);
             buffer.vertex(mesh[1].x - cameraPos.x, mesh[1].y - cameraPos.y, mesh[1].z - cameraPos.z).color(fadeColor);
 
-            MemoryPool.release(e0, e1);
             MemoryPool.release(mesh);
         }
+        MemoryPool.release(e0, e1);
 
         MemoryPool.release(position);
-        MemoryPool.release(orientation);
+        //MemoryPool.release(orientation);
 
     }
 

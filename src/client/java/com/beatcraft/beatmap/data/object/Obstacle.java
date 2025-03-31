@@ -14,6 +14,7 @@ public class Obstacle extends GameplayObject {
     private float width;
     private float height;
     private Color color;
+    private Integer cachedColor = null;
     private boolean noodleSizing = false;
 
     public void loadCustomObstacleDataV2(JsonObject json, Difficulty difficulty) {
@@ -38,8 +39,6 @@ public class Obstacle extends GameplayObject {
                 var col = JsonUtil.getVector4(color);
 
                 this.color = new Color(col.x, col.y, col.z, col.w);
-            } else {
-                this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
             }
 
             if (customData.has("_scale")) {
@@ -83,8 +82,6 @@ public class Obstacle extends GameplayObject {
                 var col = JsonUtil.getVector4(color);
 
                 this.color = new Color(col.x, col.y, col.z, col.w);
-            } else {
-                this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
             }
 
             if (customData.has("size")) {
@@ -132,9 +129,11 @@ public class Obstacle extends GameplayObject {
             }
             case 2 -> {
                 this.y = JsonUtil.getOrDefault(json, "_lineLayer", JsonElement::getAsFloat, 0f);
-                this.height = (float) JsonUtil.getOrDefault(json, "_height", JsonElement::getAsFloat, 5f);
+                this.height = JsonUtil.getOrDefault(json, "_height", JsonElement::getAsFloat, 5f);
             }
         }
+
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
 
         loadCustomDataV2(json, difficulty);
         loadCustomObstacleDataV2(json, difficulty);
@@ -156,6 +155,9 @@ public class Obstacle extends GameplayObject {
         this.y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
         this.width = JsonUtil.getOrDefault(json, "w", JsonElement::getAsFloat, 0f);
         this.height = JsonUtil.getOrDefault(json, "h", JsonElement::getAsFloat, 0f);
+
+
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
 
         loadCustomDataV3(json, difficulty);
         loadCustomObstacleDataV3(json, difficulty);
@@ -181,6 +183,8 @@ public class Obstacle extends GameplayObject {
         this.width = JsonUtil.getOrDefault(data, "w", JsonElement::getAsFloat, 0f);
         this.height = JsonUtil.getOrDefault(data, "h", JsonElement::getAsFloat, 0f);
 
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
+
         loadJumps(difficulty.getInfo());
 
         return this;
@@ -205,8 +209,11 @@ public class Obstacle extends GameplayObject {
         return height;
     }
 
-    public Color getColor() {
-        return color;
+    public int getColor() {
+        if (cachedColor == null) {
+            cachedColor = color.toARGB(0.15f);
+        }
+        return cachedColor;
     }
 
 }

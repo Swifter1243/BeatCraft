@@ -186,13 +186,13 @@ public class HUDRenderer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
+        RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
         BufferRenderer.drawWithGlobalProgram(buff);
         RenderSystem.disableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
 
 
         matrices.push();
@@ -683,7 +683,7 @@ public class HUDRenderer {
                     case 1 -> {
                         doShaking = true;
                         if (hp == 1) {
-                            drawHeart(heart_buffer, pos, 1, 1, 1, inWall);
+                            drawHeart(heart_buffer, pos, 0, 1, 1, inWall);
                         }
                     }
                     case 4 -> {
@@ -750,8 +750,8 @@ public class HUDRenderer {
 
         var v0 = pos.add(-x, HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
         var v1 = pos.add(-x, -HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
-        var v2 = pos.add(-x+HEART_SIZE.x, -HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
-        var v3 = pos.add(-x+HEART_SIZE.x, HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+        var v2 = pos.add(-x-HEART_SIZE.x, -HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
+        var v3 = pos.add(-x-HEART_SIZE.x, HEART_SIZE.y/2f, 0, MemoryPool.newVector3f());
 
         float filled = hpPercent * heartCount * 2f;
 
@@ -765,10 +765,10 @@ public class HUDRenderer {
             uv = getHeartUV(heartCount <= 4, filled <= 1, poisoned, false);
         }
 
-        buffer.vertex(v0).texture(uv.x + 9f/36f, uv.y).color(heartId, 0, 0, 0);
-        buffer.vertex(v1).texture(uv.x + 9f/36f, uv.y + 9f/45f).color(heartId, 0, 0, 0);
-        buffer.vertex(v2).texture(uv.x, uv.y + 9f/45f).color(heartId, 0, 0, 0);
-        buffer.vertex(v3).texture(uv.x, uv.y).color(heartId, 0, 0, 0);
+        buffer.vertex(v0).texture(uv.x, uv.y).color(heartId, 0, 0, 0);
+        buffer.vertex(v1).texture(uv.x, uv.y + 9f/45f).color(heartId, 0, 0, 0);
+        buffer.vertex(v2).texture(uv.x + 9f/36f, uv.y + 9f/45f).color(heartId, 0, 0, 0);
+        buffer.vertex(v3).texture(uv.x + 9f/36f, uv.y).color(heartId, 0, 0, 0);
 
     }
 
