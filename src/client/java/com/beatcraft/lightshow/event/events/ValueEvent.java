@@ -4,6 +4,7 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.event.IEvent;
 import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -30,9 +31,23 @@ public class ValueEvent extends BeatmapObject implements IEvent {
     @Override
     public ValueEvent loadV2(JsonObject json, Difficulty difficulty) {
         super.loadV2(json, difficulty);
-
         value = JsonUtil.getOrDefault(json, "_value", JsonElement::getAsInt, 0);
+        return this;
+    }
 
+
+    @Override
+    public ValueEvent loadV3(JsonObject json, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+        value = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+        return this;
+
+    }
+
+    public ValueEvent loadV4(JsonObject json, JsonObject data, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        value = JsonUtil.getOrDefault(data, "i", JsonElement::getAsInt, 0);
 
         return this;
     }

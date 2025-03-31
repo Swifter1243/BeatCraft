@@ -347,6 +347,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
 
     @Override
     public TheFirstEnvironment reset() {
+        super.reset();
         ringLights.reset();
         return this;
     }

@@ -14,16 +14,12 @@ public class EnvironmentUtils {
     }
 
 
-    public static Environment loadV2(Difficulty difficulty, JsonObject json) {
+    public static Environment load(Difficulty difficulty, JsonObject json) {
         Environment env = setupEnvironment(difficulty.getInfo().getEnvironmentName());
 
-
-        if (env instanceof EnvironmentV2 env2) {
-            env2.loadLightshow(difficulty, json);
-        }
+        env.loadLightshow(difficulty, json);
 
         return env;
     }
-
 
 }

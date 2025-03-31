@@ -128,7 +128,7 @@ public class DifficultyV2 extends Difficulty {
     }
 
     private void loadLightshow(JsonObject json) {
-        lightShowEnvironment = EnvironmentUtils.loadV2(this, json);
+        lightShowEnvironment = EnvironmentUtils.load(this, json);
     }
 
 }
