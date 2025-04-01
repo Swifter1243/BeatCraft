@@ -47,7 +47,7 @@ public class SongList {
     /// loads beatmaps from `./beatmaps/`
     /// if the folder does not exist it will be created
     public void loadSongs() {
-        String beatmapFolder = MinecraftClient.getInstance().runDirectory.toPath().toString() + "/beatmaps/";
+        String beatmapFolder = MinecraftClient.getInstance().runDirectory.toPath() + "/beatmaps/";
 
         File folder = new File(beatmapFolder);
 

@@ -1,29 +1,25 @@
 package com.beatcraft.replay;
 
 import com.beatcraft.BeatCraftClient;
-import com.beatcraft.BeatmapPlayer;
-import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
-import com.beatcraft.networking.c2s.MapSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
-import com.beatcraft.render.DebugRenderer;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.utils.MathUtil;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.ArrayListDeque;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,6 +27,8 @@ import java.util.ArrayList;
 public class Replayer {
 
     private static final ArrayList<PlayFrame> frames = new ArrayList<>();
+    private static final ArrayListDeque<PlayFrame> upcoming = new ArrayListDeque<>();
+    private static PlayFrame current = new PlayFrame(0, new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf());
     public static boolean runReplay = false;
     private static final ItemStack leftSaber = new ItemStack(ModItems.SABER_ITEM, 1);
     private static final ItemStack rightSaber = new ItemStack(ModItems.SABER_ITEM, 1);
@@ -44,100 +42,100 @@ public class Replayer {
         rightSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
         rightSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
 
-        String rawData = Files.readString(Path.of(path));
+        byte[] rawData = Files.readAllBytes(Path.of(path));
 
-        JsonObject json = JsonParser.parseString(rawData).getAsJsonObject();
+        ByteBuffer buf = ByteBuffer.wrap(rawData);
 
-        String song = json.get("song").getAsString();
-        String set = json.get("set").getAsString();
-        String diff = json.get("diff").getAsString();
+        int replayVersion = buf.getInt();
 
-        JsonArray frameData = json.getAsJsonArray("frames");
+        int idSize = buf.getInt();
+        byte[] idBytes = new byte[idSize];
+        buf.get(idBytes, 0, idSize);
+        var id = new String(idBytes, StandardCharsets.UTF_8);
 
-        frames.add(new PlayFrame(0, new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf()));
+        int setSize = buf.getInt();
+        byte[] setBytes = new byte[setSize];
+        buf.get(setBytes, 0, setSize);
+        var set = new String(setBytes, StandardCharsets.UTF_8);
 
-        frameData.forEach(data -> {
-            JsonObject obj = data.getAsJsonObject();
-            PlayFrame frame = PlayFrame.load(obj);
-            frames.add(frame);
-        });
+        int diffSize = buf.getInt();
+        byte[] diffBytes = new byte[diffSize];
+        buf.get(diffBytes, 0, diffSize);
+        var diff = new String(diffBytes, StandardCharsets.UTF_8);
 
-        SongData data = BeatCraftClient.songs.getFiltered(song).getFirst();
+        int frameCount = buf.getInt();
+
+        frames.add(new PlayFrame(0, new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf()));
+
+        for (int i = 0; i < frameCount; i++) {
+            frames.add(PlayFrame.load(buf));
+        }
+
+        upcoming.addAll(frames);
+
+        current = upcoming.pollFirst();
+
+        SongData data = BeatCraftClient.songs.getById(id);
 
         runReplay = true;
         SongData.BeatmapInfo info = data.getBeatMapInfo(set, diff);
 
-        try {
-            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
-            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
-            BeatmapPlayer.restart();
-            GameLogicHandler.reset();
-            ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        HUDRenderer.songSelectMenuPanel.tryPlayMap(data, info, set, diff);
 
     }
 
     public static void reset() {
         frames.clear();
+        upcoming.clear();
         runReplay = false;
     }
 
     public static void update(float beat) {
         if (!runReplay || beat < 0) return;
-        if (frames.isEmpty()) return;
-        PlayFrame previous = null;
-        PlayFrame next = null;
+        if (frames.isEmpty() || upcoming.isEmpty()) return;
 
-        int i = 0;
+        PlayFrame next;
         while (true) {
-            if (i >= frames.size()) {
-                runReplay = false;
-                return;
-            }
-            if (frames.get(i).beat() <= beat) {
-                previous = frames.get(i);
-                if (i+1 < frames.size()) {
-                    next = frames.get(i + 1);
-                } else {
-                    next = null;
-                }
+            next = upcoming.peekFirst();
+            if (next == null) return;
+            if (next.beat() < beat) {
+                current = upcoming.pollFirst();
+                if (current == null) return;
             } else {
                 break;
             }
-            i++;
         }
 
-        if (previous == null || next == null) {
-            if (next == null) runReplay = false;
-            return;
-        }
 
-        float sb = previous.beat();
+        float sb = current.beat();
         float eb = next.beat();
 
         float f = MathUtil.inverseLerp(sb, eb, beat);
 
-        Vector3f leftSaberPos = MathUtil.lerpVector3(previous.leftSaberPosition(), next.leftSaberPosition(), f);
-        Vector3f rightSaberPos = MathUtil.lerpVector3(previous.rightSaberPosition(), next.rightSaberPosition(), f);
-        Quaternionf leftSaberRot = MathUtil.lerpQuaternion(previous.leftSaberRotation(), next.leftSaberRotation(), f);
-        Quaternionf rightSaberRot = MathUtil.lerpQuaternion(previous.rightSaberRotation(), next.rightSaberRotation(), f);
+        Vector3f leftSaberPos = MathUtil.lerpVector3(current.leftSaberPosition(), next.leftSaberPosition(), f);
+        Vector3f rightSaberPos = MathUtil.lerpVector3(current.rightSaberPosition(), next.rightSaberPosition(), f);
+        Vector3f headPos = MathUtil.lerpVector3(current.headPos(), next.headPos(), f);
+
+        Quaternionf leftSaberRot = MathUtil.lerpQuaternion(current.leftSaberRotation(), next.leftSaberRotation(), f);
+        Quaternionf rightSaberRot = MathUtil.lerpQuaternion(current.rightSaberRotation(), next.rightSaberRotation(), f);
+        Quaternionf headRot = MathUtil.lerpQuaternion(current.headRotation(), next.headRotation(), f);
 
         GameLogicHandler.updateRightSaber(rightSaberPos, rightSaberRot);
         GameLogicHandler.updateLeftSaber(leftSaberPos, leftSaberRot);
+        GameLogicHandler.headPos = headPos;
+        GameLogicHandler.headRot = headRot;
 
         SaberRenderer.renderReplaySaber(leftSaber, leftSaberPos, leftSaberRot);
         SaberRenderer.renderReplaySaber(rightSaber, rightSaberPos, rightSaberRot);
 
-        ClientPlayNetworking.send(new SaberSyncC2SPayload(leftSaberPos, leftSaberRot, rightSaberPos, rightSaberRot));
+        ClientPlayNetworking.send(new SaberSyncC2SPayload(leftSaberPos, leftSaberRot, rightSaberPos, rightSaberRot, headPos, headRot));
         ClientPlayNetworking.send(new BeatSyncC2SPayload(beat));
 
     }
 
     public static void seek(float beat) {
-
+        upcoming.clear();
+        upcoming.addAll(frames);
     }
 
 

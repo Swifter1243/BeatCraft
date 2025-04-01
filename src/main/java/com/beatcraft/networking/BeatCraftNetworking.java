@@ -67,7 +67,8 @@ public class BeatCraftNetworking {
                 ServerPlayNetworking.send(player, new SaberSyncS2CPayload(
                     uuid,
                     payload.leftPos(), payload.leftRot(),
-                    payload.rightPos(), payload.rightRot()
+                    payload.rightPos(), payload.rightRot(),
+                    payload.headPos(), payload.headRot()
                 ));
             });
         });

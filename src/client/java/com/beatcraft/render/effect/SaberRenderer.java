@@ -127,7 +127,7 @@ public class SaberRenderer {
 
         matrices.pop();
 
-        ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation));
+        ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation, GameLogicHandler.headPos, GameLogicHandler.headRot));
         if (GameLogicHandler.isTrackingClient() && BeatmapPlayer.isPlaying()) {
             ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
         }

@@ -436,11 +436,11 @@ public class BeatCraftClient implements ClientModInitializer {
 
         SongData.BeatmapInfo beatmapInfo = song.getBeatMapInfo(diffSet, diff);
 
-        if (PlayRecorder.outputFile != null) {
-            PlayRecorder.songName = songName;
-            PlayRecorder.difficultySet = diffSet;
-            PlayRecorder.difficulty = diff;
-        }
+        //if (PlayRecorder.outputFile != null) {
+        //    PlayRecorder.songID = songName;
+        //    PlayRecorder.difficultySet = diffSet;
+        //    PlayRecorder.difficulty = diff;
+        //}
 
         if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
@@ -614,16 +614,16 @@ public class BeatCraftClient implements ClientModInitializer {
                                     )
                             )
                     )
-                    .then(literal("record")
-                            .then(argument("output_file", StringArgumentType.string())
-                                    .executes(this::songRecord)
-                            )
-                    )
-                    .then(literal("replay")
-                            .then(argument("replay_file", StringArgumentType.string())
-                                    .executes(this::songReplay)
-                            )
-                    )
+                    //.then(literal("record")
+                    //        .then(argument("output_file", StringArgumentType.string())
+                    //                .executes(this::songRecord)
+                    //        )
+                    //)
+                    //.then(literal("replay")
+                    //        .then(argument("replay_file", StringArgumentType.string())
+                    //                .executes(this::songReplay)
+                    //        )
+                    //)
             );
             dispatcher.register(literal("color_helper")
                     .then(literal("hex")

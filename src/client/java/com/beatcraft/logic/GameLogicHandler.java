@@ -42,8 +42,11 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
@@ -93,7 +96,8 @@ public class GameLogicHandler {
     private static final int WALL_HP = 10;
     private static final int HEAL_HP = 5;
     private static boolean inWall = false;
-    private static Vector3f headPos = new Vector3f();
+    public static Vector3f headPos = new Vector3f();
+    public static Quaternionf headRot = new Quaternionf();
 
     public static boolean FPFC = false;
 
@@ -115,6 +119,7 @@ public class GameLogicHandler {
 
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
+
 
     public static void trackPlayer(UUID uuid) {
         trackedPlayerUuid = uuid;
@@ -161,6 +166,7 @@ public class GameLogicHandler {
         if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
         assert MinecraftClient.getInstance().player != null;
         headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
+        headRot.set(MirrorHandler.invCameraRotation).conjugate();
         if (FPFC) {
             Quaternionf rot = new Quaternionf()
                     .rotateY(-MinecraftClient.getInstance().player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)

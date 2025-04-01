@@ -7,7 +7,7 @@ import net.minecraft.network.packet.CustomPayload;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public record SaberSyncC2SPayload(Vector3f leftPos, Quaternionf leftRot, Vector3f rightPos, Quaternionf rightRot) implements CustomPayload {
+public record SaberSyncC2SPayload(Vector3f leftPos, Quaternionf leftRot, Vector3f rightPos, Quaternionf rightRot, Vector3f headPos, Quaternionf headRot) implements CustomPayload {
 
     public static PacketCodec<PacketByteBuf, SaberSyncC2SPayload> CODEC = CustomPayload.codecOf(SaberSyncC2SPayload::write, SaberSyncC2SPayload::read);
     public static CustomPayload.Id<SaberSyncC2SPayload> ID = new Id<>(BeatCraftNetworking.SABER_SYNC_C2S);
@@ -23,7 +23,10 @@ public record SaberSyncC2SPayload(Vector3f leftPos, Quaternionf leftRot, Vector3
         var rightPos = buf.readVector3f();
         var rightRot = buf.readQuaternionf();
 
-        return new SaberSyncC2SPayload(leftPos, leftRot, rightPos, rightRot);
+        var headPos = buf.readVector3f();
+        var headRot = buf.readQuaternionf();
+
+        return new SaberSyncC2SPayload(leftPos, leftRot, rightPos, rightRot, headPos, headRot);
     }
 
     public void write(PacketByteBuf buf) {
@@ -31,5 +34,7 @@ public record SaberSyncC2SPayload(Vector3f leftPos, Quaternionf leftRot, Vector3
         buf.writeQuaternionf(leftRot);
         buf.writeVector3f(rightPos);
         buf.writeQuaternionf(rightRot);
+        buf.writeVector3f(headPos);
+        buf.writeQuaternionf(headRot);
     }
 }
