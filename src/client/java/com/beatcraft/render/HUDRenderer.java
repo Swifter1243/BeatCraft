@@ -77,7 +77,7 @@ public class HUDRenderer {
     public static final PauseScreenPanel pauseScreenPanel = new PauseScreenPanel();
 
     public static final ModifierMenu modifierMenu = new ModifierMenu();
-    private static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
+    public static final ModifierMenuPanel modifierMenuPanel = new ModifierMenuPanel(modifierMenu);
 
     public static final EndScreenPanel endScreenPanel = new EndScreenPanel(new EndScreenData(0, Rank.A, 0, 0, 0, 0));
 

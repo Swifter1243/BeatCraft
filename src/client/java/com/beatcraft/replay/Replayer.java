@@ -1,5 +1,6 @@
 package com.beatcraft.replay;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.menu.SongData;
@@ -35,19 +36,25 @@ public class Replayer {
 
     public static void loadReplay(String replayFile) throws IOException {
         frames.clear();
-        String path = MinecraftClient.getInstance().runDirectory + "/beatcraft/replay/" + replayFile;
         leftSaber.set(ModComponents.AUTO_SYNC_COLOR, 0);
         leftSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0xc03030);
 
         rightSaber.set(ModComponents.AUTO_SYNC_COLOR, 1);
         rightSaber.set(ModComponents.SABER_COLOR_COMPONENT, 0x2064a8);
 
-        byte[] rawData = Files.readAllBytes(Path.of(path));
+        byte[] rawData = Files.readAllBytes(Path.of(replayFile));
 
         ByteBuffer buf = ByteBuffer.wrap(rawData);
 
         int replayVersion = buf.getInt();
 
+        if (replayVersion == 1) {
+            loadV1(buf);
+        }
+
+    }
+
+    private static void loadV1(ByteBuffer buf) {
         int idSize = buf.getInt();
         byte[] idBytes = new byte[idSize];
         buf.get(idBytes, 0, idSize);
@@ -80,8 +87,14 @@ public class Replayer {
         runReplay = true;
         SongData.BeatmapInfo info = data.getBeatMapInfo(set, diff);
 
-        HUDRenderer.songSelectMenuPanel.tryPlayMap(data, info, set, diff);
+        if (info == null) {
+            BeatCraft.LOGGER.info("Failed to load {}:{} from song: {}", set, diff, data);
+            return;
+        }
 
+        ReplayHandler.cancelRecording();
+
+        HUDRenderer.songSelectMenuPanel.tryPlayMap(data, info, set, diff);
     }
 
     public static void reset() {

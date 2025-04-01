@@ -9,11 +9,15 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.replay.ReplayHandler;
+import com.beatcraft.replay.ReplayInfo;
 import com.beatcraft.screen.SongDownloaderScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -41,6 +45,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private final ContainerWidget settingsPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget downloaderPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget replayPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
+    private final ContainerWidget replayPageStatic = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
 
     public ModifierMenuPanel(ModifierMenu data) {
         super(data);
@@ -201,7 +206,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new Vector2f(350, 50)
         ));
 
-        replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
+        setupReplayPageStatic();
+        //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
     }
 
@@ -256,19 +262,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
         float y = CENTER_Y - ((MAX_HEIGHT / 2.0f) - row * widget_height);
 
-        var toggle = new ToggleWidget(new Vector3f(0, 0, 0), new Vector2f(widget_width-4, widget_height-4), List.of(
-            new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
-                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F113399, 0x5F113399, 0)
-            ), List.of(
-                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F1143CC, 0x5F1143CC, 0)
-            ))
-        ), List.of(
-            new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
-                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F222222, 0x5F222222, 0)
-            ), List.of(
-                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F666666, 0x5F666666, 0)
-            ))
-        ), getExclusionHandler(label, toggleHandler, exclusive));
+        var toggle = getToggleWidget(widget_width, widget_height, getExclusionHandler(label, toggleHandler, exclusive));
         toggles.put(label, toggle);
         return new ContainerWidget(
             new Vector3f(x, y, 0), new Vector2f(widget_width, widget_height),
@@ -405,6 +399,115 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         return String.format("%.0f", BeatCraftClient.playerConfig.getVolume() * 100);
     }
 
+
+    private Widget getReplayTile(ReplayInfo info, Vector3f position) {
+        var SIZE = new Vector2f(600, 80);
+
+        var tile = new ContainerWidget(
+            position,
+            SIZE,
+            new GradientWidget(
+                new Vector3f(), SIZE,
+                0x7F000000, 0x7F000000,
+                0
+            ),
+            new TextWidget(info.name(), new Vector3f((-SIZE.x/2f) + 5, -35, -0.01f), 3).alignedLeft().withDynamicScaling((int) SIZE.x - 110),
+            new TextWidget(info.mapID(), new Vector3f((-SIZE.x/2f) + 5, -6, -0.01f), 1.5f).alignedLeft().withDynamicScaling((int) SIZE.x - 110),
+            new TextWidget(info.set(), new Vector3f((-SIZE.x/2f) + 95, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling((int) (SIZE.x/2f) - 100),
+            new TextWidget(info.diff(), new Vector3f(0, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling((int) (SIZE.x/2f) - 60),
+            SettingsMenuPanel.getButton(
+                new TextWidget("PLAY", new Vector3f(0, -11, -0.01f), 3),
+                info::play,
+                new Vector3f((SIZE.x/2f)-60, 0, 0),
+                new Vector2f(100, 50)
+            )
+        );
+
+
+        return tile;
+    }
+
+    private int currentReplayPage = 0;
+    private int replaysPerPage = 4;
+
+    private static final Vector3f basePos = new Vector3f(0, -150, 0);
+    private static final int height = 360;
+
+    public void setupReplayPageStatic() {
+
+        var toggle = getToggleWidget(230, 50, b -> {
+            if (b) {
+                ReplayHandler.recordNextMap();
+            } else {
+                ReplayHandler.cancelRecording();
+            }
+        });
+
+        replayPageStatic.children.addAll(List.of(
+            SettingsMenuPanel.getButton(
+                new TextureWidget(Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_selector/up_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f),
+                () -> {
+                    currentReplayPage = Math.max(0, currentReplayPage - 1);
+                    setupReplayPage();
+                },
+                new Vector3f(-335, -160, 0), new Vector2f(50, 50),
+                0, 0
+            ),
+            SettingsMenuPanel.getButton(
+                new TextureWidget(Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_selector/down_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f),
+                () -> {
+                    currentReplayPage = Math.min(currentReplayPage + 1, ReplayHandler.getReplayCount() / replaysPerPage);
+                    setupReplayPage();
+                },
+                new Vector3f(-335, 160, 0), new Vector2f(50, 50),
+                0, 0
+            ),
+
+            new ContainerWidget(
+                new Vector3f(0, 220, 0), new Vector2f(230, 50),
+                toggle,
+                new TextWidget("RECORD NEXT", new Vector3f(0, -11, -0.01f), 3)
+            )
+        ));
+
+        setupReplayPage();
+    }
+
+    public void setupReplayPage() {
+        replayPage.children.clear();
+
+        var si = currentReplayPage * replaysPerPage;
+        List<ReplayInfo> replays = ReplayHandler.getReplays(si, replaysPerPage);
+
+        int i = 0;
+        for (var replay : replays) {
+            var pos = basePos.add(0, i * (((float) height)/(float) replaysPerPage), 0, new Vector3f());
+            replayPage.children.add(
+                getReplayTile(replay, pos)
+            );
+            i++;
+        }
+
+    }
+
+    protected static ToggleWidget getToggleWidget(int widget_width, int widget_height, Consumer<Boolean> handler) {
+
+        return new ToggleWidget(new Vector3f(0, 0, 0), new Vector2f(widget_width-4, widget_height-4), List.of(
+            new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
+                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F113399, 0x5F113399, 0)
+            ), List.of(
+                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F1143CC, 0x5F1143CC, 0)
+            ))
+        ), List.of(
+            new HoverWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), List.of(
+                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F222222, 0x5F222222, 0)
+            ), List.of(
+                new GradientWidget(new Vector3f(), new Vector2f(widget_width-4, widget_height-4), 0x5F666666, 0x5F666666, 0)
+            ))
+        ), handler);
+    }
+
+
     @Override
     public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {
         DrawContext context = new DrawContext(MinecraftClient.getInstance(), immediate);
@@ -437,6 +540,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             }
             case Replay -> {
                 replayPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
+                replayPageStatic.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
             }
         }
 

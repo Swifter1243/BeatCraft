@@ -18,6 +18,7 @@ import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.ReplayHandler;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
 import com.beatcraft.screen.SongDownloaderScreen;
@@ -151,6 +152,7 @@ public class BeatCraftClient implements ClientModInitializer {
             BeatCraftRenderer.bloomfog.resize(w, h, true);
 
             songs.loadSongs();
+            ReplayHandler.loadReplays();
             HUDRenderer.initSongSelectMenuPanel();
         });
 

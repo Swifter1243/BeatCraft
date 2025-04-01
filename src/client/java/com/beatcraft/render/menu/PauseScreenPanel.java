@@ -1,14 +1,18 @@
 package com.beatcraft.render.menu;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.PauseMenu;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.ReplayHandler;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.List;
 
 public class PauseScreenPanel extends MenuPanel<PauseMenu> {
@@ -22,6 +26,11 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
             new ButtonWidget(
                 new Vector3f(-160, 0, 0.02f), new Vector2f(130, 50),
                 () -> {
+                    try {
+                        PlayRecorder.save();
+                    } catch (IOException e) {
+                        BeatCraft.LOGGER.error("Error saving recording", e);
+                    }
                     BeatmapPlayer.currentBeatmap = null;
                     BeatmapPlayer.currentInfo = null;
                     BeatmapAudioPlayer.unload();

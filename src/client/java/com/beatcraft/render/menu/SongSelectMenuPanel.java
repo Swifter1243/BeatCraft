@@ -301,7 +301,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     public void tryPlayMap(SongData data, SongData.BeatmapInfo info, String set, String diff) {
         try {
-            song_play_request.cancel(true);
+            if (song_play_request != null) song_play_request.cancel(true);
             currentDisplay = null;
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
             BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());

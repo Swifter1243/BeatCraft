@@ -5,6 +5,7 @@ import com.beatcraft.BeatCraftClient;
 import com.beatcraft.data.menu.FileDownloader;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.data.menu.song_preview.SongPreview;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.*;
@@ -209,7 +210,10 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private void downloadSong(ButtonComponent button, SongPreview preview) {
-        SongDownloader.downloadSong(preview, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), BeatCraftClient.songs::loadSongs);
+        SongDownloader.downloadSong(preview, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), () -> {
+            BeatCraftClient.songs.loadSongs();
+            HUDRenderer.songSelectMenuPanel.updateList();
+        });
     }
 
     private static final Queue<Runnable> listUpdateQueue = new ConcurrentLinkedQueue<>();
