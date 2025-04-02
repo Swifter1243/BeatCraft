@@ -7,7 +7,6 @@ import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
-import com.beatcraft.render.vivify.VivifyHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -101,8 +100,6 @@ public class BeatCraftRenderer {
     }
 
     private static void renderEarly(VertexConsumerProvider vcp) {
-
-        VivifyHandler.render();
 
         // other stuff
         for (var call : earlyRenderCalls) {
