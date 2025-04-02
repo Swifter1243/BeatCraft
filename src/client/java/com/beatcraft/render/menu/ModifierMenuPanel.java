@@ -401,7 +401,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
 
     private Widget getReplayTile(ReplayInfo info, Vector3f position) {
-        var SIZE = new Vector2f(600, 80);
+        var SIZE = new Vector2f(660, 80);
 
         var tile = new ContainerWidget(
             position,
@@ -411,15 +411,24 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 0x7F000000, 0x7F000000,
                 0
             ),
-            new TextWidget(info.name(), new Vector3f((-SIZE.x/2f) + 5, -35, -0.01f), 3).alignedLeft().withDynamicScaling((int) SIZE.x - 110),
-            new TextWidget(info.mapID(), new Vector3f((-SIZE.x/2f) + 5, -6, -0.01f), 1.5f).alignedLeft().withDynamicScaling((int) SIZE.x - 110),
-            new TextWidget(info.set(), new Vector3f((-SIZE.x/2f) + 95, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling((int) (SIZE.x/2f) - 100),
-            new TextWidget(info.diff(), new Vector3f(0, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling((int) (SIZE.x/2f) - 60),
+            new TextWidget(info.name(), new Vector3f((-SIZE.x/2f) + 5, -35, -0.01f), 3).alignedLeft().withDynamicScaling((int) (SIZE.x - 300)/3),
+            new TextWidget(info.mapID(), new Vector3f((-SIZE.x/2f) + 5, -6, -0.01f), 1.5f).alignedLeft().withDynamicScaling((int) (100f/1.5f)),
+            new TextWidget(info.set(), new Vector3f((-SIZE.x/2f) + 95, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
+            new TextWidget(info.diff(), new Vector3f(-50, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
             SettingsMenuPanel.getButton(
                 new TextWidget("PLAY", new Vector3f(0, -11, -0.01f), 3),
                 info::play,
-                new Vector3f((SIZE.x/2f)-60, 0, 0),
+                new Vector3f((SIZE.x/2f)-190, 0, 0),
                 new Vector2f(100, 50)
+            ),
+            SettingsMenuPanel.getButton(
+                new TextWidget("DELETE", new Vector3f(0, -11, -0.01f), 3),
+                () -> {
+                    HUDRenderer.confirmSongDeleteMenuPanel = new ConfirmSongDeleteMenuPanel(info);
+                    HUDRenderer.scene = HUDRenderer.MenuScene.ConfirmSongDelete;
+                },
+                new Vector3f((SIZE.x/2f)-65, 0, 0),
+                new Vector2f(120, 50)
             )
         );
 
@@ -427,15 +436,23 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         return tile;
     }
 
+    public boolean refreshReplays = false;
+
+    protected ToggleWidget replayToggle;
+
+    public void setReplayToggleState(boolean state) {
+        replayToggle.setState(state);
+    }
+
     private int currentReplayPage = 0;
     private int replaysPerPage = 4;
 
-    private static final Vector3f basePos = new Vector3f(0, -150, 0);
+    private static final Vector3f basePos = new Vector3f(20, -150, 0);
     private static final int height = 360;
 
     public void setupReplayPageStatic() {
 
-        var toggle = getToggleWidget(230, 50, b -> {
+        replayToggle = getToggleWidget(230, 50, b -> {
             if (b) {
                 ReplayHandler.recordNextMap();
             } else {
@@ -465,7 +482,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
             new ContainerWidget(
                 new Vector3f(0, 220, 0), new Vector2f(230, 50),
-                toggle,
+                replayToggle,
                 new TextWidget("RECORD NEXT", new Vector3f(0, -11, -0.01f), 3)
             )
         ));
@@ -524,6 +541,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         context.fill((int) (-size.x/2f), (int) (-size.y/2f), (int) (size.x/2f), (int) (size.y/2f), backgroundColor);
 
         widgets.forEach(w -> w.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f())));
+
+        if (refreshReplays) {
+            refreshReplays = false;
+            setupReplayPage();
+        }
 
         switch (currentPage) {
             case Modifiers -> {

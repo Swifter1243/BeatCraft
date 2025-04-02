@@ -18,6 +18,7 @@ import com.beatcraft.replay.ReplayHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.Identifier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -34,6 +35,8 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     private static final int LIST_MAX_WIDTH = 110;
     private static final int DISPLAY_MAX_WIDTH = 110;
+
+    public static boolean refreshList = false;
 
     private static SongData currentDisplay = null;
     private static Identifier textureId = null;
@@ -448,4 +451,13 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     }
 
+
+    @Override
+    public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {
+        if (refreshList) {
+            refreshList = false;
+            updateList();
+        }
+        super.render(immediate, pointerPosition);
+    }
 }

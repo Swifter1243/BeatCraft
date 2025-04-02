@@ -14,6 +14,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -42,6 +44,10 @@ public class ReplayHandler {
     }
 
     public static void loadReplays() {
+        loadReplays(true);
+    }
+
+    public static void loadReplays(boolean updateReplayScreen) {
         String replayFolder = MinecraftClient.getInstance().runDirectory.toPath() + "/beatcraft/replay/";
 
         File folder = new File(replayFolder);
@@ -72,17 +78,21 @@ public class ReplayHandler {
             if (info != null) replayData.add(info);
         }
 
-
-        HUDRenderer.modifierMenuPanel.setupReplayPage();
+        if (updateReplayScreen) {
+            HUDRenderer.modifierMenuPanel.setupReplayPage();
+        }
     }
 
     public static void recordNextMap() {
         recordPlayback = true;
+        HUDRenderer.modifierMenuPanel.setReplayToggleState(true);
     }
 
     public static void cancelRecording() {
         recordPlayback = false;
         PlayRecorder.outputFile = null;
+
+        HUDRenderer.modifierMenuPanel.setReplayToggleState(false);
     }
 
     public static boolean isRecording() {
@@ -161,6 +171,16 @@ public class ReplayHandler {
             song.getTitle(),
             song.getMappers()
         );
+    }
+
+
+    public static void delete(ReplayInfo info) {
+        try {
+            Files.deleteIfExists(Path.of(info.replayFilePath()));
+            loadReplays(false);
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to delete replay file!", e);
+        }
     }
 
 }
