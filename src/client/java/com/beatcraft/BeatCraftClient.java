@@ -5,6 +5,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
@@ -46,6 +47,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -341,12 +343,12 @@ public class BeatCraftClient implements ClientModInitializer {
         String hexStr = Integer.toHexString(hex);
 
         context.getSource().sendFeedback(Text.literal(
-                String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                        r, g, b,
-                        fr, fg, fb,
-                        hex, hexStr
-                )
+            String.format(
+                "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                r, g, b,
+                fr, fg, fb,
+                hex, hexStr
+            )
         ));
 
         return 1;
@@ -370,12 +372,12 @@ public class BeatCraftClient implements ClientModInitializer {
         String hexStr = Integer.toHexString(hex);
 
         context.getSource().sendFeedback(Text.literal(
-                String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                        r, g, b,
-                        fr, fg, fb,
-                        hex, hexStr
-                )
+            String.format(
+                "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                r, g, b,
+                fr, fg, fb,
+                hex, hexStr
+            )
         ));
 
         return 1;
@@ -397,12 +399,12 @@ public class BeatCraftClient implements ClientModInitializer {
             float fb = b / 255.0f;
 
             context.getSource().sendFeedback(Text.literal(
-                    String.format(
-                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                            r, g, b,
-                            fr, fg, fb,
-                            hex, hexStr
-                    )
+                String.format(
+                    "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                    r, g, b,
+                    fr, fg, fb,
+                    hex, hexStr
+                )
             ));
 
         } catch (NumberFormatException e) {
@@ -572,6 +574,90 @@ public class BeatCraftClient implements ClientModInitializer {
         return suggestionsBuilder.buildFuture();
     }
 
+    private int setDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        var ty = StringArgumentType.getString(context, "type");
+
+        var value = StringArgumentType.getString(context, "value");
+
+        Object val = value;
+
+        switch (ty) {
+            case "vec3" -> {
+                var comps = value.split("(, *| +)");
+                if (comps.length == 1) {
+                    var d = Float.parseFloat(comps[0]);
+                    val = new Vector3f(d);
+                } else if (comps.length == 3) {
+                    var x = Float.parseFloat(comps[0]);
+                    var y = Float.parseFloat(comps[1]);
+                    var z = Float.parseFloat(comps[2]);
+                    val = new Vector3f(x, y, z);
+                } else {
+                    context.getSource().sendError(Text.of("Failed to parse Vector3f. must have either 1 or 3 float components"));
+                    return -1;
+                }
+            }
+            case "quat" -> {
+                var comps = value.split("(, *| +)");
+                if (comps.length == 4) {
+                    var x = Float.parseFloat(comps[0]);
+                    var y = Float.parseFloat(comps[1]);
+                    var z = Float.parseFloat(comps[2]);
+                    var w = Float.parseFloat(comps[3]);
+                    val = new Quaternionf(x, y, z, w);
+                }
+            }
+            case "f" -> {
+                val = Float.parseFloat(value);
+            }
+            case "i" -> {
+                val = Integer.parseInt(value);
+            }
+            case "b" -> {
+                if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("t")) {
+                    val = true;
+                } else if (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("f")) {
+                    val = false;
+                }
+            }
+            case "d" -> {
+                val = Double.parseDouble(value);
+            }
+            case "l" -> {
+                val = Long.parseLong(value);
+            }
+        }
+
+        BeatCraftDebug.bindValue(key, val);
+
+        return 1;
+    }
+
+
+    private int getDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        var value = BeatCraftDebug.getValue(key);
+
+        context.getSource().sendFeedback(Text.literal(String.format("%s is currently: %s", key, value)));
+
+        return 1;
+    }
+
+
+    private int removeDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        BeatCraftDebug.removeValue(key);
+
+        context.getSource().sendFeedback(Text.of(String.format("Removed '%s'", key)));
+
+        return 1;
+    }
+
+
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
             dispatcher.register(literal("song")
@@ -629,34 +715,55 @@ public class BeatCraftClient implements ClientModInitializer {
                     //)
             );
             dispatcher.register(literal("color_helper")
-                    .then(literal("hex")
-                            .then(argument("hex_code", StringArgumentType.word())
-                                    .executes(this::colorFromHex)
-                            )
+                .then(literal("hex")
+                    .then(argument("hex_code", StringArgumentType.word())
+                        .executes(this::colorFromHex)
                     )
-                    .then(literal("intRGB")
-                            .then(argument("R", IntegerArgumentType.integer(0, 255))
-                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
-                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
-                                                    .executes(this::colorFromIntegers)
-                                            )
-                                    )
+                )
+                .then(literal("intRGB")
+                    .then(argument("R", IntegerArgumentType.integer(0, 255))
+                        .then(argument("G", IntegerArgumentType.integer(0, 255))
+                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                                .executes(this::colorFromIntegers)
                             )
+                        )
                     )
-                    .then(literal("floatRGB")
-                            .then(argument("R", FloatArgumentType.floatArg(0, 1))
-                                    .then(argument("G", FloatArgumentType.floatArg(0, 1))
-                                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
-                                                    .executes(this::colorFromFloats)
-                                            )
-                                    )
+                )
+                .then(literal("floatRGB")
+                    .then(argument("R", FloatArgumentType.floatArg(0, 1))
+                        .then(argument("G", FloatArgumentType.floatArg(0, 1))
+                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
+                                .executes(this::colorFromFloats)
                             )
+                        )
                     )
+                )
             );
             dispatcher.register(literal("fpfc")
-                    .then(literal("enable").executes(this::enableFPFC))
-                    .then(literal("disable").executes(this::disableFPFC))
-                    .executes(this::toggleFPFC)
+                .then(literal("enable").executes(this::enableFPFC))
+                .then(literal("disable").executes(this::disableFPFC))
+                .executes(this::toggleFPFC)
+            );
+            dispatcher.register(literal("debug")
+                .then(literal("set")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .then(argument("type", StringArgumentType.greedyString())
+                            .then(argument("value", StringArgumentType.greedyString())
+                                .executes(this::setDebugValue)
+                            )
+                        )
+                    )
+                )
+                .then(literal("get")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .executes(this::getDebugValue)
+                    )
+                )
+                .then(literal("remove")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .executes(this::removeDebugValue)
+                    )
+                )
             );
         }));
     }
