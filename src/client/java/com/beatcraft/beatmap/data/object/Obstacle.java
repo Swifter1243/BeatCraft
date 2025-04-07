@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap.data.object;
 
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,6 +13,8 @@ public class Obstacle extends GameplayObject {
     private float duration;
     private float width;
     private float height;
+    private Color color;
+    private Integer cachedColor = null;
     private boolean noodleSizing = false;
 
     public void loadCustomObstacleDataV2(JsonObject json, Difficulty difficulty) {
@@ -20,14 +23,22 @@ public class Obstacle extends GameplayObject {
 
             if (customData.has("_coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("_coordinates");
-                x = coordinates.get(0).getAsInt() + 1.9f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("_position")) {
                 JsonArray coordinates = customData.getAsJsonArray("_position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("_color")) {
+                JsonArray color = customData.getAsJsonArray("_color");
+
+                var col = JsonUtil.getVector4(color);
+
+                this.color = new Color(col.x, col.y, col.z, col.w);
             }
 
             if (customData.has("_scale")) {
@@ -55,14 +66,22 @@ public class Obstacle extends GameplayObject {
 
             if (customData.has("coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("coordinates");
-                x = coordinates.get(0).getAsInt() + 1.9f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 1.9f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("position")) {
                 JsonArray coordinates = customData.getAsJsonArray("position");
                 x = coordinates.get(0).getAsFloat() + 1.9f;
                 y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("color")) {
+                JsonArray color = customData.getAsJsonArray("color");
+
+                var col = JsonUtil.getVector4(color);
+
+                this.color = new Color(col.x, col.y, col.z, col.w);
             }
 
             if (customData.has("size")) {
@@ -94,8 +113,8 @@ public class Obstacle extends GameplayObject {
         njs = difficulty.getSetDifficulty().getNjs();
 
         this.duration = json.get("_duration").getAsFloat();
-        this.x = json.get("_lineIndex").getAsInt();
-        this.width = (float) json.get("_width").getAsInt();
+        this.x = json.get("_lineIndex").getAsFloat();
+        this.width = json.get("_width").getAsFloat();
 
         int _type = json.get("_type").getAsInt();
 
@@ -110,9 +129,11 @@ public class Obstacle extends GameplayObject {
             }
             case 2 -> {
                 this.y = JsonUtil.getOrDefault(json, "_lineLayer", JsonElement::getAsFloat, 0f);
-                this.height = (float) JsonUtil.getOrDefault(json, "_height", JsonElement::getAsInt, 5);
+                this.height = JsonUtil.getOrDefault(json, "_height", JsonElement::getAsFloat, 5f);
             }
         }
+
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
 
         loadCustomDataV2(json, difficulty);
         loadCustomObstacleDataV2(json, difficulty);
@@ -130,10 +151,13 @@ public class Obstacle extends GameplayObject {
         njs = difficulty.getSetDifficulty().getNjs();
 
         this.duration = JsonUtil.getOrDefault(json, "d", JsonElement::getAsFloat, 0f);
-        this.x = (float) JsonUtil.getOrDefault(json, "x", JsonElement::getAsInt, 0);
-        this.y = (float) JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
-        this.width = (float) JsonUtil.getOrDefault(json, "w", JsonElement::getAsInt, 0);
-        this.height = (float) JsonUtil.getOrDefault(json, "h", JsonElement::getAsInt, 0);
+        this.x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
+        this.y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
+        this.width = JsonUtil.getOrDefault(json, "w", JsonElement::getAsFloat, 0f);
+        this.height = JsonUtil.getOrDefault(json, "h", JsonElement::getAsFloat, 0f);
+
+
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
 
         loadCustomDataV3(json, difficulty);
         loadCustomObstacleDataV3(json, difficulty);
@@ -154,10 +178,12 @@ public class Obstacle extends GameplayObject {
         JsonObject data = obstaclesData.get(i).getAsJsonObject();
 
         this.duration = JsonUtil.getOrDefault(data, "d", JsonElement::getAsFloat, 0f);
-        this.x = (float) JsonUtil.getOrDefault(data, "x", JsonElement::getAsInt, 0);
-        this.y = (float) JsonUtil.getOrDefault(data, "y", JsonElement::getAsInt, 0);
-        this.width = (float) JsonUtil.getOrDefault(data, "w", JsonElement::getAsInt, 0);
-        this.height = (float) JsonUtil.getOrDefault(data, "h", JsonElement::getAsInt, 0);
+        this.x = JsonUtil.getOrDefault(data, "x", JsonElement::getAsFloat, 0f);
+        this.y = JsonUtil.getOrDefault(data, "y", JsonElement::getAsFloat, 0f);
+        this.width = JsonUtil.getOrDefault(data, "w", JsonElement::getAsFloat, 0f);
+        this.height = JsonUtil.getOrDefault(data, "h", JsonElement::getAsFloat, 0f);
+
+        this.color = difficulty.getSetDifficulty().getColorScheme().getObstacleColor();
 
         loadJumps(difficulty.getInfo());
 
@@ -181,6 +207,13 @@ public class Obstacle extends GameplayObject {
 
     public float getHeight() {
         return height;
+    }
+
+    public int getColor() {
+        if (cachedColor == null) {
+            cachedColor = color.toARGB(0.15f);
+        }
+        return cachedColor;
     }
 
 }

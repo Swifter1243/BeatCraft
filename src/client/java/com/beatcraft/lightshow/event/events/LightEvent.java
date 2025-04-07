@@ -7,6 +7,7 @@ import com.beatcraft.data.types.Color;
 import com.beatcraft.event.IEvent;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -64,20 +65,24 @@ public class LightEvent extends BeatmapObject implements IEvent {
         super.loadV2(json, difficulty);
 
         lightEventType = JsonUtil.getOrDefault(json, "_value", JsonElement::getAsInt, 0);
-
         eventValue = JsonUtil.getOrDefault(json, "_floatValue", JsonElement::getAsFloat, 1f);
-
         lightState = new LightState(new Color(0), 0);
 
         var customData = JsonUtil.getOrDefault(json,"_customData", JsonElement::getAsJsonObject, null);
         if (customData != null) {
-            var lightIDs = JsonUtil.getOrDefault(customData, "_lightID", JsonElement::getAsJsonArray, null);
-            if (lightIDs != null) {
-                this.lightIDs = new int[lightIDs.size()];
 
-                for (int i = 0; i < lightIDs.size(); i++) {
-                    int lightID = lightIDs.get(i).getAsInt();
-                    this.lightIDs[i] = lightID;
+            var lightIDs = JsonUtil.getOrDefault(customData, "_lightID", e -> e, null);
+            if (lightIDs != null) {
+                if (lightIDs.isJsonArray()) {
+                    var lightIDsArray = lightIDs.getAsJsonArray();
+                    this.lightIDs = new int[lightIDsArray.size()];
+                    for (int i = 0; i < lightIDsArray.size(); i++) {
+                        int lightID = lightIDsArray.get(i).getAsInt();
+                        this.lightIDs[i] = lightID;
+                    }
+                } else {
+                    this.lightIDs = new int[1];
+                    this.lightIDs[0] = lightIDs.getAsInt();
                 }
             }
 
@@ -86,6 +91,32 @@ public class LightEvent extends BeatmapObject implements IEvent {
                 this.chromaColor = Color.fromJsonArray(chromaColor);
             }
         }
+
+        process(difficulty, lightState);
+
+        return this;
+    }
+
+    public LightEvent loadV3(JsonObject json, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        lightEventType = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+        eventValue = JsonUtil.getOrDefault(json, "f", JsonElement::getAsFloat, 1.0f);
+        lightState = new LightState(new Color(0), 0);
+
+        process(difficulty, lightState);
+
+        return this;
+
+    }
+
+    public LightEvent loadV4(JsonObject json, JsonObject data, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+
+        lightEventType = JsonUtil.getOrDefault(data, "i", JsonElement::getAsInt, 0);
+        eventValue = JsonUtil.getOrDefault(data, "f", JsonElement::getAsFloat, 1.0f);
+        lightState = new LightState(new Color(0), 0);
 
         process(difficulty, lightState);
 

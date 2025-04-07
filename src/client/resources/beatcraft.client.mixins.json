@@ -9,6 +9,7 @@
     "CustomModelLoader",
     "GameRendererMixin",
     "ItemEntityRendererMixin",
+    "KeyboardInputMixin",
     "MinecraftClientFramebufferMixin",
     "MinecraftClientMixin",
     "OptionsScreenMixin",

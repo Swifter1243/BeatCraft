@@ -140,12 +140,16 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
     }
 
     protected static ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size) {
-        return new ButtonWidget(
+        return getButton(display, onClick, position, size, 0x5F222222, 0x5F444444);
+    }
+
+    protected static ButtonWidget getButton(Widget display, Runnable onClick, Vector3f position, Vector2f size, int c1, int c2) {
+            return new ButtonWidget(
             position, size, onClick,
             new HoverWidget(new Vector3f(), new Vector2f(size), List.of(
-                 new GradientWidget(new Vector3f(), new Vector2f(size), 0x5F222222, 0x5F222222, 0)
+                 new GradientWidget(new Vector3f(), new Vector2f(size), c1, c1, 0)
             ), List.of(
-                 new GradientWidget(new Vector3f(), new Vector2f(size), 0x5F444444, 0x5F444444, 0)
+                 new GradientWidget(new Vector3f(), new Vector2f(size), c2, c2, 0)
             )),
             display
         );
@@ -155,14 +159,12 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
         Vector2f SIZE = new Vector2f();
 
         try {
-            var initial = getter.call();
-            TextWidget valueDisplay = new TextWidget(initial, new Vector3f(0, -11, 0)).withScale(3);
+            //var initial = getter.call();
+            TextWidget valueDisplay = new TextWidget(getter, new Vector3f(0, -11, 0)).withScale(3);
 
             Runnable left = () -> {
                 try {
                     down.run();
-                    valueDisplay.text = getter.call();
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -171,8 +173,6 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
             Runnable right = () -> {
                 try {
                     up.run();
-                    valueDisplay.text = getter.call();
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

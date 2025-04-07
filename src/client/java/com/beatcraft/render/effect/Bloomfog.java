@@ -1,6 +1,7 @@
 package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -18,6 +19,9 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.render.RenderPass;
+import org.vivecraft.client_vr.render.helpers.RenderHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -177,15 +181,15 @@ public class Bloomfog {
 
     private float layers = 1;
     public void resize(int width, int height, boolean resizeMirror) {
-        framebuffer.resize(width*2, height*2, true);
-        blurredBuffer.resize(width*2, height*2, true);
-        extraBuffer.resize(width*2, height*2, true);
+        framebuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
+        blurredBuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
+        extraBuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
 
-        bloomInput.resize(width, height, true);
-        bloomSwap.resize(width, height, true);
-        bloomOutput.resize(width, height, true);
+        bloomInput.resize(width, height, MinecraftClient.IS_SYSTEM_MAC);
+        bloomSwap.resize(width, height, MinecraftClient.IS_SYSTEM_MAC);
+        bloomOutput.resize(width, height, MinecraftClient.IS_SYSTEM_MAC);
 
-        lightDepth.resize(width, height, true);
+        lightDepth.resize(width, height, MinecraftClient.IS_SYSTEM_MAC);
 
         //double num = (Math.log((float) Math.max(width, height)) / Math.log(2f)) + Math.min(radius, 10f) - 10f;
         //int num2 = (int) Math.floor(num);
@@ -229,18 +233,47 @@ public class Bloomfog {
 
     private int[] lastSize = new int[]{1, 1};
     public void render(boolean isMirror, float tickDelta) {
-
-        framebuffer.setClearColor(0, 0, 0, 0);
-        framebuffer.clear(true);
-
         MinecraftClient client = MinecraftClient.getInstance();
         var window = client.getWindow();
         int width = window.getWidth();
         int height = window.getHeight();
 
-        if (window.getWidth() != lastSize[0] || window.getHeight() != lastSize[1]) {
-            lastSize = new int[]{Math.max(1, window.getWidth()), Math.max(1, window.getHeight())};
-            resize(Math.max(1, window.getWidth()), Math.max(1, window.getHeight()), true);
+        Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+
+        Vector3f cameraPos = camera.getPos().toVector3f();
+        if (ClientDataHolderVR.getInstance().vr != null) {
+            var rotationMatrix = RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
+            invCameraRotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
+        } else {
+            invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
+            float pitch = camera.getPitch();
+            Vector3f up = camera.getVerticalPlane();
+            Vector3f left = camera.getDiagonalPlane();
+            float roll = Math.abs(pitch) >= 90 ? 0 : calculateRoll(up, left);
+            Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
+            rollQuat.mul(invCameraRotation, invCameraRotation);
+        }
+
+        if (!BeatCraftClient.playerConfig.doBloomfog()) {
+            if (width != lastSize[0] || height != lastSize[1]) {
+                lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
+                MirrorHandler.resize();
+            }
+            renderCalls.forEach(MirrorHandler::recordMirrorLightDraw);
+            renderCalls.clear();
+            MirrorHandler.invCameraRotation = invCameraRotation;
+            blurredBuffer.setClearColor(0, 0, 0, 0);
+            blurredBuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+            return;
+        }
+
+        framebuffer.setClearColor(0, 0, 0, 0);
+        framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+
+
+        if (width != lastSize[0] || height != lastSize[1]) {
+            lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
+            resize(Math.max(1, width), Math.max(1, height), true);
         }
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
@@ -249,28 +282,11 @@ public class Bloomfog {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-
-        Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
-
-        assert MinecraftClient.getInstance().player != null;
-        float pitch = MinecraftClient.getInstance().player.getPitch(tickDelta);
-
-        Vector3f up = camera.getVerticalPlane();
-        Vector3f left = camera.getDiagonalPlane();
-
-        float roll = Math.abs(pitch) >= 90 ? 0 : calculateRoll(up, left);
-
-        invCameraRotation = camera.getRotation().conjugate(new Quaternionf());
-
-        Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
-
-        rollQuat.mul(invCameraRotation, invCameraRotation);
 
         SkyFogController.render(buffer, cameraPos, invCameraRotation);
 
@@ -384,7 +400,7 @@ public class Bloomfog {
     private void applyEffectPass(boolean isMirror, Framebuffer in, Framebuffer out, PassType pass) {
 
         out.setClearColor(0, 0, 0, 0);
-        out.clear(true);
+        out.clear(MinecraftClient.IS_SYSTEM_MAC);
         out.beginWrite(true);
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = out;
@@ -440,24 +456,38 @@ public class Bloomfog {
 
     /// This passes a triangle:position-color buffer
     public void recordBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+        if (!BeatCraftClient.playerConfig.doBloom()) return;
         bloomCalls.add(call);
     }
 
     public void recordNoteBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+        if (!BeatCraftClient.playerConfig.doBloom()) return;
         noteBloomCalls.add(call);
     }
 
     public void recordArrowBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
+        if (!BeatCraftClient.playerConfig.doBloom()) return;
         arrowBloomCalls.add(call);
     }
 
     public void renderBloom() {
+
+        if (!BeatCraftClient.playerConfig.doBloom()) {
+            bloomCalls.clear();
+            noteBloomCalls.clear();
+            arrowBloomCalls.clear();
+            bloomOutput.setClearColor(0, 0, 0, 0);
+            bloomOutput.clear(MinecraftClient.IS_SYSTEM_MAC);
+            MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+            return;
+        }
+
         var old = new Matrix4f(RenderSystem.getModelViewMatrix());
         RenderSystem.getModelViewMatrix().identity();
         RenderSystem.disableCull();
 
         bloomInput.setClearColor(0, 0, 0, 0);
-        bloomInput.clear(true);
+        bloomInput.clear(MinecraftClient.IS_SYSTEM_MAC);
         int sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
@@ -574,8 +604,6 @@ public class Bloomfog {
         var oldVertexSort = RenderSystem.getVertexSorting();
         var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
         RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorter.BY_DISTANCE);
-
-
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);

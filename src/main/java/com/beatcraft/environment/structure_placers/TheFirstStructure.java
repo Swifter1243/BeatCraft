@@ -150,7 +150,7 @@ public class TheFirstStructure implements EnvironmentPlacer {
         world.setBlockState(new BlockPos(1, -64, 8), state2);
         world.setBlockState(new BlockPos(-2, -64, 8), state2);
 
-        for (int y = -63; y < 0; y++) {
+        for (int y = -63; y < -1; y++) {
             world.setBlockState(new BlockPos(1, y, 8), state);
             world.setBlockState(new BlockPos(-2, y, 8), state);
         }

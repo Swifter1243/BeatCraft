@@ -165,7 +165,7 @@ public class SongDownloader {
         }
     }
 
-    private static String filterString(String in) {
+    public static String filterString(String in) {
         String replaced = in.replaceAll("[^a-zA-Z0-9._\\-+()\\[\\]' ]", "_");
 
         if (replaced.length() > 150) {

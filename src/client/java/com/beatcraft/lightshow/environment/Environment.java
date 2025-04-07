@@ -1,6 +1,8 @@
 package com.beatcraft.lightshow.environment;
 
+import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
+import com.google.gson.JsonObject;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 
@@ -35,4 +37,5 @@ public abstract class Environment {
         return DEFAULT_FOG_COLOR;
     }
 
+    public abstract void loadLightshow(Difficulty difficulty, JsonObject json);
 }

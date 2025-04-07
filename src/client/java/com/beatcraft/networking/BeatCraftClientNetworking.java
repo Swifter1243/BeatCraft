@@ -40,7 +40,7 @@ public class BeatCraftClientNetworking {
 
             if (world == null) return;
 
-            SaberRenderer.otherPlayerSabers.put(uuid, new PlayFrame(0, payload.leftPos(), payload.leftRot(), payload.rightPos(), payload.rightRot()));
+            SaberRenderer.otherPlayerSabers.put(uuid, new PlayFrame(0, payload.leftPos(), payload.leftRot(), payload.rightPos(), payload.rightRot(), payload.headPos(), payload.headRot()));
 
         });
     }

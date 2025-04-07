@@ -36,8 +36,8 @@ public abstract class GameplayObject extends BeatmapObject {
 
             if (customData.has("_coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("_coordinates");
-                x = coordinates.get(0).getAsInt() + 2.0f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("_position")) {
@@ -67,8 +67,8 @@ public abstract class GameplayObject extends BeatmapObject {
 
             if (customData.has("coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("coordinates");
-                x = coordinates.get(0).getAsInt() + 2.0f;
-                y = coordinates.get(1).getAsInt();
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
             }
 
             if (customData.has("position")) {
@@ -99,8 +99,8 @@ public abstract class GameplayObject extends BeatmapObject {
     public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
         super.loadV2(json, difficulty);
 
-        x = json.get("_lineIndex").getAsInt();
-        y = json.get("_lineLayer").getAsInt();
+        x = json.get("_lineIndex").getAsFloat();
+        y = json.get("_lineLayer").getAsFloat();
         offset =  difficulty.getSetDifficulty().getOffset();
         njs =  difficulty.getSetDifficulty().getNjs();
 
@@ -115,8 +115,8 @@ public abstract class GameplayObject extends BeatmapObject {
     public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
         super.loadV3(json, difficulty);
 
-        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsInt, 0);
-        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsInt, 0);
+        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
+        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
         offset =  difficulty.getSetDifficulty().getOffset();
         njs =  difficulty.getSetDifficulty().getNjs();
 
@@ -144,8 +144,8 @@ public abstract class GameplayObject extends BeatmapObject {
         }
 
         JsonObject noteData = colorNoteData.get(index).getAsJsonObject();
-        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsInt, 0);
-        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsInt, 0);
+        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsFloat, 0f);
+        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsFloat, 0f);
 
         return this;
     }

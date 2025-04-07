@@ -1,11 +1,16 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.*;
+import com.beatcraft.lightshow.environment.EnvironmentUtils;
 import com.beatcraft.render.object.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.util.Pair;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +29,7 @@ public class DifficultyV4 extends Difficulty {
         //loadRotationEvents(json);
         //loadPointDefinitions(json);
         //loadCustomEvents(json);
+        loadLightshow();
         doPostLoad();
         return this;
     }
@@ -126,5 +132,25 @@ public class DifficultyV4 extends Difficulty {
     //void loadCustomEvents(JsonObject json) {
     //
     //}
+
+    private void loadLightshow() {
+
+        var path = getSetDifficulty().getLightshowFile();
+
+        if (path == null) return;
+
+        path = getInfo().getMapDirectory() + "\\" + path;
+
+        //BeatCraft.LOGGER.info("Load lightshow: \"{}\"", path);
+
+        try {
+            String jsonString = Files.readString(Paths.get(path));
+            JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+
+            lightShowEnvironment = EnvironmentUtils.load(this, json);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

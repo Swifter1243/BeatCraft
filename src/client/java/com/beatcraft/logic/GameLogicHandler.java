@@ -42,8 +42,11 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
@@ -56,6 +59,7 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.Random;
@@ -93,7 +97,8 @@ public class GameLogicHandler {
     private static final int WALL_HP = 10;
     private static final int HEAL_HP = 5;
     private static boolean inWall = false;
-    private static Vector3f headPos = new Vector3f();
+    public static Vector3f headPos = new Vector3f();
+    public static Quaternionf headRot = new Quaternionf();
 
     public static boolean FPFC = false;
 
@@ -115,6 +120,7 @@ public class GameLogicHandler {
 
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
+
 
     public static void trackPlayer(UUID uuid) {
         trackedPlayerUuid = uuid;
@@ -160,14 +166,21 @@ public class GameLogicHandler {
         rightSaberRotation = rotation;
     }
 
+    public static boolean isInWall() {
+        return inWall;
+    }
+
     public static void preUpdate(double deltaTime, float tickDelta) {
         inWall = false;
     }
 
     public static void update(double deltaTime, float tickDelta) {
+        if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
         var player = getTrackedPlayer();
+        assert player != null;
         headPos = player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (player.getEyeY() - player.getPos().y), 0);
-        if (FPFC && isTrackingClient()) {
+        headRot.set(MirrorHandler.invCameraRotation).conjugate();
+        if (FPFC) {
             Quaternionf rot = new Quaternionf()
                     .rotateY(-player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize()

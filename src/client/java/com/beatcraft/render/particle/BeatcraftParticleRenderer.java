@@ -49,7 +49,7 @@ public class BeatcraftParticleRenderer {
         return result;
     }
 
-    private static Vector3f randomDirection(float magnitude) {
+    public static Vector3f randomDirection(float magnitude) {
         float theta = (float) (2 * Math.PI * random.nextFloat());
         float phi = (float) Math.acos(2 * random.nextFloat() - 1);
 

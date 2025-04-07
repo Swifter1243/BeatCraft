@@ -35,11 +35,21 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         return new Quaternionf();
     }
 
+
+    private static final Vector3f MODEL_OFFSET = new Vector3f();
+    @Override
+    protected Vector3f getModelOffset() {
+        return MODEL_OFFSET;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek().getPositionMatrix().getTranslation(MemoryPool.newVector3f());
         var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
-        updateBounds();
+        var scale = matrices.peek().getPositionMatrix().getScale(MemoryPool.newVector3f());
+
+
+        updateBounds(scale);
 
 
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
@@ -50,10 +60,10 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
         renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
 
-        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getObstacleColor().toARGB();
 
-        ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, color);
-        ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, color);
+
+        ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, data.getColor());
+        ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, data.getColor());
 
     }
 
@@ -80,21 +90,28 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         MirrorHandler.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, int color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, int _color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
         List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
+        var color = this.data.getColor();
+
+        var c1 = MemoryPool.newVector3f();
+        var c2 = MemoryPool.newVector3f();
+        var c3 = MemoryPool.newVector3f();
+        var c4 = MemoryPool.newVector3f();
+
         for (Vector3f[] face : faces) {
-            var c1 = MemoryPool.newVector3f(face[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
-            var c2 = MemoryPool.newVector3f(face[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
-            var c3 = MemoryPool.newVector3f(face[2]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
-            var c4 = MemoryPool.newVector3f(face[3]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            c1.set(face[0]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            c2.set(face[1]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            c3.set(face[2]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
+            c4.set(face[3]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
 
             buffer.vertex(c1.x, c1.y, c1.z).color(color);
             buffer.vertex(c2.x, c2.y, c2.z).color(color);
             buffer.vertex(c3.x, c3.y, c3.z).color(color);
             buffer.vertex(c4.x, c4.y, c4.z).color(color);
 
-            MemoryPool.release(c1, c2, c3, c4);
         }
+        MemoryPool.release(c1, c2, c3, c4);
         MemoryPool.release(pos);
         MemoryPool.release(orientation);
     }
@@ -111,14 +128,14 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     @Override
     protected Vector2f get2DPosition() {
         return new Vector2f(
-            data.getX() * 0.6f - 1.15f,
-            data.getY() * 0.6f - 0.45f
+            data.getX() * 0.6f - 0.9f,
+            data.getY() * 0.6f - 0.6f
         );
     }
 
-    private void updateBounds() {
-        bounds.min.x = -((data.getWidth() * 0.6f) - 0.3f);
-        bounds.max.y = (data.getHeight() * 0.6f);
+    private void updateBounds(Vector3f scale) {
+        bounds.min.x = -(((data.getWidth()) * scale.x * 1.2f) - 0.3f);
+        bounds.max.y = (data.getHeight() * scale.y * 1.2f);
 
         float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
 

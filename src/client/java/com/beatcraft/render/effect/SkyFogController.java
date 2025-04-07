@@ -1,5 +1,6 @@
 package com.beatcraft.render.effect;
 
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.environment.Environment;
@@ -12,7 +13,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class SkyFogController {
-
     private static double last = 1.0;
     private static final double STEP = 0.01;
 
@@ -27,7 +27,7 @@ public class SkyFogController {
 
     // multiplicative modifier. 1.0 means sky color will be normal, 0.0 means it will be black
     public static double getColorModifier() {
-        return last;
+        return BeatCraftClient.playerConfig.doSkyFog() ? last : 1.0;
     }
 
     public static void updateColor() {

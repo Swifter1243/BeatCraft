@@ -16,6 +16,10 @@
 
   "setting.beatcraft.player_option.reduced_debris": "Reduced Debris",
 
+  "setting.beatcraft.quality.bloomfog": "Bloomfog",
+  "setting.beatcraft.quality.bloom": "Bloom",
+  "setting.beatcraft.quality.mirror": "Mirror",
+  "setting.beatcraft.quality.sky_fog": "Sky Fog",
   "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
   "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics",
   "setting.beatcraft.quality.burn_mark_trails": "Burn Mark Trails",
@@ -55,6 +59,8 @@
   "key.beatcraft.settings": "Open BeatCraft settings",
   "key.beatcraft.song_search": "Open BeatSaver download page",
   "key.beatcraft.pause_song": "Pause song",
+  "key.beatcraft.toggle_fpfc": "Toggle FPFC",
+  "key.beatcraft.lock_movement": "Toggle movement locking",
 
   "category.beatcraft.keybindings": "BeatCraft"
 }
