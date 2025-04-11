@@ -1,16 +1,13 @@
 package com.beatcraft.lightshow.environment.thefirst;
 
 import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.function.BiFunction;
 
@@ -37,8 +34,8 @@ public class InnerRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        BeatcraftRenderer.recordEarlyRenderCall((vcp) ->
-            _render(pos, off, ori, rot, bloomfog)
+        BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
+            _render(b, c, pos, off, ori, rot, bloomfog)
         );
     }
 
@@ -94,30 +91,14 @@ public class InnerRing extends LightObject {
             new Vector3f(1, -1, 1)
     };
 
-    private void _render(Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
-
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         // manual mesh building since loading over-sized json model doesn't work >:(
-
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
                 buffer.vertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos)).color(color);
             }
         }
 
-
-
-        RenderSystem.disableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableDepthTest();
     }
 
     @Override

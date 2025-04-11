@@ -6,6 +6,7 @@ import com.beatcraft.beatmap.data.event.AssignTrackParent;
 import com.beatcraft.beatmap.data.object.*;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.beatmap.data.event.RotationEvent;
+import com.beatcraft.lightshow.environment.EnvironmentUtils;
 import com.beatcraft.render.object.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -32,6 +33,7 @@ public class DifficultyV3 extends Difficulty {
         loadRotationEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
+        loadLightshow(json);
         doPostLoad();
         return this;
     }
@@ -172,5 +174,9 @@ public class DifficultyV3 extends Difficulty {
             case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV3(json, this));
             case "AssignTrackParent" -> assignTrackParents.add(new AssignTrackParent().loadV3(json, this));
         }
+    }
+
+    private void loadLightshow(JsonObject json) {
+        lightShowEnvironment = EnvironmentUtils.load(this, json);
     }
 }

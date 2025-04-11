@@ -16,6 +16,10 @@
 
   "setting.beatcraft.player_option.reduced_debris": "Reduced Debris",
 
+  "setting.beatcraft.quality.bloomfog": "Bloomfog",
+  "setting.beatcraft.quality.bloom": "Bloom",
+  "setting.beatcraft.quality.mirror": "Mirror",
+  "setting.beatcraft.quality.sky_fog": "Sky Fog",
   "setting.beatcraft.quality.trail_intensity": "Saber Trail Intensity",
   "setting.beatcraft.quality.smoke_graphics": "Smoke Graphics",
   "setting.beatcraft.quality.burn_mark_trails": "Burn Mark Trails",
@@ -36,6 +40,8 @@
   "item.beatcraft.saber": "Saber",
 
   "block.beatcraft.black_mirror_block": "Black Mirror Block",
+  "block.beatcraft.reflective_mirror_block": "Reflective Mirror Block",
+  "tooltip.beatcraft.reflective_mirror_block": "Only works when placed at Y = -1",
 
   "block.beatcraft.filled_light_tile": "Full Light Tile",
   "block.beatcraft.edge_light_tile": "Edge Light Tile",
@@ -53,6 +59,8 @@
   "key.beatcraft.settings": "Open BeatCraft settings",
   "key.beatcraft.song_search": "Open BeatSaver download page",
   "key.beatcraft.pause_song": "Pause song",
+  "key.beatcraft.toggle_fpfc": "Toggle FPFC",
+  "key.beatcraft.lock_movement": "Toggle movement locking",
 
   "category.beatcraft.keybindings": "BeatCraft"
 }

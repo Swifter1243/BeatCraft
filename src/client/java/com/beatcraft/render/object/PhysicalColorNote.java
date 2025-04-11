@@ -6,31 +6,25 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.object.ScorableObject;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.memory.MemoryPool;
+import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
-import com.beatcraft.render.mesh.Quad;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.utils.MathUtil;
 import com.beatcraft.utils.NoteMath;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-
-import java.util.List;
 
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> implements PhysicalScorableObject {
     public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
@@ -112,28 +106,68 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
         this.baseRotation = new Quaternionf().rotateZ(radians);
     }
 
+    public Vector3f worldToCameraSpace(Vector3f renderPos, Vector3f cameraPos, Quaternionf cameraRot) {
+        var a = renderPos.sub(cameraPos, new Vector3f());
+        a.rotate(cameraRot);
+        a.add(cameraPos);
+        return a;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel arrowModel;
-        if (getData().getCutDirection() == CutDirection.DOT) {
-            arrowModel = mc.getBakedModelManager().getModel(noteDotModelID);
-        } else {
-            arrowModel = mc.getBakedModelManager().getModel(noteArrowModelID);
-        }
 
         if (!isBaseDissolved()) {
-            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+            var camPos = MemoryPool.newVector3f(MinecraftClient.getInstance().gameRenderer.getCamera().getPos());
+            var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f()).add(camPos);
+            MemoryPool.release(camPos);
+            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+            BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
                 MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
+            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
+                MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
+            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
+            //    MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
+            //    MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            //});
         }
 
         if (!isArrowDissolved()) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
+            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+            if (getData().getCutDirection() == CutDirection.DOT) {
+                BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+                });
+                MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+                });
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+                });
+            } else {
+                BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+                });
+                MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = 0xFFFFFFFF;
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+                });
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+                });
+            }
+
         }
     }
 
@@ -145,7 +179,6 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     @Override
     public Hitbox getGoodCutBounds() {
         if (getData().getCutDirection() == CutDirection.DOT) {
-            // this hitbox may just need to be the normal one
             return DOT_GOOD_CUT_BOUNDS;
         } else {
             return NORMAL_GOOD_CUT_BOUNDS;

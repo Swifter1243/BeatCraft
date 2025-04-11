@@ -3,10 +3,13 @@
   "package": "com.beatcraft.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BackgroundRendererMixin",
     "BufferBuilderMixin",
+    "ClientWorldMixin",
     "CustomModelLoader",
     "GameRendererMixin",
     "ItemEntityRendererMixin",
+    "KeyboardInputMixin",
     "MinecraftClientFramebufferMixin",
     "MinecraftClientMixin",
     "OptionsScreenMixin",

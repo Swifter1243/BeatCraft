@@ -47,7 +47,7 @@ public class SongList {
     /// loads beatmaps from `./beatmaps/`
     /// if the folder does not exist it will be created
     public void loadSongs() {
-        String beatmapFolder = MinecraftClient.getInstance().runDirectory.toPath().toString() + "/beatmaps/";
+        String beatmapFolder = MinecraftClient.getInstance().runDirectory.toPath() + "/beatmaps/";
 
         File folder = new File(beatmapFolder);
 
@@ -71,7 +71,7 @@ public class SongList {
                 SongData data = new SongData(songFolder.getAbsolutePath());
                 songs.add(data);
 
-                //SongDownloader.convertAllToPng(songFolder.getAbsolutePath()); // this will convert existing beatmaps to only contain png images instead of jpeg/jpg
+                SongDownloader.convertAllToPng(songFolder.getAbsolutePath()); // this will convert existing beatmaps to only contain png images instead of jpeg/jpg
 
             } catch (IOException e) {
                 BeatCraft.LOGGER.error("Failed to load beatmap ", e);

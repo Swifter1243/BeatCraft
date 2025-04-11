@@ -1,14 +1,18 @@
 package com.beatcraft.render.menu;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.PauseMenu;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.ReplayHandler;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.List;
 
 public class PauseScreenPanel extends MenuPanel<PauseMenu> {
@@ -20,8 +24,13 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
         widgets.clear();
         widgets.addAll(List.of(
             new ButtonWidget(
-                new Vector3f(-160, 0, 0.01f), new Vector2f(130, 50),
+                new Vector3f(-160, 0, 0.02f), new Vector2f(130, 50),
                 () -> {
+                    try {
+                        PlayRecorder.save();
+                    } catch (IOException e) {
+                        BeatCraft.LOGGER.error("Error saving recording", e);
+                    }
                     BeatmapPlayer.currentBeatmap = null;
                     BeatmapPlayer.currentInfo = null;
                     BeatmapAudioPlayer.unload();
@@ -37,7 +46,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 new TextWidget("MENU", new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
-                new Vector3f(0, 0, 0.01f), new Vector2f(150, 50),
+                new Vector3f(0, 0, 0.02f), new Vector2f(150, 50),
                 () -> {
                     GameLogicHandler.reset();
                     BeatmapPlayer.restart();
@@ -52,7 +61,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 new TextWidget("RESTART", new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
-                new Vector3f(160, 0, 0.01f), new Vector2f(150, 50),
+                new Vector3f(160, 0, 0.02f), new Vector2f(150, 50),
                 GameLogicHandler::unpauseMap,
                 new HoverWidget(new Vector3f(), new Vector2f(150, 50), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7F7F7F7F, 0x7F7F7F7F, 0)

@@ -20,6 +20,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.vivecraft.client_vr.render.RenderPass;
+
+import java.util.HashMap;
 
 
 @Mixin(ItemStack.class)
@@ -29,16 +32,25 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
     @Final
     @Deprecated @Nullable
     private Item item;
-    @Unique
-    public Stash<Pair<Vector3f, Vector3f>> stash = null;
 
     @Unique
-    public void initStash(int size) {
-        this.stash = new Stash<>(size, true);
+    private HashMap<RenderPass, Stash<Pair<Vector3f, Vector3f>>> stashes = new HashMap<>();
+
+    @Unique
+    public void initStash() {
+        this.stashes = new HashMap<>();
+        stashes.put(RenderPass.LEFT, new Stash<>(Stash.getTrailSize(), true));
+        stashes.put(RenderPass.RIGHT, new Stash<>(Stash.getTrailSize(), true));
+        stashes.put(RenderPass.CENTER, new Stash<>(Stash.getTrailSize(), true));
     }
 
     @Unique
-    public Stash<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash() {
+    public Stash<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash(RenderPass currentPass) {
+        if (!stashes.containsKey(currentPass)) {
+            stashes.put(currentPass, new Stash<>(Stash.getTrailSize(), true));
+        }
+        var stash = stashes.get(currentPass);
+
         return stash == null ? new Stash<>(2, false) : stash;
     }
 
@@ -46,7 +58,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
     @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;ILnet/minecraft/component/ComponentMapImpl;)V", at = @At("TAIL"))
     public void init(ItemConvertible item, int count, ComponentMapImpl components, CallbackInfo ci) {
         if (this.item instanceof SaberItem) {
-            this.initStash(30);
+            this.initStash();
         }
     }
 

@@ -13,6 +13,8 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class QuadMesh implements Mesh {
 
@@ -31,12 +33,6 @@ public class QuadMesh implements Mesh {
         this.vertices = new ArrayList<>();
         this.quads = new ArrayList<>();
         this.color = 0xFFFFFFFF;
-    }
-
-    @Override
-    public BufferBuilder createBuffer() {
-        Tessellator tessellator = Tessellator.getInstance();
-        return tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
     }
 
     public TriangleMesh toTriangleMesh() {
@@ -77,8 +73,30 @@ public class QuadMesh implements Mesh {
         addIfNotPresent(new Vector3f(max.x, max.y, max.z));
     }
 
+    public void addUniquePermutedVertices(Vector3f min, Vector3f max) {
+        addUnique(new Vector3f(min.x, min.y, min.z));
+        addUnique(new Vector3f(min.x, min.y, max.z));
+        addUnique(new Vector3f(min.x, max.y, min.z));
+        addUnique(new Vector3f(min.x, max.y, max.z));
+        addUnique(new Vector3f(max.x, min.y, min.z));
+        addUnique(new Vector3f(max.x, min.y, max.z));
+        addUnique(new Vector3f(max.x, max.y, min.z));
+        addUnique(new Vector3f(max.x, max.y, max.z));
+    }
+
     public void addIfNotPresent(Vector3f vec) {
         if (!vertices.contains(vec)) vertices.add(vec);
+    }
+
+    public void addUnique(Vector3f vec) {
+        vertices.add(vec);
+    }
+
+    /// transformer modifies vertices in-place for simplicity
+    public void transformVertices(int start, int end, Consumer<Vector3f> transformer) {
+        for (var vert : vertices.subList(start, end)) {
+            transformer.accept(vert);
+        }
     }
 
     @Override
@@ -88,26 +106,4 @@ public class QuadMesh implements Mesh {
         });
     }
 
-    @Override
-    public void render(Vector3f position, Quaternionf orientation, boolean sortBuffer) {
-        BufferBuilder buffer = createBuffer();
-
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-
-        drawToBuffer(buffer, position, orientation, MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
-        if (sortBuffer) {
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-        }
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
-    }
 }

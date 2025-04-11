@@ -5,7 +5,10 @@ import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElementFace;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -16,12 +19,18 @@ public class MeshLoader {
     public static QuadMesh COLOR_NOTE_MESH;
     public static QuadMesh CHAIN_HEAD_MESH;
     public static QuadMesh CHAIN_LINK_MESH;
+    public static QuadMesh BOMB_MESH;
 
     public static TriangleMesh COLOR_NOTE_RENDER_MESH;
     public static TriangleMesh CHAIN_HEAD_RENDER_MESH;
     public static TriangleMesh CHAIN_LINK_RENDER_MESH;
+    public static TriangleMesh NOTE_ARROW_RENDER_MESH;
+    public static TriangleMesh NOTE_DOT_RENDER_MESH;
+    public static TriangleMesh CHAIN_DOT_RENDER_MESH;
+    public static TriangleMesh BOMB_RENDER_MESH;
 
-    public static final Identifier NOTE_TEXTURE = Identifier.of(BeatCraft.MOD_ID, "textures/gameplay_objects/color_note.png");
+    public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
+    public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
 
     private static ModelLoaderAccessor modelLoader;
 
@@ -29,16 +38,31 @@ public class MeshLoader {
 
         MeshLoader.modelLoader = modelLoader;
 
-        COLOR_NOTE_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note"));
+        COLOR_NOTE_MESH = loadMesh(BeatCraft.id("item/color_note"));
         COLOR_NOTE_MESH.texture = NOTE_TEXTURE;
-        CHAIN_HEAD_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_head"));
+        CHAIN_HEAD_MESH = loadMesh(BeatCraft.id("item/color_note_chain_head"));
         CHAIN_HEAD_MESH.texture = NOTE_TEXTURE;
-        CHAIN_LINK_MESH = loadMesh(Identifier.of(BeatCraft.MOD_ID, "item/color_note_chain_link"));
+        CHAIN_LINK_MESH = loadMesh(BeatCraft.id("item/color_note_chain_link"));
         CHAIN_LINK_MESH.texture = NOTE_TEXTURE;
+        BOMB_MESH = loadMesh(BeatCraft.id("item/bomb_note"));
+        BOMB_MESH.texture = NOTE_TEXTURE;
+
+        var arrow_mesh = loadMesh(BeatCraft.id("item/note_arrow"));
+        arrow_mesh.texture = ARROW_TEXTURE;
+        var dot_mesh = loadMesh(BeatCraft.id("item/note_dot"));
+        dot_mesh.texture = ARROW_TEXTURE;
+        var chain_dot_mesh = loadMesh(BeatCraft.id("item/chain_note_dot"));
+        chain_dot_mesh.texture = ARROW_TEXTURE;
 
         COLOR_NOTE_RENDER_MESH = COLOR_NOTE_MESH.toTriangleMesh();
         CHAIN_HEAD_RENDER_MESH = CHAIN_HEAD_MESH.toTriangleMesh();
         CHAIN_LINK_RENDER_MESH = CHAIN_LINK_MESH.toTriangleMesh();
+        BOMB_RENDER_MESH = BOMB_MESH.toTriangleMesh();
+
+        NOTE_ARROW_RENDER_MESH = arrow_mesh.toTriangleMesh();
+        NOTE_DOT_RENDER_MESH = dot_mesh.toTriangleMesh();
+        CHAIN_DOT_RENDER_MESH = chain_dot_mesh.toTriangleMesh();
+
     }
 
 
@@ -51,9 +75,25 @@ public class MeshLoader {
             model.getElements().forEach(element -> {
                 Vector3f min = element.from.mul(1/32f, new Vector3f());
                 Vector3f max = element.to.mul(1/32f, new Vector3f());
-                mesh.addPermutedVertices(min, max);
-                element.faces.forEach((dir, face) -> {
 
+                float angleDegrees = 0;
+                Direction.Axis axis = Direction.Axis.X;
+                Vector3f origin;
+                if (element.rotation != null) {
+                    angleDegrees = element.rotation.angle();
+                    axis = element.rotation.axis();
+                    origin = element.rotation.origin().mul(0.5f);
+                } else {
+                    origin = new Vector3f(0, 0, 0);
+                }
+                int start = mesh.vertices.size();
+                if (angleDegrees != 0) {
+                    mesh.addUniquePermutedVertices(min, max);
+                } else {
+                    mesh.addPermutedVertices(min, max);
+                }
+                int end = mesh.vertices.size();
+                element.faces.forEach((dir, face) -> {
                     Vector2f[] uvs = getUvs(face);
                     switch (dir) {
                         case DOWN -> {
@@ -112,6 +152,16 @@ public class MeshLoader {
                         }
                     }
                 });
+
+                if (angleDegrees != 0) {
+                    var rotationAxis = axis == Direction.Axis.X ? new Vector3f(1, 0, 0) : axis == Direction.Axis.Y ? new Vector3f(0, 1, 0) : new Vector3f(0, 0, 1);
+                    var rotation = new Quaternionf().rotationAxis(angleDegrees * MathHelper.RADIANS_PER_DEGREE, rotationAxis);
+                    mesh.transformVertices(start, end, vert -> {
+                        vert.sub(origin);
+                        vert.rotate(rotation);
+                        vert.add(origin);
+                    });
+                }
             });
 
 

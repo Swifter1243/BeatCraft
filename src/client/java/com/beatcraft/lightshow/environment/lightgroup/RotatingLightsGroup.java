@@ -3,7 +3,7 @@ package com.beatcraft.lightshow.environment.lightgroup;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -61,6 +61,6 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
     @Override
     public void render(MatrixStack matrices, Camera camera) {
         super.render(matrices, camera);
-        staticLights.forEach(light -> light.render(matrices, camera, BeatcraftRenderer.bloomfog));
+        staticLights.forEach(light -> light.render(matrices, camera, BeatCraftRenderer.bloomfog));
     }
 }

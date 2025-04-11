@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.beatmap.Info;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
@@ -13,9 +14,11 @@ import com.beatcraft.networking.c2s.MapSyncC2SPayload;
 import com.beatcraft.networking.c2s.PlaceEnvironmentStructureC2SPayload;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.replay.ReplayHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.Identifier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -32,6 +35,8 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     private static final int LIST_MAX_WIDTH = 110;
     private static final int DISPLAY_MAX_WIDTH = 110;
+
+    public static boolean refreshList = false;
 
     private static SongData currentDisplay = null;
     private static Identifier textureId = null;
@@ -279,28 +284,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 new Vector3f(150, 200, 0),
                 new Vector2f(130, 50),
                 () -> {
-                    try {
-                        song_play_request.cancel(true);
-                        currentDisplay = null;
-                        HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
-                        BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
-                        // send structure place method so it can happen while the song loads client-side
-                        if (BeatCraftClient.playerConfig.doEnvironmentPlacing() && BeatmapPlayer.currentBeatmap.lightShowEnvironment != null) {
-                            String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
-                            ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
-                        }
-                        BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
-                        BeatmapPlayer.restart();
-                        GameLogicHandler.reset();
-                        BeatmapAudioPlayer.muteVanillaMusic();
-                        if (data.getId() != null) {
-                            ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
-                        }
-                        InputSystem.lockHotbar();
-
-                    } catch (IOException e) {
-                        BeatCraft.LOGGER.error("There was a tragic failure whilst loading a beatmap", e);
-                    }
+                    tryPlayMap(data, info, set, diff);
                 },
                 new HoverWidget(
                     new Vector3f(),
@@ -316,6 +300,35 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             )
         );
 
+    }
+
+    public void tryPlayMap(SongData data, SongData.BeatmapInfo info, String set, String diff) {
+        try {
+            if (song_play_request != null) song_play_request.cancel(true);
+            currentDisplay = null;
+            HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
+            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
+            // send structure place method so it can happen while the song loads client-side
+            if (BeatCraftClient.playerConfig.doEnvironmentPlacing() && BeatmapPlayer.currentBeatmap.lightShowEnvironment != null) {
+                String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
+                ClientPlayNetworking.send(new PlaceEnvironmentStructureC2SPayload(env));
+            }
+            BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
+            BeatmapPlayer.restart();
+            GameLogicHandler.reset();
+            BeatmapAudioPlayer.muteVanillaMusic();
+            if (data.getId() != null) {
+                ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
+            }
+            InputSystem.lockHotbar();
+
+            if (ReplayHandler.isRecording()) {
+                ReplayHandler.setup(data.getId(), set, diff);
+            }
+
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("There was a tragic failure whilst loading a beatmap", e);
+        }
     }
 
     private CompletableFuture<Void> song_play_request = null;
@@ -438,4 +451,13 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     }
 
+
+    @Override
+    public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {
+        if (refreshList) {
+            refreshList = false;
+            updateList();
+        }
+        super.render(immediate, pointerPosition);
+    }
 }

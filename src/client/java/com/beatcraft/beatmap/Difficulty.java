@@ -154,10 +154,10 @@ public abstract class Difficulty {
         if (lightShowEnvironment != null) lightShowEnvironment.render(matrices, camera);
         if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.render(matrices, camera));
-        bombNotes.forEach(o -> o.render(matrices, camera));
+        if (!BeatCraftClient.playerConfig.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.render(matrices, camera));
         chainHeadNotes.forEach(o -> o.render(matrices, camera));
         chainLinkNotes.forEach(o -> o.render(matrices, camera));
-        obstacles.forEach(o -> o.render(matrices, camera));
+        if (!BeatCraftClient.playerConfig.isModifierActive("No Walls")) obstacles.forEach(o -> o.render(matrices, camera));
         arcs.forEach(o -> o.render(matrices, camera));
     }
 
@@ -181,10 +181,10 @@ public abstract class Difficulty {
         if (lightShowEnvironment != null) lightShowEnvironment.update(beat, deltaTime);
         if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.update(beat));
-        bombNotes.forEach(o -> o.update(beat));
+        if (!BeatCraftClient.playerConfig.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.update(beat));
         chainHeadNotes.forEach(o -> o.update(beat));
         chainLinkNotes.forEach(o -> o.update(beat));
-        obstacles.forEach(o -> o.update(beat));
+        if (!BeatCraftClient.playerConfig.isModifierActive("No Walls")) obstacles.forEach(o -> o.update(beat));
         arcs.forEach(o -> o.update(beat));
         PlayRecorder.update(beat);
         Replayer.update(beat);

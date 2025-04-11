@@ -26,4 +26,11 @@ public class LightGroupEventHandlerV2 {
             lightGroupV2.setLightState(id, state);
         });
     }
+
+    public void reset() {
+        handlers.forEach((k, v) -> {
+            v.reset();
+        });
+    }
+
 }

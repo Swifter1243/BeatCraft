@@ -1,5 +1,6 @@
 package com.beatcraft.data.types;
 
+import com.beatcraft.memory.MemoryPool;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class PiecewiseCurve implements ISplinePath {
                 return curve.spline.evaluate(mapped);
             }
         }
-        return new Vector3f(0, 0, 0);
+        return MemoryPool.newVector3f(0, 0, 0);
     }
 
     public Vector3f getTangent(float t) {
@@ -51,7 +52,7 @@ public class PiecewiseCurve implements ISplinePath {
                 return curve.spline.getTangent(mapped);
             }
         }
-        return new Vector3f(0, 0, 0);
+        return MemoryPool.newVector3f(0, 0, 0);
     }
 
     @Override

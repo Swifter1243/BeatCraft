@@ -1,9 +1,5 @@
 package com.beatcraft.render.mesh;
 
-import com.beatcraft.mixin_utils.BufferBuilderAccessor;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
 import org.joml.Quaternionf;
@@ -30,13 +26,6 @@ public class TriangleMesh implements Mesh {
         this.tris = new ArrayList<>(tris);
     }
 
-
-    @Override
-    public BufferBuilder createBuffer() {
-        Tessellator tessellator = Tessellator.getInstance();
-        return tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-    }
-
     @Override
     public void drawToBuffer(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
         tris.forEach(tri -> {
@@ -44,29 +33,15 @@ public class TriangleMesh implements Mesh {
         });
     }
 
-    public void addTris(Triangle[] tris) {
-        this.tris.addAll(Arrays.asList(tris));
+    public void drawToBufferMirrored(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
+        Vector3f flippedPosition = position.mul(1, -1, 1, new Vector3f());
+        Quaternionf flippedOrientation = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        tris.forEach(tri -> {
+            tri.drawMirrored(buffer, color, this, flippedPosition, flippedOrientation, cameraPos);
+        });
     }
 
-    @Override
-    public void render(Vector3f position, Quaternionf orientation, boolean sortBuffer) {
-        BufferBuilder buffer = createBuffer();
-
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        drawToBuffer(buffer, position, orientation, MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-
-        BuiltBuffer buff = buffer.endNullable();
-        if (buff == null) return;
-
-        if (sortBuffer) {
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-        }
-
-        BufferRenderer.drawWithGlobalProgram(buff);
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
+    public void addTris(Triangle[] tris) {
+        this.tris.addAll(Arrays.asList(tris));
     }
 }

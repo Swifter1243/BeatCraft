@@ -1,7 +1,6 @@
 #version 150
 
 #moj_import <light.glsl>
-#moj_import <fog.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -16,17 +15,18 @@ uniform mat4 ProjMat;
 uniform vec3 ChunkOffset;
 uniform int FogShape;
 
-out float vertexDistance;
 out vec4 vertexColor;
 out vec2 texCoord0;
 out vec3 screenUV;
+out vec3 worldPos;
 
 void main() {
     vec3 pos = Position + ChunkOffset;
-    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
-    screenUV = gl_Position.xyz;
+    vec4 pos2 = vec4(ModelViewMat * vec4(pos, 1.0));
+    gl_Position = ProjMat * pos2;
+    screenUV = vec3(gl_Position.xyz);
 
-    vertexDistance = fog_distance(pos, FogShape);
+    worldPos = pos;
     vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
     texCoord0 = UV0;
 }

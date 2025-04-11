@@ -4,8 +4,11 @@ import com.beatcraft.audio.AudioInfo;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.beatmap.data.ColorScheme;
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -116,6 +119,7 @@ public class Info {
         private float njs;
         private float offset;
         private ColorScheme colorScheme;
+        private String lightshowFile;
 
         public static SetDifficulty from(JsonObject json, Info info) {
             SetDifficulty setDifficulty = new SetDifficulty();
@@ -132,6 +136,8 @@ public class Info {
                 }
             }
             setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
+
+            setDifficulty.lightshowFile = JsonUtil.getOrDefault(json, "lightshowDataFilename", JsonElement::getAsString, null);
 
             if (json.has("_customData")) {
                 JsonObject customData = json.get("_customData").getAsJsonObject();
@@ -178,6 +184,10 @@ public class Info {
 
         public ColorScheme getColorScheme() {
             return colorScheme;
+        }
+
+        public @Nullable String getLightshowFile() {
+            return lightshowFile;
         }
     }
 }

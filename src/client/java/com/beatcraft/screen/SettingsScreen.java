@@ -25,7 +25,6 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
         GENERAL,
         QUALITY,
         AUDIO,
-        CONTROLLERS,
         DEBUG
     }
 
@@ -60,8 +59,6 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.audio_settings"), this::gotoAudioPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(2)).child(
-                    Components.button(Text.translatable("gui.beatcraft.button.controllers_settings"), this::gotoControllersPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
-                ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("gui.beatcraft.button.debug_settings"), this::gotoDebugPage).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
                 ).child(Components.spacer(2)).child(
                     Components.button(Text.translatable("screen.beatcraft.song_downloader"), this::gotoSongDownloader).sizing(Sizing.fixed(BUTTON_WIDTH), Sizing.content())
@@ -79,7 +76,6 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
             case GENERAL -> setGeneralPage();
             case QUALITY -> setQualityPage();
             case AUDIO -> setAudioPage();
-            case CONTROLLERS -> setControllersPage();
             case DEBUG -> setDebugPage();
         }
     }
@@ -121,6 +117,42 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     private void setQualityPage() {
 
+        var bloomfogToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.bloomfog"));
+        bloomfogToggle.checked(BeatCraftClient.playerConfig.doBloomfog());
+        bloomfogToggle.onChanged(BeatCraftClient.playerConfig::setBloomfogEnabled);
+
+        var bloomToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.bloom"));
+        bloomToggle.checked(BeatCraftClient.playerConfig.doBloom());
+        bloomToggle.onChanged(BeatCraftClient.playerConfig::setBloomEnabled);
+
+        var mirrorToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.mirror"));
+        mirrorToggle.checked(BeatCraftClient.playerConfig.doMirror());
+        mirrorToggle.onChanged(BeatCraftClient.playerConfig::setMirrorEnabled);
+
+        var skyFogToggle = Components.checkbox(Text.translatable("setting.beatcraft.quality.sky_fog"));
+        skyFogToggle.checked(BeatCraftClient.playerConfig.doSkyFog());
+        skyFogToggle.onChanged(BeatCraftClient.playerConfig::setSkyFogEnabled);
+
+        settingPage.child(Components.spacer(10)).child(
+            Containers.grid(Sizing.fill(90), Sizing.content(), 2, 2)
+                .child(
+                    bloomfogToggle,
+                    0, 0
+                )
+                .child(
+                    bloomToggle,
+                    0, 1
+                )
+                .child(
+                    mirrorToggle,
+                    1, 0
+                )
+                .child(
+                    skyFogToggle,
+                    1, 1
+                )
+        );
+
     }
 
     private void setAudioPage() {
@@ -138,10 +170,6 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                     0, 1
                 )
         );
-    }
-
-    private void setControllersPage() {
-
     }
 
     private void setDebugPage() {
@@ -198,10 +226,6 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
         setPage();
     }
 
-    private void gotoControllersPage(ButtonComponent button) {
-        page = Page.CONTROLLERS;
-        setPage();
-    }
 
     private void gotoDebugPage(ButtonComponent button) {
         page = Page.DEBUG;

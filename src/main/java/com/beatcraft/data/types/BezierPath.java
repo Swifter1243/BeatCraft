@@ -1,6 +1,7 @@
 package com.beatcraft.data.types;
 
 
+import com.beatcraft.memory.MemoryPool;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class BezierPath implements ISplinePath {
             z += coefficient * points.get(i).z;
         }
 
-        return new Vector3f(x, y, z);
+        return MemoryPool.newVector3f(x, y, z);
     }
 
     private static int binomialCoefficient(int n, int k) {
@@ -45,7 +46,7 @@ public class BezierPath implements ISplinePath {
     public Vector3f getTangent(float t) {
         int n = points.size() - 1;
         if (n == 0) {
-            return new Vector3f(0, 0, 0);
+            return MemoryPool.newVector3f(0, 0, 0);
         }
         float x = 0;
         float y = 0;
@@ -60,7 +61,7 @@ public class BezierPath implements ISplinePath {
             z += coefficient * (points.get(i + 1).z - points.get(i).z);
         }
 
-        return new Vector3f(x, y, z);
+        return MemoryPool.newVector3f(x, y, z);
     }
 
     @Override

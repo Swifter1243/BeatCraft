@@ -1,0 +1,68 @@
+{
+  "targets": [
+    "bloomfog",
+    "swap"
+  ],
+  "passes": [
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "minecraft:main",
+      "outtarget": "swap"
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "bloomfog",
+      "outtarget": "swap"
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "bloomfog",
+      "outtarget": "swap"
+    },
+    {
+      "name": "bloomfog_blur_down",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "bloomfog",
+      "outtarget": "swap"
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "bloomfog",
+      "outtarget": "swap"
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    },
+    {
+      "name": "bloomfog_blur_up",
+      "intarget": "bloomfog",
+      "outtarget": "swap"
+    },
+    {
+      "name": "blit",
+      "intarget": "swap",
+      "outtarget": "bloomfog"
+    }
+  ]
+}

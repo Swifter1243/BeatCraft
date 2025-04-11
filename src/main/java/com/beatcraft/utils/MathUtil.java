@@ -1,6 +1,7 @@
 package com.beatcraft.utils;
 
 import com.beatcraft.data.types.Color;
+import com.beatcraft.memory.MemoryPool;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
@@ -76,9 +77,9 @@ public class MathUtil {
 
     public static Vec3i lerpVec3i(Vec3i a, Vec3i b, float time) {
         return new Vec3i(
-            (int) Math.lerp(a.getX(), b.getX(), time),
-            (int) Math.lerp(a.getY(), b.getY(), time),
-            (int) Math.lerp(a.getZ(), b.getZ(), time)
+                (int) Math.lerp(a.getX(), b.getX(), time),
+                (int) Math.lerp(a.getY(), b.getY(), time),
+                (int) Math.lerp(a.getZ(), b.getZ(), time)
         );
     }
 
@@ -119,7 +120,7 @@ public class MathUtil {
         for (int i = 0; i <= pointsCount; i++) {
             float angle = ((arcDegrees * MathHelper.RADIANS_PER_DEGREE) * i / pointsCount) + (angleOffset * MathHelper.RADIANS_PER_DEGREE);
             rotation.fromAxisAngleRad(normal.x, normal.y, normal.z, angle);
-            points[i] = new Vector3f(startPoint).rotate(rotation).add(offset);
+            points[i] = MemoryPool.newVector3f(startPoint).rotate(rotation).add(offset);
         }
 
         return points;
@@ -186,10 +187,10 @@ public class MathUtil {
 
     public static Color lerpColor(Color a, Color b, float time) {
         return new Color(
-            Math.clamp(Math.lerp(a.getRed(), b.getRed(), time), 0, 255),
-            Math.clamp(Math.lerp(a.getGreen(), b.getGreen(), time), 0, 255),
-            Math.clamp(Math.lerp(a.getBlue(), b.getBlue(), time), 0, 255),
-            Math.clamp(Math.lerp(a.getAlpha(), b.getAlpha(), time), 0, 255)
+                Math.clamp(Math.lerp(a.getRed(), b.getRed(), time), 0, 255),
+                Math.clamp(Math.lerp(a.getGreen(), b.getGreen(), time), 0, 255),
+                Math.clamp(Math.lerp(a.getBlue(), b.getBlue(), time), 0, 255),
+                Math.clamp(Math.lerp(a.getAlpha(), b.getAlpha(), time), 0, 255)
         );
     }
 

@@ -3,13 +3,14 @@ package com.beatcraft.render.block.entity;
 import com.beatcraft.blocks.EndLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
 import com.beatcraft.blocks.entity.EndLightTileBlockEntity;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -92,7 +93,7 @@ public class EndLightTileBlockEntityRenderer implements BlockEntityRenderer<EndL
 
         Quaternionf orientation = RenderUtil.getBlockRenderOrientation(state.get(EndLightTileBlock.FACE), state.get(EndLightTileBlock.ROTATION));
 
-        BeatcraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
+        BeatCraftRenderer.recordLaserRenderCall((buffer, cameraPos) -> {
             for (var vertex : meshData) {
                 Vector3f pos = vertex.getLeft().rotate(orientation, new Vector3f()).add(blockEntity.getPos().toCenterPos().toVector3f()).sub(cameraPos);
                 int color = vertex.getRight();
@@ -101,5 +102,10 @@ public class EndLightTileBlockEntityRenderer implements BlockEntityRenderer<EndL
 
         });
 
+    }
+
+    @Override
+    public boolean isInRenderDistance(EndLightTileBlockEntity blockEntity, Vec3d pos) {
+        return true;
     }
 }

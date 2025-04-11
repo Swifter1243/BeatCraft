@@ -91,6 +91,31 @@ public abstract class MenuPanel<T extends Menu> {
         private int wrapWidth = 0;
         private boolean doDynamicScaling = false;
         private int scalingWidth = 0;
+        private boolean doDynamicUpdating = false;
+        private Callable<String> textGetter = null;
+
+        protected TextWidget(Callable<String> textProvider, Vector3f position, float scale) {
+            try {
+                this.text = textProvider.call();
+                this.doDynamicUpdating = true;
+                this.textGetter = textProvider;
+                this.position = position;
+                this.scale = scale;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        protected TextWidget(Callable<String> textProvider, Vector3f position) {
+            try {
+                this.text = textProvider.call();
+                this.doDynamicUpdating = true;
+                this.textGetter = textProvider;
+                this.position = position;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         protected TextWidget(String text, Vector3f position, float scale) {
             this.text = text;
@@ -135,6 +160,14 @@ public abstract class MenuPanel<T extends Menu> {
             context.translate(-position.x, -position.y, -position.z);
 
             context.scale(-scale, -scale, -scale);
+
+            if (doDynamicUpdating) {
+                try {
+                    text = textGetter.call();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
             if (doDynamicScaling) {
                 int currentWidth = MinecraftClient.getInstance().textRenderer.getWidth(text);

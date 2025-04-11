@@ -5,19 +5,22 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.SongList;
 import com.beatcraft.networking.BeatCraftClientNetworking;
 import com.beatcraft.networking.c2s.MapSyncC2SPayload;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
+import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
+import com.beatcraft.replay.ReplayHandler;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
 import com.beatcraft.screen.SongDownloaderScreen;
@@ -42,8 +45,10 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
@@ -57,15 +62,16 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 
 public class BeatCraftClient implements ClientModInitializer {
 
+    public static Random random = Random.create();
+
     public static PlayerConfig playerConfig = null;
     public static final SongList songs = new SongList();
 
     public static final KeyBinding settingsKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.beatcraft.keybindings"));
     public static final KeyBinding songSearchKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.song_search", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.beatcraft.keybindings"));
-
-    public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.beatcraft.keybindings"));
-
+    public static final KeyBinding pauseLevelKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.pause_song", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.beatcraft.keybindings"));
     public static final KeyBinding toggleFPFCKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.toggle_fpfc", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_V, "category.beatcraft.keybindings"));
+    public static final KeyBinding toggleMovementLock = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.beatcraft.lock_movement", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.beatcraft.keybindings"));
 
     public static final Vec3d playerCameraPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerCameraRotation = new Quaternionf();
@@ -101,36 +107,61 @@ public class BeatCraftClient implements ClientModInitializer {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
                 while (settingsKeyBind.wasPressed());
-            } else if (songSearchKeybind.wasPressed()) {
+            }
+            if (songSearchKeybind.wasPressed()) {
                 var screen = new SongDownloaderScreen(null);
                 client.setScreen(screen);
                 while (songSearchKeybind.wasPressed());
-            } else if (pauseLevelKeybind.wasPressed()) {
+            }
+            if (pauseLevelKeybind.wasPressed()) {
+
                 if (GameLogicHandler.isPaused()) {
                     GameLogicHandler.unpauseMap();
-                } else {
+                } else if (BeatmapPlayer.isPlaying()) {
                     GameLogicHandler.pauseMap();
                 }
                 while (pauseLevelKeybind.wasPressed());
-            } else if (toggleFPFCKeybind.wasPressed()) {
+            }
+            if (toggleFPFCKeybind.wasPressed()) {
                 if (client.player != null) {
                     toggleFPFC();
                     client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
-                    while (toggleFPFCKeybind.wasPressed()) ;
+                    while (toggleFPFCKeybind.wasPressed());
+                }
+            }
+            if (toggleMovementLock.wasPressed()) {
+                if (client.player != null) {
+                    if (InputSystem.isMovementLocked()) {
+                        InputSystem.unlockMovement();
+                        client.player.sendMessage(Text.of("Player movement UNLOCKED!"));
+                    } else {
+                        InputSystem.lockMovement();
+                        client.player.sendMessage(Text.of(String.format("Player movement LOCKED! (press \"%s\" to unlock)", toggleMovementLock.getBoundKeyLocalizedText().getString())));
+                    }
+                    while (toggleMovementLock.wasPressed()) ;
                 }
             }
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            Bloomfog.initShaders();
             BeatmapAudioPlayer.init();
 
+            var window = MinecraftClient.getInstance().getWindow();
+            var w = window.getWidth();
+            var h = window.getHeight();
+
+            if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
+            BeatCraftRenderer.bloomfog.resize(w, h, true);
+
             songs.loadSongs();
+            ReplayHandler.loadReplays();
             HUDRenderer.initSongSelectMenuPanel();
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
-            BeatcraftRenderer.bloomfog.unload();
+            BeatCraftRenderer.bloomfog.unload();
             BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();
         });
@@ -146,7 +177,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
 
         WindowResizeCallback.EVENT.register((client, window) -> {
-            BeatcraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+            BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
         });
 
     }
@@ -288,7 +319,8 @@ public class BeatCraftClient implements ClientModInitializer {
     private int songScrub(CommandContext<FabricClientCommandSource> context) {
         float beats = FloatArgumentType.getFloat(context, "beats");
         float newBeat = Math.max(0.0f, BeatmapPlayer.getCurrentBeat() + beats);
-        BeatmapPlayer.play(newBeat);
+        BeatmapPlayer.setCurrentBeat(newBeat);
+
 
         context.getSource().sendFeedback(Text.literal("Scrubbed to beat " + newBeat + "!"));
         return 1;
@@ -312,12 +344,12 @@ public class BeatCraftClient implements ClientModInitializer {
         String hexStr = Integer.toHexString(hex);
 
         context.getSource().sendFeedback(Text.literal(
-                String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                        r, g, b,
-                        fr, fg, fb,
-                        hex, hexStr
-                )
+            String.format(
+                "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                r, g, b,
+                fr, fg, fb,
+                hex, hexStr
+            )
         ));
 
         return 1;
@@ -341,12 +373,12 @@ public class BeatCraftClient implements ClientModInitializer {
         String hexStr = Integer.toHexString(hex);
 
         context.getSource().sendFeedback(Text.literal(
-                String.format(
-                        "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                        r, g, b,
-                        fr, fg, fb,
-                        hex, hexStr
-                )
+            String.format(
+                "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                r, g, b,
+                fr, fg, fb,
+                hex, hexStr
+            )
         ));
 
         return 1;
@@ -368,12 +400,12 @@ public class BeatCraftClient implements ClientModInitializer {
             float fb = b / 255.0f;
 
             context.getSource().sendFeedback(Text.literal(
-                    String.format(
-                            "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
-                            r, g, b,
-                            fr, fg, fb,
-                            hex, hexStr
-                    )
+                String.format(
+                    "int RGB  : %s, %s, %s\nfloat RGB: %s, %s, %s\npacked color: %s\nhex code: %s",
+                    r, g, b,
+                    fr, fg, fb,
+                    hex, hexStr
+                )
             ));
 
         } catch (NumberFormatException e) {
@@ -410,11 +442,11 @@ public class BeatCraftClient implements ClientModInitializer {
 
         SongData.BeatmapInfo beatmapInfo = song.getBeatMapInfo(diffSet, diff);
 
-        if (PlayRecorder.outputFile != null) {
-            PlayRecorder.songName = songName;
-            PlayRecorder.difficultySet = diffSet;
-            PlayRecorder.difficulty = diff;
-        }
+        //if (PlayRecorder.outputFile != null) {
+        //    PlayRecorder.songID = songName;
+        //    PlayRecorder.difficultySet = diffSet;
+        //    PlayRecorder.difficulty = diff;
+        //}
 
         if (handleDifficultySetup(context, beatmapInfo.getBeatmapLocation().toString()) == 1) {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
@@ -543,6 +575,90 @@ public class BeatCraftClient implements ClientModInitializer {
         return suggestionsBuilder.buildFuture();
     }
 
+    private int setDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        var ty = StringArgumentType.getString(context, "type");
+
+        var value = StringArgumentType.getString(context, "value");
+
+        Object val = value;
+
+        switch (ty) {
+            case "vec3" -> {
+                var comps = value.split("(, *| +)");
+                if (comps.length == 1) {
+                    var d = Float.parseFloat(comps[0]);
+                    val = new Vector3f(d);
+                } else if (comps.length == 3) {
+                    var x = Float.parseFloat(comps[0]);
+                    var y = Float.parseFloat(comps[1]);
+                    var z = Float.parseFloat(comps[2]);
+                    val = new Vector3f(x, y, z);
+                } else {
+                    context.getSource().sendError(Text.of("Failed to parse Vector3f. must have either 1 or 3 float components"));
+                    return -1;
+                }
+            }
+            case "quat" -> {
+                var comps = value.split("(, *| +)");
+                if (comps.length == 4) {
+                    var x = Float.parseFloat(comps[0]);
+                    var y = Float.parseFloat(comps[1]);
+                    var z = Float.parseFloat(comps[2]);
+                    var w = Float.parseFloat(comps[3]);
+                    val = new Quaternionf(x, y, z, w);
+                }
+            }
+            case "f" -> {
+                val = Float.parseFloat(value);
+            }
+            case "i" -> {
+                val = Integer.parseInt(value);
+            }
+            case "b" -> {
+                if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("t")) {
+                    val = true;
+                } else if (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("f")) {
+                    val = false;
+                }
+            }
+            case "d" -> {
+                val = Double.parseDouble(value);
+            }
+            case "l" -> {
+                val = Long.parseLong(value);
+            }
+        }
+
+        BeatCraftDebug.bindValue(key, val);
+
+        return 1;
+    }
+
+
+    private int getDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        var value = BeatCraftDebug.getValue(key);
+
+        context.getSource().sendFeedback(Text.literal(String.format("%s is currently: %s", key, value)));
+
+        return 1;
+    }
+
+
+    private int removeDebugValue(CommandContext<FabricClientCommandSource> context) {
+        var key = StringArgumentType.getString(context, "key");
+
+        BeatCraftDebug.removeValue(key);
+
+        context.getSource().sendFeedback(Text.of(String.format("Removed '%s'", key)));
+
+        return 1;
+    }
+
+
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
             dispatcher.register(literal("song")
@@ -588,46 +704,67 @@ public class BeatCraftClient implements ClientModInitializer {
                                     )
                             )
                     )
-                    .then(literal("record")
-                            .then(argument("output_file", StringArgumentType.string())
-                                    .executes(this::songRecord)
-                            )
-                    )
-                    .then(literal("replay")
-                            .then(argument("replay_file", StringArgumentType.string())
-                                    .executes(this::songReplay)
-                            )
-                    )
+                    //.then(literal("record")
+                    //        .then(argument("output_file", StringArgumentType.string())
+                    //                .executes(this::songRecord)
+                    //        )
+                    //)
+                    //.then(literal("replay")
+                    //        .then(argument("replay_file", StringArgumentType.string())
+                    //                .executes(this::songReplay)
+                    //        )
+                    //)
             );
             dispatcher.register(literal("color_helper")
-                    .then(literal("hex")
-                            .then(argument("hex_code", StringArgumentType.word())
-                                    .executes(this::colorFromHex)
-                            )
+                .then(literal("hex")
+                    .then(argument("hex_code", StringArgumentType.word())
+                        .executes(this::colorFromHex)
                     )
-                    .then(literal("intRGB")
-                            .then(argument("R", IntegerArgumentType.integer(0, 255))
-                                    .then(argument("G", IntegerArgumentType.integer(0, 255))
-                                            .then(argument("B", IntegerArgumentType.integer(0, 255))
-                                                    .executes(this::colorFromIntegers)
-                                            )
-                                    )
+                )
+                .then(literal("intRGB")
+                    .then(argument("R", IntegerArgumentType.integer(0, 255))
+                        .then(argument("G", IntegerArgumentType.integer(0, 255))
+                            .then(argument("B", IntegerArgumentType.integer(0, 255))
+                                .executes(this::colorFromIntegers)
                             )
+                        )
                     )
-                    .then(literal("floatRGB")
-                            .then(argument("R", FloatArgumentType.floatArg(0, 1))
-                                    .then(argument("G", FloatArgumentType.floatArg(0, 1))
-                                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
-                                                    .executes(this::colorFromFloats)
-                                            )
-                                    )
+                )
+                .then(literal("floatRGB")
+                    .then(argument("R", FloatArgumentType.floatArg(0, 1))
+                        .then(argument("G", FloatArgumentType.floatArg(0, 1))
+                            .then(argument("B", FloatArgumentType.floatArg(0, 1))
+                                .executes(this::colorFromFloats)
                             )
+                        )
                     )
+                )
             );
             dispatcher.register(literal("fpfc")
-                    .then(literal("enable").executes(this::enableFPFC))
-                    .then(literal("disable").executes(this::disableFPFC))
-                    .executes(this::toggleFPFC)
+                .then(literal("enable").executes(this::enableFPFC))
+                .then(literal("disable").executes(this::disableFPFC))
+                .executes(this::toggleFPFC)
+            );
+            dispatcher.register(literal("debug")
+                .then(literal("set")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .then(argument("type", StringArgumentType.greedyString())
+                            .then(argument("value", StringArgumentType.greedyString())
+                                .executes(this::setDebugValue)
+                            )
+                        )
+                    )
+                )
+                .then(literal("get")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .executes(this::getDebugValue)
+                    )
+                )
+                .then(literal("remove")
+                    .then(argument("key", StringArgumentType.greedyString())
+                        .executes(this::removeDebugValue)
+                    )
+                )
             );
         }));
     }

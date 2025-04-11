@@ -65,7 +65,7 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
             if (difficulty.pointDefinitions.containsKey(name)) {
                 return factory.apply(difficulty.pointDefinitions.get(name));
             } else {
-                BeatCraft.LOGGER.warn("Point Definition [" + name + "] does not exist! Skipping...");
+                BeatCraft.LOGGER.warn("Point Definition [{}] does not exist! Skipping...", name);
                 return null;
             }
         } else {

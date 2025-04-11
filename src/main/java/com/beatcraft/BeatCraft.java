@@ -207,7 +207,8 @@ public class BeatCraft implements ModInitializer {
 
 	private static void placePlayArea(ServerWorld world) {
 		// play area tower
-		fillBlocks(world, new BlockPos(-2, -64, -2), new BlockPos(1, -1, 1), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
+		fillBlocks(world, new BlockPos(-2, -64, -2), new BlockPos(1, -2, 1), ModBlocks.BLACK_MIRROR_BLOCK.getDefaultState());
+		fillBlocks(world, new BlockPos(-2, -1, -2), new BlockPos(1, -1, 1), ModBlocks.REFLECTIVE_MIRROR_BLOCK.getDefaultState());
 
 		// light rim on tower
 		world.setBlockState(new BlockPos(1, 0, -2), ModBlocks.CORNER_LIGHT_TILE_BLOCK.getDefaultState().with(CornerLightTileBlock.FACE, Direction.DOWN).with(CornerLightTileBlock.ROTATION, Direction.EAST));

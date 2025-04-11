@@ -1,29 +1,21 @@
 package com.beatcraft.mixin;
 
 import com.beatcraft.BeatCraftClient;
-import com.beatcraft.render.effect.Bloomfog;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
-import net.minecraft.resource.ResourceFactory;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @Mixin(GameRenderer.class)
-@Debug(export = true)
+//@Debug(export = true)
 public class GameRendererMixin {
 
     @Shadow @Final private Map<String, ShaderProgram> programs;
@@ -58,6 +50,11 @@ public class GameRendererMixin {
     //private<E> boolean loadBloomfogShaders(List<E> instance, E e, Operation<Boolean> original, @Local(argsOnly = true) ResourceFactory factory) {
     //    try {
     //        Bloomfog.bloomfog_solid_shader = new ShaderProgram(factory, "rendertype_solid_bloomfog", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+    //
+    //        BeatCraft.LOGGER.info("solid type fsh: {}", Bloomfog.bloomfog_solid_shader.getFragmentShader().getName());
+    //
+    //        renderTypeSolidProgram = Bloomfog.bloomfog_solid_shader;
+    //
     //    } catch (IOException ex) {
     //        throw new RuntimeException(ex);
     //    }

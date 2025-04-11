@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 public class ModBlocks {
 
     public static final BlackMirrorBlock BLACK_MIRROR_BLOCK = (BlackMirrorBlock) register(new BlackMirrorBlock(), "black_mirror_block");
-
+    public static final ReflectiveMirrorBlock REFLECTIVE_MIRROR_BLOCK = (ReflectiveMirrorBlock) register(new ReflectiveMirrorBlock(), "reflective_mirror_block");
 
     public static final FilledLightTileBlock FILLED_LIGHT_TILE_BLOCK = (FilledLightTileBlock) register(new FilledLightTileBlock(), "filled_light_tile");
     public static final EdgeLightTileBlock EDGE_LIGHT_TILE_BLOCK = (EdgeLightTileBlock) register(new EdgeLightTileBlock(), "edge_light_tile");
@@ -26,6 +26,14 @@ public class ModBlocks {
 
 
     // block entities
+    public static final BlockEntityType<BlackMirrorBlockEntity> BLACK_MIRROR_BLOCK_ENTITY = registerBlockEntity(
+        BLACK_MIRROR_BLOCK, BlackMirrorBlockEntity::new, "black_mirror_block_entity"
+    );
+
+    public static final BlockEntityType<ReflectiveMirrorBlockEntity> REFLECTIVE_MIRROR_BLOCK_ENTITY = registerBlockEntity(
+        REFLECTIVE_MIRROR_BLOCK, ReflectiveMirrorBlockEntity::new, "reflective_mirror_block_entity"
+    );
+
     public static final BlockEntityType<EdgeLightTileBlockEntity> EDGE_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
         EDGE_LIGHT_TILE_BLOCK, EdgeLightTileBlockEntity::new, "edge_light_block_entity"
     );

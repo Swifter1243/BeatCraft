@@ -31,7 +31,7 @@ public class LightState {
     }
 
     private int calcEffectiveColor() {
-        return color.lerpBrightness(brightness * 1.1f);
+        return color.lerpBrightness(brightness * 1.2f);
     }
 
     public int getEffectiveColor() {
@@ -39,7 +39,7 @@ public class LightState {
     }
 
     public int getBloomColor() {
-        return color.withAlpha(brightness).toARGB();
+        return color.lerpBrightness(brightness);
     }
 
     public float getBrightness() {

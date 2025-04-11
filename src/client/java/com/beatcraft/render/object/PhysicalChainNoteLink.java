@@ -7,7 +7,8 @@ import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -61,6 +62,13 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return !data.isNoteGravityDisabled();
     }
 
+    public Vector3f worldToCameraSpace(Vector3f renderPos, Vector3f cameraPos, Quaternionf cameraRot) {
+        var a = renderPos.sub(cameraPos, new Vector3f());
+        a.rotate(cameraRot);
+        a.add(cameraPos);
+        return a;
+    }
+
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
@@ -70,15 +78,36 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         if (!isBaseDissolved()) {
             var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
             var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatcraftRenderer.recordNoteRenderCall((tri, cam) -> {
+            BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
                 MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
             });
+            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
+                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
+            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
+            //    MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
+            //    MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            //});
         }
 
 
         if (!isArrowDissolved()) {
-            mc.getBlockRenderManager().getModelRenderer().render(localPos, vertexConsumer, null, arrowModel, getData().getColor().getRed(), getData().getColor().getGreen(), getData().getColor().getBlue(), 255, overlay);
+            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
+            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
+            BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
+                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
+            });
+            MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
+                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
+                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
+            });
+            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
+            });
         }
     }
 

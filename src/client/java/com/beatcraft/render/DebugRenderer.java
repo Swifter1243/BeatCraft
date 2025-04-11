@@ -3,21 +3,14 @@ package com.beatcraft.render;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.ISplinePath;
 import com.beatcraft.logic.Hitbox;
-import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
-import com.beatcraft.render.mesh.*;
-import com.beatcraft.render.object.PhysicalColorNote;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -164,7 +157,7 @@ public class DebugRenderer {
 
     private static void _renderHitbox(Hitbox hitbox, Vector3f position, Quaternionf orientation, int color, boolean doDepthTest, int lineWidth) {
 
-        var edges = BeatcraftRenderer.getCubeEdges(hitbox.min, hitbox.max);
+        var edges = BeatCraftRenderer.getCubeEdges(hitbox.min, hitbox.max);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);

@@ -11,7 +11,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
 import com.beatcraft.networking.c2s.SaberSyncC2SPayload;
-import com.beatcraft.render.BeatcraftRenderer;
+import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayFrame;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -35,6 +35,7 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public class SaberRenderer {
         matrices.multiply(orientation);
         matrices.scale(0.3333f, 0.3333f, 0.3333f);
 
-        BeatcraftRenderer.recordRenderCall(() -> {
+        BeatCraftRenderer.recordRenderCall(() -> {
             MinecraftClient.getInstance().getItemRenderer().renderItem(
                 item, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND, 255, 0,
                 matrices, HUDRenderer.vertexConsumerProvider, MinecraftClient.getInstance().world, 0
@@ -126,7 +127,7 @@ public class SaberRenderer {
 
         matrices.pop();
 
-        ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation));
+        ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation, GameLogicHandler.headPos, GameLogicHandler.headRot));
         if (GameLogicHandler.isTrackingClient() && BeatmapPlayer.isPlaying()) {
             ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
         }
@@ -135,7 +136,7 @@ public class SaberRenderer {
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
         Vector3f hiltPos = new Vector3f(0, (7/8f)*0.2f, 0).rotate(rotation).add(basePos);
         Vector3f tipPos = new Vector3f(0, (41/8f)*0.2f, 0).rotate(rotation).add(basePos);
-        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
         int color;
 
         int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -212,7 +213,7 @@ public class SaberRenderer {
                 }
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
-                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
                 int color;
 
                 int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -262,7 +263,7 @@ public class SaberRenderer {
             Vec3d pos = entity.getLerpedPos(tickDelta);
             blade_base = blade_base.add((float) pos.x, (float) pos.y, (float) pos.z);
             blade_tip = blade_tip.add((float) pos.x, (float) pos.y, (float) pos.z);
-            Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash();
+            Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
             int color;
 
             int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -302,6 +303,9 @@ public class SaberRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.depthMask(false);
+
+        //RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
@@ -313,14 +317,15 @@ public class SaberRenderer {
         BuiltBuffer buffer = trail_buffer.endNullable();
         render_calls.clear();
 
-        if (buffer == null) return;
-
-        buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
-        BufferRenderer.drawWithGlobalProgram(buffer);
-        RenderSystem.enableDepthTest();
+        if (buffer != null) {
+            buffer.sortQuads(((BufferBuilderAccessor) trail_buffer).beatcraft$getAllocator(), VertexSorter.BY_Z);
+            BufferRenderer.drawWithGlobalProgram(buffer);
+        }
+        RenderSystem.disableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
 
 
     }
