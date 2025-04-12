@@ -5,6 +5,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.memory.MemoryPool;
@@ -87,12 +88,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
             (b, c, i) -> _render(b, c, i, pos, orientation, false)
         );
     }
-    private void _render(Vector3f pos, Quaternionf orientation) {
-        if (BeatmapPlayer.currentBeatmap == null) return;
-        int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
-            .getColorScheme().getObstacleColor().toARGB(0.15f);
-
-
 
     private void renderMirrored(Vector3f pos, Quaternionf orientation) {
         var flippedPos = pos.mul(1, -1, 1);
@@ -105,20 +100,14 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
         var color = this.data.getColor();
 
+        //BeatCraft.LOGGER.info("wall color: {}", new Color(color));
+
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.depthMask(false);
 
-        ObstacleGlowRenderer.grabScreen();
 
-        var scene = ObstacleGlowRenderer.framebuffer;//MinecraftClient.getInstance().getFramebuffer();
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
-        RenderSystem.setShaderTexture(0, scene.getColorAttachment());
         var c1 = MemoryPool.newVector3f();
         var c2 = MemoryPool.newVector3f();
         var c3 = MemoryPool.newVector3f();

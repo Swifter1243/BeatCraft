@@ -152,4 +152,13 @@ public class Color {
         return (intAlpha << 24) | (intRed << 16) | (intGreen << 8) | intBlue;
     }
 
+    @Override
+    public String toString() {
+        return "Color{" +
+            ", red=" + red +
+            ", green=" + green +
+            ", blue=" + blue +
+            "alpha=" + alpha +
+            '}';
+    }
 }

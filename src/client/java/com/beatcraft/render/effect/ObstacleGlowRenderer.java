@@ -3,6 +3,8 @@ package com.beatcraft.render.effect;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.SimpleFramebuffer;
@@ -31,13 +33,13 @@ public class ObstacleGlowRenderer {
 
     public static void grabScreen() {
         var scene = MinecraftClient.getInstance().getFramebuffer();
-;
+
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
         framebuffer.beginWrite(true);
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
 
         ObstacleGlowRenderer.distortionShader.addSampler("DiffuseSampler", scene.getColorAttachment());
         RenderSystem.setShaderTexture(0, scene.getColorAttachment());
@@ -54,8 +56,8 @@ public class ObstacleGlowRenderer {
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
         framebuffer.endWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
 
         MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
     }
@@ -84,6 +86,10 @@ public class ObstacleGlowRenderer {
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
         if (distortionShader == null) init();
         BeatCraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
+        var p = MemoryPool.newVector3f(position);
+        var o = MemoryPool.newQuaternionf(orientation);
+        BeatCraftRenderer.recordLaserPreRenderCall((buffer, camera) -> _render(p, o, bounds, color, buffer, camera, false));
+
     }
 
     public static void renderMirrored(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
