@@ -70,7 +70,7 @@ Black Mirror Block
 > just a solid black block.  
 > at some point, I'd like this block to be reflective either with shaders or some other magic.  
 
-Light Tile BLocks  
+Light Tile Blocks  
 > Look kinda glowy.  
 > Comes in many shapes.  
 
