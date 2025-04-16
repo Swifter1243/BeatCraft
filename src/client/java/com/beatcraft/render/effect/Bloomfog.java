@@ -179,8 +179,11 @@ public class Bloomfog {
         return INSTANCE;
     }
 
+    public static boolean bloomfog_resize = false;
+
     private float layers = 1;
     public void resize(int width, int height, boolean resizeMirror) {
+        bloomfog_resize = true;
         framebuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
         blurredBuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
         extraBuffer.resize(width*2, height*2, MinecraftClient.IS_SYSTEM_MAC);
@@ -205,7 +208,7 @@ public class Bloomfog {
         }
 
         if (resizeMirror) MirrorHandler.resize();
-
+        bloomfog_resize = false;
     }
 
     public void unload() {
