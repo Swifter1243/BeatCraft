@@ -6,6 +6,7 @@ import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -35,6 +36,7 @@ public class BeatCraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arrowRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
+    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserPreRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
 
@@ -87,6 +89,10 @@ public class BeatCraftRenderer {
         laserRenderCalls.add(call);
     }
 
+    public static void recordLaserPreRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
+        laserPreRenderCalls.add(call);
+    }
+
     public static void recordLightRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
         lightRenderCalls.add(call);
     }
@@ -116,7 +122,7 @@ public class BeatCraftRenderer {
 
         int color = BeatmapPlayer.currentBeatmap.getSetDifficulty()
             .getColorScheme().getObstacleColor().toARGB(0.15f);
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         for (var call : obstacleRenderCalls) {
             call.accept(buffer, cameraPos, color);
@@ -126,11 +132,20 @@ public class BeatCraftRenderer {
         var buff = buffer.endNullable();
 
         if (buff != null) {
+            ObstacleGlowRenderer.grabScreen();
+
+
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
             RenderSystem.enableBlend();
-            RenderSystem.depthMask(false);
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.depthMask(true);
+
+            var scene = ObstacleGlowRenderer.framebuffer;//MinecraftClient.getInstance().getFramebuffer();
+
+            RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
+            RenderSystem.setShaderTexture(0, scene.getColorAttachment());
+            ObstacleGlowRenderer.distortionShader.getUniformOrDefault("Time").set(System.nanoTime() / 1_000_000_000f);
 
             buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
 
@@ -291,6 +306,35 @@ public class BeatCraftRenderer {
         arrowRenderCalls.clear();
     }
 
+    private static void renderFloorLightsPhase1(Tessellator tessellator, Vector3f cameraPos) {
+        // floor tiles and walls
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
+        for (var call : laserPreRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        laserPreRenderCalls.clear();
+
+        BuiltBuffer buff = buffer.endNullable();
+        if (buff == null) return;
+
+
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+
+        BufferRenderer.drawWithGlobalProgram(buff);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+    }
+
     private static void renderFloorLights(Tessellator tessellator, Vector3f cameraPos) {
         // floor tiles and walls
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -357,9 +401,11 @@ public class BeatCraftRenderer {
 
         renderNotes(tessellator, cameraPos);
 
-        renderFloorLights(tessellator, cameraPos);
+        renderFloorLightsPhase1(tessellator, cameraPos);
 
         renderObstacles(tessellator, cameraPos);
+
+        renderFloorLights(tessellator, cameraPos);
 
     }
 

@@ -1,15 +1,21 @@
 package com.beatcraft.render.object;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.data.object.Obstacle;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
@@ -94,6 +100,14 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         List<Vector3f[]> faces = BeatCraftRenderer.getCubeFaces(bounds.min, bounds.max);
         var color = this.data.getColor();
 
+        //BeatCraft.LOGGER.info("wall color: {}", new Color(color));
+
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.depthMask(false);
+
+
         var c1 = MemoryPool.newVector3f();
         var c2 = MemoryPool.newVector3f();
         var c3 = MemoryPool.newVector3f();
@@ -105,10 +119,10 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
             c3.set(face[2]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
             c4.set(face[3]).mul(1, mirrored ? -1 : 1, 1).rotate(orientation).add(pos).sub(cameraPos);
 
-            buffer.vertex(c1.x, c1.y, c1.z).color(color);
-            buffer.vertex(c2.x, c2.y, c2.z).color(color);
-            buffer.vertex(c3.x, c3.y, c3.z).color(color);
-            buffer.vertex(c4.x, c4.y, c4.z).color(color);
+            buffer.vertex(c1.x, c1.y, c1.z).color(color).texture(0, 0);
+            buffer.vertex(c2.x, c2.y, c2.z).color(color).texture(0, 1);
+            buffer.vertex(c3.x, c3.y, c3.z).color(color).texture(1, 1);
+            buffer.vertex(c4.x, c4.y, c4.z).color(color).texture(1, 0);
 
         }
         MemoryPool.release(c1, c2, c3, c4);

@@ -3,11 +3,64 @@ package com.beatcraft.render.effect;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.render.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.function.BiConsumer;
+
 public class ObstacleGlowRenderer {
+
+    public static ShaderProgram distortionShader;
+    public static ShaderProgram blitShader;
+    public static SimpleFramebuffer framebuffer = new SimpleFramebuffer(1920, 1080, true, true);
+
+    public static void init() {
+        try {
+            distortionShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_distortion", VertexFormats.POSITION_TEXTURE_COLOR);
+            blitShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "blit_screen", VertexFormats.POSITION_TEXTURE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void grabScreen() {
+        var scene = MinecraftClient.getInstance().getFramebuffer();
+
+        framebuffer.setClearColor(0, 0, 0, 0);
+        framebuffer.clear(true);
+        framebuffer.beginWrite(true);
+
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
+
+        ObstacleGlowRenderer.distortionShader.addSampler("DiffuseSampler", scene.getColorAttachment());
+        RenderSystem.setShaderTexture(0, scene.getColorAttachment());
+
+        RenderSystem.setShader(() -> blitShader);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+
+        buffer.vertex(-1, -1, 0).texture(0, 0);
+        buffer.vertex(-1, 1, 0).texture(0, 1);
+        buffer.vertex(1, 1, 0).texture(1, 1);
+        buffer.vertex(1, -1, 0).texture(1, 0);
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+        framebuffer.endWrite();
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
+
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+    }
 
     private static Vector3f[] buildEdge(Vector3f pos1, Vector3f pos2, Vector3f cameraPos) {
         Vector3f lineNormal = MemoryPool.newVector3f(pos1).sub(pos2).normalize();
@@ -31,7 +84,12 @@ public class ObstacleGlowRenderer {
     }
 
     public static void render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
+        if (distortionShader == null) init();
         BeatCraftRenderer.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
+        var p = MemoryPool.newVector3f(position);
+        var o = MemoryPool.newQuaternionf(orientation);
+        BeatCraftRenderer.recordLaserPreRenderCall((buffer, camera) -> _render(p, o, bounds, color, buffer, camera, false));
+
     }
 
     public static void renderMirrored(Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {

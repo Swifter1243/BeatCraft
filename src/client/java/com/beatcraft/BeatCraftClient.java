@@ -16,6 +16,7 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.replay.PlayRecorder;
@@ -95,11 +96,10 @@ public class BeatCraftClient implements ClientModInitializer {
 
         playerConfig = PlayerConfig.loadFromFile();
 
+
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
         });
-
-
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -174,6 +174,7 @@ public class BeatCraftClient implements ClientModInitializer {
             }
             return false;
         });
+
 
         WindowResizeCallback.EVENT.register((client, window) -> {
             BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
