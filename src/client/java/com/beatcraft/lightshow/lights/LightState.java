@@ -50,6 +50,10 @@ public class LightState {
         return color.toARGB();
     }
 
+    public void clampAlpha() {
+        color.setAlpha(Math.max(1f/255f, color.getAlpha()));
+    }
+
     public void setColor(Color color) {
         this.color = color;
         effectiveColor = calcEffectiveColor();

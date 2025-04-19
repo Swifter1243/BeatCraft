@@ -4,6 +4,7 @@ import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import com.beatcraft.render.effect.Bloomfog;
@@ -41,30 +42,43 @@ public class GlowingCuboid extends LightObject {
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
-        Vector3f pos = new Vector3f(position);
-        Vector3f off = new Vector3f(offset);
-        Quaternionf ori = new Quaternionf(orientation);
-        Quaternionf rot = new Quaternionf(rotation);
-        Quaternionf wrot = new Quaternionf(worldRotation);
+        Vector3f pos = MemoryPool.newVector3f(position);
+        Vector3f off = MemoryPool.newVector3f(offset);
+        Quaternionf ori = MemoryPool.newQuaternionf(orientation);
+        Quaternionf rot = MemoryPool.newQuaternionf(rotation);
+        Quaternionf wrot = MemoryPool.newQuaternionf(worldRotation);
+
+        Vector3f pos3 = MemoryPool.newVector3f(position);
+        Vector3f off3 = MemoryPool.newVector3f(offset);
+        Quaternionf ori3 = MemoryPool.newQuaternionf(orientation);
+        Quaternionf rot3 = MemoryPool.newQuaternionf(rotation);
+        Quaternionf wrot3 = MemoryPool.newQuaternionf(worldRotation);
+
+        Vector3f pos4 = MemoryPool.newVector3f(position);
+        Vector3f off4 = MemoryPool.newVector3f(offset);
+        Quaternionf ori4 = MemoryPool.newQuaternionf(orientation);
+        Quaternionf rot4 = MemoryPool.newQuaternionf(rotation);
+        Quaternionf wrot4 = MemoryPool.newQuaternionf(worldRotation);
         LightState state = lightState.copy();
+        state.clampAlpha();
 
         //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
 
         if (bloomfog != null) {
             bloomfog.record(
                 (b, c, r, m) -> _render(
-                    b, c, true, r,
+                    b, c, 1, r,
                     ori, rot, wrot, pos, off, state, m
                 )
             );
             bloomfog.recordBloomCall((b, v, q) -> {
-                _renderBloom(b, v, q, ori, rot, wrot, pos, off, state);
+                _renderBloom(b, v, q, ori3, rot3, wrot3, pos3, off3, state);
             });
         }
         BeatCraftRenderer.recordLightRenderCall(
             (b, c) -> _render(
-                b, c, false, null,
-                ori, rot, wrot, pos, off, state, false
+                b, c, 0, null,
+                ori4, rot4, wrot4, pos4, off4, state, false
             )
         );
 
@@ -87,7 +101,7 @@ public class GlowingCuboid extends LightObject {
     private void _renderBloom(BufferBuilder buffer, Vector3f cameraPos, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
         var color = lightState.getBloomColor();
 
-        if (((color >> 24) & 0xFF) == 0) {
+        if (((color >> 24) & 0xFF) <= 16) {
             return;
         }
 
@@ -125,14 +139,14 @@ public class GlowingCuboid extends LightObject {
 
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, boolean isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
-        var color = isBloomfog ? lightState.getBloomColor() : lightState.getEffectiveColor();
+    private void _render(BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
+        var color = isBloomfog > 0 ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
-        if (((color >> 24) & 0xFF) == 0) {
+        if (((color >> 24) & 0xFF) <= 16) {
             return;
         }
 
-        if (isBloomfog && !mirrorDraw) {
+        if (isBloomfog == 1 && !mirrorDraw) {
 
             for (var line : lines) {
                 var v0 = processVertex(line[0], cameraPos, orientation, rotation, worldRotation, position, offset, false);
@@ -156,6 +170,13 @@ public class GlowingCuboid extends LightObject {
                 var v1 = processVertex(face[1], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
                 var v2 = processVertex(face[2], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
                 var v3 = processVertex(face[3], cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+
+                if (isBloomfog > 0) {
+                    v0.rotate(cameraRotation);
+                    v1.rotate(cameraRotation);
+                    v2.rotate(cameraRotation);
+                    v3.rotate(cameraRotation);
+                }
 
                 buffer.vertex(v0).color(color);
                 buffer.vertex(v1).color(color);

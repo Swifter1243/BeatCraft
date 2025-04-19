@@ -55,7 +55,8 @@ public class Bloomfog {
     public Framebuffer overrideFramebuffer = null;
 
     public SimpleFramebuffer framebuffer;
-    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>();
+    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>(); // Line renders
+    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls2 = new ArrayList<>(); // Quad renders
     private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
     private final BloomfogTex tex;
 
@@ -99,7 +100,7 @@ public class Bloomfog {
 
     public static SimpleFramebuffer lightDepth;
 
-    private static float radius = 10;
+    private static float radius = 6;
 
     private static final int LAYERS = 5;
 
@@ -291,15 +292,13 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
-        SkyFogController.render(buffer, cameraPos, invCameraRotation);
+        //SkyFogController.render(buffer, cameraPos, invCameraRotation);
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation, false);
             MirrorHandler.recordMirrorLightDraw(call);
         }
-
         renderCalls.clear();
-
         var buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(() -> bloomfogLineShader);
@@ -367,8 +366,10 @@ public class Bloomfog {
         int l;
         for (l = 0; l < layers; l++) {
             applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE);
-            applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-            applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            if (l == 0) {
+                applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+                applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            }
             //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
             //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //if (l > 0) {
