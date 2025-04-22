@@ -392,7 +392,8 @@ public class BeatCraftRenderer {
     public static void earlyRender(VertexConsumerProvider vcp) {
 
         Tessellator tessellator = Tessellator.getInstance();
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        var camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+        Vector3f cameraPos = camera.getPos().toVector3f();
 
         renderEarly(vcp);
         renderBloomfogPosCol(tessellator, cameraPos);

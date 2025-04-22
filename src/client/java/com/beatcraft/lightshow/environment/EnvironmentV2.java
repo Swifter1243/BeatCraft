@@ -5,7 +5,7 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
-import com.beatcraft.lightshow.event.events.LightEvent;
+import com.beatcraft.lightshow.event.events.LightEventV2;
 import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.event.handlers.ActionEventHandlerV2;
 import com.beatcraft.lightshow.event.handlers.LightGroupEventHandlerV2;
@@ -88,13 +88,13 @@ public abstract class EnvironmentV2 extends Environment {
 
     private void loadV2(Difficulty difficulty, JsonObject json) {
         JsonArray events = json.getAsJsonArray("_events");
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> lrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rrlEvents = new ArrayList<>();
         ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
         ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> backEvents = new ArrayList<>();
+        ArrayList<LightEventV2> centerEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rlEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
 
@@ -103,13 +103,13 @@ public abstract class EnvironmentV2 extends Environment {
             EventGroup group = EventGroup.fromType(obj.get("_type").getAsInt());
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV2(obj, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV2(obj, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case null, default -> {}
@@ -144,13 +144,13 @@ public abstract class EnvironmentV2 extends Environment {
 
     private void loadV3(Difficulty difficulty, JsonObject json) {
         JsonArray events = json.getAsJsonArray("basicBeatmapEvents");
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> lrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rrlEvents = new ArrayList<>();
         ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
         ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> backEvents = new ArrayList<>();
+        ArrayList<LightEventV2> centerEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rlEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
 
@@ -159,13 +159,13 @@ public abstract class EnvironmentV2 extends Environment {
             EventGroup group = EventGroup.fromType(obj.get("et").getAsInt());
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV3(obj, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV3(obj, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case null, default -> {}
@@ -203,13 +203,13 @@ public abstract class EnvironmentV2 extends Environment {
         JsonArray events = json.getAsJsonArray("basicEvents");
         JsonArray eventsData = json.getAsJsonArray("basicEventsData");
 
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> lrlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rrlEvents = new ArrayList<>();
         ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
         ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
+        ArrayList<LightEventV2> backEvents = new ArrayList<>();
+        ArrayList<LightEventV2> centerEvents = new ArrayList<>();
+        ArrayList<LightEventV2> rlEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
         ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
 
@@ -223,13 +223,13 @@ public abstract class EnvironmentV2 extends Environment {
             EventGroup group = EventGroup.fromType(JsonUtil.getOrDefault(data, "t", JsonElement::getAsInt, 0));
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case null, default -> {}

@@ -19,6 +19,19 @@ public abstract class LightObject {
 
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
 
+    protected Quaternionf mirrorQuaternion(boolean mirror, Quaternionf quat) {
+        return mirror ? new Quaternionf(-quat.x, quat.y, -quat.z, quat.w) : quat;
+    }
+
+    protected Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, boolean mirrorDraw) {
+        return basePos.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f())
+            .rotate(mirrorQuaternion(mirrorDraw, orientation))
+            .rotate(mirrorQuaternion(mirrorDraw, rotation))
+            .add(position.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
+            .rotate(mirrorQuaternion(mirrorDraw, worldRotation))
+            .add(offset.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
+            .sub(cameraPos);
+    }
 
     public abstract void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog);
 

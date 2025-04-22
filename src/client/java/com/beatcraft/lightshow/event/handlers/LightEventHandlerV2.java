@@ -2,26 +2,24 @@ package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.data.types.Color;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.lightshow.event.events.LightEvent;
+import com.beatcraft.lightshow.event.events.LightEventV2;
 import com.beatcraft.lightshow.lights.LightState;
-import com.beatcraft.utils.MathUtil;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class LightEventHandler extends EventHandler<LightState, LightEvent> {
-    public LightEventHandler(List<LightEvent> events) {
+public class LightEventHandlerV2 extends EventHandler<LightState, LightEventV2> {
+    public LightEventHandlerV2(List<LightEventV2> events) {
         super(events, new LightState(new Color(0, 0, 0, 0), 0));
     }
 
     @Override
-    public void onEventInterrupted(LightEvent event, float normalTime) {
+    public void onEventInterrupted(LightEventV2 event, float normalTime) {
 
     }
 
     @Override
-    public void onInsideEvent(LightEvent event, float normalTime) {
+    public void onInsideEvent(LightEventV2 event, float normalTime) {
         var ls = event.getLightState();
 
         float fadeTime = 1 - (float)Math.pow(1 - normalTime, 3);
@@ -44,7 +42,7 @@ public class LightEventHandler extends EventHandler<LightState, LightEvent> {
     }
 
     @Override
-    public void onEventPassed(LightEvent event) {
+    public void onEventPassed(LightEventV2 event) {
         if (event.isFadeType()) {
             state = new LightState(new Color(0), 0);
         } else {
