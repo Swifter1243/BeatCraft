@@ -1,24 +1,53 @@
 package com.beatcraft.lightshow.event.events;
 
+import com.beatcraft.animation.Easing;
 import com.beatcraft.event.IEvent;
 import com.beatcraft.lightshow.lights.LightState;
 
+import java.util.function.Function;
+
 public class LightEventV3 extends LightEvent implements IEvent {
-    private LightState lightState;
-    private int[] lightIDs;
-    private LightState startState = null;
-    private float duration;
+    public LightState lightState;
+    public int lightID;
+    public LightState startState = null;
+    public float duration;
 
+    public float strobeStartFrequency = 0;
+    public float strobeStartBrightness = 0;
 
+    public float strobeFrequency = 0;
+    public float strobeBrightness = 0;
+    public boolean strobeFade = false;
+
+    public LightEventV3(float beat, LightState startState, LightState endState, float duration, int lightID) {
+        this.beat = beat;
+        this.startState = startState;
+        this.lightID = lightID;
+        this.lightState = endState;
+        this.duration = duration;
+    }
+
+    public LightEventV3(
+        float beat, LightState startState, LightState endState,
+        float duration, int lightID,
+        float strobeStartFrequency, float strobeStartBrightness,
+        float strobeFrequency, float strobeBrightness, boolean strobeFade
+    ) {
+        this.beat = beat;
+        this.startState = startState;
+        this.lightID = lightID;
+        this.lightState = endState;
+        this.duration = duration;
+        this.strobeStartFrequency = strobeStartFrequency;
+        this.strobeStartBrightness = strobeStartBrightness;
+        this.strobeFrequency = strobeFrequency;
+        this.strobeBrightness = strobeBrightness;
+        this.strobeFade = strobeFade;
+    }
 
     @Override
     public boolean containsLightID(int lightID) {
-        if (lightIDs == null) return true;
-
-        for (int id : lightIDs) {
-            if (id == lightID) return true;
-        }
-        return false;
+        return this.lightID == lightID;
     }
 
     @Override
@@ -30,4 +59,14 @@ public class LightEventV3 extends LightEvent implements IEvent {
     public float getEventDuration() {
         return duration;
     }
+
+    public LightEventV3 extendTo(float beat) {
+        return new LightEventV3(
+            beat, this.lightState, this.lightState,
+            0, this.lightID,
+            this.strobeFrequency, this.strobeBrightness,
+            this.strobeFrequency, this.strobeBrightness, this.strobeFade
+        );
+    }
+
 }

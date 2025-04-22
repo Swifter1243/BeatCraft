@@ -17,6 +17,10 @@ public abstract class LightGroupV3 extends LightGroup {
         this.lights = lights;
     }
 
+    public int getLightCount() {
+        return lights.size();
+    }
+
     public void setLightState(int id, LightState state) {
         if (lights.containsKey(id)) {
             lights.get(id).setLightState(state);

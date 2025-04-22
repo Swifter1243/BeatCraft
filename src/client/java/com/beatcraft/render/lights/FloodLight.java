@@ -22,13 +22,26 @@ import java.util.List;
 
 public class FloodLight extends LightObject {
 
-    private Hitbox baseDimensions;
+    private final float startOffset;
+    private final float width;
+    private final float length;
+    private final float fadeLength;
+    private final float spread;
     private List<Pair<Vector3f, Integer>[]> faces;
     private List<Pair<Vector3f, Integer>[]> fadeFaces;
     private List<Pair<Vector3f, Integer>[]> lines;
 
+    public FloodLight cloneOffset(Vector3f offset) {
+        return new FloodLight(startOffset, width, length, fadeLength, spread, position.add(offset, new Vector3f()), new Quaternionf(orientation));
+    }
 
     public FloodLight(float startOffset, float width, float length, float fadeLength, float spread, Vector3f pos, Quaternionf rot) {
+
+        this.startOffset = startOffset;
+        this.width = width;
+        this.length = length;
+        this.fadeLength = fadeLength;
+        this.spread = spread;
         position = pos;
         orientation = rot;
         setDimensions(startOffset, width, length, fadeLength, spread);
@@ -103,7 +116,7 @@ public class FloodLight extends LightObject {
         var fadeY = startOffset + fadeLength;
         var delta = width / 2f;
 
-        baseDimensions = new Hitbox(
+        var baseDimensions = new Hitbox(
             new Vector3f(-delta, startOffset, -delta),
             new Vector3f(delta, maxY, delta)
         );

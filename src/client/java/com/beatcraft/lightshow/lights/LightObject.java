@@ -33,6 +33,8 @@ public abstract class LightObject {
             .sub(cameraPos);
     }
 
+    public abstract LightObject cloneOffset(Vector3f offset);
+
     public abstract void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog);
 
     // Mainly used for light intensity, but also will work for spectrum visualizer elements
