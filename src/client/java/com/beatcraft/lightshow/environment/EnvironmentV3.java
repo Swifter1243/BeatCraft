@@ -9,13 +9,11 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public abstract class EnvironmentV3 extends Environment {
 
+    private Random random = new Random();
 
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
 
@@ -98,7 +96,7 @@ public abstract class EnvironmentV3 extends Environment {
     }
 
 
-    private int[] processFilter(int lightCount, ArrayList<Integer> coveredIds, JsonObject filter) {
+    private List<int[]> processFilter(int lightCount, ArrayList<Integer> coveredIds, JsonObject filter) {
         var targets = new ArrayList<int[]>();
         for (int i = 0; i < lightCount; i++) { targets.add(new int[]{i}); }
 
@@ -128,23 +126,42 @@ public abstract class EnvironmentV3 extends Environment {
         // 0 = not random, 1 = keep order?, 2 = random elements
         var randomBehavior = JsonUtil.getOrDefault(filter, "n", JsonElement::getAsInt, 0);
 
-        var randomSeed = JsonUtil.getOrDefault(filter, "s", JsonElement::getAsFloat, 0f);
+        var randomSeed = JsonUtil.getOrDefault(filter, "s", JsonElement::getAsInt, 0);
+
+        random.setSeed(randomSeed);
 
         // what percentage of objects to affect
         var limitPercent = JsonUtil.getOrDefault(filter, "l", JsonElement::getAsFloat, 0f);
-
         // 0 = none, 1 = duration, 2 = distribution
         var limitBehavior = JsonUtil.getOrDefault(filter, "d", JsonElement::getAsInt, 0);
 
+        // limitPercent = 75 means 75% of lights are affected
+        // if limitBehavior & 2: the event duration is 75% as long too
+        // idk how distribution is affected
+
         removeValues(targets, coveredIds);
 
-        var flat = flatten(targets);
+        for (var arr : targets) {
+            for (var t : arr) {
+                if (!coveredIds.contains(t)) {
+                    coveredIds.add(t);
+                }
+            }
+        }
 
-        List<Integer> newlyUsed = java.util.Arrays.stream(flat).boxed().toList();
+        if (randomBehavior == 2) {
+            ArrayList<int[]> reordered = new ArrayList<>();
+            var s = targets.size();
+            for (int i = 0; i < s; i++) {
+                var index = random.nextInt(0, targets.size());
+                reordered.add(targets.remove(index));
+            }
+            targets = reordered;
+        }
 
-        coveredIds.addAll(newlyUsed);
 
-        return flat;
+
+        return targets;
     }
 
     private void loadV3(Difficulty difficulty, JsonObject json) {
