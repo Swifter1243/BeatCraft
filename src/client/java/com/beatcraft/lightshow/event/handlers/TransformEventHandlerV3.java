@@ -8,8 +8,8 @@ import com.beatcraft.lightshow.lights.TransformState;
 import java.util.List;
 
 public class TransformEventHandlerV3 extends EventHandler<TransformState, TransformEvent> {
-    public TransformEventHandlerV3(List<TransformEvent> events) {
-        super(events, new TransformState(TransformState.Axis.UNKNOWN, 0));
+    public TransformEventHandlerV3(List<TransformEvent> events, TransformState.Axis initialAxis) {
+        super(events, new TransformState(initialAxis, 0));
 
     }
 

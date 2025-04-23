@@ -195,12 +195,14 @@ public class FloodLight extends LightObject {
             return;
         }
 
+        var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+
         for (var face : fadeFaces) {
 
-            var v0 = processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
-            var v1 = processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
-            var v2 = processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
-            var v3 = processVertex(face[3].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
+            var v0 = face[0].getLeft().mulPosition(mat, new Vector3f());
+            var v1 = face[1].getLeft().mulPosition(mat, new Vector3f());
+            var v2 = face[2].getLeft().mulPosition(mat, new Vector3f());
+            var v3 = face[3].getLeft().mulPosition(mat, new Vector3f());
             v0.rotate(cameraRotation);
             v1.rotate(cameraRotation);
             v2.rotate(cameraRotation);
@@ -214,17 +216,6 @@ public class FloodLight extends LightObject {
             buffer.vertex(v2).color(face[2].getRight() * color);
             buffer.vertex(v3).color(face[3].getRight() * color);
 
-            //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
-            //
-            //for (var quad : sections) {
-            //    buffer.vertex(quad[0]).color(color);
-            //    buffer.vertex(quad[1]).color(color);
-            //    buffer.vertex(quad[2]).color(color);
-            //
-            //    buffer.vertex(quad[0]).color(color);
-            //    buffer.vertex(quad[2]).color(color);
-            //    buffer.vertex(quad[3]).color(color);
-            //}
         }
     }
 
@@ -235,10 +226,13 @@ public class FloodLight extends LightObject {
             return;
         }
 
+        var mat = createTransformMatrix(mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+
+
         if (isBloomfog == 1 && !mirrorDraw) {
             for (var line : lines) {
-                var v0 = processVertex(line[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
-                var v1 = processVertex(line[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, false);
+                var v0 = line[0].getLeft().mulPosition(mat, new Vector3f());
+                var v1 = line[1].getLeft().mulPosition(mat, new Vector3f());
                 v0.rotate(cameraRotation);
                 v1.rotate(cameraRotation);
                 var n = v1.sub(v0, new Vector3f());
@@ -257,10 +251,10 @@ public class FloodLight extends LightObject {
 
             for (var face : iterFaces) {
 
-                var v0 = processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v1 = processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v2 = processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v3 = processVertex(face[3].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v0 = face[0].getLeft().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v1 = face[1].getLeft().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v2 = face[2].getLeft().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v3 = face[3].getLeft().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[3].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
 
                 if (isBloomfog > 0) {
                     v0.rotate(cameraRotation);

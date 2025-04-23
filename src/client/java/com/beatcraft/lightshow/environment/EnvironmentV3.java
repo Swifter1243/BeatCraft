@@ -8,6 +8,7 @@ import com.beatcraft.lightshow.event.Filter;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.TransformEvent;
 import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -63,7 +64,7 @@ public abstract class EnvironmentV3 extends Environment {
     }
 
     protected abstract int getLightCount(int group);
-    protected abstract void linkEvents(int group, int lightID, List<LightEventV3> events, List<TransformEvent> transformEvents);
+    protected abstract void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<TransformEvent>> transformEvents);
 
     private static ArrayList<Triplet<Integer[], Float, Float>> reChunk(ArrayList<Triplet<Integer[], Float, Float>> targets, int chunks) {
         int total = targets.size();
@@ -182,11 +183,6 @@ public abstract class EnvironmentV3 extends Environment {
             targets = getStepOffset(targets, Math.clamp(p0, 1, lightCount+1), Math.max(1, p1));
         }
 
-
-        for (var i = 0; i < targets.size(); i++) {
-            ordering.add(i);
-        }
-
         // reverses distribution
         var reverse = JsonUtil.getOrDefault(filter, "r", JsonElement::getAsInt, 0) > 0;
 
@@ -209,7 +205,14 @@ public abstract class EnvironmentV3 extends Environment {
             limitPercent = 1.0f;
         }
 
+        var cutoff = false;
         for (int i = 0; i < targets.size(); i++) {
+            if (cutoff || (i / (float) targets.size()) > limitPercent) {
+                cutoff = true;
+                targets.remove(i);
+                i--;
+                continue;
+            }
             var trip = targets.get(i);
             var chunkTargets = trip.getA();
             var durationMod = trip.getB();
@@ -221,6 +224,10 @@ public abstract class EnvironmentV3 extends Environment {
                 beatMod *= limitPercent;
             }
             targets.set(i, new Triplet<>(chunkTargets, durationMod, beatMod));
+        }
+
+        for (var i = 0; i < targets.size(); i++) {
+            ordering.add(i);
         }
 
         removeValues(targets, coveredIds);
@@ -266,12 +273,13 @@ public abstract class EnvironmentV3 extends Environment {
         var rawRotationEvents = json.getAsJsonArray("lightRotationEventBoxGroups");
 
         var colorEvents = new HashMap<GroupKey, ArrayList<LightEventV3>>();
-        var transformEvents = new HashMap<GroupKey, ArrayList<TransformEvent>>();
+        var transformEvents = new HashMap<GroupKey, HashMap<TransformState.Axis, List<TransformEvent>>>();
 
         // {[group, lightId]: event, ...}
         var latestColorEvents = new HashMap<GroupKey, LightEventV3>();
+        var latestRotationEvents = new HashMap<GroupKey, HashMap<Integer, TransformEvent>>();
 
-        rawColorEventBoxes.forEach((rawBoxGroup) -> {
+        rawColorEventBoxes.forEach(rawBoxGroup -> {
             var boxGroupObj = rawBoxGroup.getAsJsonObject();
             var baseBeat = JsonUtil.getOrDefault(boxGroupObj, "b", JsonElement::getAsFloat, 0f);
             var group = JsonUtil.getOrDefault(boxGroupObj, "g", JsonElement::getAsInt, 0);
@@ -279,7 +287,7 @@ public abstract class EnvironmentV3 extends Environment {
             ArrayList<Integer> coveredIds = new ArrayList<>();
             var lightCount = getLightCount(group);
 
-            rawSubEvents.forEach((rawSubEvent) -> {
+            rawSubEvents.forEach(rawSubEvent -> {
                 var subEvent = rawSubEvent.getAsJsonObject();
 
                 var rawFilter = subEvent.getAsJsonObject("f");
@@ -291,7 +299,7 @@ public abstract class EnvironmentV3 extends Environment {
                 var beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
 
                 float maxBeat = beatDistributionValue;
-                if (beatDistributionType == 0) {
+                if (beatDistributionType % 2 == 0) {
                     maxBeat *= filter.chunkCount();
                 }
 
@@ -300,13 +308,12 @@ public abstract class EnvironmentV3 extends Environment {
                 var brightnessDistributionType = JsonUtil.getOrDefault(subEvent, "t", JsonElement::getAsInt, 0);
 
                 float maxBrightness0 = brightnessDistributionValue;
-                if (brightnessDistributionType == 0) {
+                if (brightnessDistributionType % 2 == 0) {
                     maxBrightness0 *= filter.chunkCount();
                 }
 
                 // whether distribution affects the first event in the sequence
                 boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
-
 
                 var brightnessDistributionEasing = JsonUtil.getOrDefault(subEvent, "i", JsonElement::getAsInt, 0);
                 var easingFunction = Easing.getEasing(String.valueOf(brightnessDistributionEasing));
@@ -335,12 +342,10 @@ public abstract class EnvironmentV3 extends Environment {
 
                     var strobeFade = JsonUtil.getOrDefault(eventData, "sf", JsonElement::getAsInt, 0) > 0;
 
-                    int index = 0;
-
                     for (var targetSet : filter) {
                         var targets = targetSet.getA();
                         var durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
-                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxBrightness : 0f;
+                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxBrightness : 1f;
 
                         if (transitionType == 1) {
                             for (var target : targets) {
@@ -349,7 +354,7 @@ public abstract class EnvironmentV3 extends Environment {
                                 var curr_start = last.getEventBeat() + last.getEventDuration();
                                 var curr_end = baseBeat + beatOffset + durationMod;
 
-                                var curr_brightness = brightness;
+                                var curr_brightness = brightness * distributionMod;
 
                                 curr_start = Math.min(curr_end, curr_start);
 
@@ -429,13 +434,89 @@ public abstract class EnvironmentV3 extends Environment {
                                 colorEvents.get(key).add(currentEvent);
                             }
                         }
-
-                        index++;
                     }
 
                     doDistribution.set(true);
                 });
 
+            });
+
+        });
+
+        rawRotationEvents.forEach(rawBoxGroup -> {
+            var boxGroupObj = rawBoxGroup.getAsJsonObject();
+            var baseBeat = JsonUtil.getOrDefault(boxGroupObj, "b", JsonElement::getAsFloat, 0f);
+            var group = JsonUtil.getOrDefault(boxGroupObj, "g", JsonElement::getAsInt, 0);
+            var rawSubEvents = boxGroupObj.getAsJsonArray("e");
+            ArrayList<Integer> coveredIds = new ArrayList<>();
+            var lightCount = getLightCount(group);
+
+            rawSubEvents.forEach(rawSubEvent -> {
+                var subEvent = rawSubEvent.getAsJsonObject();
+
+                var rawFilter = subEvent.getAsJsonObject("f");
+
+                var filter = processFilter(lightCount, coveredIds, rawFilter);
+
+                // 0 = step, 1 = wave
+                var beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 0f);
+                var beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
+
+                float maxBeat = beatDistributionValue;
+                if (beatDistributionType % 2 == 0) {
+                    maxBeat *= filter.chunkCount();
+                }
+
+                // 0 = step, 1 = wave
+                var rotationDistributionValue = JsonUtil.getOrDefault(subEvent, "s", JsonElement::getAsFloat, 1f);
+                var rotationDistributionType = JsonUtil.getOrDefault(subEvent, "t", JsonElement::getAsInt, 0);
+
+                float maxRotation0 = rotationDistributionValue;
+                if (rotationDistributionType % 2 == 0) {
+                    maxRotation0 *= filter.chunkCount();
+                }
+
+                // whether distribution affects the first event in the sequence
+                boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
+
+                var rawAxis = JsonUtil.getOrDefault(subEvent, "a", JsonElement::getAsInt, 0);
+                boolean flipAxis = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsInt, 0) > 0;
+
+                var axis = TransformState.Axis.values()[rawAxis % 3];
+
+                AtomicReference<Boolean> doDistribution = new AtomicReference<>(affectsFirst);
+
+                var rawEvents = subEvent.getAsJsonArray("l");
+
+                var maxDuration = maxBeat;
+                var maxRotation = maxRotation0;
+                rawEvents.forEach(rawEvent -> {
+                    var eventData = rawEvent.getAsJsonObject();
+
+                    var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+
+                    // 0 = transition, 1 = extend
+                    var transitionType = JsonUtil.getOrDefault(eventData, "p", JsonElement::getAsInt, 0);
+
+                    var easing = JsonUtil.getOrDefault(eventData, "e", JsonElement::getAsInt, 0);
+                    var easingFunction = Easing.getEasing(String.valueOf(easing));
+
+                    var magnitude = JsonUtil.getOrDefault(eventData, "r", JsonElement::getAsInt, 0);
+
+                    // 0 = auto, 1 = cw, 2 = ccw
+                    var direction = JsonUtil.getOrDefault(eventData, "o", JsonElement::getAsInt, 0);
+
+                    var loopCount = JsonUtil.getOrDefault(eventData, "l", JsonElement::getAsInt, 0);
+
+
+                    for (var targetSet : filter) {
+                        var targets = targetSet.getA();
+                        var durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
+                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxRotation : 0f;
+
+                    }
+
+                });
 
             });
 

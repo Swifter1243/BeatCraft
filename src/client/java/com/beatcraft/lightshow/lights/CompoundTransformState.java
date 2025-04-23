@@ -15,8 +15,6 @@ public class CompoundTransformState {
 
     public void updateState(TransformState state) {
         switch (state.getAxis()) {
-            case UNKNOWN -> {
-            }
             case TX -> {
                 tx = state.getValue();
             }

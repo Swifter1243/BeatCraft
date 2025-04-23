@@ -3,13 +3,12 @@ package com.beatcraft.lightshow.lights;
 public class TransformState {
 
     public enum Axis {
-        UNKNOWN,
+        RX,
+        RY,
+        RZ,
         TX,
         TY,
         TZ,
-        RX,
-        RY,
-        RZ
     }
 
     private Axis axis;

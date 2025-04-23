@@ -7,6 +7,7 @@ import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.TransformEvent;
 import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
 import com.beatcraft.lightshow.lights.LightObject;
+import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.render.lights.FloodLight;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -248,7 +249,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, List<TransformEvent> transformEvents) {
+    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<TransformEvent>> transformEvents) {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);
