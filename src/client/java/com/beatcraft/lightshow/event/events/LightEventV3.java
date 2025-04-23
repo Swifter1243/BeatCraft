@@ -9,7 +9,7 @@ import java.util.function.Function;
 public class LightEventV3 extends LightEvent implements IEvent {
     public LightState lightState;
     public int lightID;
-    public LightState startState = null;
+    public LightState startState;
     public float duration;
 
     public float strobeStartFrequency = 0;
@@ -52,7 +52,7 @@ public class LightEventV3 extends LightEvent implements IEvent {
 
     @Override
     public float getEventBeat() {
-        return getBeat();
+        return beat;
     }
 
     @Override
@@ -69,4 +69,19 @@ public class LightEventV3 extends LightEvent implements IEvent {
         );
     }
 
+    @Override
+    public String toString() {
+        return "LightEventV3{" +
+            "beat=" + beat +
+            ", lightState=" + lightState +
+            ", lightID=" + lightID +
+            ", startState=" + startState +
+            ", duration=" + duration +
+            ", strobeStartFrequency=" + strobeStartFrequency +
+            ", strobeStartBrightness=" + strobeStartBrightness +
+            ", strobeFrequency=" + strobeFrequency +
+            ", strobeBrightness=" + strobeBrightness +
+            ", strobeFade=" + strobeFade +
+            '}';
+    }
 }

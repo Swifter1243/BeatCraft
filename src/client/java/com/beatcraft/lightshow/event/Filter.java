@@ -26,7 +26,7 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
 
         @Override
         public boolean hasNext() {
-            return index < ordering.length-1;
+            return index < ordering.length;
         }
 
         @Override

@@ -9,7 +9,6 @@ import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import com.beatcraft.render.effect.Bloomfog;
-import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -17,7 +16,6 @@ import net.minecraft.util.Pair;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FloodLight extends LightObject {
@@ -247,9 +245,11 @@ public class FloodLight extends LightObject {
 
                 List<Pair<Vector3f, Float>[]> segments = RenderUtil.chopEdgeLerp(v0, v1, 5, line[0].getRight(), line[1].getRight());
 
+
+
                 for (var segment : segments) {
-                    buffer.vertex(segment[0].getLeft()).color((int) (color * segment[0].getRight())).normal(n.x, n.y, n.z);
-                    buffer.vertex(segment[1].getLeft()).color((int) (color * segment[1].getRight())).normal(-n.x, -n.y, -n.z);
+                    buffer.vertex(segment[0].getLeft()).color((new Color(color).lerpBrightness(segment[0].getRight()))).normal(n.x, n.y, n.z);
+                    buffer.vertex(segment[1].getLeft()).color((new Color(color).lerpBrightness(segment[1].getRight()))).normal(-n.x, -n.y, -n.z);
                 }
             }
         } else {

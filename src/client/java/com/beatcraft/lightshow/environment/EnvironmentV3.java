@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.environment;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
@@ -12,13 +13,41 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Pair;
 import oshi.util.tuples.Triplet;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class EnvironmentV3 extends Environment {
+
+    public static class GroupKey {
+        private int group;
+        private int id;
+
+        public int getLightId() {
+            return id;
+        }
+
+        public int getGroup() {
+            return group;
+        }
+
+        public GroupKey(int group, int id) {
+            this.group = group;
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof GroupKey other)) return false;
+            return group == other.group && id == other.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(group, id);
+        }
+    }
 
     private Random random = new Random();
 
@@ -44,9 +73,9 @@ public abstract class EnvironmentV3 extends Environment {
         double currentIndex = 0;
 
         for (int i = 0; i < chunks; i++) {
-            int start = (int) Math.round(currentIndex);
+            int start = (int) currentIndex;
             currentIndex += chunkSize;
-            int end = (int) Math.round(currentIndex);
+            int end = (int) Math.ceil(currentIndex);
 
             var subList = targets.subList(start, end);
 
@@ -65,20 +94,6 @@ public abstract class EnvironmentV3 extends Environment {
             var f = ((float) i) / (float) chunks;
             result.add(new Triplet<>(chunkTargets, f, f));
 
-        }
-
-        return result;
-    }
-
-    private static int[] flatten(List<Pair<Integer, Float>[]> list) {
-        int totalLength = list.stream().mapToInt(arr -> arr.length).sum();
-        int[] result = new int[totalLength];
-
-        int pos = 0;
-        for (var arr : list) {
-            for (var v : arr) {
-                result[pos++] = v.getLeft();
-            }
         }
 
         return result;
@@ -109,12 +124,33 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
+    // p0 = # of sections, p1 = section
+    public static List<Triplet<Integer[], Float, Float>> getSection(ArrayList<Triplet<Integer[], Float, Float>> targets, float p0, int p1) {
+        float total = targets.size();
+        float span = total / p0;
+
+        int start = (int) (span * p1);
+        int end = (int) Math.ceil(span * (p1 + 1));
+
+        end = Math.min(end, targets.size());
+
+        return targets.subList(start, end);
+    }
+
+
+    private static <T> ArrayList<T> getStepOffset(ArrayList<T> targets, int p0, int p1) {
+        var out = new ArrayList<T>();
+        for (int i = p0-1; i < targets.size(); i += p1) {
+            out.add(targets.get(i));
+        }
+        return out;
+    }
 
     private Filter processFilter(int lightCount, ArrayList<Integer> coveredIds, JsonObject filter) {
         var targets = new ArrayList<Triplet<Integer[], Float, Float>>();
         var ordering = new ArrayList<Integer>();
         for (int i = 0; i < lightCount; i++) {
-            var f = ((float) i) / (float) lightCount;
+            var f = ((float) i) / (float) (lightCount-1);
             targets.add(new Triplet<>(new Integer[]{i}, f, f));
         }
 
@@ -127,20 +163,29 @@ public abstract class EnvironmentV3 extends Environment {
 
         targets = reChunk(targets, chunks);
 
-        for (var i = 0; i < targets.size(); i++) {
-            ordering.add(i);
-        }
-
         // 0 = division, 1 = step & offset
         var type = JsonUtil.getOrDefault(filter, "f", JsonElement::getAsInt, 0);
+
+        type = type % 2;
         // division:
         // p0: number of sections to divide the objects into
         // p1: which section to process
         // step & offset:
         // p0: starting light
         // p1: step value
-        var p0 = JsonUtil.getOrDefault(filter, "p", JsonElement::getAsFloat, 0f);
-        var p1 = JsonUtil.getOrDefault(filter, "t", JsonElement::getAsFloat, 0f);
+        var p0 = JsonUtil.getOrDefault(filter, "p", JsonElement::getAsInt, 0);
+        var p1 = JsonUtil.getOrDefault(filter, "t", JsonElement::getAsInt, 0);
+
+        if (type == 1) {
+            targets = new ArrayList<>(getSection(targets, (float) p0, p1));
+        } else {
+            targets = getStepOffset(targets, Math.clamp(p0, 1, lightCount+1), Math.max(1, p1));
+        }
+
+
+        for (var i = 0; i < targets.size(); i++) {
+            ordering.add(i);
+        }
 
         // reverses distribution
         var reverse = JsonUtil.getOrDefault(filter, "r", JsonElement::getAsInt, 0) > 0;
@@ -200,6 +245,18 @@ public abstract class EnvironmentV3 extends Environment {
             ordering = reordered;
         }
 
+        ArrayList<float[]> weights = new ArrayList<>();
+        if (reverse) {
+            for (var t : targets) {
+                weights.add(new float[]{t.getB(), t.getC()});
+            }
+            for (int i = 0; i < targets.size(); i++) {
+                var t = targets.get(i);
+                targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
+            }
+            ordering = new ArrayList<>(ordering.reversed());
+        }
+
         return new Filter(targets, ordering.toArray(new Integer[0]));
     }
 
@@ -208,11 +265,11 @@ public abstract class EnvironmentV3 extends Environment {
 
         var rawRotationEvents = json.getAsJsonArray("lightRotationEventBoxGroups");
 
-        var colorEvents = new HashMap<Integer[], ArrayList<LightEventV3>>();
-        var transformEvents = new HashMap<Integer[], ArrayList<TransformEvent>>();
+        var colorEvents = new HashMap<GroupKey, ArrayList<LightEventV3>>();
+        var transformEvents = new HashMap<GroupKey, ArrayList<TransformEvent>>();
 
         // {[group, lightId]: event, ...}
-        var latestColorEvents = new HashMap<Integer[], LightEventV3>();
+        var latestColorEvents = new HashMap<GroupKey, LightEventV3>();
 
         rawColorEventBoxes.forEach((rawBoxGroup) -> {
             var boxGroupObj = rawBoxGroup.getAsJsonObject();
@@ -239,7 +296,7 @@ public abstract class EnvironmentV3 extends Environment {
                 }
 
                 // 0 = step, 1 = wave
-                var brightnessDistributionValue = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsFloat, 0f);
+                var brightnessDistributionValue = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsFloat, 1f);
                 var brightnessDistributionType = JsonUtil.getOrDefault(subEvent, "t", JsonElement::getAsInt, 0);
 
                 float maxBrightness0 = brightnessDistributionValue;
@@ -251,7 +308,7 @@ public abstract class EnvironmentV3 extends Environment {
                 boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
 
 
-                var brightnessDistributionEasing = JsonUtil.getOrDefault(subEvent, "i", JsonElement::getAsInt, -1);
+                var brightnessDistributionEasing = JsonUtil.getOrDefault(subEvent, "i", JsonElement::getAsInt, 0);
                 var easingFunction = Easing.getEasing(String.valueOf(brightnessDistributionEasing));
 
                 AtomicReference<Boolean> doDistribution = new AtomicReference<>(affectsFirst);
@@ -270,7 +327,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                     var color = JsonUtil.getOrDefault(eventData, "c", JsonElement::getAsInt, 0);
 
-                    var brightness = JsonUtil.getOrDefault(eventData, "s", JsonElement::getAsFloat, 0f);
+                    var brightness = JsonUtil.getOrDefault(eventData, "s", JsonElement::getAsFloat, 1f);
 
                     var strobeFrequency = JsonUtil.getOrDefault(eventData, "f", JsonElement::getAsFloat, 0f);
 
@@ -278,19 +335,21 @@ public abstract class EnvironmentV3 extends Environment {
 
                     var strobeFade = JsonUtil.getOrDefault(eventData, "sf", JsonElement::getAsInt, 0) > 0;
 
+                    int index = 0;
+
                     for (var targetSet : filter) {
                         var targets = targetSet.getA();
-                        var durationMod = doDistribution.get() ? targetSet.getB() : 0;
-                        var distributionMod = doDistribution.get() ? targetSet.getC() : 0;
+                        var durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
+                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxBrightness : 0f;
 
                         if (transitionType == 1) {
                             for (var target : targets) {
-                                var last = latestColorEvents.computeIfAbsent(new Integer[]{group, target}, k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k[1]));
+                                var last = latestColorEvents.computeIfAbsent(new GroupKey(group, target), k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
 
                                 var curr_start = last.getEventBeat() + last.getEventDuration();
-                                var curr_end = baseBeat + beatOffset + (durationMod * maxDuration);
+                                var curr_end = baseBeat + beatOffset + durationMod;
 
-                                var curr_brightness = easingFunction.apply(distributionMod * maxBrightness * brightness);
+                                var curr_brightness = brightness;
 
                                 curr_start = Math.min(curr_end, curr_start);
 
@@ -313,7 +372,7 @@ public abstract class EnvironmentV3 extends Environment {
                                     strobeFrequency, strobeBrightness, strobeFade
                                 );
 
-                                var key = new Integer[]{group, target};
+                                var key = new GroupKey(group, target);
                                 latestColorEvents.put(key, currentEvent);
 
                                 if (!colorEvents.containsKey(key)) {
@@ -324,9 +383,9 @@ public abstract class EnvironmentV3 extends Environment {
                         } else if (transitionType == 0) {
                             for (var target : targets) {
 
-                                var curr_end = baseBeat + beatOffset + (durationMod * maxDuration);
+                                var curr_end = baseBeat + beatOffset + durationMod;
 
-                                var curr_brightness = easingFunction.apply(distributionMod * maxBrightness * brightness);
+                                var curr_brightness = brightness;
 
                                 var curr_duration = 0;
 
@@ -347,7 +406,7 @@ public abstract class EnvironmentV3 extends Environment {
                                     strobeFrequency, strobeBrightness, strobeFade
                                 );
 
-                                var key = new Integer[]{group, target};
+                                var key = new GroupKey(group, target);
                                 latestColorEvents.put(key, currentEvent);
 
                                 if (!colorEvents.containsKey(key)) {
@@ -357,11 +416,11 @@ public abstract class EnvironmentV3 extends Environment {
                             }
                         } else {
                             for (var target : targets) {
-                                var last = latestColorEvents.computeIfAbsent(new Integer[]{group, target}, k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k[1]));
+                                var last = latestColorEvents.computeIfAbsent(new GroupKey(group, target), k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
 
-                                var currentEvent = last.extendTo(baseBeat + beatOffset + (durationMod * maxDuration));
+                                var currentEvent = last.extendTo(baseBeat + beatOffset + durationMod);
 
-                                var key = new Integer[]{group, target};
+                                var key = new GroupKey(group, target);
                                 latestColorEvents.put(key, currentEvent);
 
                                 if (!colorEvents.containsKey(key)) {
@@ -371,6 +430,7 @@ public abstract class EnvironmentV3 extends Environment {
                             }
                         }
 
+                        index++;
                     }
 
                     doDistribution.set(true);
@@ -382,11 +442,11 @@ public abstract class EnvironmentV3 extends Environment {
         });
 
         colorEvents.forEach((k, v) -> {
-            linkEvents(k[0], k[1], v, transformEvents.remove(k));
+            linkEvents(k.getGroup(), k.getLightId(), v, transformEvents.remove(k));
         });
 
         transformEvents.forEach((k, v) -> {
-            linkEvents(k[0], k[1], new ArrayList<>(), v);
+            linkEvents(k.getGroup(), k.getLightId(), new ArrayList<>(), v);
         });
 
     }

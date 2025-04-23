@@ -173,6 +173,11 @@ public class RingLightHandler extends LightObject {
     }
 
     @Override
+    public RingLightHandler cloneOffset(Vector3f offset) {
+        return this;
+    }
+
+    @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
         headRing.render(matrices, camera, bloomfog);
     }

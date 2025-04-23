@@ -35,6 +35,11 @@ public class OuterRing extends LightObject {
     }
 
     @Override
+    public OuterRing cloneOffset(Vector3f offset) {
+        return this;
+    }
+
+    @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
         var pos = new Vector3f(position);

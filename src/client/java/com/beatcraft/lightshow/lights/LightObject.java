@@ -19,6 +19,8 @@ public abstract class LightObject {
 
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
 
+    protected CompoundTransformState transformState = new CompoundTransformState();
+
     protected Quaternionf mirrorQuaternion(boolean mirror, Quaternionf quat) {
         return mirror ? new Quaternionf(-quat.x, quat.y, -quat.z, quat.w) : quat;
     }
@@ -73,6 +75,10 @@ public abstract class LightObject {
     public void setLightState(LightState state) {
         lightState.setColor(new Color(state.getColor()));
         lightState.setBrightness(state.getBrightness());
+    }
+
+    public void setTransformState(TransformState state) {
+
     }
 
     public LightState getLightState() {

@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.environment.lightgroup;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -27,6 +28,12 @@ public abstract class LightGroupV3 extends LightGroup {
         }
         else {
             BeatCraft.LOGGER.error("LightGroupV3: No LightObject with id {} found", id);
+        }
+    }
+
+    public void setTransform(int id, TransformState state) {
+        if (lights.containsKey(id)) {
+            lights.get(id).setTransformState(state);
         }
     }
 

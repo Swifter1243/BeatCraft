@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class EventHandler<D, E extends IEvent> {
-    protected final List<E> events;
+    protected final ArrayList<E> events;
     protected final List<E> upcoming = new ArrayList<>();
     protected final D initialState;
     protected D state;
 
     public EventHandler(List<E> events, D initialState) {
-        this.events = events;
+        this.events = new ArrayList<>(events);
         this.initialState = initialState;
         reset();
     }
