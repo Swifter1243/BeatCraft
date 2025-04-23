@@ -50,7 +50,7 @@ public abstract class Difficulty {
         this.setDifficulty = setDifficulty;
     }
 
-    public int compareObjects(BeatmapObject o1, BeatmapObject o2) {
+    public static int compareObjects(BeatmapObject o1, BeatmapObject o2) {
         float a = o1.getBeat();
         float b = o2.getBeat();
 
@@ -69,9 +69,9 @@ public abstract class Difficulty {
         chainLinkNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         obstacles.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         arcs.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
-        rotationEvents.sort(this::compareObjects);
-        animateTracks.sort(this::compareObjects);
-        assignPathAnimations.sort(this::compareObjects);
+        rotationEvents.sort(Difficulty::compareObjects);
+        animateTracks.sort(Difficulty::compareObjects);
+        assignPathAnimations.sort(Difficulty::compareObjects);
     }
 
     private void applyRotationEvents() {

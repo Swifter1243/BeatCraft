@@ -13,14 +13,30 @@ public class TransformEvent extends BeatmapObject implements IEvent {
     public TransformState startState;
     public float duration;
     public Function<Float, Float> easing;
+    public int loops;
+    public int direction;
 
-    public TransformEvent(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing) {
+    public TransformEvent(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing, int loops, int direction) {
         this.beat = beat;
         this.startState = startState;
         this.transformState = endState;
         this.duration = duration;
         this.lightID = lightID;
         this.easing = easing;
+        this.loops = loops;
+        this.direction = direction;
+    }
+
+    public boolean containsLightID(int id) {
+        return lightID == id;
+    }
+
+    public TransformEvent extendTo(float beat) {
+        return new TransformEvent(
+            beat, transformState, transformState,
+            0, lightID, easing,
+            0, 0
+        );
     }
 
     @Override

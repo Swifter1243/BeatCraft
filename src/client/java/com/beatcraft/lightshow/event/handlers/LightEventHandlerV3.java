@@ -1,6 +1,7 @@
 package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.lightshow.event.events.LightEventV3;
@@ -18,6 +19,7 @@ public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> 
 
     public void addEvents(List<LightEventV3> events) {
         this.events.addAll(events);
+        this.events.sort(Difficulty::compareObjects);
         reset();
     }
 

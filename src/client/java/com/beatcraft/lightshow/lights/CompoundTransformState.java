@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.lights;
 
+import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -41,7 +42,7 @@ public class CompoundTransformState {
     }
 
     public Quaternionf getOrientation() {
-        return new Quaternionf().rotationYXZ(ry, rx, rz);
+        return new Quaternionf().rotationYXZ(ry * MathHelper.RADIANS_PER_DEGREE, rx * MathHelper.RADIANS_PER_DEGREE, rz * MathHelper.RADIANS_PER_DEGREE);
     }
 
 }

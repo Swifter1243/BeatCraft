@@ -27,4 +27,8 @@ public class TransformState {
         return this.value;
     }
 
+    public TransformState copy() {
+        return new TransformState(axis, value);
+    }
+
 }

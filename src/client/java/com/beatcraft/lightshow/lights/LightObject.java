@@ -54,9 +54,9 @@ public abstract class LightObject {
             position.z
         );
 
-        matrix.rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation()));
         matrix.rotate(mirrorQuaternion(mirrorDraw, rotation));
         matrix.rotate(mirrorQuaternion(mirrorDraw, orientation));
+        matrix.rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation()));
 
         return matrix;
     }

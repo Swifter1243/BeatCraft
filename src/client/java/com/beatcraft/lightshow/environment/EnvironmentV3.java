@@ -1,6 +1,5 @@
 package com.beatcraft.lightshow.environment;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
@@ -277,7 +276,7 @@ public abstract class EnvironmentV3 extends Environment {
 
         // {[group, lightId]: event, ...}
         var latestColorEvents = new HashMap<GroupKey, LightEventV3>();
-        var latestRotationEvents = new HashMap<GroupKey, HashMap<Integer, TransformEvent>>();
+        var latestTransformEvents = new HashMap<GroupKey, HashMap<TransformState.Axis, TransformEvent>>();
 
         rawColorEventBoxes.forEach(rawBoxGroup -> {
             var boxGroupObj = rawBoxGroup.getAsJsonObject();
@@ -345,16 +344,17 @@ public abstract class EnvironmentV3 extends Environment {
                     for (var targetSet : filter) {
                         var targets = targetSet.getA();
                         var durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
-                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxBrightness : 1f;
+                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxBrightness : 0f;
 
-                        if (transitionType == 1) {
+                        if (transitionType == 1) { // transition
                             for (var target : targets) {
-                                var last = latestColorEvents.computeIfAbsent(new GroupKey(group, target), k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
+                                var key = new GroupKey(group, target);
+                                var last = latestColorEvents.computeIfAbsent(key, k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
 
                                 var curr_start = last.getEventBeat() + last.getEventDuration();
                                 var curr_end = baseBeat + beatOffset + durationMod;
 
-                                var curr_brightness = brightness * distributionMod;
+                                var curr_brightness = brightness + distributionMod;
 
                                 curr_start = Math.min(curr_end, curr_start);
 
@@ -377,7 +377,6 @@ public abstract class EnvironmentV3 extends Environment {
                                     strobeFrequency, strobeBrightness, strobeFade
                                 );
 
-                                var key = new GroupKey(group, target);
                                 latestColorEvents.put(key, currentEvent);
 
                                 if (!colorEvents.containsKey(key)) {
@@ -385,7 +384,7 @@ public abstract class EnvironmentV3 extends Environment {
                                 }
                                 colorEvents.get(key).add(currentEvent);
                             }
-                        } else if (transitionType == 0) {
+                        } else if (transitionType == 0) { // instant
                             for (var target : targets) {
 
                                 var curr_end = baseBeat + beatOffset + durationMod;
@@ -419,13 +418,13 @@ public abstract class EnvironmentV3 extends Environment {
                                 }
                                 colorEvents.get(key).add(currentEvent);
                             }
-                        } else {
+                        } else { // extend
                             for (var target : targets) {
-                                var last = latestColorEvents.computeIfAbsent(new GroupKey(group, target), k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
+                                var key = new GroupKey(group, target);
+                                var last = latestColorEvents.computeIfAbsent(key, k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
 
                                 var currentEvent = last.extendTo(baseBeat + beatOffset + durationMod);
 
-                                var key = new GroupKey(group, target);
                                 latestColorEvents.put(key, currentEvent);
 
                                 if (!colorEvents.containsKey(key)) {
@@ -445,11 +444,11 @@ public abstract class EnvironmentV3 extends Environment {
 
         rawRotationEvents.forEach(rawBoxGroup -> {
             var boxGroupObj = rawBoxGroup.getAsJsonObject();
-            var baseBeat = JsonUtil.getOrDefault(boxGroupObj, "b", JsonElement::getAsFloat, 0f);
+            float baseBeat = JsonUtil.getOrDefault(boxGroupObj, "b", JsonElement::getAsFloat, 0f);
             var group = JsonUtil.getOrDefault(boxGroupObj, "g", JsonElement::getAsInt, 0);
             var rawSubEvents = boxGroupObj.getAsJsonArray("e");
             ArrayList<Integer> coveredIds = new ArrayList<>();
-            var lightCount = getLightCount(group);
+            int lightCount = getLightCount(group);
 
             rawSubEvents.forEach(rawSubEvent -> {
                 var subEvent = rawSubEvent.getAsJsonObject();
@@ -459,8 +458,8 @@ public abstract class EnvironmentV3 extends Environment {
                 var filter = processFilter(lightCount, coveredIds, rawFilter);
 
                 // 0 = step, 1 = wave
-                var beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 0f);
-                var beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
+                float beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 0f);
+                int beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
 
                 float maxBeat = beatDistributionValue;
                 if (beatDistributionType % 2 == 0) {
@@ -468,8 +467,8 @@ public abstract class EnvironmentV3 extends Environment {
                 }
 
                 // 0 = step, 1 = wave
-                var rotationDistributionValue = JsonUtil.getOrDefault(subEvent, "s", JsonElement::getAsFloat, 1f);
-                var rotationDistributionType = JsonUtil.getOrDefault(subEvent, "t", JsonElement::getAsInt, 0);
+                float rotationDistributionValue = JsonUtil.getOrDefault(subEvent, "s", JsonElement::getAsFloat, 1f);
+                int rotationDistributionType = JsonUtil.getOrDefault(subEvent, "t", JsonElement::getAsInt, 0);
 
                 float maxRotation0 = rotationDistributionValue;
                 if (rotationDistributionType % 2 == 0) {
@@ -479,7 +478,7 @@ public abstract class EnvironmentV3 extends Environment {
                 // whether distribution affects the first event in the sequence
                 boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
 
-                var rawAxis = JsonUtil.getOrDefault(subEvent, "a", JsonElement::getAsInt, 0);
+                int rawAxis = JsonUtil.getOrDefault(subEvent, "a", JsonElement::getAsInt, 0);
                 boolean flipAxis = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsInt, 0) > 0;
 
                 var axis = TransformState.Axis.values()[rawAxis % 3];
@@ -488,31 +487,109 @@ public abstract class EnvironmentV3 extends Environment {
 
                 var rawEvents = subEvent.getAsJsonArray("l");
 
-                var maxDuration = maxBeat;
-                var maxRotation = maxRotation0;
+                float maxDuration = maxBeat;
+                float maxRotation = maxRotation0;
                 rawEvents.forEach(rawEvent -> {
                     var eventData = rawEvent.getAsJsonObject();
 
-                    var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+                    float beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
 
                     // 0 = transition, 1 = extend
-                    var transitionType = JsonUtil.getOrDefault(eventData, "p", JsonElement::getAsInt, 0);
+                    int transitionType = JsonUtil.getOrDefault(eventData, "p", JsonElement::getAsInt, 0);
 
-                    var easing = JsonUtil.getOrDefault(eventData, "e", JsonElement::getAsInt, 0);
+                    int easing = JsonUtil.getOrDefault(eventData, "e", JsonElement::getAsInt, 0);
                     var easingFunction = Easing.getEasing(String.valueOf(easing));
 
-                    var magnitude = JsonUtil.getOrDefault(eventData, "r", JsonElement::getAsInt, 0);
+                    float magnitude = JsonUtil.getOrDefault(eventData, "r", JsonElement::getAsFloat, 0f);
+
+                    if (flipAxis) {
+                        magnitude = ((-magnitude % 360) + 360) % 360;
+                    }
 
                     // 0 = auto, 1 = cw, 2 = ccw
-                    var direction = JsonUtil.getOrDefault(eventData, "o", JsonElement::getAsInt, 0);
+                    int direction = JsonUtil.getOrDefault(eventData, "o", JsonElement::getAsInt, 0);
 
-                    var loopCount = JsonUtil.getOrDefault(eventData, "l", JsonElement::getAsInt, 0);
+                    int loopCount = JsonUtil.getOrDefault(eventData, "l", JsonElement::getAsInt, 0);
 
 
                     for (var targetSet : filter) {
                         var targets = targetSet.getA();
-                        var durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
-                        var distributionMod = doDistribution.get() ? targetSet.getC() * maxRotation : 0f;
+                        float durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
+                        float distributionMod = doDistribution.get() ? targetSet.getC() * maxRotation : 0f;
+
+                        if (transitionType == 0) { // transition
+
+                            for (var target : targets) {
+                                var key = new GroupKey(group, target);
+                                var last = latestTransformEvents.computeIfAbsent(
+                                    key,
+                                    k -> new HashMap<>()
+                                ).computeIfAbsent(
+                                    axis,
+                                    a -> new TransformEvent(0, new TransformState(axis, 0), new TransformState(axis, 0), 0, target, easingFunction, 0, 0)
+                                );
+
+                                var curr_start = last.getEventBeat() + last.getEventDuration();
+                                var curr_end = baseBeat + beatOffset + durationMod;
+                                var curr_duration = curr_end - curr_start;
+
+                                var curr_angle = magnitude + distributionMod;
+
+                                var curr_startState = last.transformState.copy();
+                                var curr_endState = new TransformState(axis, curr_angle);
+                                var currentEvent = new TransformEvent(
+                                    curr_start, curr_startState, curr_endState,
+                                    curr_duration, target, easingFunction, loopCount, direction
+                                );
+
+
+                                if (!latestTransformEvents.containsKey(key)) {
+                                    latestTransformEvents.put(key, new HashMap<>());
+                                }
+                                var axes = latestTransformEvents.get(key);
+                                axes.put(axis, currentEvent);
+
+                                if (!transformEvents.containsKey(key)) {
+                                    transformEvents.put(key, new HashMap<>());
+                                }
+                                var eventAxes = transformEvents.get(key);
+                                if (!eventAxes.containsKey(axis)) {
+                                    eventAxes.put(axis, new ArrayList<>());
+                                }
+                                eventAxes.get(axis).add(currentEvent);
+
+                            }
+
+                        } else { // extend
+                            for (var target : targets) {
+                                var key = new GroupKey(group, target);
+                                var last = latestTransformEvents.computeIfAbsent(
+                                    key,
+                                    k -> new HashMap<>()
+                                ).computeIfAbsent(
+                                    axis,
+                                    a -> new TransformEvent(0, new TransformState(axis, 0), new TransformState(axis, 0), 0, target, easingFunction, 0, 0)
+                                );
+
+                                var currentEvent = last.extendTo(baseBeat + beatOffset + durationMod);
+
+                                if (!latestTransformEvents.containsKey(key)) {
+                                    latestTransformEvents.put(key, new HashMap<>());
+                                }
+                                var axes = latestTransformEvents.get(key);
+                                axes.put(axis, currentEvent);
+
+                                if (!transformEvents.containsKey(key)) {
+                                    transformEvents.put(key, new HashMap<>());
+                                }
+                                var eventAxes = transformEvents.get(key);
+                                if (!eventAxes.containsKey(axis)) {
+                                    eventAxes.put(axis, new ArrayList<>());
+                                }
+                                eventAxes.get(axis).add(currentEvent);
+
+                            }
+                        }
 
                     }
 

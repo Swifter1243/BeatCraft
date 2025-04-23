@@ -2,14 +2,17 @@ package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.event.events.LightEventV3;
+import com.beatcraft.lightshow.event.events.TransformEvent;
+import com.beatcraft.lightshow.lights.TransformState;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class GroupEventHandlerV3 {
     private final LightGroupV3 lightGroupV3;
     private final HashMap<Integer, LightEventHandlerV3> lightHandlers = new HashMap<>();
-    private final HashMap<Integer, HashMap<Integer, TransformEventHandlerV3>> transformHandlers = new HashMap<>();
+    private final HashMap<Integer, HashMap<TransformState.Axis, TransformEventHandlerV3>> transformHandlers = new HashMap<>();
 
 
     public GroupEventHandlerV3(LightGroupV3 group) {
@@ -26,6 +29,23 @@ public class GroupEventHandlerV3 {
             }
         });
 
+    }
+
+    public void linkTransformEvents(HashMap<TransformState.Axis, List<TransformEvent>> transformEvents) {
+        lightGroupV3.lights.forEach((lightID, light) -> {
+            transformEvents.forEach((axis, events) -> {
+                var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
+                if (!transformHandlers.containsKey(lightID)) {
+                    transformHandlers.put(lightID, new HashMap<>());
+                }
+                var axes = transformHandlers.get(lightID);
+                if (axes.containsKey(axis)) {
+                    axes.get(axis).addEvents(relevantEvents);
+                } else {
+                    axes.put(axis, new TransformEventHandlerV3(relevantEvents, axis));
+                }
+            });
+        });
     }
 
     public void update(float beat) {

@@ -117,15 +117,15 @@ public abstract class EnvironmentV2 extends Environment {
 
         });
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
 
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
@@ -173,15 +173,15 @@ public abstract class EnvironmentV2 extends Environment {
 
         });
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
@@ -238,15 +238,15 @@ public abstract class EnvironmentV2 extends Environment {
         });
 
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
