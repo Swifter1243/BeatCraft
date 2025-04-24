@@ -2,7 +2,6 @@ package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.event.VoidEventHandler;
 import com.beatcraft.lightshow.event.events.TransformEvent;
 import com.beatcraft.lightshow.lights.TransformState;
 
@@ -34,8 +33,8 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Transf
 
         float easedTime = easing.apply(normalTime);
 
-        float startRotation = start.getValue();
-        float endRotation = end.getValue();
+        float startRotation = start.value();
+        float endRotation = end.value();
 
         startRotation = ((startRotation % 360) + 360) % 360;
         endRotation = ((endRotation % 360) + 360) % 360;
@@ -56,7 +55,7 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Transf
 
         float interpolatedRotation = startRotation + rotationDiff * easedTime;
 
-        state = new TransformState(start.getAxis(), interpolatedRotation);
+        state = new TransformState(start.axis(), interpolatedRotation);
     }
 
     @Override

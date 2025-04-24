@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.event.events;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.event.IEvent;
 import com.beatcraft.lightshow.lights.TransformState;

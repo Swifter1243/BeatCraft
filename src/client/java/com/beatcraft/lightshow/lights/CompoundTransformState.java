@@ -15,24 +15,24 @@ public class CompoundTransformState {
     private float rz = 0;
 
     public void updateState(TransformState state) {
-        switch (state.getAxis()) {
+        switch (state.axis()) {
             case TX -> {
-                tx = state.getValue();
+                tx = state.value();
             }
             case TY -> {
-                ty = state.getValue();
+                ty = state.value();
             }
             case TZ -> {
-                tz = state.getValue();
+                tz = state.value();
             }
             case RX -> {
-                rx = state.getValue();
+                rx = state.value();
             }
             case RY -> {
-                ry = state.getValue();
+                ry = state.value();
             }
             case RZ -> {
-                rz = state.getValue();
+                rz = state.value();
             }
         }
     }

@@ -277,7 +277,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, 30, 14, 0.1f,
                 new Vector3f(-DISTANT_W, (CENTER_Y-DISTANT_H)-(DISTANT_H*2/9f), DISTANT_Z),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f((DISTANT_W*2)/11f, 0, 0), 11)
         ) {
@@ -305,7 +305,14 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
         lightID = 0;
         lights = new HashMap<>();
-        for (var light : stackLights(new FloodLight(0.125f, 0.075f, 30, 14, 0.1f, new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z), new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)), new Vector3f(0, -(DISTANT_H*2)/9f, 0), 9)) {
+        for (var light : stackLights(
+            new FloodLight(
+                0.125f, 0.075f, 30, 14, 0.1f,
+                new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
+                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ),
+            new Vector3f(0, -(DISTANT_H*2)/9f, 0), 9)
+        ) {
             lights.put(lightID++, light);
         }
         var distantR = new OrientableLightGroup(lights);

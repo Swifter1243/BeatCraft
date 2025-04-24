@@ -1,6 +1,6 @@
 package com.beatcraft.lightshow.lights;
 
-public class TransformState {
+public record TransformState(com.beatcraft.lightshow.lights.TransformState.Axis axis, float value) {
 
     public enum Axis {
         RX,
@@ -9,22 +9,6 @@ public class TransformState {
         TX,
         TY,
         TZ,
-    }
-
-    private Axis axis;
-    private float value;
-
-    public TransformState(Axis axis, float value) {
-        this.axis = axis;
-        this.value = value;
-    }
-
-    public Axis getAxis() {
-        return this.axis;
-    }
-
-    public float getValue() {
-        return this.value;
     }
 
     public TransformState copy() {

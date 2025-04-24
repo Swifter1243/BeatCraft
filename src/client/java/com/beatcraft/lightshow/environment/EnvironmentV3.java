@@ -592,6 +592,7 @@ public abstract class EnvironmentV3 extends Environment {
                         }
 
                     }
+                    doDistribution.set(true);
 
                 });
 
