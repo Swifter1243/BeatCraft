@@ -27,13 +27,16 @@ public abstract class LightGroupV3 extends LightGroup {
             lights.get(id).setLightState(state);
         }
         else {
-            BeatCraft.LOGGER.error("LightGroupV3: No LightObject with id {} found", id);
+            BeatCraft.LOGGER.error("LightGroupV3 setLightState: No LightObject with id {} found", id);
         }
     }
 
     public void setTransform(int id, TransformState state) {
         if (lights.containsKey(id)) {
             lights.get(id).setTransformState(state);
+        }
+        else {
+            BeatCraft.LOGGER.error("LightGroupV setTransform3: No LightObject with id {} found", id);
         }
     }
 

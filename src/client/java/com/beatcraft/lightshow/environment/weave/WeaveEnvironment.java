@@ -213,7 +213,14 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private void setupSideLights() {
         int lightID = 0;
         var lights = new HashMap<Integer, LightObject>();
-        for (var light : stackLights(new FloodLight(0.125f, 0.075f, 30, 14, 0.1f, new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z), new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)), new Vector3f(0, 0, 2), 7)) {
+        for (var light : stackLights(
+            new FloodLight(
+                0.125f, 0.075f, 30, 14, 0.1f,
+                new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ),
+            new Vector3f(0, 0, 2), 7)
+        ) {
             lights.put(lightID++, light);
         }
         var sideBL = new OrientableLightGroup(lights);
@@ -222,7 +229,14 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
         lightID = 0;
         lights = new HashMap<>();
-        for (var light : stackLights(new FloodLight(0.125f, 0.075f, 30, 14, 0.1f, new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)), new Vector3f(0, 0, 2), 7)) {
+        for (var light : stackLights(
+            new FloodLight(
+                0.125f, 0.075f, 30, 14, 0.1f,
+                new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ),
+            new Vector3f(0, 0, 2), 7)
+        ) {
             lights.put(lightID++, light);
         }
         var sideBR = new OrientableLightGroup(lights);
@@ -231,7 +245,14 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
         lightID = 0;
         lights = new HashMap<>();
-        for (var light : stackLights(new FloodLight(0.125f, 0.075f, 30, 14, 0.1f, new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z), new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)), new Vector3f(0, 0, 2), 7)) {
+        for (var light : stackLights(
+            new FloodLight(
+                0.125f, 0.075f, 30, 14, 0.1f,
+                new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ),
+            new Vector3f(0, 0, 2), 7)
+        ) {
             lights.put(lightID++, light);
         }
         var sideTL = new OrientableLightGroup(lights);
@@ -240,7 +261,14 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
         lightID = 0;
         lights = new HashMap<>();
-        for (var light : stackLights(new FloodLight(0.125f, 0.075f, 30, 14, 0.1f, new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)), new Vector3f(0, 0, 2), 7)) {
+        for (var light : stackLights(
+            new FloodLight(
+                0.125f, 0.075f, 30, 14, 0.1f,
+                new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ),
+            new Vector3f(0, 0, 2), 7)
+        ) {
             lights.put(lightID++, light);
         }
         var sideTR = new OrientableLightGroup(lights);
@@ -343,7 +371,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);
-            eventGroups.get(group).getRight().linkTransformEvents(transformEvents);
+            eventGroups.get(group).getRight().linkTransformEvents(lightID, transformEvents);
         }
 
     }
