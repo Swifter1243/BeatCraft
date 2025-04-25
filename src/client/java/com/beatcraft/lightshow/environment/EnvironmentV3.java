@@ -16,6 +16,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import oshi.util.tuples.Triplet;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class EnvironmentV3 extends Environment {
@@ -91,7 +92,7 @@ public abstract class EnvironmentV3 extends Environment {
                 pos += s.getA().length;
             }
 
-            var f = ((float) i) / (float) chunks;
+            var f = ((float) i) / ((float) chunks-1);
             result.add(new Triplet<>(chunkTargets, f, f));
 
         }
@@ -164,7 +165,7 @@ public abstract class EnvironmentV3 extends Environment {
         targets = reChunk(targets, chunks);
 
         // 0 = division, 1 = step & offset
-        var type = JsonUtil.getOrDefault(filter, "f", JsonElement::getAsInt, 0);
+        var type = JsonUtil.getOrDefault(filter, "f", JsonElement::getAsInt, 1);
 
         type = type % 2;
         // division:
@@ -294,7 +295,7 @@ public abstract class EnvironmentV3 extends Environment {
                 var filter = processFilter(lightCount, coveredIds, rawFilter);
 
                 // 0 = step, 1 = wave
-                var beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 0f);
+                var beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 1f);
                 var beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
 
                 float maxBeat = beatDistributionValue;
@@ -323,6 +324,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                 float maxDuration = maxBeat;
                 float maxBrightness = maxBrightness0;
+                AtomicInteger index = new AtomicInteger();
                 rawEvents.forEach(rawEvent -> {
                     var eventData = rawEvent.getAsJsonObject();
 
@@ -351,7 +353,7 @@ public abstract class EnvironmentV3 extends Environment {
                                 var key = new GroupKey(group, target);
                                 var last = latestColorEvents.computeIfAbsent(key, k -> new LightEventV3(0, new LightState(new Color(0), 0), new LightState(new Color(0), 0), 0, k.getLightId()));
 
-                                var curr_start = last.getEventBeat() + last.getEventDuration();
+                                var curr_start = last.getEventBeat() + last.getEventDuration() + (index.get() == 0 ? durationMod : 0);
                                 var curr_end = baseBeat + beatOffset + durationMod;
 
                                 var curr_brightness = brightness + distributionMod;
@@ -370,11 +372,11 @@ public abstract class EnvironmentV3 extends Environment {
                                     curr_endState = new LightState(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1), curr_brightness);
                                 }
 
+                                curr_endState.setStrobeState(easingFunction, strobeBrightness, strobeFrequency, strobeFade);
+
                                 var currentEvent = new LightEventV3(
                                     curr_start, curr_startState, curr_endState,
-                                    curr_duration, target,
-                                    last.strobeFrequency, last.strobeBrightness,
-                                    strobeFrequency, strobeBrightness, strobeFade
+                                    curr_duration, target
                                 );
 
                                 latestColorEvents.put(key, currentEvent);
@@ -401,13 +403,13 @@ public abstract class EnvironmentV3 extends Environment {
                                 } else {
                                     curr_endState = new LightState(difficulty.getSetDifficulty().getColorScheme().getEnvironmentWhiteColor().withAlpha(1), curr_brightness);
                                 }
+                                curr_endState.setStrobeState(easingFunction, strobeBrightness, strobeFrequency, strobeFade);
+
                                 var curr_startState = curr_endState;
 
                                 var currentEvent = new LightEventV3(
                                     curr_end, curr_startState, curr_endState,
-                                    curr_duration, target,
-                                    0, 0,
-                                    strobeFrequency, strobeBrightness, strobeFade
+                                    curr_duration, target
                                 );
 
                                 var key = new GroupKey(group, target);
@@ -434,7 +436,7 @@ public abstract class EnvironmentV3 extends Environment {
                             }
                         }
                     }
-
+                    index.addAndGet(1);
                     doDistribution.set(true);
                 });
 
@@ -458,7 +460,7 @@ public abstract class EnvironmentV3 extends Environment {
                 var filter = processFilter(lightCount, coveredIds, rawFilter);
 
                 // 0 = step, 1 = wave
-                float beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 0f);
+                float beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 1f);
                 int beatDistributionType = JsonUtil.getOrDefault(subEvent, "d", JsonElement::getAsInt, 0);
 
                 float maxBeat = beatDistributionValue;
@@ -489,6 +491,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                 float maxDuration = maxBeat;
                 float maxRotation = maxRotation0;
+                AtomicInteger index = new AtomicInteger();
                 rawEvents.forEach(rawEvent -> {
                     var eventData = rawEvent.getAsJsonObject();
 
@@ -511,7 +514,6 @@ public abstract class EnvironmentV3 extends Environment {
 
                     int loopCount = JsonUtil.getOrDefault(eventData, "l", JsonElement::getAsInt, 0);
 
-
                     for (var targetSet : filter) {
                         var targets = targetSet.getA();
                         float durationMod = doDistribution.get() ? targetSet.getB() * maxDuration : 0f;
@@ -529,7 +531,7 @@ public abstract class EnvironmentV3 extends Environment {
                                     a -> new TransformEvent(0, new TransformState(axis, 0), new TransformState(axis, 0), 0, target, easingFunction, 0, 0)
                                 );
 
-                                var curr_start = last.getEventBeat() + last.getEventDuration();
+                                var curr_start = last.getEventBeat() + last.getEventDuration() + (index.get() == 0 ? durationMod : 0);
                                 var curr_end = baseBeat + beatOffset + durationMod;
                                 var curr_duration = curr_end - curr_start;
 
@@ -590,8 +592,8 @@ public abstract class EnvironmentV3 extends Environment {
 
                             }
                         }
-
                     }
+                    index.addAndGet(1);
                     doDistribution.set(true);
 
                 });

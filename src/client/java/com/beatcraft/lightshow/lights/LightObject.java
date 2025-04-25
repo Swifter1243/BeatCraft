@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.lights;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
@@ -61,17 +62,17 @@ public abstract class LightObject {
         return matrix;
     }
 
-    protected Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, boolean mirrorDraw) {
-        return basePos.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f())
-            .rotate(mirrorQuaternion(mirrorDraw, orientation))
-            .rotate(mirrorQuaternion(mirrorDraw, rotation))
-            .rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation()))
-            .add(position.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
-            .rotate(mirrorQuaternion(mirrorDraw, worldRotation))
-            .add(offset.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
-            .add(transformState.getTranslation().mul(1, mirrorDraw ? -1 : 1, 1))
-            .sub(cameraPos);
-    }
+    //protected Vector3f processVertex(Vector3f basePos, Vector3f cameraPos, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, boolean mirrorDraw) {
+    //    return basePos.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f())
+    //        .rotate(mirrorQuaternion(mirrorDraw, orientation))
+    //        .rotate(mirrorQuaternion(mirrorDraw, rotation))
+    //        .rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation()))
+    //        .add(position.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
+    //        .rotate(mirrorQuaternion(mirrorDraw, worldRotation))
+    //        .add(offset.mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()))
+    //        .add(transformState.getTranslation().mul(1, mirrorDraw ? -1 : 1, 1))
+    //        .sub(cameraPos);
+    //}
 
     public abstract LightObject cloneOffset(Vector3f offset);
 
@@ -130,6 +131,12 @@ public abstract class LightObject {
             .rotate(transformState.getOrientation())
             .add(offset)
             .add(transformState.getTranslation());
+    }
+
+    public void resetState() {
+        BeatCraft.LOGGER.info("Reset Light objects");
+        lightState.reset();
+        transformState.reset();
     }
 
 }

@@ -46,13 +46,18 @@ public class FloodLight extends LightObject {
         lightState = new LightState(new Color(0, 0, 0, 0), 0);
     }
 
+    public FloodLight withOrientation(Quaternionf rotation) {
+        this.rotation = rotation;
+        return this;
+    }
+
     private List<Pair<Vector3f, Integer>[]> getFaces(Hitbox bounds, float spread) {
         return List.of(
             new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
                 new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
+                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
+                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
             },
             new Pair[] {
                 new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
@@ -61,28 +66,22 @@ public class FloodLight extends LightObject {
                 new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), 0),
             },
             new Pair[] {
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
                 new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
+                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
             },
             new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
                 new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), 0),
+                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
+                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
             },
             new Pair[] {
                 new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
                 new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
                 new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
                 new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), 0),
-            },
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), 0),
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
             }
         );
     }
@@ -129,7 +128,6 @@ public class FloodLight extends LightObject {
         faces = getFaces(baseDimensions, spread);
         fadeFaces = getFaces(fadeDimensions, midSpread);
         lines = getLines(baseDimensions, spread);
-
 
     }
 
@@ -195,6 +193,11 @@ public class FloodLight extends LightObject {
             return;
         }
 
+        //var b = (lightState.getBrightness() * 0.25f) + 0.75f;
+        //setDimensions(
+        //    startOffset, width, length * b, fadeLength * b, spread * b
+        //);
+
         var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         for (var face : fadeFaces) {
@@ -225,6 +228,11 @@ public class FloodLight extends LightObject {
         if (((color >> 24) & 0xFF) <= 16) {
             return;
         }
+
+        //var b = (lightState.getBrightness() * 0.25f) + 0.75f;
+        //setDimensions(
+        //    startOffset, width, length * b, fadeLength * b, spread * b
+        //);
 
         var mat = createTransformMatrix(mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 

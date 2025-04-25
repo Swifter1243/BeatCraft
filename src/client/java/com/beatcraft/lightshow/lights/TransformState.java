@@ -2,7 +2,7 @@ package com.beatcraft.lightshow.lights;
 
 import org.jetbrains.annotations.NotNull;
 
-public record TransformState(com.beatcraft.lightshow.lights.TransformState.Axis axis, float value) {
+public class TransformState {
 
     public enum Axis {
         RX,
@@ -13,8 +13,24 @@ public record TransformState(com.beatcraft.lightshow.lights.TransformState.Axis 
         TZ,
     }
 
+    public Axis axis;
+    public float value;
+
+    public TransformState(Axis axis, float value) {
+        this.set(axis, value);
+    }
+
     public TransformState copy() {
         return new TransformState(axis, value);
+    }
+
+    public void set(Axis axis, float value) {
+        this.axis = axis;
+        this.value = value;
+    }
+
+    public void set(TransformState other) {
+        set(other.axis, other.value);
     }
 
     @Override

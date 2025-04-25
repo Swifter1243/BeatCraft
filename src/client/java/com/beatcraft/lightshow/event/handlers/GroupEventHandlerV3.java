@@ -76,7 +76,7 @@ public class GroupEventHandlerV3 {
     }
 
     public void clear() {
-        lightHandlers.forEach((k, v) -> v.clear());
-        transformHandlers.forEach((k, v) -> v.clear());
+        lightHandlers.clear();
+        transformHandlers.clear();
     }
 }

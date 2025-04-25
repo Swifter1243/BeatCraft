@@ -45,30 +45,37 @@ public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> 
                 return 2.0f * (1.0f - cyclePosition);
             }
         } else {
-            return cyclePosition < 0.5f ? 1.0f : 0.0f;
+            return cyclePosition >= 0.5f ? 1.0f : 0.0f;
         }
     }
 
     @Override
     public void onInsideEvent(LightEventV3 event, float normalTime) {
-        var currentState = event.startState.lerpFromTo(event.lightState, normalTime);
+        event.startState.lerpFromTo(event.lightState, normalTime, state);
 
         var currentBeat = MathHelper.lerp(normalTime, event.getEventBeat(), event.getEventBeat()+event.getEventDuration());
-        var currentFrequency = MathHelper.lerp(normalTime, event.strobeStartFrequency, event.strobeFrequency);
+        var currentFrequency = MathHelper.lerp(event.startState.strobeEasing.apply(1-normalTime), event.startState.strobeFrequency, event.lightState.strobeFrequency);
 
-        var brightnessMod = currentFrequency == 0 ? 1.0f : calcOscillation(event.getEventBeat(), currentBeat, currentFrequency, event.strobeFade);
+        if (currentFrequency != 0) {
+            BeatCraft.LOGGER.info("Frequency: {}", currentFrequency);
+        }
 
-        var low = MathHelper.lerp(normalTime, event.strobeStartBrightness, event.strobeBrightness);
+        var brightnessMod = (currentFrequency == 0) ? 1.0f : calcOscillation(event.getEventBeat(), currentBeat, currentFrequency, event.startState.strobeFade);
 
-        var currentBrightness = MathHelper.lerp(brightnessMod, low, currentState.getBrightness());
+        var low = MathHelper.lerp(event.startState.strobeEasing.apply(1-normalTime), event.startState.strobeBrightness, event.lightState.strobeBrightness);
 
-        currentState.setBrightness(currentBrightness);
-        state = currentState;
+        if (currentFrequency != 0) {
+            BeatCraft.LOGGER.info("brightness info: {} {} - {}", brightnessMod, low, state.getBrightness());
+        }
+
+        var currentBrightness = MathHelper.lerp(brightnessMod, low, state.getBrightness());
+
+        state.setBrightness(currentBrightness);
 
     }
 
     @Override
     public void onEventPassed(LightEventV3 event) {
-        state = event.lightState;
+        state.set(event.lightState);
     }
 }

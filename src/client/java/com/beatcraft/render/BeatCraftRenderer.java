@@ -8,6 +8,7 @@ import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -188,13 +189,12 @@ public class BeatCraftRenderer {
 
     private static void renderLightDepth(Tessellator tessellator, Vector3f cameraPos) {
 
-        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
-        Bloomfog.lightDepth.clear(true);
-
         bloomfog.overrideBuffer = true;
         bloomfog.overrideFramebuffer = Bloomfog.lightDepth;
 
         Bloomfog.lightDepth.beginWrite(true);
+        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
+        Bloomfog.lightDepth.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
@@ -236,8 +236,8 @@ public class BeatCraftRenderer {
 
         RenderSystem.setShader(() -> Bloomfog.lightsPositionColorShader);
         RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+        RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
 
@@ -249,7 +249,7 @@ public class BeatCraftRenderer {
 
         var buff = buffer.endNullable();
         if (buff != null) {
-            //buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
             Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.lightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);

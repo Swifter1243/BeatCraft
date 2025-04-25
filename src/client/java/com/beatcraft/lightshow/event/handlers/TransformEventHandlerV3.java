@@ -33,8 +33,8 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Transf
 
         float easedTime = easing.apply(normalTime);
 
-        float startRotation = start.value();
-        float endRotation = end.value();
+        float startRotation = start.value;
+        float endRotation = end.value;
 
         startRotation = ((startRotation % 360) + 360) % 360;
         endRotation = ((endRotation % 360) + 360) % 360;
@@ -55,11 +55,11 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Transf
 
         float interpolatedRotation = startRotation + rotationDiff * easedTime;
 
-        state = new TransformState(start.axis(), interpolatedRotation);
+        state.set(start.axis, interpolatedRotation);
     }
 
     @Override
     public void onEventPassed(TransformEvent event) {
-        state = event.transformState;
+        state.set(event.transformState);
     }
 }

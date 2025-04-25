@@ -98,11 +98,20 @@ public class Color {
         return this;
     }
 
+    public void set(Color other) {
+        red = other.red;
+        green = other.green;
+        blue = other.blue;
+        alpha = other.alpha;
+    }
     public void set(float red, float green, float blue) {
+        set(red, green, blue, 1);
+    }
+    public void set(float red, float green, float blue, float alpha) {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.alpha = 1;
+        this.alpha = alpha;
     }
 
     public int toARGB() {

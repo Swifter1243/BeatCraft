@@ -22,6 +22,12 @@ public abstract class LightGroupV3 extends LightGroup {
         return lights.size();
     }
 
+    public void reset() {
+        lights.forEach((id, light) -> {
+            light.resetState();
+        });
+    }
+
     public void setLightState(int id, LightState state) {
         if (lights.containsKey(id)) {
             lights.get(id).setLightState(state);
