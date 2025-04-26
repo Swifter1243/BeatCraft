@@ -1,10 +1,12 @@
 package com.beatcraft.lightshow.lights;
 
+import com.beatcraft.debug.BeatCraftDebug;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.function.TriFunction;
-import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.util.function.Function;
 
 public class CompoundTransformState {
 
@@ -16,6 +18,27 @@ public class CompoundTransformState {
         YZX,
         ZXY,
         ZYX,
+        Dynamic;
+
+        private Function<float[], float[]> remap;
+
+        public static Swizzle getDynamic(String key) {
+            return getDynamic(xyz -> {
+                var sw = (int) BeatCraftDebug.getValue(key, 0);
+                var swizzle = Swizzle.values()[sw];
+                return CompoundTransformState.applySwizzle(xyz, swizzle);
+            });
+        }
+
+        public static Swizzle getDynamic(Function<float[], float[]> remap) {
+            var sw = Swizzle.Dynamic;
+            sw.remap = remap;
+            return sw;
+        }
+
+        Swizzle() {
+
+        }
     }
 
     // Positive/Negative swizzle
@@ -27,7 +50,25 @@ public class CompoundTransformState {
         NPP,
         NPN,
         NNP,
-        NNN
+        NNN,
+        Dynamic;
+
+        private Function<float[], float[]> remap;
+
+        public static Polarity getDynamic(String key) {
+            return getDynamic(xyz -> {
+                var po = (int) BeatCraftDebug.getValue(key, 0);
+                var polarity = Polarity.values()[po];
+                return CompoundTransformState.applyPolarity(xyz, polarity);
+            });
+        }
+
+        public static Polarity getDynamic(Function<float[], float[]> remap) {
+
+            var po = Polarity.Dynamic;
+            po.remap = remap;
+            return po;
+        }
     }
 
     private float tx = 0;
@@ -70,7 +111,7 @@ public class CompoundTransformState {
         rz = 0;
     }
 
-    private float[] applySwizzle(float[] xyz, Swizzle swizzle) {
+    public static float[] applySwizzle(float[] xyz, Swizzle swizzle) {
         return switch (swizzle) {
             case XYZ -> xyz;
             case XZY -> new float[]{xyz[0], xyz[2], xyz[1]};
@@ -78,10 +119,11 @@ public class CompoundTransformState {
             case YZX -> new float[]{xyz[1], xyz[2], xyz[0]};
             case ZXY -> new float[]{xyz[2], xyz[0], xyz[1]};
             case ZYX -> new float[]{xyz[2], xyz[1], xyz[0]};
+            case Dynamic -> swizzle.remap.apply(xyz);
         };
     }
 
-    private float[] applyPolarity(float[] xyz, Polarity polarity) {
+    public static float[] applyPolarity(float[] xyz, Polarity polarity) {
         return switch (polarity) {
             case PPP -> xyz;
             case PPN -> new float[]{ xyz[0],  xyz[1], -xyz[2]};
@@ -91,6 +133,7 @@ public class CompoundTransformState {
             case NPN -> new float[]{-xyz[0],  xyz[1], -xyz[2]};
             case NNP -> new float[]{-xyz[0], -xyz[1],  xyz[2]};
             case NNN -> new float[]{-xyz[0], -xyz[1], -xyz[2]};
+            case Dynamic -> polarity.remap.apply(xyz);
         };
     }
 

@@ -1,13 +1,12 @@
 package com.beatcraft.lightshow.event.events;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.event.IEvent;
 import com.beatcraft.lightshow.lights.TransformState;
 
 import java.util.function.Function;
 
-public class TransformEvent extends BeatmapObject implements IEvent {
+public class RotationEvent extends BeatmapObject implements IEvent {
 
     public TransformState transformState;
     public int lightID;
@@ -17,7 +16,7 @@ public class TransformEvent extends BeatmapObject implements IEvent {
     public int loops;
     public int direction;
 
-    public TransformEvent(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing, int loops, int direction) {
+    public RotationEvent(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing, int loops, int direction) {
         this.beat = beat;
         this.startState = startState;
         this.transformState = endState;
@@ -32,8 +31,8 @@ public class TransformEvent extends BeatmapObject implements IEvent {
         return lightID == id;
     }
 
-    public TransformEvent extendTo(float beat) {
-        return new TransformEvent(
+    public RotationEvent extendTo(float beat) {
+        return new RotationEvent(
             beat, transformState, transformState,
             0, lightID, easing,
             0, 0

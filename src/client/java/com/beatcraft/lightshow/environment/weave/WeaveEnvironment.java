@@ -4,7 +4,7 @@ import com.beatcraft.lightshow.environment.EnvironmentV3;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.environment.lightgroup.OrientableLightGroup;
 import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.TransformEvent;
+import com.beatcraft.lightshow.event.events.RotationEvent;
 import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
 import com.beatcraft.lightshow.lights.CompoundTransformState;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -167,10 +167,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.XYZ,
-                CompoundTransformState.Polarity.PPP
+                CompoundTransformState.Polarity.PNP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -188,8 +188,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
-                CompoundTransformState.Swizzle.XYZ,
-                CompoundTransformState.Polarity.PPP
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NPN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -207,8 +207,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
-                CompoundTransformState.Swizzle.XYZ,
-                CompoundTransformState.Polarity.PPP
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.PNN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -226,8 +226,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
-                CompoundTransformState.Swizzle.XYZ,
-                CompoundTransformState.Polarity.PPP
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -394,7 +394,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<TransformEvent>> transformEvents) {
+    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<RotationEvent>> transformEvents) {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);
