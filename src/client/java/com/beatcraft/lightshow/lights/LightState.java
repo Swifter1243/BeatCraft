@@ -60,7 +60,10 @@ public class LightState {
     }
 
     public LightState copy() {
-        return new LightState(new Color(color.toARGB()), brightness);
+        var ls = new LightState(new Color(color.toARGB()), brightness);
+        ls.setStrobeState(strobeEasing, strobeBrightness, strobeFrequency, strobeFade);
+
+        return ls;
     }
 
     private int calcEffectiveColor() {

@@ -6,6 +6,7 @@ import com.beatcraft.lightshow.environment.lightgroup.OrientableLightGroup;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.TransformEvent;
 import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
+import com.beatcraft.lightshow.lights.CompoundTransformState;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.render.lights.FloodLight;
@@ -99,7 +100,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf().rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -115,7 +116,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf().rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -131,7 +132,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -147,7 +148,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -166,7 +167,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf().rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.PPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -182,7 +186,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf().rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.PPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -198,7 +205,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.PPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -214,7 +224,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.PPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -232,7 +245,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -248,7 +261,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -264,7 +277,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -280,7 +293,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -302,7 +315,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                     CENTER_Y+DISTANT_H+(DISTANT_H*2/9f),
                     DISTANT_Z
                 ),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(180 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(180 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(-(DISTANT_W*2)/11f, 0, 0), 11)
         ) {
@@ -334,7 +347,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new Vector3f(DISTANT_W+(DISTANT_W*2/11f), CENTER_Y-DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, (DISTANT_H*2)/9f, 0), 9)
         ) {
@@ -344,17 +357,17 @@ public class WeaveEnvironment extends EnvironmentV3 {
         var distantLHandler = new GroupEventHandlerV3(distantL);
         eventGroups.put(14, new Pair<>(distantL, distantLHandler));
 
-        lightID = 9;
+        lightID = 0;
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE).rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
             new Vector3f(0, -(DISTANT_H*2)/9f, 0), 9)
         ) {
-            lights.put(lightID--, light);
+            lights.put(lightID++, light);
         }
         var distantR = new OrientableLightGroup(lights);
         var distantRHandler = new GroupEventHandlerV3(distantR);

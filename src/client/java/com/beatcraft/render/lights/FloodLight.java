@@ -1,6 +1,5 @@
 package com.beatcraft.render.lights;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
@@ -30,7 +29,10 @@ public class FloodLight extends LightObject {
     private List<Pair<Vector3f, Integer>[]> lines;
 
     public FloodLight cloneOffset(Vector3f offset) {
-        return new FloodLight(startOffset, width, length, fadeLength, spread, position.add(offset, new Vector3f()), new Quaternionf(orientation));
+        return (FloodLight) new FloodLight(startOffset, width, length, fadeLength, spread, position.add(offset, new Vector3f()), new Quaternionf(orientation))
+            .withRotation(new Quaternionf(rotation))
+            .withTranslationSwizzle(translationSwizzle, translationPolarity)
+            .withRotationSwizzle(rotationSwizzle, rotationPolarity, quaternionBuilder);
     }
 
     public FloodLight(float startOffset, float width, float length, float fadeLength, float spread, Vector3f pos, Quaternionf rot) {
@@ -46,7 +48,7 @@ public class FloodLight extends LightObject {
         lightState = new LightState(new Color(0, 0, 0, 0), 0);
     }
 
-    public FloodLight withOrientation(Quaternionf rotation) {
+    public FloodLight withRotation(Quaternionf rotation) {
         this.rotation = rotation;
         return this;
     }

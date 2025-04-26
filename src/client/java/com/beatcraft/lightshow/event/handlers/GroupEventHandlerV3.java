@@ -37,16 +37,18 @@ public class GroupEventHandlerV3 {
         if (!transformHandlers.containsKey(lightID)) {
             transformHandlers.put(lightID, new HashMap<>());
         }
-        transformEvents.forEach((axis, events) -> {
-            var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
+        if (transformEvents != null) {
+            transformEvents.forEach((axis, events) -> {
+                var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
 
-            var axes = transformHandlers.get(lightID);
-            if (axes.containsKey(axis)) {
-                axes.get(axis).addEvents(relevantEvents);
-            } else {
-                axes.put(axis, new TransformEventHandlerV3(relevantEvents, axis));
-            }
-        });
+                var axes = transformHandlers.get(lightID);
+                if (axes.containsKey(axis)) {
+                    axes.get(axis).addEvents(relevantEvents);
+                } else {
+                    axes.put(axis, new TransformEventHandlerV3(relevantEvents, axis));
+                }
+            });
+        }
     }
 
     public void update(float beat) {

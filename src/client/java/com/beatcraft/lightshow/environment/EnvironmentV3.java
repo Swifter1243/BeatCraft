@@ -1,5 +1,6 @@
 package com.beatcraft.lightshow.environment;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.data.types.Color;
@@ -230,15 +231,6 @@ public abstract class EnvironmentV3 extends Environment {
             ordering.add(i);
         }
 
-        removeValues(targets, coveredIds);
-
-        for (var arr : targets) {
-            for (var t : arr.getA()) {
-                if (!coveredIds.contains(t)) {
-                    coveredIds.add(t);
-                }
-            }
-        }
 
         random.setSeed(randomSeed);
         if ((randomBehavior & 2) > 0) {
@@ -259,11 +251,23 @@ public abstract class EnvironmentV3 extends Environment {
             }
             for (int i = 0; i < targets.size(); i++) {
                 var t = targets.get(i);
-                targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
+                var ids = new Integer[t.getA().length];
+                for (int j = 0; j < t.getA().length; j++) {
+                    ids[j] = lightCount-1-t.getA()[j];
+                }
+                targets.set(i, new Triplet<>(ids, weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
             }
             ordering = new ArrayList<>(ordering.reversed());
         }
+        removeValues(targets, coveredIds);
 
+        for (var arr : targets) {
+            for (var t : arr.getA()) {
+                if (!coveredIds.contains(t)) {
+                    coveredIds.add(t);
+                }
+            }
+        }
         return new Filter(targets, ordering.toArray(new Integer[0]));
     }
 
@@ -449,7 +453,7 @@ public abstract class EnvironmentV3 extends Environment {
             float baseBeat = JsonUtil.getOrDefault(boxGroupObj, "b", JsonElement::getAsFloat, 0f);
             var group = JsonUtil.getOrDefault(boxGroupObj, "g", JsonElement::getAsInt, 0);
             var rawSubEvents = boxGroupObj.getAsJsonArray("e");
-            ArrayList<Integer> coveredIds = new ArrayList<>();
+            HashMap<TransformState.Axis, ArrayList<Integer>> coveredIds = new HashMap<>();
             int lightCount = getLightCount(group);
 
             rawSubEvents.forEach(rawSubEvent -> {
@@ -457,7 +461,21 @@ public abstract class EnvironmentV3 extends Environment {
 
                 var rawFilter = subEvent.getAsJsonObject("f");
 
-                var filter = processFilter(lightCount, coveredIds, rawFilter);
+
+                int rawAxis = JsonUtil.getOrDefault(subEvent, "a", JsonElement::getAsInt, 5);
+                boolean flipAxis = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsInt, 0) > 0;
+
+                if (rawAxis == 5) {
+                    BeatCraft.LOGGER.info("USED DEFAULT ROTATION AXIS");
+                }
+
+                var axis = TransformState.Axis.values()[rawAxis % 3];
+
+                if (!coveredIds.containsKey(axis)) {
+                    coveredIds.put(axis, new ArrayList<>());
+                }
+
+                var filter = processFilter(lightCount, coveredIds.get(axis), rawFilter);
 
                 // 0 = step, 1 = wave
                 float beatDistributionValue = JsonUtil.getOrDefault(subEvent, "w", JsonElement::getAsFloat, 1f);
@@ -480,10 +498,9 @@ public abstract class EnvironmentV3 extends Environment {
                 // whether distribution affects the first event in the sequence
                 boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
 
-                int rawAxis = JsonUtil.getOrDefault(subEvent, "a", JsonElement::getAsInt, 0);
-                boolean flipAxis = JsonUtil.getOrDefault(subEvent, "r", JsonElement::getAsInt, 0) > 0;
-
-                var axis = TransformState.Axis.values()[rawAxis % 3];
+                if (axis != TransformState.Axis.RX) {
+                    BeatCraft.LOGGER.info("AXIS IS {}", axis);
+                }
 
                 AtomicReference<Boolean> doDistribution = new AtomicReference<>(affectsFirst);
 

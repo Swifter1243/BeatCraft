@@ -5,6 +5,7 @@ import com.beatcraft.data.types.Color;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
+import org.apache.commons.lang3.function.TriFunction;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -22,6 +23,29 @@ public abstract class LightObject {
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
 
     protected CompoundTransformState transformState = new CompoundTransformState();
+    protected CompoundTransformState.Swizzle translationSwizzle = CompoundTransformState.Swizzle.XYZ;
+    protected CompoundTransformState.Swizzle rotationSwizzle = CompoundTransformState.Swizzle.XYZ;
+    protected TriFunction<Float, Float, Float, Quaternionf> quaternionBuilder = (x, y, z) -> new Quaternionf().rotationYXZ(y, x, z);
+    protected CompoundTransformState.Polarity translationPolarity = CompoundTransformState.Polarity.PPP;
+    protected CompoundTransformState.Polarity rotationPolarity = CompoundTransformState.Polarity.PPP;
+
+    public LightObject withTranslationSwizzle(CompoundTransformState.Swizzle swizzle, CompoundTransformState.Polarity polarity) {
+        this.translationSwizzle = swizzle;
+        this.translationPolarity = polarity;
+        return this;
+    }
+
+    public LightObject withRotationSwizzle(CompoundTransformState.Swizzle swizzle, CompoundTransformState.Polarity polarity, TriFunction<Float, Float, Float, Quaternionf> quaternionBuilder) {
+        this.rotationSwizzle = swizzle;
+        this.rotationPolarity = polarity;
+        this.quaternionBuilder = quaternionBuilder;
+        return this;
+    }
+    public LightObject withRotationSwizzle(CompoundTransformState.Swizzle swizzle, CompoundTransformState.Polarity polarity) {
+        this.rotationSwizzle = swizzle;
+        this.rotationPolarity = polarity;
+        return this;
+    }
 
     protected Quaternionf mirrorQuaternion(boolean mirror, Quaternionf quat) {
         return mirror ? new Quaternionf(-quat.x, quat.y, -quat.z, quat.w) : quat;
@@ -34,7 +58,7 @@ public abstract class LightObject {
         Matrix4f matrix = new Matrix4f().identity();
         matrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        Vector3f transformTranslation = transformState.getTranslation();
+        Vector3f transformTranslation = transformState.getTranslation(translationSwizzle, translationPolarity);
         matrix.translate(
             transformTranslation.x,
             mirrorDraw ? -transformTranslation.y : transformTranslation.y,
@@ -56,8 +80,8 @@ public abstract class LightObject {
         );
 
         matrix.rotate(mirrorQuaternion(mirrorDraw, rotation));
+        matrix.rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation(rotationSwizzle, rotationPolarity, quaternionBuilder)));
         matrix.rotate(mirrorQuaternion(mirrorDraw, orientation));
-        matrix.rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation()));
 
         return matrix;
     }
@@ -128,9 +152,9 @@ public abstract class LightObject {
     public Vector3f getPos() {
         return new Vector3f(position)
             .rotate(rotation)
-            .rotate(transformState.getOrientation())
+            .rotate(transformState.getOrientation(rotationSwizzle, rotationPolarity, quaternionBuilder))
             .add(offset)
-            .add(transformState.getTranslation());
+            .add(transformState.getTranslation(translationSwizzle, translationPolarity));
     }
 
     public void resetState() {

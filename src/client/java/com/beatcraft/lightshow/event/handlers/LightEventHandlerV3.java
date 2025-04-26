@@ -54,19 +54,13 @@ public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> 
         event.startState.lerpFromTo(event.lightState, normalTime, state);
 
         var currentBeat = MathHelper.lerp(normalTime, event.getEventBeat(), event.getEventBeat()+event.getEventDuration());
-        var currentFrequency = MathHelper.lerp(event.startState.strobeEasing.apply(1-normalTime), event.startState.strobeFrequency, event.lightState.strobeFrequency);
+        var currentFrequency = MathHelper.lerp(event.startState.strobeEasing.apply(normalTime), event.startState.strobeFrequency, event.lightState.strobeFrequency);
 
-        if (currentFrequency != 0) {
-            BeatCraft.LOGGER.info("Frequency: {}", currentFrequency);
-        }
 
         var brightnessMod = (currentFrequency == 0) ? 1.0f : calcOscillation(event.getEventBeat(), currentBeat, currentFrequency, event.startState.strobeFade);
 
-        var low = MathHelper.lerp(event.startState.strobeEasing.apply(1-normalTime), event.startState.strobeBrightness, event.lightState.strobeBrightness);
+        var low = MathHelper.lerp(event.startState.strobeEasing.apply(normalTime), event.startState.strobeBrightness, event.lightState.strobeBrightness);
 
-        if (currentFrequency != 0) {
-            BeatCraft.LOGGER.info("brightness info: {} {} - {}", brightnessMod, low, state.getBrightness());
-        }
 
         var currentBrightness = MathHelper.lerp(brightnessMod, low, state.getBrightness());
 
