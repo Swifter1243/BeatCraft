@@ -21,7 +21,7 @@ void main() {
         discard;
     }
 
-    if (gl_FragCoord.z < depth + 0.0001) {
+    if (gl_FragCoord.z > depth + 0.0001) {
         discard;
     }
 

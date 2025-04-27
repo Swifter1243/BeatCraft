@@ -5,7 +5,6 @@ in vec3 screenUV;
 in vec3 worldPos;
 
 uniform sampler2D Sampler0;
-uniform vec4 ColorModulator;
 
 out vec4 fragColor;
 

@@ -1,7 +1,6 @@
 #version 150
 
 uniform sampler2D Sampler0;
-uniform vec4 ColorModulator;
 
 in vec2 texCoord0;
 in vec2 blur;
@@ -20,5 +19,5 @@ vec4 scaleColor(vec4 color) {
 void main() {
     vec4 color = texture(Sampler0, texCoord0);
 
-    fragColor = (color);
+    fragColor = color;
 }

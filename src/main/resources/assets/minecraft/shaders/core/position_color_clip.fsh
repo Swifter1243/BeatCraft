@@ -5,8 +5,6 @@ uniform sampler2D Sampler0;
 in vec4 vertexColor;
 in vec3 screenUV;
 
-uniform vec4 ColorModulator;
-
 out vec4 fragColor;
 
 void main() {
@@ -22,5 +20,5 @@ void main() {
     if (color.a == 0.0) {
         discard;
     }
-    fragColor = color * ColorModulator;
+    fragColor = color;
 }

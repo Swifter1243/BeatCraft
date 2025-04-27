@@ -223,7 +223,29 @@ public class BeatCraftRenderer {
 
     }
 
-    private static VertexSorter lightSort;
+    private static void renderBackgroundLights(Tessellator tessellator, Vector3f cameraPos, Matrix4f worldTransform) {
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
+            RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            BufferRenderer.drawWithGlobalProgram(buff);
+        }
+    }
 
     private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
         // environment lights
@@ -234,14 +256,20 @@ public class BeatCraftRenderer {
 
         renderLightDepth(tessellator, cameraPos);
 
+        //renderBackgroundLights(tessellator, cameraPos, worldTransform);
+        //
+        //lightRenderCalls.clear();
+        //if (true) return;
+
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        RenderSystem.setShader(() -> Bloomfog.lightsPositionColorShader);
+        RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
+        RenderSystem.depthMask(false);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -251,13 +279,9 @@ public class BeatCraftRenderer {
 
         var buff = buffer.endNullable();
         if (buff != null) {
-            if (lightSort == null) {
-                lightSort = VertexSorter.byDistance(0, 0, -500);
-            }
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), lightSort);
-            Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
+            Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
-            Bloomfog.lightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }
@@ -507,12 +531,12 @@ public class BeatCraftRenderer {
 
 
         int[][] faceIndices = new int[][] {
-            {0, 1, 2, 3}, // F
+            {3, 2, 1, 0}, // F
             {4, 5, 6, 7}, // B
-            {0, 3, 7, 4}, // L
-            {1, 5, 6, 2}, // R
-            {3, 2, 6, 7}, // T
-            {0, 4, 5, 1}  // D
+            {4, 7, 3, 0}, // L
+            {2, 6, 5, 1}, // R
+            {7, 6, 2, 3}, // T
+            {1, 5, 4, 0}  // D
         };
 
         for (int[] pair : faceIndices) {

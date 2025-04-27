@@ -252,13 +252,13 @@ public class FloodLight extends LightObject {
             v2.rotate(cameraRotation);
             v3.rotate(cameraRotation);
 
-            buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
-            buffer.vertex(v1).color(c.lerpBrightness(face[1].getRight()));
-            buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
+            buffer.vertex(v0).color(c.withAlpha(face[0].getRight()).lerpBrightness(face[0].getRight()));
+            buffer.vertex(v1).color(c.withAlpha(face[1].getRight()).lerpBrightness(face[1].getRight()));
+            buffer.vertex(v2).color(c.withAlpha(face[2].getRight()).lerpBrightness(face[2].getRight()));
 
-            buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
-            buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
-            buffer.vertex(v3).color(c.lerpBrightness(face[3].getRight()));
+            buffer.vertex(v0).color(c.withAlpha(face[0].getRight()).lerpBrightness(face[0].getRight()));
+            buffer.vertex(v2).color(c.withAlpha(face[2].getRight()).lerpBrightness(face[2].getRight()));
+            buffer.vertex(v3).color(c.withAlpha(face[3].getRight()).lerpBrightness(face[3].getRight()));
 
         }
     }
@@ -292,8 +292,8 @@ public class FloodLight extends LightObject {
 
 
                 for (var segment : segments) {
-                    buffer.vertex(segment[0].getLeft()).color((new Color(color).lerpBrightness(segment[0].getRight()))).normal(n.x, n.y, n.z);
-                    buffer.vertex(segment[1].getLeft()).color((new Color(color).lerpBrightness(segment[1].getRight()))).normal(-n.x, -n.y, -n.z);
+                    buffer.vertex(segment[0].getLeft()).color((new Color(color).withAlpha(segment[0].getRight()).lerpBrightness(segment[0].getRight()))).normal(n.x, n.y, n.z);
+                    buffer.vertex(segment[1].getLeft()).color((new Color(color).withAlpha(segment[1].getRight()).lerpBrightness(segment[1].getRight()))).normal(-n.x, -n.y, -n.z);
                 }
             }
         } else {
@@ -313,10 +313,10 @@ public class FloodLight extends LightObject {
                     v3.rotate(cameraRotation);
                 }
 
-                buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
-                buffer.vertex(v1).color(c.lerpBrightness(face[1].getRight()));
-                buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
-                buffer.vertex(v3).color(c.lerpBrightness(face[3].getRight()));
+                buffer.vertex(v0).color(c.withAlpha((face[0].getRight())).lerpBrightness(face[0].getRight()));
+                buffer.vertex(v1).color(c.withAlpha((face[1].getRight())).lerpBrightness(face[1].getRight()));
+                buffer.vertex(v2).color(c.withAlpha((face[2].getRight())).lerpBrightness(face[2].getRight()));
+                buffer.vertex(v3).color(c.withAlpha((face[3].getRight())).lerpBrightness(face[3].getRight()));
 
                 //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
                 //

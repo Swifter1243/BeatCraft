@@ -188,13 +188,13 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
         ArrayList<float[]> weights = new ArrayList<>();
         if (reverse) {
             targets = new ArrayList<>(targets.reversed());
-            //for (var t : targets) {
-            //    weights.add(new float[]{t.getB(), t.getC()});
-            //}
-            //for (int i = 0; i < targets.size(); i++) {
-            //    var t = targets.get(i);
-            //    targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
-            //}
+            for (var t : targets) {
+                weights.add(new float[]{t.getB(), t.getC()});
+            }
+            for (int i = 0; i < targets.size(); i++) {
+                var t = targets.get(i);
+                targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
+            }
         }
 
         if (type == 1) {
