@@ -284,6 +284,7 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
             BufferRenderer.drawWithGlobalProgram(buff);
         }
+        RenderSystem.defaultBlendFunc();
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
