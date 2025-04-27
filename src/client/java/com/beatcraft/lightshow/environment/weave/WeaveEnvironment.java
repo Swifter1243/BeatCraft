@@ -4,7 +4,7 @@ import com.beatcraft.lightshow.environment.EnvironmentV3;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.environment.lightgroup.OrientableLightGroup;
 import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.RotationEvent;
+import com.beatcraft.lightshow.event.events.RotationEventV3;
 import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
 import com.beatcraft.lightshow.lights.CompoundTransformState;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -36,12 +36,15 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
     private static final float INNER_OFFSET_X = 2.5f;
     private static final float INNER_OFFSET_Y = 5f;
+    private static final float[] INNER_SEGMENTS = new float[]{INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f, INNER_OFFSET_Y-0.001f, INNER_OFFSET_Y+0.001f};
 
     private static final float OUTER_OFFSET_X = 4.5f;
     private static final float OUTER_OFFSET_Y = 2.5f;
+    private static final float[] OUTER_SEGMENTS = new float[]{OUTER_OFFSET_Y-0.001f, OUTER_OFFSET_Y+0.001f, INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f};
 
     private static final float SIDE_OFFSET_X = 6.5f;
     private static final float SIDE_OFFSET_Y = 1.5f;
+    private static final float[] SIDE_SEGMENTS = new float[]{SIDE_OFFSET_Y-0.001f, SIDE_OFFSET_Y+0.001f, SIDE_OFFSET_X-0.001f, SIDE_OFFSET_X+0.001f};
 
     private static final float OUTER_Z = 8;
     private static final float INNER_Z = 8.3333f;
@@ -99,6 +102,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
+                OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -115,6 +119,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
+                OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -131,6 +136,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
+                OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -147,6 +153,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
+                OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -166,6 +173,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
+                INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf().rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
@@ -185,6 +193,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
+                INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
@@ -204,6 +213,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
+                INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
@@ -223,6 +233,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
+                INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
@@ -244,6 +255,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
+                SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -260,6 +272,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
+                SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -276,6 +289,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
+                SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -292,6 +306,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
+                SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -310,6 +325,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
+                new float[0],
                 new Vector3f(
                     DISTANT_W,
                     CENTER_Y+DISTANT_H+(DISTANT_H*2/9f),
@@ -330,6 +346,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
+                new float[0],
                 new Vector3f(-DISTANT_W, (CENTER_Y-DISTANT_H)-(DISTANT_H*2/9f), DISTANT_Z),
                 new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -346,6 +363,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
+                new float[0],
                 new Vector3f(DISTANT_W+(DISTANT_W*2/11f), CENTER_Y-DISTANT_H, DISTANT_Z),
                 new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -362,6 +380,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         for (var light : stackLights(
             new FloodLight(
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
+                new float[0],
                 new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
                 new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ),
@@ -387,6 +406,11 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
+    protected int getGroupCount() {
+        return 16;
+    }
+
+    @Override
     protected int getLightCount(int group) {
         if (group < 12) { return 8; }
         else if (group < 14) { return 12; }
@@ -394,7 +418,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<RotationEvent>> transformEvents) {
+    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents) {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);

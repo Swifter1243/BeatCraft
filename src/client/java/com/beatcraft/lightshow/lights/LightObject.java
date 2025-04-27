@@ -158,7 +158,6 @@ public abstract class LightObject {
     }
 
     public void resetState() {
-        BeatCraft.LOGGER.info("Reset Light objects");
         lightState.reset();
         transformState.reset();
     }

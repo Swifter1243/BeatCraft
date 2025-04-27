@@ -6,7 +6,7 @@ import com.beatcraft.lightshow.lights.TransformState;
 
 import java.util.function.Function;
 
-public class RotationEvent extends BeatmapObject implements IEvent {
+public class RotationEventV3 extends BeatmapObject implements IEvent {
 
     public TransformState transformState;
     public int lightID;
@@ -16,7 +16,7 @@ public class RotationEvent extends BeatmapObject implements IEvent {
     public int loops;
     public int direction;
 
-    public RotationEvent(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing, int loops, int direction) {
+    public RotationEventV3(float beat, TransformState startState, TransformState endState, float duration, int lightID, Function<Float, Float> easing, int loops, int direction) {
         this.beat = beat;
         this.startState = startState;
         this.transformState = endState;
@@ -31,10 +31,10 @@ public class RotationEvent extends BeatmapObject implements IEvent {
         return lightID == id;
     }
 
-    public RotationEvent extendTo(float beat) {
-        return new RotationEvent(
+    public RotationEventV3 extendTo(float beat, float duration) {
+        return new RotationEventV3(
             beat, transformState, transformState,
-            0, lightID, easing,
+            duration, lightID, easing,
             0, 0
         );
     }

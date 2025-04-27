@@ -2,29 +2,29 @@ package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.event.EventHandler;
-import com.beatcraft.lightshow.event.events.RotationEvent;
+import com.beatcraft.lightshow.event.events.RotationEventV3;
 import com.beatcraft.lightshow.lights.TransformState;
 
 import java.util.List;
 
-public class TransformEventHandlerV3 extends EventHandler<TransformState, RotationEvent> {
-    public TransformEventHandlerV3(List<RotationEvent> events, TransformState.Axis initialAxis) {
+public class TransformEventHandlerV3 extends EventHandler<TransformState, RotationEventV3> {
+    public TransformEventHandlerV3(List<RotationEventV3> events, TransformState.Axis initialAxis) {
         super(events, new TransformState(initialAxis, 0));
 
     }
 
-    public void addEvents(List<RotationEvent> events) {
+    public void addEvents(List<RotationEventV3> events) {
         this.events.addAll(events);
         this.events.sort(Difficulty::compareObjects);
     }
 
     @Override
-    public void onEventInterrupted(RotationEvent event, float normalTime) {
+    public void onEventInterrupted(RotationEventV3 event, float normalTime) {
 
     }
 
     @Override
-    public void onInsideEvent(RotationEvent event, float normalTime) {
+    public void onInsideEvent(RotationEventV3 event, float normalTime) {
         var start = event.startState;
         var end = event.transformState;
         var loops = event.loops;
@@ -59,7 +59,7 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Rotati
     }
 
     @Override
-    public void onEventPassed(RotationEvent event) {
+    public void onEventPassed(RotationEventV3 event) {
         state.set(event.transformState);
     }
 }

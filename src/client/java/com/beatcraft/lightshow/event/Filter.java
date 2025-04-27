@@ -47,6 +47,15 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
     private List<Triplet<Integer[], Float, Float>> targets;
     private Integer[] ordering;
 
+    public List<Integer> getTargets() {
+        var out = new ArrayList<Integer>();
+        for (var targetSet : targets) {
+            for (var target : targetSet.getA()) {
+                out.add(target);
+            }
+        }
+        return out;
+    }
 
     private static ArrayList<Triplet<Integer[], Float, Float>> reChunk(ArrayList<Triplet<Integer[], Float, Float>> targets, int chunks) {
         int total = targets.size();
@@ -178,14 +187,14 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
 
         ArrayList<float[]> weights = new ArrayList<>();
         if (reverse) {
-            for (var t : targets) {
-                weights.add(new float[]{t.getB(), t.getC()});
-            }
-            for (int i = 0; i < targets.size(); i++) {
-                var t = targets.get(i);
-                targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
-            }
-            ordering = new ArrayList<>(ordering.reversed());
+            targets = new ArrayList<>(targets.reversed());
+            //for (var t : targets) {
+            //    weights.add(new float[]{t.getB(), t.getC()});
+            //}
+            //for (int i = 0; i < targets.size(); i++) {
+            //    var t = targets.get(i);
+            //    targets.set(i, new Triplet<>(t.getA(), weights.get(targets.size()-1-i)[0], weights.get(targets.size()-1-i)[1]));
+            //}
         }
 
         if (type == 1) {
@@ -219,7 +228,6 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
             ordering.add(i);
         }
 
-
         random.setSeed(randomSeed);
         if ((randomBehavior & 2) > 0) {
             ArrayList<Integer> reordered = new ArrayList<>();
@@ -232,6 +240,9 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
             ordering = reordered;
         }
 
+        if (reverse) {
+            ordering = new ArrayList<>(ordering.reversed());
+        }
 
         removeValues(targets, coveredIds);
 

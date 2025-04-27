@@ -13,13 +13,11 @@ public class LightState {
     private float brightness;
     private int effectiveColor = 0;
 
-    public Function<Float, Float> strobeEasing = Easing::easeStep;
     public float strobeBrightness = 0;
     public float strobeFrequency = 0;
     public boolean strobeFade = false;
 
-    public void setStrobeState(Function<Float, Float> easing, float brightness, float frequency, boolean fade) {
-        strobeEasing = easing;
+    public void setStrobeState(float brightness, float frequency, boolean fade) {
         strobeBrightness = brightness;
         strobeFrequency = frequency;
         strobeFade = fade;
@@ -61,7 +59,7 @@ public class LightState {
 
     public LightState copy() {
         var ls = new LightState(new Color(color.toARGB()), brightness);
-        ls.setStrobeState(strobeEasing, strobeBrightness, strobeFrequency, strobeFade);
+        ls.setStrobeState(strobeBrightness, strobeFrequency, strobeFade);
 
         return ls;
     }

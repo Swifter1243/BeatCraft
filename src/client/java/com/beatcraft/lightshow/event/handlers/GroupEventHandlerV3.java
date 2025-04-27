@@ -2,9 +2,10 @@ package com.beatcraft.lightshow.event.handlers;
 
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.RotationEvent;
+import com.beatcraft.lightshow.event.events.RotationEventV3;
 import com.beatcraft.lightshow.lights.TransformState;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class GroupEventHandlerV3 {
 
     }
 
-    public void linkTransformEvents(int lightID, HashMap<TransformState.Axis, List<RotationEvent>> transformEvents) {
+    public void linkTransformEvents(int lightID, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents) {
         if (!lightGroupV3.lights.containsKey(lightID)) return;
         if (!transformHandlers.containsKey(lightID)) {
             transformHandlers.put(lightID, new HashMap<>());

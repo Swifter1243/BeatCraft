@@ -1,11 +1,13 @@
 package com.beatcraft.lightshow.environment;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.lightshow.event.EventBuilderV3;
 import com.beatcraft.lightshow.event.Filter;
 import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.RotationEvent;
+import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
@@ -33,8 +35,9 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
+    protected abstract int getGroupCount();
     protected abstract int getLightCount(int group);
-    protected abstract void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, List<RotationEvent>> transformEvents);
+    protected abstract void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents);
 
     private void preProcessLightEventsV3(EventBuilderV3 builder, JsonArray rawLightEvents) {
         rawLightEvents.forEach(rawBoxGroup -> {
@@ -57,14 +60,17 @@ public abstract class EnvironmentV3 extends Environment {
                 var brightnessDistributionValue = JsonUtil.getOrDefault(eventLaneData, "r", JsonElement::getAsFloat, 1f);
                 var brightnessDistributionType = JsonUtil.getOrDefault(eventLaneData, "t", JsonElement::getAsInt, 0);
                 boolean affectsFirst = JsonUtil.getOrDefault(eventLaneData, "b", JsonElement::getAsInt, 0) > 0;
-                var rawBrightnessEasing = JsonUtil.getOrDefault(eventLaneData, "i", JsonElement::getAsInt, 0);
+                var rawBrightnessEasing = JsonUtil.getOrDefault(eventLaneData, "group", JsonElement::getAsInt, 0);
 
                 var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
                 var brightnessEasing = Easing.getEasing(String.valueOf(rawBrightnessEasing));
 
+                //builder.applyLightEventBeatCutoff(group, baseBeat, filter);
+
                 var baseData = new EventBuilderV3.BaseLightData(
-                    baseBeat, group, filter, beatDistributionType, beatDistributionValue,
-                    brightnessDistributionType, brightnessDistributionValue, brightnessEasing,
+                    baseBeat, group, lightCount, filter,
+                    (beatDistributionType % 2), beatDistributionValue,
+                    (brightnessDistributionType % 2), brightnessDistributionValue, brightnessEasing,
                     affectsFirst
                 );
 
@@ -75,9 +81,9 @@ public abstract class EnvironmentV3 extends Environment {
                     var eventData = rawSubEvent.getAsJsonObject();
 
                     var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
-                    var transitionType = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
+                    var transitionType = JsonUtil.getOrDefault(eventData, "group", JsonElement::getAsInt, 0);
                     var color = JsonUtil.getOrDefault(eventData, "c", JsonElement::getAsInt, 0);
-                    var brightness = JsonUtil.getOrDefault(eventData, "s", JsonElement::getAsFloat, 0f);
+                    var brightness = JsonUtil.getOrDefault(eventData, "s", JsonElement::getAsFloat, 1f);
                     var strobeFrequency = JsonUtil.getOrDefault(eventData, "f", JsonElement::getAsFloat, 0f);
                     var strobeBrightness = JsonUtil.getOrDefault(eventData, "sb", JsonElement::getAsFloat, 0f);
                     boolean strobeFade = JsonUtil.getOrDefault(eventData, "sf", JsonElement::getAsInt, 0) > 0;
@@ -109,11 +115,12 @@ public abstract class EnvironmentV3 extends Environment {
             var lightCount = getLightCount(group);
             var rawEventLanes = boxGroupData.getAsJsonArray("e");
 
+
             rawEventLanes.forEach(rawEventLane -> {
                 var eventLaneData = rawEventLane.getAsJsonObject();
 
                 var rawFilter = eventLaneData.getAsJsonObject("f");
-                var beatDistributionValue = JsonUtil.getOrDefault(eventLaneData, "w", JsonElement::getAsFloat, 1f);
+                var beatDistributionValue = JsonUtil.getOrDefault(eventLaneData, "w", JsonElement::getAsFloat, 0f);
                 var beatDistributionType = JsonUtil.getOrDefault(eventLaneData, "d", JsonElement::getAsInt, 0);
 
                 var rotationDistributionValue = JsonUtil.getOrDefault(eventLaneData, "s", JsonElement::getAsFloat, 0f);
@@ -127,10 +134,12 @@ public abstract class EnvironmentV3 extends Environment {
 
                 var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
 
+                //builder.applyRotationEventBeatCutoff(group, baseBeat, filter);
+
                 var baseData = new EventBuilderV3.BaseRotationData(
-                    baseBeat, group, filter,
-                    beatDistributionType, beatDistributionValue,
-                    rotationDistributionType, rotationDistributionValue,
+                    baseBeat, group, lightCount, filter,
+                    (beatDistributionType % 2), beatDistributionValue,
+                    (rotationDistributionType % 2), rotationDistributionValue,
                     axis, invertAxis, affectsFirst
                 );
 
@@ -164,12 +173,115 @@ public abstract class EnvironmentV3 extends Environment {
         });
     }
 
-    private void buildLightEventsV3(EventBuilderV3 builder) {
+    private void buildLightEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+
+        var finalBeat = difficulty.getInfo().getBeat(difficulty.getInfo().getSongDuration(), 1);
+
+        int groupCount = getGroupCount();
+
+        for (int group = 0; group < groupCount; group++) {
+            int lightCount = getLightCount(group);
+            for (int lightID = 0; lightID < lightCount; lightID++) {
+
+                for (var rawEvent : builder.getRawLightEvents(group, lightID)) {
+                    var lastEvent = builder.getLatestLightEvent(group, lightID);
+
+                    var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
+
+                    var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+
+                    var duration = Math.max(0, endBeat - startBeat);
+
+
+                    if (rawEvent.eventType() == 0) { // instant
+                        var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                        builder.putEvent(group, lightID, extensionEvent);
+
+                        var endState = new LightState(
+                            new BoostableColor(rawEvent.color(), difficulty),
+                            rawEvent.brightness()
+                        );
+
+                        endState.setStrobeState(
+                            rawEvent.strobeBrightness(),
+                            rawEvent.strobeFrequency(),
+                            rawEvent.strobeFade()
+                        );
+
+                        var instantEvent = new LightEventV3(
+                            endBeat, extensionEvent.lightState.copy(),
+                            endState, 0, lightID
+                        );
+
+
+                        builder.putEvent(group, lightID, instantEvent);
+
+                    }
+                    else if (rawEvent.eventType() == 1) { // transition
+
+                        var startState = lastEvent.lightState.copy();
+                        var endState = new LightState(
+                            new BoostableColor(rawEvent.color(), difficulty),
+                            rawEvent.brightness()
+                        );
+
+                        endState.setStrobeState(
+                            rawEvent.strobeBrightness(),
+                            rawEvent.strobeFrequency(),
+                            rawEvent.strobeFade()
+                        );
+
+                        var transitionEvent = new LightEventV3(
+                            startBeat,
+                            startState, endState,
+                            duration, lightID
+                        );
+
+                        builder.putEvent(group, lightID, transitionEvent);
+
+                    }
+                    else { // extend
+                        var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                        builder.putEvent(group, lightID, extensionEvent);
+                    }
+
+                }
+                var lastEvent = builder.getLatestLightEvent(group, lightID);
+                var endEvent = lastEvent.extendTo(finalBeat, 0);
+                builder.putEvent(group, lightID, endEvent);
+
+            }
+        }
 
     }
 
-    private void buildRotationEventsV3(EventBuilderV3 builder) {
+    private static final TransformState.Axis[] rotationAxis = new TransformState.Axis[]{
+        TransformState.Axis.RX,
+        TransformState.Axis.RY,
+        TransformState.Axis.RZ
+    };
 
+    private void buildRotationEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+        var finalBeat = difficulty.getInfo().getBeat(difficulty.getInfo().getSongDuration(), 1);
+
+        int groupCount = getGroupCount();
+
+        for (int group = 0; group < groupCount; group++) {
+            int lightCount = getLightCount(group);
+            for (int lightID = 0; lightID < lightCount; lightID++) {
+                for (var axis : rotationAxis) {
+
+                    for (var rawEvent : builder.getRawRotationEvents(group, lightID, axis)) {
+
+
+                    }
+                    var lastEvent = builder.getLatestRotationEvent(group, lightID, axis);
+                    var endEvent = lastEvent.extendTo(finalBeat, 0);
+                    builder.putEvent(group, lightID, axis, endEvent);
+                }
+
+            }
+        }
     }
 
     private void loadV3(Difficulty difficulty, JsonObject json) {
@@ -182,8 +294,17 @@ public abstract class EnvironmentV3 extends Environment {
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
         preProcessRotationEventsV3(eventBuilder, rawRotationEvents);
         eventBuilder.sortEvents();
-        buildLightEventsV3(eventBuilder);
-        buildRotationEventsV3(eventBuilder);
+        buildLightEventsV3(eventBuilder, difficulty);
+        buildRotationEventsV3(eventBuilder, difficulty);
+
+        int groupCount = getGroupCount();
+        for (int group = 0; group < groupCount; group++) {
+            int lightCount = getLightCount(group);
+            for (int lightID = 0; lightID < lightCount; lightID++) {
+                linkEvents(group, lightID, eventBuilder.getLightEvents(group, lightID), eventBuilder.getRotationEvents(group, lightID));
+            }
+        }
+
     }
     /*
     private void loadV3old(Difficulty difficulty, JsonObject json) {
@@ -234,7 +355,7 @@ public abstract class EnvironmentV3 extends Environment {
                 // whether distribution affects the first event in the sequence
                 boolean affectsFirst = JsonUtil.getOrDefault(subEvent, "b", JsonElement::getAsInt, 0) > 0;
 
-                var brightnessDistributionEasing = JsonUtil.getOrDefault(subEvent, "i", JsonElement::getAsInt, 0);
+                var brightnessDistributionEasing = JsonUtil.getOrDefault(subEvent, "group", JsonElement::getAsInt, 0);
                 var easingFunction = Easing.getEasing(String.valueOf(brightnessDistributionEasing));
 
                 AtomicReference<Boolean> doDistribution = new AtomicReference<>(affectsFirst);
@@ -250,7 +371,7 @@ public abstract class EnvironmentV3 extends Environment {
                     var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
 
                     // 0 = instant, 1 = transition, 2 = extend
-                    var transitionType = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
+                    var transitionType = JsonUtil.getOrDefault(eventData, "group", JsonElement::getAsInt, 0);
 
                     var color = JsonUtil.getOrDefault(eventData, "c", JsonElement::getAsInt, 0);
 

@@ -3,10 +3,9 @@ package com.beatcraft.lightshow.event;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.RotationEvent;
+import com.beatcraft.lightshow.event.events.RotationEventV3;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
-import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +49,7 @@ public class EventBuilderV3 {
     }
 
     public record BaseLightData(
-        float beat, int group, Filter filter,
+        float beat, int group, int groupLightCount, Filter filter,
         int beatDistributionType, float beatDistributionValue,
         int brightnessDistributionType, float brightnessDistributionValue,
         Function<Float, Float> brightnessDistributionEasing, boolean distributionAffectsFirst
@@ -62,13 +61,41 @@ public class EventBuilderV3 {
             float brightness, float strobeFrequency,
             float strobeBrightness, boolean strobeFade
         ) {
+            var out = new ArrayList<RawLightEventV3>();
+            for (var targetSet : filter) {
+                var targets = targetSet.getA();
+                var durationMod = targetSet.getB();
+                var distributionMod = targetSet.getC();
 
+                durationMod *= beatDistributionValue;
+                if (beatDistributionType == 0) {
+                    durationMod *= filter.chunkCount();
+                }
+
+                distributionMod *= brightnessDistributionValue;
+                if (brightnessDistributionType == 0) {
+                    distributionMod *= filter.chunkCount();
+                }
+
+                for (var target : targets) {
+
+                    out.add(new RawLightEventV3(
+                        beat, beatOffset, group, target,
+                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        brightnessDistributionEasing.apply(1+distributionMod) * brightness,
+                        strobeFrequency, strobeBrightness, strobeFade,
+                        eventType, color
+                    ));
+                }
+
+            }
+            return out;
         }
 
     }
 
     public record BaseRotationData(
-        float beat, int group, Filter filter,
+        float beat, int group, int groupLightCount, Filter filter,
         int beatDistributionType, float beatDistributionValue,
         int rotationDistributionType, float rotationDistributionValue,
         TransformState.Axis axis, boolean invertAxis, boolean distributionAffectsFirst
@@ -77,16 +104,42 @@ public class EventBuilderV3 {
         public List<RawRotationEventV3> buildEvents(
             boolean isFirst,
             float beatOffset, int eventType, float magnitude,
-            float direction, float loopCount, Function<Float, Float> easing
+            int direction, int loopCount, Function<Float, Float> easing
         ) {
+            var out = new ArrayList<RawRotationEventV3>();
+            for (var targetSet : filter) {
+                var targets = targetSet.getA();
+                var durationMod = targetSet.getB();
+                var distributionMod = targetSet.getC();
 
+                durationMod *= beatDistributionValue;
+                if (beatDistributionType == 0) {
+                    durationMod *= filter.chunkCount();
+                }
+
+                distributionMod *= rotationDistributionValue;
+                if (rotationDistributionType == 0) {
+                    distributionMod *= filter.chunkCount();
+                }
+
+                for (var target : targets) {
+                    out.add(new RawRotationEventV3(
+                        beat, beatOffset, group, target, axis,
+                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        magnitude + distributionMod,
+                        direction, easing, loopCount, eventType
+                    ));
+                }
+
+            }
+            return out;
         }
 
     }
 
     public record RawLightEventV3(
-        float eventBeat, int group, int lightID,
-        float startOffset, float endOffset, float brightness,
+        float eventBeat, float beatOffset, int group, int lightID,
+        float endOffset, float brightness,
         float strobeFrequency, float strobeBrightness,
         boolean strobeFade, int eventType, int color
     ) implements RawEvent {
@@ -98,14 +151,14 @@ public class EventBuilderV3 {
     }
 
     public record RawRotationEventV3(
-        float eventBeat, int group, int lightID, TransformState.Axis axis,
-        float startOffset, float endOffset, float rotation, int direction, int easing,
+        float eventBeat, float beatOffset, int group, int lightID, TransformState.Axis axis,
+        float endOffset, float rotation, int direction, Function<Float, Float> easing,
         int loopCount, int eventType
     ) implements RawEvent {
 
         @Override
         public float getBeat() {
-            return 0;
+            return eventBeat;
         }
     }
 
@@ -126,8 +179,36 @@ public class EventBuilderV3 {
     private final ArrayList<RawLightEventV3> rawLightEvents = new ArrayList<>();
     private final ArrayList<RawRotationEventV3> rawRotationEvents = new ArrayList<>();
 
-    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEvent>>> rotationEvents = new HashMap<>();
+    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
     private HashMap<GroupKey, ArrayList<LightEventV3>> lightEvents = new HashMap<>();
+
+    public List<LightEventV3> getLightEvents(int group, int lightID) {
+        return lightEvents.computeIfAbsent(
+            new GroupKey(group, lightID),
+            k -> new ArrayList<>()
+        );
+    }
+
+    public HashMap<TransformState.Axis, ArrayList<RotationEventV3>> getRotationEvents(int group, int lightID) {
+        return rotationEvents.computeIfAbsent(
+            new GroupKey(group, lightID),
+            k -> new HashMap<>()
+        );
+    }
+
+    public List<RawLightEventV3> getRawLightEvents(int group, int lightID) {
+        return this.rawLightEvents
+            .stream()
+            .filter(e -> e.group == group && e.lightID == lightID)
+            .toList();
+    }
+
+    public List<RawRotationEventV3> getRawRotationEvents(int group, int lightID, TransformState.Axis axis) {
+        return this.rawRotationEvents
+            .stream()
+            .filter(e -> e.group == group && e.lightID == lightID && e.axis == axis)
+            .toList();
+    }
 
     private static int rawEventComparator(RawEvent a, RawEvent b) {
         return Float.compare(a.getBeat(), b.getBeat());
@@ -138,7 +219,7 @@ public class EventBuilderV3 {
         rawRotationEvents.sort(EventBuilderV3::rawEventComparator);
     }
 
-    public void putEvent(int group, int lightID, TransformState.Axis axis, RotationEvent event) {
+    public void putEvent(int group, int lightID, TransformState.Axis axis, RotationEventV3 event) {
         var key = new GroupKey(group, lightID);
         if (!rotationEvents.containsKey(key)) {
             rotationEvents.put(key, new HashMap<>());
@@ -150,7 +231,7 @@ public class EventBuilderV3 {
         var ls = axesMap.get(axis);
         if (ls.isEmpty()) {
             ls.add(
-                new RotationEvent(
+                new RotationEventV3(
                     0,
                     new TransformState(axis, 0),
                     new TransformState(axis, 0),
@@ -162,6 +243,32 @@ public class EventBuilderV3 {
         }
         ls.add(event);
 
+    }
+
+    public void applyRotationEventBeatCutoff(int group, float beat, Filter filter) {
+        var targets = filter.getTargets();
+        rawRotationEvents.sort(EventBuilderV3::rawEventComparator);
+        var filtered = rawRotationEvents.stream().filter(e -> {
+            if (e.group == group && targets.contains(e.lightID)) {
+                return e.eventBeat + e.beatOffset < beat;
+            }
+            return true;
+        }).toList();
+        rawRotationEvents.clear();
+        rawRotationEvents.addAll(filtered);
+    }
+
+    public void applyLightEventBeatCutoff(int group, float beat, Filter filter) {
+        var targets = filter.getTargets();
+        rawLightEvents.sort(EventBuilderV3::rawEventComparator);
+        var filtered = rawLightEvents.stream().filter(e -> {
+            if (e.group == group && targets.contains(e.lightID)) {
+                return e.eventBeat + e.beatOffset < beat;
+            }
+            return true;
+        }).toList();
+        rawLightEvents.clear();
+        rawLightEvents.addAll(filtered);
     }
 
     public void putEvent(int group, int lightID, LightEventV3 event) {
@@ -180,9 +287,10 @@ public class EventBuilderV3 {
                 )
             );
         }
+        ls.add(event);
     }
 
-    public RotationEvent getLatestRotationEvent(int group, int lightID, TransformState.Axis axis) {
+    public RotationEventV3 getLatestRotationEvent(int group, int lightID, TransformState.Axis axis) {
         var key = new GroupKey(group, lightID);
         if (!rotationEvents.containsKey(key)) {
             rotationEvents.put(key, new HashMap<>());
@@ -194,7 +302,7 @@ public class EventBuilderV3 {
         var ls = axesMap.get(axis);
         if (ls.isEmpty()) {
             ls.add(
-                new RotationEvent(
+                new RotationEventV3(
                     0,
                     new TransformState(axis, 0),
                     new TransformState(axis, 0),
@@ -207,7 +315,7 @@ public class EventBuilderV3 {
         return ls.getLast();
     }
 
-    public LightEventV3 getLatestLightEvent(int group, int lightID, TransformState.Axis axis) {
+    public LightEventV3 getLatestLightEvent(int group, int lightID) {
         var key = new GroupKey(group, lightID);
         if (!lightEvents.containsKey(key)) {
             lightEvents.put(key, new ArrayList<>());

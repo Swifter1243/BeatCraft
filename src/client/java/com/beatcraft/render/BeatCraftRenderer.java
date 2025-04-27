@@ -223,6 +223,8 @@ public class BeatCraftRenderer {
 
     }
 
+    private static VertexSorter lightSort;
+
     private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
         // environment lights
 
@@ -249,7 +251,10 @@ public class BeatCraftRenderer {
 
         var buff = buffer.endNullable();
         if (buff != null) {
-            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
+            if (lightSort == null) {
+                lightSort = VertexSorter.byDistance(0, 0, -500);
+            }
+            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), lightSort);
             Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.lightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);

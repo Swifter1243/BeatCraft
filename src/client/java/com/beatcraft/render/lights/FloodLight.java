@@ -8,13 +8,17 @@ import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.RenderUtil;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class FloodLight extends LightObject {
@@ -24,27 +28,29 @@ public class FloodLight extends LightObject {
     private final float length;
     private final float fadeLength;
     private final float spread;
-    private List<Pair<Vector3f, Integer>[]> faces;
-    private List<Pair<Vector3f, Integer>[]> fadeFaces;
-    private List<Pair<Vector3f, Integer>[]> lines;
+    private final float[] segmentLengths;
+    private List<Pair<Vector3f, Float>[]> faces;
+    private List<Pair<Vector3f, Float>[]> fadeFaces;
+    private List<Pair<Vector3f, Float>[]> lines;
 
     public FloodLight cloneOffset(Vector3f offset) {
-        return (FloodLight) new FloodLight(startOffset, width, length, fadeLength, spread, position.add(offset, new Vector3f()), new Quaternionf(orientation))
+        return (FloodLight) new FloodLight(startOffset, width, length, fadeLength, spread, segmentLengths, position.add(offset, new Vector3f()), new Quaternionf(orientation))
             .withRotation(new Quaternionf(rotation))
             .withTranslationSwizzle(translationSwizzle, translationPolarity)
             .withRotationSwizzle(rotationSwizzle, rotationPolarity, quaternionBuilder);
     }
 
-    public FloodLight(float startOffset, float width, float length, float fadeLength, float spread, Vector3f pos, Quaternionf rot) {
+    public FloodLight(float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths, Vector3f pos, Quaternionf rot) {
 
         this.startOffset = startOffset;
         this.width = width;
         this.length = length;
         this.fadeLength = fadeLength;
         this.spread = spread;
+        this.segmentLengths = segmentLengths;
         position = pos;
         orientation = rot;
-        setDimensions(startOffset, width, length, fadeLength, spread);
+        setDimensions(startOffset, width, length, fadeLength, spread, segmentLengths);
         lightState = new LightState(new Color(0, 0, 0, 0), 0);
     }
 
@@ -53,64 +59,66 @@ public class FloodLight extends LightObject {
         return this;
     }
 
-    private List<Pair<Vector3f, Integer>[]> getFaces(Hitbox bounds, float spread) {
-        return List.of(
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
-            },
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), 0),
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), 0),
-            },
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
-            },
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), 0),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1),
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1),
-            },
-            new Pair[] {
-                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1),
-                new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), 0),
-                new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), 0),
-            }
-        );
+    private List<Pair<Vector3f, Float>[]> getFaces(Hitbox bounds, float spread, boolean includeBottomFace, float low, float high) {
+        var out = new ArrayList<Pair<Vector3f, Float>[]>();
+        if (includeBottomFace) {
+            out.add(new Pair[] {
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), high),
+                new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), high),
+                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), high),
+                new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), high),
+            });
+        }
+        out.add(new Pair[] {
+            new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), high),
+            new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), high),
+            new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), low),
+            new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), low),
+        });
+        out.add(new Pair[] {
+            new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), low),
+            new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), low),
+            new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), high),
+            new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), high),
+        });
+        out.add(new Pair[] {
+            new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.min.z-spread), low),
+            new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.min.z-spread), low),
+            new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), high),
+            new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), high),
+        });
+        out.add(new Pair[] {
+            new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), high),
+            new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), high),
+            new Pair<>(new Vector3f(bounds.max.x+spread, bounds.max.y, bounds.max.z+spread), low),
+            new Pair<>(new Vector3f(bounds.min.x-spread, bounds.max.y, bounds.max.z+spread), low),
+        });
+        return out;
     }
 
-    private List<Pair<Vector3f, Integer>[]> getLines(Hitbox bounds, float spread) {
+    private List<Pair<Vector3f, Float>[]> getLines(Hitbox bounds, float spread) {
         return List.of(
             // Bottom face edges
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1), new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1), new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1), new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1), new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1f), new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1f), new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1f), new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1f), new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1f) },
 
             // Top face edges (spread)
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0f), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0f), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0f), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0f), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0f) },
 
             // Vertical connecting edges
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0) },
-            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0) }
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.min.z), 1f), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.min.z - spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.min.x, bounds.min.y, bounds.max.z), 1f), new Pair<>(new Vector3f(bounds.min.x - spread, bounds.max.y, bounds.max.z + spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.max.z), 1f), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.max.z + spread), 0f) },
+            new Pair[]{ new Pair<>(new Vector3f(bounds.max.x, bounds.min.y, bounds.min.z), 1f), new Pair<>(new Vector3f(bounds.max.x + spread, bounds.max.y, bounds.min.z - spread), 0f) }
         );
     }
 
-    public void setDimensions(float startOffset, float width, float length, float fadeLength, float spread) {
+    public void setDimensions(float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths) {
         var maxY = startOffset + length;
         var fadeY = startOffset + fadeLength;
         var delta = width / 2f;
@@ -127,8 +135,37 @@ public class FloodLight extends LightObject {
 
         var midSpread = spread * fadeLength/length;
 
-        faces = getFaces(baseDimensions, spread);
-        fadeFaces = getFaces(fadeDimensions, midSpread);
+        var yVals = new ArrayList<Float>();
+        for (var y : segmentLengths) {
+            yVals.add(y);
+        }
+        yVals.add(fadeY);
+
+        yVals.sort(Float::compare);
+
+        var cy = startOffset;
+        ArrayList<Pair<Vector3f, Float>[]> faces0 = new ArrayList<>();
+        for (var y : yVals) {
+            var dl0 = MathUtil.inverseLerp(startOffset, fadeY, cy);
+            var dl1 = MathUtil.inverseLerp(startOffset, fadeY, y);
+
+            var s0 = MathHelper.lerp(dl0, 0, midSpread);
+            var s1 = MathHelper.lerp(dl1, 0, midSpread);
+
+            var dim = new Hitbox(
+                new Vector3f(-width - s0, cy, -width - s0),
+                new Vector3f(width + s0, y, width + s0)
+            );
+
+            var subSection = getFaces(dim, s1-s0, cy == startOffset, 1-dl1, 1-dl0);
+            faces0.addAll(subSection);
+
+            cy = y;
+        }
+
+        faces = getFaces(baseDimensions, spread, true, 0, 1);
+
+        fadeFaces = List.copyOf(faces0);
         lines = getLines(baseDimensions, spread);
 
     }
@@ -195,6 +232,8 @@ public class FloodLight extends LightObject {
             return;
         }
 
+        var c = new Color(color);
+
         //var b = (lightState.getBrightness() * 0.25f) + 0.75f;
         //setDimensions(
         //    startOffset, width, length * b, fadeLength * b, spread * b
@@ -213,13 +252,13 @@ public class FloodLight extends LightObject {
             v2.rotate(cameraRotation);
             v3.rotate(cameraRotation);
 
-            buffer.vertex(v0).color(face[0].getRight() * color);
-            buffer.vertex(v1).color(face[1].getRight() * color);
-            buffer.vertex(v2).color(face[2].getRight() * color);
+            buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
+            buffer.vertex(v1).color(c.lerpBrightness(face[1].getRight()));
+            buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
 
-            buffer.vertex(v0).color(face[0].getRight() * color);
-            buffer.vertex(v2).color(face[2].getRight() * color);
-            buffer.vertex(v3).color(face[3].getRight() * color);
+            buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
+            buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
+            buffer.vertex(v3).color(c.lerpBrightness(face[3].getRight()));
 
         }
     }
@@ -238,6 +277,7 @@ public class FloodLight extends LightObject {
 
         var mat = createTransformMatrix(mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
+        var c = new Color(color);
 
         if (isBloomfog == 1 && !mirrorDraw) {
             for (var line : lines) {
@@ -273,10 +313,10 @@ public class FloodLight extends LightObject {
                     v3.rotate(cameraRotation);
                 }
 
-                buffer.vertex(v0).color(color * face[0].getRight());
-                buffer.vertex(v1).color(color * face[1].getRight());
-                buffer.vertex(v2).color(color * face[2].getRight());
-                buffer.vertex(v3).color(color * face[3].getRight());
+                buffer.vertex(v0).color(c.lerpBrightness(face[0].getRight()));
+                buffer.vertex(v1).color(c.lerpBrightness(face[1].getRight()));
+                buffer.vertex(v2).color(c.lerpBrightness(face[2].getRight()));
+                buffer.vertex(v3).color(c.lerpBrightness(face[3].getRight()));
 
                 //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
                 //
