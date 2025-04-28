@@ -360,7 +360,7 @@ public abstract class EnvironmentV3 extends Environment {
 
     @Override
     public Environment reset() {
-        boostEventHandler.reset();
+        if (boostEventHandler != null) boostEventHandler.reset();
 
         return this;
     }
