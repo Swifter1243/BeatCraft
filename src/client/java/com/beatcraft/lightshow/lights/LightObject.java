@@ -25,7 +25,7 @@ public abstract class LightObject {
     protected CompoundTransformState transformState = new CompoundTransformState();
     protected CompoundTransformState.Swizzle translationSwizzle = CompoundTransformState.Swizzle.XYZ;
     protected CompoundTransformState.Swizzle rotationSwizzle = CompoundTransformState.Swizzle.XYZ;
-    protected TriFunction<Float, Float, Float, Quaternionf> quaternionBuilder = (x, y, z) -> new Quaternionf().rotationXYZ(x, y, z);
+    protected TriFunction<Float, Float, Float, Quaternionf> quaternionBuilder = (x, y, z) -> new Quaternionf().rotationYXZ(y, x, z);
     protected CompoundTransformState.Polarity translationPolarity = CompoundTransformState.Polarity.PPP;
     protected CompoundTransformState.Polarity rotationPolarity = CompoundTransformState.Polarity.PPP;
 

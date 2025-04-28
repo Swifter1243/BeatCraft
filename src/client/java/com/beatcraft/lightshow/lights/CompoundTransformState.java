@@ -25,7 +25,7 @@ public class CompoundTransformState {
         public static Swizzle getDynamic(String key) {
             return getDynamic(xyz -> {
                 var sw = (int) BeatCraftDebug.getValue(key, 0);
-                var swizzle = Swizzle.values()[sw];
+                var swizzle = Swizzle.values()[Math.clamp(sw, 0, 5)];
                 return CompoundTransformState.applySwizzle(xyz, swizzle);
             });
         }
@@ -58,7 +58,7 @@ public class CompoundTransformState {
         public static Polarity getDynamic(String key) {
             return getDynamic(xyz -> {
                 var po = (int) BeatCraftDebug.getValue(key, 0);
-                var polarity = Polarity.values()[po];
+                var polarity = Polarity.values()[Math.clamp(po, 0, 7)];
                 return CompoundTransformState.applyPolarity(xyz, polarity);
             });
         }

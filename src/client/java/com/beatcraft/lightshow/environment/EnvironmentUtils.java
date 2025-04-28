@@ -10,6 +10,7 @@ public class EnvironmentUtils {
     public static EnvironmentV3 weave = null;
 
     public static Environment setupEnvironment(String environment) {
+        weave = null;
         return (switch (environment) {
             case "WeaveEnvironment" -> weave == null ? weave = new WeaveEnvironment() : weave;
             default -> theFirst == null ? theFirst = new TheFirstEnvironment() : theFirst;

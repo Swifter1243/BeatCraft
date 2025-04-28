@@ -81,7 +81,7 @@ public abstract class EnvironmentV3 extends Environment {
                     var eventData = rawSubEvent.getAsJsonObject();
 
                     var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
-                    var transitionType = JsonUtil.getOrDefault(eventData, "group", JsonElement::getAsInt, 0);
+                    var transitionType = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
                     var color = JsonUtil.getOrDefault(eventData, "c", JsonElement::getAsInt, 0);
                     var brightness = JsonUtil.getOrDefault(eventData, "s", JsonElement::getAsFloat, 1f);
                     var strobeFrequency = JsonUtil.getOrDefault(eventData, "f", JsonElement::getAsFloat, 0f);
@@ -111,7 +111,7 @@ public abstract class EnvironmentV3 extends Environment {
             var baseBeat = JsonUtil.getOrDefault(boxGroupData, "b", JsonElement::getAsFloat, 0f);
             var group = JsonUtil.getOrDefault(boxGroupData, "g", JsonElement::getAsInt, 0);
 
-            var coveredIDs = new ArrayList<Integer>();
+            var coveredIDs = new HashMap<TransformState.Axis, ArrayList<Integer>>();
             var lightCount = getLightCount(group);
             var rawEventLanes = boxGroupData.getAsJsonArray("e");
 
@@ -127,19 +127,27 @@ public abstract class EnvironmentV3 extends Environment {
                 var rotationDistributionType = JsonUtil.getOrDefault(eventLaneData, "t", JsonElement::getAsInt, 0);
                 boolean affectsFirst = JsonUtil.getOrDefault(eventLaneData, "b", JsonElement::getAsInt, 0) > 0;
 
+                var distributionEasing = JsonUtil.getOrDefault(eventLaneData, "i", JsonElement::getAsInt, 0);
+                var rotationEasing = Easing.getEasing(String.valueOf(distributionEasing));
+
                 var rawAxis = JsonUtil.getOrDefault(eventLaneData, "a", JsonElement::getAsInt, 0);
                 boolean invertAxis = JsonUtil.getOrDefault(eventLaneData, "r", JsonElement::getAsInt, 0) > 0;
 
                 var axis = TransformState.Axis.values()[rawAxis % 3];
 
-                var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+                if (axis != TransformState.Axis.RX && group == 4) {
+                    BeatCraft.LOGGER.info("Axis is not X");
+                }
+
+                var covered = coveredIDs.computeIfAbsent(axis, k -> new ArrayList<>());
+                var filter = Filter.processFilter(random, lightCount, covered, rawFilter);
 
                 //builder.applyRotationEventBeatCutoff(group, baseBeat, filter);
 
                 var baseData = new EventBuilderV3.BaseRotationData(
                     baseBeat, group, lightCount, filter,
                     (beatDistributionType % 2), beatDistributionValue,
-                    (rotationDistributionType % 2), rotationDistributionValue,
+                    (rotationDistributionType % 2), rotationDistributionValue, rotationEasing,
                     axis, invertAxis, affectsFirst
                 );
 
@@ -255,7 +263,7 @@ public abstract class EnvironmentV3 extends Environment {
 
     }
 
-    private static final TransformState.Axis[] rotationAxis = new TransformState.Axis[]{
+    private static final TransformState.Axis[] rotationAxes = new TransformState.Axis[]{
         TransformState.Axis.RX,
         TransformState.Axis.RY,
         TransformState.Axis.RZ
@@ -269,10 +277,38 @@ public abstract class EnvironmentV3 extends Environment {
         for (int group = 0; group < groupCount; group++) {
             int lightCount = getLightCount(group);
             for (int lightID = 0; lightID < lightCount; lightID++) {
-                for (var axis : rotationAxis) {
+                for (var axis : rotationAxes) {
 
                     for (var rawEvent : builder.getRawRotationEvents(group, lightID, axis)) {
+                        var lastEvent = builder.getLatestRotationEvent(group, lightID, axis);
 
+                        var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
+
+                        var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+
+                        var duration = Math.max(0, endBeat - startBeat);
+
+
+                        if (rawEvent.eventType() == 0) { // transition
+                            var startState = lastEvent.transformState.copy();
+                            var endState = new TransformState(
+                                axis, rawEvent.rotation()
+                            );
+
+                            var transitionEvent = new RotationEventV3(
+                                startBeat,
+                                startState, endState,
+                                duration, lightID, rawEvent.easing(),
+                                rawEvent.loopCount(), rawEvent.direction()
+                            );
+
+                            builder.putEvent(group, lightID, axis, transitionEvent);
+
+                        }
+                        else { // extend
+                            var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                            builder.putEvent(group, lightID, axis, extensionEvent);
+                        }
 
                     }
                     var lastEvent = builder.getLatestRotationEvent(group, lightID, axis);

@@ -266,6 +266,7 @@ public class BeatCraftRenderer {
         RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+        //RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();

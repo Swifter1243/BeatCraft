@@ -97,7 +97,7 @@ public class EventBuilderV3 {
     public record BaseRotationData(
         float beat, int group, int groupLightCount, Filter filter,
         int beatDistributionType, float beatDistributionValue,
-        int rotationDistributionType, float rotationDistributionValue,
+        int rotationDistributionType, float rotationDistributionValue, Function<Float, Float> rotationEasing,
         TransformState.Axis axis, boolean invertAxis, boolean distributionAffectsFirst
     ) {
 
@@ -110,7 +110,7 @@ public class EventBuilderV3 {
             for (var targetSet : filter) {
                 var targets = targetSet.getA();
                 var durationMod = targetSet.getB();
-                var distributionMod = targetSet.getC();
+                var distributionMod = rotationEasing.apply(targetSet.getC());
 
                 durationMod *= beatDistributionValue;
                 if (beatDistributionType == 0) {
@@ -126,7 +126,7 @@ public class EventBuilderV3 {
                     out.add(new RawRotationEventV3(
                         beat, beatOffset, group, target, axis,
                         distributionAffectsFirst || !isFirst ? durationMod : 0,
-                        magnitude + distributionMod,
+                        (magnitude + distributionMod) * (invertAxis ? -1 : 1),
                         direction, easing, loopCount, eventType
                     ));
                 }

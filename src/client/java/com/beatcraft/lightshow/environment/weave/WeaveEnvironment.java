@@ -38,11 +38,11 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private static final float INNER_OFFSET_Y = 5f;
     private static final float[] INNER_SEGMENTS = new float[]{INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f, INNER_OFFSET_Y-0.001f, INNER_OFFSET_Y+0.001f};
 
-    private static final float OUTER_OFFSET_X = 4.5f;
+    private static final float OUTER_OFFSET_X = 6f;
     private static final float OUTER_OFFSET_Y = 2.5f;
     private static final float[] OUTER_SEGMENTS = new float[]{OUTER_OFFSET_Y-0.001f, OUTER_OFFSET_Y+0.001f, INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f};
 
-    private static final float SIDE_OFFSET_X = 6.5f;
+    private static final float SIDE_OFFSET_X = 7f;
     private static final float SIDE_OFFSET_Y = 1.5f;
     private static final float[] SIDE_SEGMENTS = new float[]{SIDE_OFFSET_Y-0.001f, SIDE_OFFSET_Y+0.001f, SIDE_OFFSET_X-0.001f, SIDE_OFFSET_X+0.001f};
 
@@ -50,19 +50,19 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private static final float INNER_Z = 8.3333f;
     private static final float SIDE_Z = 8.6667f;
 
-    private static final float DISTANT_W = 4f;
-    private static final float DISTANT_H = 3.5f;
+    private static final float DISTANT_W = 5.5f;
+    private static final float DISTANT_H = 3.75f;
     private static final float DISTANT_Z = 30f;
 
     private static final float INNER_LENGTH   = 16f;
     private static final float OUTER_LENGTH   = 16f;
     private static final float SIDE_LENGTH    = 16f;
-    private static final float DISTANT_LENGTH = 16f;
+    private static final float DISTANT_LENGTH = 37.5f;
 
     private static final float INNER_FADE_LENGTH   = 9f;
     private static final float OUTER_FADE_LENGTH   = 9f;
     private static final float SIDE_FADE_LENGTH    = 9f;
-    private static final float DISTANT_FADE_LENGTH = 9f;
+    private static final float DISTANT_FADE_LENGTH = 22.5f;
 
     private static final float INNER_SPREAD   = 0.15f;
     private static final float OUTER_SPREAD   = 0.15f;
@@ -104,7 +104,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.PNP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -121,7 +126,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()
+            ).withRotation(
+                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NPN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -138,7 +148,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.PPN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -155,7 +170,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()
+            ).withRotation(
+                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NNP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -175,9 +195,11 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf().rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()
+            ).withRotation(
+                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
-                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PNP
             ),
             new Vector3f(0, 0, 2), 7)
@@ -195,6 +217,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
@@ -215,10 +239,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
-                CompoundTransformState.Polarity.PNN
+                CompoundTransformState.Polarity.PPN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -235,10 +261,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
-                CompoundTransformState.Polarity.NPP
+                CompoundTransformState.Polarity.NNP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -257,7 +285,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -274,7 +307,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NNN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -291,7 +329,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NNN
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -308,7 +351,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NPP
             ),
             new Vector3f(0, 0, 2), 7)
         ) {
@@ -331,7 +379,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                     CENTER_Y+DISTANT_H+(DISTANT_H*2/9f),
                     DISTANT_Z
                 ),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(180 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.NNP
             ),
             new Vector3f(-(DISTANT_W*2)/11f, 0, 0), 11)
         ) {
@@ -348,7 +401,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(-DISTANT_W, (CENTER_Y-DISTANT_H)-(DISTANT_H*2/9f), DISTANT_Z),
+                new Quaternionf()
+            ).withRotation(
                 new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.XYZ,
+                CompoundTransformState.Polarity.PNP
             ),
             new Vector3f((DISTANT_W*2)/11f, 0, 0), 11)
         ) {
@@ -365,7 +423,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(DISTANT_W+(DISTANT_W*2/11f), CENTER_Y-DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotation(
+                new Quaternionf().rotateX(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NNP
             ),
             new Vector3f(0, (DISTANT_H*2)/9f, 0), 9)
         ) {
@@ -382,7 +445,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotation(
+                new Quaternionf().rotateX(-90 * MathHelper.RADIANS_PER_DEGREE)
+            ).withRotationSwizzle(
+                CompoundTransformState.Swizzle.ZYX,
+                CompoundTransformState.Polarity.NNN
             ),
             new Vector3f(0, -(DISTANT_H*2)/9f, 0), 9)
         ) {

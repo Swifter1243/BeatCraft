@@ -36,8 +36,6 @@ public class TransformEventHandlerV3 extends EventHandler<TransformState, Rotati
         float startRotation = start.value;
         float endRotation = end.value;
 
-        startRotation = ((startRotation % 360) + 360) % 360;
-        endRotation = ((endRotation % 360) + 360) % 360;
 
         float rotationDiff;
 

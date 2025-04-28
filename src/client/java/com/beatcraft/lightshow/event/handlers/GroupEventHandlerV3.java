@@ -38,13 +38,13 @@ public class GroupEventHandlerV3 {
         }
         if (transformEvents != null) {
             transformEvents.forEach((axis, events) -> {
-                var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
+                //var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
 
                 var axes = transformHandlers.get(lightID);
                 if (axes.containsKey(axis)) {
-                    axes.get(axis).addEvents(relevantEvents);
+                    axes.get(axis).addEvents(events);
                 } else {
-                    axes.put(axis, new TransformEventHandlerV3(relevantEvents, axis));
+                    axes.put(axis, new TransformEventHandlerV3(events, axis));
                 }
             });
         }
