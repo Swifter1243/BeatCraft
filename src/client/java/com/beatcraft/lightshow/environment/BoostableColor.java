@@ -5,23 +5,49 @@ import com.beatcraft.data.types.Color;
 
 public class BoostableColor extends Color {
 
-    public static Color leftColor;
-    public static Color rightColor;
-    public static Color whiteColor;
+    public static Color leftColor = new Color();
+    public static Color rightColor = new Color();
+    public static Color whiteColor = new Color();
 
     private final int environmentColor;
-    private Difficulty difficulty;
 
-    public BoostableColor(int environmentColor, Difficulty difficulty) {
+    public BoostableColor(int environmentColor) {
         this.environmentColor = environmentColor;
-        this.difficulty = difficulty;
-        var cs = difficulty.getSetDifficulty().getColorScheme();
-        if (environmentColor == 0) {
-            this.set(cs.getEnvironmentLeftColor());
-        } else if (environmentColor == 1) {
-            this.set(cs.getEnvironmentRightColor());
-        } else if (environmentColor == 2) {
-            this.set(cs.getEnvironmentWhiteColor());
-        }
+    }
+
+    @Override
+    public float getRed() {
+        return (switch (environmentColor) {
+            case 1 -> rightColor;
+            case 2 -> whiteColor;
+            default -> leftColor;
+        }).getRed();
+    }
+
+    @Override
+    public float getGreen() {
+        return (switch (environmentColor) {
+            case 1 -> rightColor;
+            case 2 -> whiteColor;
+            default -> leftColor;
+        }).getGreen();
+    }
+
+    @Override
+    public float getBlue() {
+        return (switch (environmentColor) {
+            case 1 -> rightColor;
+            case 2 -> whiteColor;
+            default -> leftColor;
+        }).getBlue();
+    }
+
+    @Override
+    public float getAlpha() {
+        return (switch (environmentColor) {
+            case 1 -> rightColor;
+            case 2 -> whiteColor;
+            default -> leftColor;
+        }).getAlpha();
     }
 }

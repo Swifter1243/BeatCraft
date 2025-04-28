@@ -94,38 +94,38 @@ public class Color {
     }
 
     public Color withAlpha(float alpha) {
-        this.alpha = Math.clamp(alpha, 0, 1);
+        this.setAlpha(Math.clamp(alpha, 0, 1));
         return this;
     }
 
     public void set(Color other) {
-        red = other.red;
-        green = other.green;
-        blue = other.blue;
-        alpha = other.alpha;
+        red = other.getRed();
+        green = other.getGreen();
+        blue = other.getBlue();
+        alpha = other.getAlpha();
     }
     public void set(float red, float green, float blue) {
         set(red, green, blue, 1);
     }
     public void set(float red, float green, float blue, float alpha) {
-        this.red = red;
-        this.green = green;
-        this.blue = blue;
-        this.alpha = alpha;
+        this.setRed(red);
+        this.setGreen(green);
+        this.setBlue(blue);
+        this.setAlpha(alpha);
     }
 
     public int toARGB() {
-        return toARGB(alpha);
+        return toARGB(getAlpha());
     }
 
     public int toARGB(float alpha) {
         int color = (int) (alpha * 255);
         color <<= 8;
-        color += (int) (red * 255);
+        color += (int) (getRed() * 255);
         color <<= 8;
-        color += (int) (green * 255);
+        color += (int) (getGreen() * 255);
         color <<= 8;
-        color += (int) (blue * 255);
+        color += (int) (getBlue() * 255);
         return color;
     }
 
@@ -135,17 +135,22 @@ public class Color {
         float newBlue;
         float newAlpha;
 
+        float r = getRed();
+        float g = getGreen();
+        float b = getBlue();
+        float a = getAlpha();
+
         if (brightness <= 1.0f) {
-            newRed = red * brightness;
-            newGreen = green * brightness;
-            newBlue = blue * brightness;
-            newAlpha = alpha * brightness;
+            newRed = r * brightness;
+            newGreen = g * brightness;
+            newBlue = b * brightness;
+            newAlpha = a * brightness;
         } else {
             float overBright = brightness - 1.0f;
-            newRed = red + (1.0f - red) * overBright;
-            newGreen = green + (1.0f - green) * overBright;
-            newBlue = blue + (1.0f - blue) * overBright;
-            newAlpha = alpha + (1 - alpha) * overBright;
+            newRed = r + (1.0f - r) * overBright;
+            newGreen = g + (1.0f - g) * overBright;
+            newBlue = b + (1.0f - b) * overBright;
+            newAlpha = a + (1 - a) * overBright;
         }
 
         newRed = Math.clamp(newRed, 0, 1);

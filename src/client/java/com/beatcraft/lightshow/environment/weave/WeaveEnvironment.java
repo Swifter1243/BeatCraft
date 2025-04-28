@@ -34,25 +34,25 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
     private static final float CENTER_Y = 1.75f;
 
-    private static final float INNER_OFFSET_X = 2.5f;
+    private static final float INNER_OFFSET_X = 3.5f;
     private static final float INNER_OFFSET_Y = 5f;
     private static final float[] INNER_SEGMENTS = new float[]{INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f, INNER_OFFSET_Y-0.001f, INNER_OFFSET_Y+0.001f};
 
     private static final float OUTER_OFFSET_X = 6f;
-    private static final float OUTER_OFFSET_Y = 3f;
+    private static final float OUTER_OFFSET_Y = 3.75f;
     private static final float[] OUTER_SEGMENTS = new float[]{OUTER_OFFSET_Y-0.001f, OUTER_OFFSET_Y+0.001f, INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f};
 
     private static final float SIDE_OFFSET_X = 7f;
-    private static final float SIDE_OFFSET_Y = 1.5f;
+    private static final float SIDE_OFFSET_Y = 1.875f;
     private static final float[] SIDE_SEGMENTS = new float[]{SIDE_OFFSET_Y-0.001f, SIDE_OFFSET_Y+0.001f, SIDE_OFFSET_X-0.001f, SIDE_OFFSET_X+0.001f};
 
     private static final float OUTER_Z = 8;
-    private static final float INNER_Z = 8.3333f;
-    private static final float SIDE_Z = 8.6667f;
+    private static final float INNER_Z = 8.875f;
+    private static final float SIDE_Z = 9.75f;
 
     private static final float DISTANT_W = 5.5f;
     private static final float DISTANT_H = 3.75f;
-    private static final float DISTANT_Z = 30f;
+    private static final float DISTANT_Z = 35f;
 
     private static final float INNER_LENGTH   = 16f;
     private static final float OUTER_LENGTH   = 16f;
@@ -69,6 +69,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private static final float SIDE_SPREAD    = 0.15f;
     private static final float DISTANT_SPREAD = 0.15f;
 
+    private static final Vector3f LIGHT_GAP = new Vector3f(0, 0, 3.5f);
 
     private HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> eventGroups;
 
@@ -111,7 +112,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PNP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -133,7 +134,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -155,7 +156,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PPN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -177,7 +178,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -202,7 +203,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PNP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -224,7 +225,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -246,7 +247,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PPN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -268,7 +269,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -292,7 +293,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -314,7 +315,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -336,7 +337,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -358,7 +359,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPP
             ),
-            new Vector3f(0, 0, 2), 7)
+            LIGHT_GAP, 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -464,6 +465,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
     @Override
     public WeaveEnvironment reset() {
+        super.reset();
         eventGroups.forEach((k, v) -> {
             v.getRight().reset();
             v.getRight().clear();

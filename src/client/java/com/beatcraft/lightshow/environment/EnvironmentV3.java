@@ -5,8 +5,10 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.lightshow.event.EventBuilderV3;
 import com.beatcraft.lightshow.event.Filter;
+import com.beatcraft.lightshow.event.events.ColorBoostEvent;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.event.handlers.ColorBoostEventHandler;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.utils.JsonUtil;
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class EnvironmentV3 extends Environment {
 
+    protected ColorBoostEventHandler boostEventHandler;
 
     private Random random = new Random();
 
@@ -202,7 +205,7 @@ public abstract class EnvironmentV3 extends Environment {
                         builder.putEvent(group, lightID, extensionEvent);
 
                         var endState = new LightState(
-                            new BoostableColor(rawEvent.color(), difficulty),
+                            new BoostableColor(rawEvent.color()),
                             rawEvent.brightness()
                         );
 
@@ -225,7 +228,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                         var startState = lastEvent.lightState.copy();
                         var endState = new LightState(
-                            new BoostableColor(rawEvent.color(), difficulty),
+                            new BoostableColor(rawEvent.color()),
                             rawEvent.brightness()
                         );
 
@@ -321,6 +324,17 @@ public abstract class EnvironmentV3 extends Environment {
 
         var rawRotationEvents = json.getAsJsonArray("lightRotationEventBoxGroups");
 
+        var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
+
+        var boostEvents = new ArrayList<ColorBoostEvent>();
+
+        rawBoostEvents.forEach(rawEvent -> {
+            var eventData = rawEvent.getAsJsonObject();
+            boostEvents.add(new ColorBoostEvent().loadV3(eventData, difficulty));
+        });
+
+        boostEventHandler = new ColorBoostEventHandler(boostEvents);
+
         var eventBuilder = new EventBuilderV3();
 
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
@@ -344,8 +358,18 @@ public abstract class EnvironmentV3 extends Environment {
     }
 
     @Override
+    public Environment reset() {
+        boostEventHandler.reset();
+
+        return this;
+    }
+
+    @Override
     public void update(float beat, double deltaTime) {
         super.update(beat, deltaTime);
+
+        if (boostEventHandler != null) boostEventHandler.update(beat);
+
     }
 
     @Override
