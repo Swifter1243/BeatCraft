@@ -125,6 +125,7 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
         int end = (int) Math.ceil(span * (p1 + 1));
 
         end = Math.min(end, targets.size());
+        start = Math.min(start, end);
 
         return targets.subList(start, end);
     }
@@ -198,7 +199,8 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
         }
 
         if (type == 1) {
-            targets = new ArrayList<>(getSection(targets, (float) p0, p1));
+            p0 = Math.max(1, p0);
+            targets = new ArrayList<>(getSection(targets, p0, p1));
         } else {
             targets = getStepOffset(targets, Math.clamp(p0, 1, lightCount+1), Math.max(1, p1));
         }
