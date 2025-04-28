@@ -11,6 +11,13 @@ import com.google.gson.JsonObject;
 public class ColorBoostEvent extends BeatmapObject implements IEvent {
     public boolean boosted = false;
 
+    public ColorBoostEvent() {}
+
+    public ColorBoostEvent(float beat, boolean boosted) {
+        this.beat = beat;
+        this.boosted = boosted;
+    }
+
     @Override
     public float getEventBeat() {
         return beat;

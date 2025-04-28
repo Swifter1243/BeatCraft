@@ -327,6 +327,7 @@ public abstract class EnvironmentV3 extends Environment {
         var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
 
         var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
 
         rawBoostEvents.forEach(rawEvent -> {
             var eventData = rawEvent.getAsJsonObject();

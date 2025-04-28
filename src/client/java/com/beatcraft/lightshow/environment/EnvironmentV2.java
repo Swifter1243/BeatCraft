@@ -102,6 +102,7 @@ public abstract class EnvironmentV2 extends Environment {
         var rlsEvents = new ArrayList<ValueEvent>();
         var rlzEvents = new ArrayList<ValueEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
 
         events.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
@@ -172,6 +173,7 @@ public abstract class EnvironmentV2 extends Environment {
         var rlsEvents = new ArrayList<ValueEvent>();
         var rlzEvents = new ArrayList<ValueEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
 
         rawBoostEvents.forEach(rawEvent -> {
             var eventData = rawEvent.getAsJsonObject();
@@ -242,6 +244,7 @@ public abstract class EnvironmentV2 extends Environment {
         var rlsEvents = new ArrayList<ValueEvent>();
         var rlzEvents = new ArrayList<ValueEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
 
         rawBoostEvents.forEach(rawEvent -> {
             var obj = rawEvent.getAsJsonObject();
