@@ -39,7 +39,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private static final float[] INNER_SEGMENTS = new float[]{INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f, INNER_OFFSET_Y-0.001f, INNER_OFFSET_Y+0.001f};
 
     private static final float OUTER_OFFSET_X = 6f;
-    private static final float OUTER_OFFSET_Y = 2.5f;
+    private static final float OUTER_OFFSET_Y = 3f;
     private static final float[] OUTER_SEGMENTS = new float[]{OUTER_OFFSET_Y-0.001f, OUTER_OFFSET_Y+0.001f, INNER_OFFSET_X-0.001f, INNER_OFFSET_X+0.001f};
 
     private static final float SIDE_OFFSET_X = 7f;
