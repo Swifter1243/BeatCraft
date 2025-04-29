@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.environment.structure_placers.EmptyStructure;
 import com.beatcraft.environment.structure_placers.EnvironmentPlacer;
 import com.beatcraft.environment.structure_placers.TheFirstStructure;
+import com.beatcraft.world.PlacedEnvironmentState;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
@@ -12,6 +13,12 @@ import java.util.List;
 
 public class StructurePlacer {
     public static String currentStructure = "";
+    private static PlacedEnvironmentState worldPlacementState;
+
+    public static void setState(PlacedEnvironmentState state) {
+        worldPlacementState = state;
+        currentStructure = state.getPlacedEnvironment();
+    }
 
     private static final EnvironmentPlacer DEFAULT = new TheFirstStructure();
     private static final EnvironmentPlacer EMPTY = new EmptyStructure();
@@ -50,6 +57,7 @@ public class StructurePlacer {
                 }
 
                 currentStructure = struct;
+                worldPlacementState.setPlacedEnvironment(currentStructure);
 
                 current.placeStructure(world);
             }
@@ -70,6 +78,7 @@ public class StructurePlacer {
         }
 
         currentStructure = "";
+        worldPlacementState.setPlacedEnvironment("");
 
         return true;
     }
