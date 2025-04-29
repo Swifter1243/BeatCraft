@@ -40,6 +40,10 @@ public class Color {
 
     public Color() {}
 
+    public Color copy() {
+        return new Color(red, green, blue, alpha);
+    }
+
     public static Color fromJsonObject(JsonObject json) {
         Color color = new Color();
         color.setRed(json.get("r").getAsFloat());

@@ -58,7 +58,7 @@ public class LightState {
     }
 
     public LightState copy() {
-        var ls = new LightState(new Color(color.toARGB()), brightness);
+        var ls = new LightState(color.copy(), brightness);
         ls.setStrobeState(strobeBrightness, strobeFrequency, strobeFade);
 
         return ls;

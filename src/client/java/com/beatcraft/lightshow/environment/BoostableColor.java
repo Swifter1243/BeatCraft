@@ -16,6 +16,11 @@ public class BoostableColor extends Color {
     }
 
     @Override
+    public BoostableColor copy() {
+        return new BoostableColor(environmentColor);
+    }
+
+    @Override
     public float getRed() {
         return (switch (environmentColor) {
             case 1 -> rightColor;
