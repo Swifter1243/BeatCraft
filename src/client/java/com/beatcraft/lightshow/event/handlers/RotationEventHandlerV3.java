@@ -7,10 +7,9 @@ import com.beatcraft.lightshow.lights.TransformState;
 
 import java.util.List;
 
-public class TransformEventHandlerV3 extends EventHandler<TransformState, RotationEventV3> {
-    public TransformEventHandlerV3(List<RotationEventV3> events, TransformState.Axis initialAxis) {
+public class RotationEventHandlerV3 extends EventHandler<TransformState, RotationEventV3> {
+    public RotationEventHandlerV3(List<RotationEventV3> events, TransformState.Axis initialAxis) {
         super(events, new TransformState(initialAxis, 0));
-
     }
 
     public void addEvents(List<RotationEventV3> events) {

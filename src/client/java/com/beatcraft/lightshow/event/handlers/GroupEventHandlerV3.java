@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.event.handlers;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.event.events.TranslationEvent;
 import com.beatcraft.lightshow.lights.TransformState;
 
 import java.util.ArrayList;
@@ -12,7 +13,8 @@ import java.util.List;
 public class GroupEventHandlerV3 {
     private final LightGroupV3 lightGroupV3;
     private final HashMap<Integer, LightEventHandlerV3> lightHandlers = new HashMap<>();
-    private final HashMap<Integer, HashMap<TransformState.Axis, TransformEventHandlerV3>> transformHandlers = new HashMap<>();
+    private final HashMap<Integer, HashMap<TransformState.Axis, RotationEventHandlerV3>> rotationHandlers = new HashMap<>();
+    private final HashMap<Integer, HashMap<TransformState.Axis, TranslationEventHandler>> translationHandlers = new HashMap<>();
 
 
     public GroupEventHandlerV3(LightGroupV3 group) {
@@ -31,20 +33,35 @@ public class GroupEventHandlerV3 {
 
     }
 
-    public void linkTransformEvents(int lightID, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents) {
+    public void linkRotationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> rotationEvents) {
         if (!lightGroupV3.lights.containsKey(lightID)) return;
-        if (!transformHandlers.containsKey(lightID)) {
-            transformHandlers.put(lightID, new HashMap<>());
+        if (!rotationHandlers.containsKey(lightID)) {
+            rotationHandlers.put(lightID, new HashMap<>());
         }
-        if (transformEvents != null) {
-            transformEvents.forEach((axis, events) -> {
-                //var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
-
-                var axes = transformHandlers.get(lightID);
+        if (rotationEvents != null) {
+            rotationEvents.forEach((axis, events) -> {
+                var axes = rotationHandlers.get(lightID);
                 if (axes.containsKey(axis)) {
                     axes.get(axis).addEvents(events);
                 } else {
-                    axes.put(axis, new TransformEventHandlerV3(events, axis));
+                    axes.put(axis, new RotationEventHandlerV3(events, axis));
+                }
+            });
+        }
+    }
+
+    public void linkTranslationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<TranslationEvent>> translationEvents) {
+        if (!lightGroupV3.lights.containsKey(lightID)) return;
+        if (!translationHandlers.containsKey(lightID)) {
+            translationHandlers.put(lightID, new HashMap<>());
+        }
+        if (translationEvents != null) {
+            translationEvents.forEach((axis, events) -> {
+                var axes = translationHandlers.get(lightID);
+                if (axes.containsKey(axis)) {
+                    axes.get(axis).addEvents(events);
+                } else {
+                    axes.put(axis, new TranslationEventHandler(events, axis));
                 }
             });
         }
@@ -56,7 +73,14 @@ public class GroupEventHandlerV3 {
             lightGroupV3.setLightState(id, state);
         });
 
-        transformHandlers.forEach((id, axisHandlers) -> {
+        rotationHandlers.forEach((id, axisHandlers) -> {
+            axisHandlers.forEach((axis, handler) -> {
+                var state = handler.update(beat);
+                lightGroupV3.setTransform(id, state);
+            });
+        });
+
+        translationHandlers.forEach((id, axisHandlers) -> {
             axisHandlers.forEach((axis, handler) -> {
                 var state = handler.update(beat);
                 lightGroupV3.setTransform(id, state);
@@ -69,7 +93,12 @@ public class GroupEventHandlerV3 {
         lightHandlers.forEach((k, v) -> {
             v.reset();
         });
-        transformHandlers.forEach((k, v) -> {
+        rotationHandlers.forEach((k, v) -> {
+            v.forEach((k2, v2) -> {
+                v2.reset();
+            });
+        });
+        translationHandlers.forEach((k, v) -> {
             v.forEach((k2, v2) -> {
                 v2.reset();
             });
@@ -78,6 +107,7 @@ public class GroupEventHandlerV3 {
 
     public void clear() {
         lightHandlers.clear();
-        transformHandlers.clear();
+        rotationHandlers.clear();
+        translationHandlers.clear();
     }
 }

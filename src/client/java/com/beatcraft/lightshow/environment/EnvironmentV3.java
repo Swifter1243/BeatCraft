@@ -1,6 +1,5 @@
 package com.beatcraft.lightshow.environment;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.lightshow.event.EventBuilderV3;
@@ -8,6 +7,7 @@ import com.beatcraft.lightshow.event.Filter;
 import com.beatcraft.lightshow.event.events.ColorBoostEvent;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.event.events.TranslationEvent;
 import com.beatcraft.lightshow.event.handlers.ColorBoostEventHandler;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
@@ -40,7 +40,12 @@ public abstract class EnvironmentV3 extends Environment {
 
     protected abstract int getGroupCount();
     protected abstract int getLightCount(int group);
-    protected abstract void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents);
+    protected abstract void linkEvents(
+        int group, int lightID,
+        List<LightEventV3> lightEvents,
+        HashMap<TransformState.Axis,ArrayList<RotationEventV3>> rotationEvents,
+        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents
+    );
 
     private void preProcessLightEventsV3(EventBuilderV3 builder, JsonArray rawLightEvents) {
         rawLightEvents.forEach(rawBoxGroup -> {
@@ -178,6 +183,10 @@ public abstract class EnvironmentV3 extends Environment {
             });
 
         });
+    }
+
+    private void preProcessTranslationEventsV3(EventBuilderV3 builder, JsonArray rawTranslationEvents) {
+
     }
 
     private void buildLightEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
@@ -319,10 +328,22 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
+    private static final TransformState.Axis[] translationAxes = new TransformState.Axis[]{
+        TransformState.Axis.TX,
+        TransformState.Axis.TY,
+        TransformState.Axis.TZ
+    };
+
+    private void buildTranslationEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+
+    }
+
     private void loadV3(Difficulty difficulty, JsonObject json) {
         var rawColorEventBoxes = json.getAsJsonArray("lightColorEventBoxGroups");
 
         var rawRotationEvents = json.getAsJsonArray("lightRotationEventBoxGroups");
+
+        var rawTranslationEvents = json.getAsJsonArray("lightTranslationEventBoxGroups");
 
         var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
 
@@ -340,21 +361,37 @@ public abstract class EnvironmentV3 extends Environment {
 
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
         preProcessRotationEventsV3(eventBuilder, rawRotationEvents);
+        preProcessTranslationEventsV3(eventBuilder, rawTranslationEvents);
         eventBuilder.sortEvents();
         buildLightEventsV3(eventBuilder, difficulty);
         buildRotationEventsV3(eventBuilder, difficulty);
+        buildTranslationEventsV3(eventBuilder, difficulty);
 
         int groupCount = getGroupCount();
         for (int group = 0; group < groupCount; group++) {
             int lightCount = getLightCount(group);
             for (int lightID = 0; lightID < lightCount; lightID++) {
-                linkEvents(group, lightID, eventBuilder.getLightEvents(group, lightID), eventBuilder.getRotationEvents(group, lightID));
+                linkEvents(group, lightID, eventBuilder.getLightEvents(group, lightID), eventBuilder.getRotationEvents(group, lightID), eventBuilder.getTranslationEvents(group, lightID));
             }
         }
 
     }
 
     private void loadV4(Difficulty difficulty, JsonObject json) {
+
+        var rawEventBoxGroups = json.getAsJsonArray("eventBoxGroups");
+        var indexFilters = json.getAsJsonArray("indexFilters");
+
+        var lightColorEventBoxes = json.getAsJsonArray("lightColorEventBoxes");
+        var lightColorEventMetaData = json.getAsJsonArray("lightColorEvents");
+
+        var lightRotationEventBoxes = json.getAsJsonArray("lightRotationEventBoxes");
+        var lightRotationEventMetaData = json.getAsJsonArray("lightRotationEvents");
+
+        var lightTranslationEventBoxes = json.getAsJsonArray("lightTranslationEventBoxes");
+        var lightTranslationEventMetaData = json.getAsJsonArray("lightTranslationEvents");
+
+
 
     }
 

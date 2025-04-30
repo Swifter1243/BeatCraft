@@ -4,6 +4,7 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.event.events.TranslationEvent;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
 
@@ -137,6 +138,14 @@ public class EventBuilderV3 {
 
     }
 
+    public record BaseTranslationData() {
+        public List<RawTranslationEvent> buildEvents() {
+            var out = new ArrayList<RawTranslationEvent>();
+
+            return out;
+        }
+    }
+
     public record RawLightEventV3(
         float eventBeat, float beatOffset, int group, int lightID,
         float endOffset, float brightness,
@@ -162,6 +171,17 @@ public class EventBuilderV3 {
         }
     }
 
+    public record RawTranslationEvent(
+        float eventBeat, float beatOffset, int group, int lightID, TransformState.Axis axis,
+        float endOffset, float delta, Function<Float, Float> easing
+    ) implements RawEvent {
+
+        @Override
+        public float getBeat() {
+            return eventBeat;
+        }
+    }
+
     public void addRawLightEvents(List<RawLightEventV3> events) {
         rawLightEvents.addAll(events);
     }
@@ -178,9 +198,11 @@ public class EventBuilderV3 {
 
     private final ArrayList<RawLightEventV3> rawLightEvents = new ArrayList<>();
     private final ArrayList<RawRotationEventV3> rawRotationEvents = new ArrayList<>();
+    private final ArrayList<RawTranslationEvent> rawTranslationEvents = new ArrayList<>();
 
-    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
     private HashMap<GroupKey, ArrayList<LightEventV3>> lightEvents = new HashMap<>();
+    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
+    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<TranslationEvent>>> translationEvents = new HashMap<>();
 
     public List<LightEventV3> getLightEvents(int group, int lightID) {
         return lightEvents.computeIfAbsent(
@@ -196,15 +218,29 @@ public class EventBuilderV3 {
         );
     }
 
+    public HashMap<TransformState.Axis, ArrayList<TranslationEvent>> getTranslationEvents(int group, int lightID) {
+        return translationEvents.computeIfAbsent(
+            new GroupKey(group, lightID),
+            k -> new HashMap<>()
+        );
+    }
+
     public List<RawLightEventV3> getRawLightEvents(int group, int lightID) {
-        return this.rawLightEvents
+        return rawLightEvents
             .stream()
             .filter(e -> e.group == group && e.lightID == lightID)
             .toList();
     }
 
     public List<RawRotationEventV3> getRawRotationEvents(int group, int lightID, TransformState.Axis axis) {
-        return this.rawRotationEvents
+        return rawRotationEvents
+            .stream()
+            .filter(e -> e.group == group && e.lightID == lightID && e.axis == axis)
+            .toList();
+    }
+
+    public List<RawTranslationEvent> getRawTranslationEvents(int group, int lightID, TransformState.Axis axis) {
+        return rawTranslationEvents
             .stream()
             .filter(e -> e.group == group && e.lightID == lightID && e.axis == axis)
             .toList();
@@ -217,6 +253,27 @@ public class EventBuilderV3 {
     public void sortEvents() {
         rawLightEvents.sort(EventBuilderV3::rawEventComparator);
         rawRotationEvents.sort(EventBuilderV3::rawEventComparator);
+        rawTranslationEvents.sort(EventBuilderV3::rawEventComparator);
+    }
+
+
+    public void putEvent(int group, int lightID, LightEventV3 event) {
+        var key = new GroupKey(group, lightID);
+        if (!lightEvents.containsKey(key)) {
+            lightEvents.put(key, new ArrayList<>());
+        }
+        var ls = lightEvents.get(key);
+        if (ls.isEmpty()) {
+            ls.add(
+                new LightEventV3(
+                    0,
+                    new LightState(new Color(0), 0),
+                    new LightState(new Color(0), 0),
+                    0, lightID
+                )
+            );
+        }
+        ls.add(event);
     }
 
     public void putEvent(int group, int lightID, TransformState.Axis axis, RotationEventV3 event) {
@@ -238,6 +295,31 @@ public class EventBuilderV3 {
                     0, lightID,
                     Easing::easeStep,
                     0, 0
+                )
+            );
+        }
+        ls.add(event);
+
+    }
+
+    public void putEvent(int group, int lightID, TransformState.Axis axis, TranslationEvent event) {
+        var key = new GroupKey(group, lightID);
+        if (!translationEvents.containsKey(key)) {
+            translationEvents.put(key, new HashMap<>());
+        }
+        var axesMap = translationEvents.get(key);
+        if (!axesMap.containsKey(axis)) {
+            axesMap.put(axis, new ArrayList<>());
+        }
+        var ls = axesMap.get(axis);
+        if (ls.isEmpty()) {
+            ls.add(
+                new TranslationEvent(
+                    0,
+                    new TransformState(axis, 0),
+                    new TransformState(axis, 0),
+                    0, lightID,
+                    Easing::easeStep
                 )
             );
         }
@@ -271,7 +353,7 @@ public class EventBuilderV3 {
         rawLightEvents.addAll(filtered);
     }
 
-    public void putEvent(int group, int lightID, LightEventV3 event) {
+    public LightEventV3 getLatestLightEvent(int group, int lightID) {
         var key = new GroupKey(group, lightID);
         if (!lightEvents.containsKey(key)) {
             lightEvents.put(key, new ArrayList<>());
@@ -287,7 +369,7 @@ public class EventBuilderV3 {
                 )
             );
         }
-        ls.add(event);
+        return ls.getLast();
     }
 
     public RotationEventV3 getLatestRotationEvent(int group, int lightID, TransformState.Axis axis) {
@@ -315,23 +397,30 @@ public class EventBuilderV3 {
         return ls.getLast();
     }
 
-    public LightEventV3 getLatestLightEvent(int group, int lightID) {
+    public TranslationEvent getLatestTranslationEvent(int group, int lightID, TransformState.Axis axis) {
         var key = new GroupKey(group, lightID);
-        if (!lightEvents.containsKey(key)) {
-            lightEvents.put(key, new ArrayList<>());
+        if (!translationEvents.containsKey(key)) {
+            translationEvents.put(key, new HashMap<>());
         }
-        var ls = lightEvents.get(key);
+        var axesMap = translationEvents.get(key);
+        if (!axesMap.containsKey(axis)) {
+            axesMap.put(axis, new ArrayList<>());
+        }
+        var ls = axesMap.get(axis);
         if (ls.isEmpty()) {
             ls.add(
-                new LightEventV3(
+                new TranslationEvent(
                     0,
-                    new LightState(new Color(0), 0),
-                    new LightState(new Color(0), 0),
-                    0, lightID
+                    new TransformState(axis, 0),
+                    new TransformState(axis, 0),
+                    0, lightID,
+                    Easing::easeStep
                 )
             );
         }
         return ls.getLast();
     }
+
+
 
 }

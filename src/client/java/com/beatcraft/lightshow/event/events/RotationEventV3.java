@@ -27,10 +27,6 @@ public class RotationEventV3 extends BeatmapObject implements IEvent {
         this.direction = direction;
     }
 
-    public boolean containsLightID(int id) {
-        return lightID == id;
-    }
-
     public RotationEventV3 extendTo(float beat, float duration) {
         return new RotationEventV3(
             beat, transformState, transformState,

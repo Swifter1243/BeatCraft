@@ -5,6 +5,7 @@ import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.environment.lightgroup.OrientableLightGroup;
 import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
+import com.beatcraft.lightshow.event.events.TranslationEvent;
 import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
 import com.beatcraft.lightshow.lights.CompoundTransformState;
 import com.beatcraft.lightshow.lights.LightObject;
@@ -488,11 +489,17 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    protected void linkEvents(int group, int lightID, List<LightEventV3> lightEvents, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> transformEvents) {
+    protected void linkEvents(
+        int group, int lightID,
+        List<LightEventV3> lightEvents,
+        HashMap<TransformState.Axis, ArrayList<RotationEventV3>> rotationEvents,
+        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents
+    ) {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);
-            eventGroups.get(group).getRight().linkTransformEvents(lightID, transformEvents);
+            eventGroups.get(group).getRight().linkRotationEvents(lightID, rotationEvents);
+            eventGroups.get(group).getRight().linkTranslationEvents(lightID, translationEvents);
         }
 
     }
