@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class EventBuilderV3 {
+public class EventBuilder {
 
     public static class GroupKey {
         private int group;
@@ -138,10 +138,43 @@ public class EventBuilderV3 {
 
     }
 
-    public record BaseTranslationData() {
-        public List<RawTranslationEvent> buildEvents() {
+    public record BaseTranslationData(
+            float beat, int group, int groupLightCount, Filter filter,
+            int beatDistributionType, float beatDistributionValue,
+            int gapDistributionType, float gapDistributionValue, Function<Float, Float> gapEasing,
+            TransformState.Axis axis, boolean invertAxis, boolean distributionAffectsFirst
+    ) {
+        public List<RawTranslationEvent> buildEvents(
+            boolean isFirst,
+            float beatOffset, int eventType, float magnitude,
+            Function<Float, Float> easing
+        ) {
             var out = new ArrayList<RawTranslationEvent>();
+            for (var targetSet : filter) {
+                var targets = targetSet.getA();
+                var durationMod = targetSet.getB();
+                var distributionMod = gapEasing.apply(targetSet.getC());
 
+                durationMod *= beatDistributionValue;
+                if (beatDistributionType == 0) {
+                    durationMod *= filter.chunkCount();
+                }
+
+                distributionMod *= gapDistributionValue;
+                if (gapDistributionType == 0) {
+                    distributionMod *= filter.chunkCount();
+                }
+
+                for (var target : targets) {
+                    out.add(new RawTranslationEvent(
+                        beat, beatOffset, group, target, axis,
+                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        (magnitude + distributionMod) * (invertAxis ? -1 : 1),
+                        easing, eventType
+                    ));
+                }
+
+            }
             return out;
         }
     }
@@ -173,27 +206,14 @@ public class EventBuilderV3 {
 
     public record RawTranslationEvent(
         float eventBeat, float beatOffset, int group, int lightID, TransformState.Axis axis,
-        float endOffset, float delta, Function<Float, Float> easing
+        float endOffset, float delta, Function<Float, Float> easing,
+        int eventType
     ) implements RawEvent {
 
         @Override
         public float getBeat() {
             return eventBeat;
         }
-    }
-
-    public void addRawLightEvents(List<RawLightEventV3> events) {
-        rawLightEvents.addAll(events);
-    }
-    public void addRawLightEvent(RawLightEventV3 event) {
-        rawLightEvents.add(event);
-    }
-
-    public void addRawRotationEvents(List<RawRotationEventV3> events) {
-        rawRotationEvents.addAll(events);
-    }
-    public void addRawRotationEvent(RawRotationEventV3 event) {
-        rawRotationEvents.add(event);
     }
 
     private final ArrayList<RawLightEventV3> rawLightEvents = new ArrayList<>();
@@ -203,6 +223,18 @@ public class EventBuilderV3 {
     private HashMap<GroupKey, ArrayList<LightEventV3>> lightEvents = new HashMap<>();
     private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
     private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<TranslationEvent>>> translationEvents = new HashMap<>();
+
+    public void addRawLightEvents(List<RawLightEventV3> events) {
+        rawLightEvents.addAll(events);
+    }
+
+    public void addRawRotationEvents(List<RawRotationEventV3> events) {
+        rawRotationEvents.addAll(events);
+    }
+
+    public void addRawTranslationEvents(List<RawTranslationEvent> events) {
+        rawTranslationEvents.addAll(events);
+    }
 
     public List<LightEventV3> getLightEvents(int group, int lightID) {
         return lightEvents.computeIfAbsent(
@@ -251,9 +283,9 @@ public class EventBuilderV3 {
     }
 
     public void sortEvents() {
-        rawLightEvents.sort(EventBuilderV3::rawEventComparator);
-        rawRotationEvents.sort(EventBuilderV3::rawEventComparator);
-        rawTranslationEvents.sort(EventBuilderV3::rawEventComparator);
+        rawLightEvents.sort(EventBuilder::rawEventComparator);
+        rawRotationEvents.sort(EventBuilder::rawEventComparator);
+        rawTranslationEvents.sort(EventBuilder::rawEventComparator);
     }
 
 
@@ -329,7 +361,7 @@ public class EventBuilderV3 {
 
     public void applyRotationEventBeatCutoff(int group, float beat, Filter filter) {
         var targets = filter.getTargets();
-        rawRotationEvents.sort(EventBuilderV3::rawEventComparator);
+        rawRotationEvents.sort(EventBuilder::rawEventComparator);
         var filtered = rawRotationEvents.stream().filter(e -> {
             if (e.group == group && targets.contains(e.lightID)) {
                 return e.eventBeat + e.beatOffset < beat;
@@ -342,7 +374,7 @@ public class EventBuilderV3 {
 
     public void applyLightEventBeatCutoff(int group, float beat, Filter filter) {
         var targets = filter.getTargets();
-        rawLightEvents.sort(EventBuilderV3::rawEventComparator);
+        rawLightEvents.sort(EventBuilder::rawEventComparator);
         var filtered = rawLightEvents.stream().filter(e -> {
             if (e.group == group && targets.contains(e.lightID)) {
                 return e.eventBeat + e.beatOffset < beat;

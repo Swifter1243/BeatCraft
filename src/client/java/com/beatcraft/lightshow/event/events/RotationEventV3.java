@@ -27,10 +27,10 @@ public class RotationEventV3 extends BeatmapObject implements IEvent {
         this.direction = direction;
     }
 
-    public RotationEventV3 extendTo(float beat, float duration) {
+    public RotationEventV3 extendTo(float beat) {
         return new RotationEventV3(
-            beat, transformState, transformState,
-            duration, lightID, easing,
+            this.beat + duration, transformState, transformState,
+            beat - (this.beat + duration), lightID, easing,
             0, 0
         );
     }

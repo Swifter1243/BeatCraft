@@ -33,10 +33,10 @@ public class TranslationEvent extends BeatmapObject implements IEvent {
         return duration;
     }
 
-    public TranslationEvent extendTo(float beat, float duration) {
+    public TranslationEvent extendTo(float beat) {
         return new TranslationEvent(
-            beat, transformState, transformState,
-            duration, lightID, easing
+            this.beat + duration, transformState, transformState,
+            beat - (this.beat + duration), lightID, easing
         );
     }
 

@@ -35,10 +35,10 @@ public class LightEventV3 extends LightEvent implements IEvent {
         return duration;
     }
 
-    public LightEventV3 extendTo(float beat, float duration) {
+    public LightEventV3 extendTo(float beat) {
         return new LightEventV3(
-            beat, this.lightState, this.lightState,
-            duration, this.lightID
+            this.beat + duration, this.lightState, this.lightState,
+            beat - (this.beat + duration), this.lightID
         );
     }
 

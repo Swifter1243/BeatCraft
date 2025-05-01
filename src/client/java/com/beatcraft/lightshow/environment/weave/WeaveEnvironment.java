@@ -493,13 +493,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         int group, int lightID,
         List<LightEventV3> lightEvents,
         HashMap<TransformState.Axis, ArrayList<RotationEventV3>> rotationEvents,
-        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents
+        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> ignored,
+        List<Integer> ignored0
     ) {
 
         if (eventGroups.containsKey(group)) {
             eventGroups.get(group).getRight().linkLightEvents(lightEvents);
             eventGroups.get(group).getRight().linkRotationEvents(lightID, rotationEvents);
-            eventGroups.get(group).getRight().linkTranslationEvents(lightID, translationEvents);
         }
 
     }

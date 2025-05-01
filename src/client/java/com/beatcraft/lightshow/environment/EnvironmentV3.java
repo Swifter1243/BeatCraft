@@ -2,7 +2,7 @@ package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
-import com.beatcraft.lightshow.event.EventBuilderV3;
+import com.beatcraft.lightshow.event.EventBuilder;
 import com.beatcraft.lightshow.event.Filter;
 import com.beatcraft.lightshow.event.events.ColorBoostEvent;
 import com.beatcraft.lightshow.event.events.LightEventV3;
@@ -44,10 +44,24 @@ public abstract class EnvironmentV3 extends Environment {
         int group, int lightID,
         List<LightEventV3> lightEvents,
         HashMap<TransformState.Axis,ArrayList<RotationEventV3>> rotationEvents,
-        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents
+        HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents,
+        List<Integer> floatFxEvents
     );
 
-    private void preProcessLightEventsV3(EventBuilderV3 builder, JsonArray rawLightEvents) {
+    private static final TransformState.Axis[] rotationAxes = new TransformState.Axis[]{
+        TransformState.Axis.RX,
+        TransformState.Axis.RY,
+        TransformState.Axis.RZ
+    };
+
+    private static final TransformState.Axis[] translationAxes = new TransformState.Axis[]{
+        TransformState.Axis.TX,
+        TransformState.Axis.TY,
+        TransformState.Axis.TZ
+    };
+
+
+    private void preProcessLightEventsV3(EventBuilder builder, JsonArray rawLightEvents) {
         rawLightEvents.forEach(rawBoxGroup -> {
             var boxGroupData = rawBoxGroup.getAsJsonObject();
 
@@ -75,7 +89,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                 //builder.applyLightEventBeatCutoff(group, baseBeat, filter);
 
-                var baseData = new EventBuilderV3.BaseLightData(
+                var baseData = new EventBuilder.BaseLightData(
                     baseBeat, group, lightCount, filter,
                     (beatDistributionType % 2), beatDistributionValue,
                     (brightnessDistributionType % 2), brightnessDistributionValue, brightnessEasing,
@@ -112,7 +126,7 @@ public abstract class EnvironmentV3 extends Environment {
         });
     }
 
-    private void preProcessRotationEventsV3(EventBuilderV3 builder, JsonArray rawRotationEvents) {
+    private void preProcessRotationEventsV3(EventBuilder builder, JsonArray rawRotationEvents) {
         rawRotationEvents.forEach(rawBoxGroup -> {
             var boxGroupData = rawBoxGroup.getAsJsonObject();
 
@@ -122,7 +136,6 @@ public abstract class EnvironmentV3 extends Environment {
             var coveredIDs = new HashMap<TransformState.Axis, ArrayList<Integer>>();
             var lightCount = getLightCount(group);
             var rawEventLanes = boxGroupData.getAsJsonArray("e");
-
 
             rawEventLanes.forEach(rawEventLane -> {
                 var eventLaneData = rawEventLane.getAsJsonObject();
@@ -143,12 +156,15 @@ public abstract class EnvironmentV3 extends Environment {
 
                 var axis = TransformState.Axis.values()[rawAxis % 3];
 
-                var covered = coveredIDs.computeIfAbsent(axis, k -> new ArrayList<>());
+                if (!coveredIDs.containsKey(axis)) {
+                    coveredIDs.put(axis, new ArrayList<>());
+                }
+                var covered = coveredIDs.get(axis);
                 var filter = Filter.processFilter(random, lightCount, covered, rawFilter);
 
                 //builder.applyRotationEventBeatCutoff(group, baseBeat, filter);
 
-                var baseData = new EventBuilderV3.BaseRotationData(
+                var baseData = new EventBuilder.BaseRotationData(
                     baseBeat, group, lightCount, filter,
                     (beatDistributionType % 2), beatDistributionValue,
                     (rotationDistributionType % 2), rotationDistributionValue, rotationEasing,
@@ -185,11 +201,102 @@ public abstract class EnvironmentV3 extends Environment {
         });
     }
 
-    private void preProcessTranslationEventsV3(EventBuilderV3 builder, JsonArray rawTranslationEvents) {
+    private void preProcessTranslationEventsV3(EventBuilder builder, JsonArray rawTranslationEvents) {
+        rawTranslationEvents.forEach(rawBoxGroup -> {
+            var boxGroupData = rawBoxGroup.getAsJsonObject();
+
+            var baseBeat = JsonUtil.getOrDefault(boxGroupData, "b", JsonElement::getAsFloat, 0f);
+            var group = JsonUtil.getOrDefault(boxGroupData, "g", JsonElement::getAsInt, 0);
+
+            var coveredIDs = new HashMap<TransformState.Axis, ArrayList<Integer>>();
+            var lightCount = getLightCount(group);
+            var rawEventLanes = boxGroupData.getAsJsonArray("e");
+
+            rawEventLanes.forEach(rawEventLane -> {
+                var eventLaneData = rawEventLane.getAsJsonObject();
+
+                var rawFilter = eventLaneData.getAsJsonObject("f");
+                var beatDistributionValue = JsonUtil.getOrDefault(eventLaneData, "w", JsonElement::getAsFloat, 0f);
+                var beatDistributionType = JsonUtil.getOrDefault(eventLaneData, "d", JsonElement::getAsInt, 0);
+
+                var gapDistributionValue = JsonUtil.getOrDefault(eventLaneData, "s", JsonElement::getAsFloat, 0f);
+                var gapDistributionType = JsonUtil.getOrDefault(eventLaneData, "t", JsonElement::getAsInt, 0);
+                boolean affectsFirst = JsonUtil.getOrDefault(eventLaneData, "b", JsonElement::getAsInt, 0) > 0;
+
+                var distributionEasing = JsonUtil.getOrDefault(eventLaneData, "i", JsonElement::getAsInt, 0);
+                var gapEasing = Easing.getEasing(String.valueOf(distributionEasing));
+
+                var rawAxis = JsonUtil.getOrDefault(eventLaneData, "a", JsonElement::getAsInt, 0);
+                boolean invertAxis = JsonUtil.getOrDefault(eventLaneData, "r", JsonElement::getAsInt, 0) > 0;
+
+                var axis = TransformState.Axis.values()[(rawAxis % 3) + 3];
+
+                if (!coveredIDs.containsKey(axis)) {
+                    coveredIDs.put(axis, new ArrayList<>());
+                }
+                var covered = coveredIDs.get(axis);
+                var filter = Filter.processFilter(random, lightCount, covered, rawFilter);
+
+                var baseData = new EventBuilder.BaseTranslationData(
+                    baseBeat, group, lightCount, filter,
+                    (beatDistributionType % 2), beatDistributionValue,
+                    (gapDistributionType % 2), gapDistributionValue, gapEasing,
+                    axis, invertAxis, affectsFirst
+                );
+
+                var rawTranslationSubEvents = eventLaneData.getAsJsonArray("l");
+                AtomicBoolean isFirst = new AtomicBoolean(true);
+                rawTranslationSubEvents.forEach(rawSubEvent -> {
+                    var eventData = rawSubEvent.getAsJsonObject();
+
+                    var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+                    var transitionType = JsonUtil.getOrDefault(eventData, "p", JsonElement::getAsInt, 0);
+                    var rawEasing = JsonUtil.getOrDefault(eventData, "e", JsonElement::getAsInt, 0);
+                    var magnitude = JsonUtil.getOrDefault(eventData, "t", JsonElement::getAsFloat, 0f);
+
+                    var easing = Easing.getEasing(String.valueOf(rawEasing));
+
+                    var events = baseData.buildEvents(
+                        isFirst.get(),
+                        beatOffset, transitionType, magnitude,
+                        easing
+                    );
+
+                    builder.addRawTranslationEvents(events);
+
+                    isFirst.set(false);
+                });
+
+            });
+
+        });
+    }
+
+    private void preProcessLightEventsV4(
+        EventBuilder builder, float baseBeat, int group,
+        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray colorEventBoxes, JsonArray colorEventMetaData
+    ) {
 
     }
 
-    private void buildLightEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+    private void preProcessRotationEventsV4(
+        EventBuilder builder, float baseBeat, int group,
+        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray rotationEventBoxes, JsonArray rotationEventMetaData
+    ) {
+
+    }
+
+    private void preProcessTranslationEventsV4(
+        EventBuilder builder, float baseBeat, int group,
+        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray translationEventBoxes, JsonArray translationEventMetaData
+    ) {
+
+    }
+
+    private void buildLightEvents(EventBuilder builder, Difficulty difficulty) {
 
         var finalBeat = difficulty.getInfo().getBeat(difficulty.getInfo().getSongDuration(), 1);
 
@@ -210,7 +317,7 @@ public abstract class EnvironmentV3 extends Environment {
 
 
                     if (rawEvent.eventType() == 0) { // instant
-                        var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                        var extensionEvent = lastEvent.extendTo(endBeat);
                         builder.putEvent(group, lightID, extensionEvent);
 
                         var endState = new LightState(
@@ -257,13 +364,13 @@ public abstract class EnvironmentV3 extends Environment {
 
                     }
                     else { // extend
-                        var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                        var extensionEvent = lastEvent.extendTo(endBeat);
                         builder.putEvent(group, lightID, extensionEvent);
                     }
 
                 }
                 var lastEvent = builder.getLatestLightEvent(group, lightID);
-                var endEvent = lastEvent.extendTo(finalBeat, 0);
+                var endEvent = lastEvent.extendTo(finalBeat);
                 builder.putEvent(group, lightID, endEvent);
 
             }
@@ -271,13 +378,7 @@ public abstract class EnvironmentV3 extends Environment {
 
     }
 
-    private static final TransformState.Axis[] rotationAxes = new TransformState.Axis[]{
-        TransformState.Axis.RX,
-        TransformState.Axis.RY,
-        TransformState.Axis.RZ
-    };
-
-    private void buildRotationEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+    private void buildRotationEvents(EventBuilder builder, Difficulty difficulty) {
         var finalBeat = difficulty.getInfo().getBeat(difficulty.getInfo().getSongDuration(), 1);
 
         int groupCount = getGroupCount();
@@ -314,13 +415,13 @@ public abstract class EnvironmentV3 extends Environment {
 
                         }
                         else { // extend
-                            var extensionEvent = lastEvent.extendTo(startBeat, duration);
+                            var extensionEvent = lastEvent.extendTo(endBeat);
                             builder.putEvent(group, lightID, axis, extensionEvent);
                         }
 
                     }
                     var lastEvent = builder.getLatestRotationEvent(group, lightID, axis);
-                    var endEvent = lastEvent.extendTo(finalBeat, 0);
+                    var endEvent = lastEvent.extendTo(finalBeat);
                     builder.putEvent(group, lightID, axis, endEvent);
                 }
 
@@ -328,13 +429,54 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
-    private static final TransformState.Axis[] translationAxes = new TransformState.Axis[]{
-        TransformState.Axis.TX,
-        TransformState.Axis.TY,
-        TransformState.Axis.TZ
-    };
+    private void buildTranslationEvents(EventBuilder builder, Difficulty difficulty) {
+        var finalBeat = difficulty.getInfo().getBeat(difficulty.getInfo().getSongDuration(), 1);
 
-    private void buildTranslationEventsV3(EventBuilderV3 builder, Difficulty difficulty) {
+        int groupCount = getGroupCount();
+
+        for (int group = 0; group < groupCount; group++) {
+            int lightCount = getLightCount(group);
+            for (int lightID = 0; lightID < lightCount; lightID++) {
+                for (var axis : translationAxes) {
+
+                    for (var rawEvent : builder.getRawTranslationEvents(group, lightID, axis)) {
+                        var lastEvent = builder.getLatestTranslationEvent(group, lightID, axis);
+
+                        var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
+
+                        var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+
+                        var duration = Math.max(0, endBeat - startBeat);
+
+                        if (rawEvent.eventType() == 0) { // transition
+                            var startState = lastEvent.transformState.copy();
+                            var endState = new TransformState(
+                                axis, rawEvent.delta()
+                            );
+
+                            var transitionEvent = new TranslationEvent(
+                                startBeat,
+                                startState, endState,
+                                duration,
+                                lightID, rawEvent.easing()
+                            );
+
+                            builder.putEvent(group, lightID, axis, transitionEvent);
+
+                        }
+                        else { // extend
+                            var extensionEvent = lastEvent.extendTo(endBeat);
+                            builder.putEvent(group, lightID, axis, extensionEvent);
+                        }
+
+                    }
+                    var lastEvent = builder.getLatestTranslationEvent(group, lightID, axis);
+                    var endEvent = lastEvent.extendTo(finalBeat);
+                    builder.putEvent(group, lightID, axis, endEvent);
+                }
+            }
+        }
+
 
     }
 
@@ -357,21 +499,27 @@ public abstract class EnvironmentV3 extends Environment {
 
         boostEventHandler = new ColorBoostEventHandler(boostEvents);
 
-        var eventBuilder = new EventBuilderV3();
+        var eventBuilder = new EventBuilder();
 
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
         preProcessRotationEventsV3(eventBuilder, rawRotationEvents);
         preProcessTranslationEventsV3(eventBuilder, rawTranslationEvents);
         eventBuilder.sortEvents();
-        buildLightEventsV3(eventBuilder, difficulty);
-        buildRotationEventsV3(eventBuilder, difficulty);
-        buildTranslationEventsV3(eventBuilder, difficulty);
+        buildLightEvents(eventBuilder, difficulty);
+        buildRotationEvents(eventBuilder, difficulty);
+        buildTranslationEvents(eventBuilder, difficulty);
 
         int groupCount = getGroupCount();
         for (int group = 0; group < groupCount; group++) {
             int lightCount = getLightCount(group);
             for (int lightID = 0; lightID < lightCount; lightID++) {
-                linkEvents(group, lightID, eventBuilder.getLightEvents(group, lightID), eventBuilder.getRotationEvents(group, lightID), eventBuilder.getTranslationEvents(group, lightID));
+                linkEvents(
+                    group, lightID,
+                    eventBuilder.getLightEvents(group, lightID),
+                    eventBuilder.getRotationEvents(group, lightID),
+                    eventBuilder.getTranslationEvents(group, lightID),
+                    new ArrayList<>()
+                );
             }
         }
 
@@ -391,7 +539,44 @@ public abstract class EnvironmentV3 extends Environment {
         var lightTranslationEventBoxes = json.getAsJsonArray("lightTranslationEventBoxes");
         var lightTranslationEventMetaData = json.getAsJsonArray("lightTranslationEvents");
 
+        var eventBuilder = new EventBuilder();
 
+        rawEventBoxGroups.forEach(rawEventBox -> {
+            var eventData = rawEventBox.getAsJsonObject();
+
+            var baseBeat = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+            var group = JsonUtil.getOrDefault(eventData, "g", JsonElement::getAsInt, 0);
+            var eventType = JsonUtil.getOrDefault(eventData, "t", JsonElement::getAsInt, 0);
+            var data = eventData.getAsJsonArray("e");
+
+            if (eventType == 1) {
+                preProcessLightEventsV4(eventBuilder, baseBeat, group, data, indexFilters, lightColorEventBoxes, lightColorEventMetaData);
+            } else if (eventType == 2) {
+                preProcessRotationEventsV4(eventBuilder, baseBeat, group, data, indexFilters, lightRotationEventBoxes, lightRotationEventMetaData);
+            } else if (eventType == 3) {
+                preProcessTranslationEventsV4(eventBuilder, baseBeat, group, data, indexFilters, lightTranslationEventBoxes, lightTranslationEventMetaData);
+            } // event type 4 is only in V4 light shows
+
+        });
+
+        eventBuilder.sortEvents();
+        buildLightEvents(eventBuilder, difficulty);
+        buildRotationEvents(eventBuilder, difficulty);
+        buildTranslationEvents(eventBuilder, difficulty);
+
+        int groupCount = getGroupCount();
+        for (int group = 0; group < groupCount; group++) {
+            int lightCount = getLightCount(group);
+            for (int lightID = 0; lightID < lightCount; lightID++) {
+                linkEvents(
+                    group, lightID,
+                    eventBuilder.getLightEvents(group, lightID),
+                    eventBuilder.getRotationEvents(group, lightID),
+                    eventBuilder.getTranslationEvents(group, lightID),
+                    new ArrayList<>()
+                );
+            }
+        }
 
     }
 
