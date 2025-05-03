@@ -60,7 +60,6 @@ public abstract class EnvironmentV3 extends Environment {
         TransformState.Axis.TZ
     };
 
-
     private void preProcessLightEventsV3(EventBuilder builder, JsonArray rawLightEvents) {
         rawLightEvents.forEach(rawBoxGroup -> {
             var boxGroupData = rawBoxGroup.getAsJsonObject();
@@ -304,7 +303,6 @@ public abstract class EnvironmentV3 extends Environment {
 
             var distributionEasing = Easing.getEasing(String.valueOf(rawDistributionEasing));
 
-
             var baseData = new EventBuilder.BaseLightData(
                 baseBeat, group, lightCount, filter,
                 beatDistributionType, beatDistributionValue,
@@ -312,7 +310,7 @@ public abstract class EnvironmentV3 extends Environment {
                 distributionEasing, affectsFirst
             );
 
-            AtomicBoolean isFirst = new AtomicBoolean(false);
+            AtomicBoolean isFirst = new AtomicBoolean(true);
             eventList.forEach(rawEventData -> {
                 var eventData = rawEventData.getAsJsonObject();
 
@@ -341,6 +339,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                 builder.addRawLightEvents(events);
 
+                isFirst.set(false);
             });
 
         });
@@ -351,6 +350,77 @@ public abstract class EnvironmentV3 extends Environment {
         JsonArray eventBoxDataArray, JsonArray indexFilters,
         JsonArray rotationEventBoxes, JsonArray rotationEventMetaData
     ) {
+        var coveredIDs = new ArrayList<Integer>();
+        var lightCount = getLightCount(group);
+
+        eventBoxDataArray.forEach(rawEventBoxData -> {
+            var eventBoxData = rawEventBoxData.getAsJsonObject();
+
+            var filterIndex = JsonUtil.getOrDefault(eventBoxData, "f", JsonElement::getAsInt, 0);
+            var boxMetaDataIndex = JsonUtil.getOrDefault(eventBoxData, "e", JsonElement::getAsInt, 0);
+            var eventList = eventBoxData.getAsJsonArray("l");
+
+            var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
+            var boxMetaData = rotationEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
+
+            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+
+            var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
+            var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
+
+            var rotationDistributionValue = JsonUtil.getOrDefault(boxMetaData, "s", JsonElement::getAsFloat, 0f);
+            var rotationDistributionType = JsonUtil.getOrDefault(boxMetaData, "t", JsonElement::getAsInt, 0);
+
+
+            boolean affectsFirst = JsonUtil.getOrDefault(boxMetaData, "b", JsonElement::getAsInt, 0) > 0;
+
+            var rawDistributionEasing = JsonUtil.getOrDefault(boxMetaData, "e", JsonElement::getAsInt, 0);
+
+            var distributionEasing = Easing.getEasing(String.valueOf(rawDistributionEasing));
+
+            var rawAxis = JsonUtil.getOrDefault(boxMetaData, "a", JsonElement::getAsInt, 0);
+            boolean invertAxis = JsonUtil.getOrDefault(boxMetaData, "f", JsonElement::getAsInt, 0) > 0;
+
+            var axis = TransformState.Axis.values()[rawAxis % 3];
+
+            var baseData = new EventBuilder.BaseRotationData(
+                baseBeat, group, lightCount, filter,
+                beatDistributionType, beatDistributionValue,
+                rotationDistributionType, rotationDistributionValue, distributionEasing,
+                axis, invertAxis, affectsFirst
+            );
+
+            AtomicBoolean isFirst = new AtomicBoolean(true);
+            eventList.forEach(rawEventData -> {
+                var eventData = rawEventData.getAsJsonObject();
+
+                var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+                var metaDataIndex = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
+
+                var metaData = rotationEventMetaData.get(metaDataIndex).getAsJsonObject();
+
+                var eventType = JsonUtil.getOrDefault(metaData, "p", JsonElement::getAsInt, 0);
+                var rawEasing = JsonUtil.getOrDefault(metaData, "e", JsonElement::getAsInt, 0);
+
+                var magnitude = JsonUtil.getOrDefault(metaData, "r", JsonElement::getAsFloat, 0f);
+                var direction = JsonUtil.getOrDefault(metaData, "d", JsonElement::getAsInt, 0);
+                var loopCount = JsonUtil.getOrDefault(metaData, "l", JsonElement::getAsInt, 0);
+
+                var easing = Easing.getEasing(String.valueOf(rawEasing));
+
+                var events = baseData.buildEvents(
+                    isFirst.get(),
+                    beatOffset, eventType,
+                    magnitude, direction, loopCount,
+                    easing
+                );
+
+                builder.addRawRotationEvents(events);
+
+                isFirst.set(false);
+            });
+
+        });
 
     }
 
@@ -359,6 +429,74 @@ public abstract class EnvironmentV3 extends Environment {
         JsonArray eventBoxDataArray, JsonArray indexFilters,
         JsonArray translationEventBoxes, JsonArray translationEventMetaData
     ) {
+        var coveredIDs = new ArrayList<Integer>();
+        var lightCount = getLightCount(group);
+
+        eventBoxDataArray.forEach(rawEventBoxData -> {
+            var eventBoxData = rawEventBoxData.getAsJsonObject();
+
+            var filterIndex = JsonUtil.getOrDefault(eventBoxData, "f", JsonElement::getAsInt, 0);
+            var boxMetaDataIndex = JsonUtil.getOrDefault(eventBoxData, "e", JsonElement::getAsInt, 0);
+            var eventList = eventBoxData.getAsJsonArray("l");
+
+            var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
+            var boxMetaData = translationEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
+
+            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+
+            var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
+            var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
+
+            var rotationDistributionValue = JsonUtil.getOrDefault(boxMetaData, "s", JsonElement::getAsFloat, 0f);
+            var rotationDistributionType = JsonUtil.getOrDefault(boxMetaData, "t", JsonElement::getAsInt, 0);
+
+            boolean affectsFirst = JsonUtil.getOrDefault(boxMetaData, "b", JsonElement::getAsInt, 0) > 0;
+
+            var rawDistributionEasing = JsonUtil.getOrDefault(boxMetaData, "e", JsonElement::getAsInt, 0);
+
+            var distributionEasing = Easing.getEasing(String.valueOf(rawDistributionEasing));
+
+            var rawAxis = JsonUtil.getOrDefault(boxMetaData, "a", JsonElement::getAsInt, 0);
+            boolean invertAxis = JsonUtil.getOrDefault(boxMetaData, "f", JsonElement::getAsInt, 0) > 0;
+
+            var axis = TransformState.Axis.values()[(rawAxis % 3) + 3];
+
+            var baseData = new EventBuilder.BaseTranslationData(
+                baseBeat, group, lightCount, filter,
+                beatDistributionType, beatDistributionValue,
+                rotationDistributionType, rotationDistributionValue, distributionEasing,
+                axis, invertAxis, affectsFirst
+            );
+
+            AtomicBoolean isFirst = new AtomicBoolean(true);
+            eventList.forEach(rawEventData -> {
+                var eventData = rawEventData.getAsJsonObject();
+
+                var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+                var metaDataIndex = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
+
+                var metaData = translationEventMetaData.get(metaDataIndex).getAsJsonObject();
+
+                var eventType = JsonUtil.getOrDefault(metaData, "p", JsonElement::getAsInt, 0);
+                var rawEasing = JsonUtil.getOrDefault(metaData, "e", JsonElement::getAsInt, 0);
+
+                var magnitude = JsonUtil.getOrDefault(metaData, "r", JsonElement::getAsFloat, 0f);
+
+                var easing = Easing.getEasing(String.valueOf(rawEasing));
+
+                var events = baseData.buildEvents(
+                    isFirst.get(),
+                    beatOffset, eventType,
+                    magnitude,
+                    easing
+                );
+
+                builder.addRawTranslationEvents(events);
+
+                isFirst.set(false);
+            });
+
+        });
 
     }
 
