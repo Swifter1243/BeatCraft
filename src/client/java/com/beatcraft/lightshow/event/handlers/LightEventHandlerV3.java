@@ -51,15 +51,17 @@ public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> 
 
     @Override
     public void onInsideEvent(LightEventV3 event, float normalTime) {
-        event.startState.lerpFromTo(event.lightState, normalTime, state);
-
         var currentBeat = MathHelper.lerp(normalTime, event.getEventBeat(), event.getEventBeat()+event.getEventDuration());
-        var currentFrequency = MathHelper.lerp(normalTime, event.startState.strobeFrequency, event.lightState.strobeFrequency);
 
+        float easedTime = event.easing.apply(normalTime);
+
+        event.startState.lerpFromTo(event.lightState, easedTime, state);
+
+        var currentFrequency = MathHelper.lerp(easedTime, event.startState.strobeFrequency, event.lightState.strobeFrequency);
 
         var brightnessMod = (currentFrequency == 0) ? 1.0f : calcOscillation(event.getEventBeat(), currentBeat, currentFrequency, event.startState.strobeFade);
 
-        var low = MathHelper.lerp(normalTime, event.startState.strobeBrightness, event.lightState.strobeBrightness);
+        var low = MathHelper.lerp(easedTime, event.startState.strobeBrightness, event.lightState.strobeBrightness);
 
 
         var currentBrightness = MathHelper.lerp(brightnessMod, low, state.getBrightness());

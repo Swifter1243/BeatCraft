@@ -11,13 +11,15 @@ public class LightEventV3 extends LightEvent implements IEvent {
     public int lightID;
     public LightState startState;
     public float duration;
+    public Function<Float, Float> easing;
 
-    public LightEventV3(float beat, LightState startState, LightState endState, float duration, int lightID) {
+    public LightEventV3(float beat, LightState startState, LightState endState, float duration, int lightID, Function<Float, Float> easing) {
         this.beat = beat;
         this.startState = startState;
         this.lightID = lightID;
         this.lightState = endState;
         this.duration = duration;
+        this.easing = easing;
     }
 
     @Override
@@ -38,7 +40,8 @@ public class LightEventV3 extends LightEvent implements IEvent {
     public LightEventV3 extendTo(float beat) {
         return new LightEventV3(
             this.beat + duration, this.lightState, this.lightState,
-            beat - (this.beat + duration), this.lightID
+            beat - (this.beat + duration), this.lightID,
+            Easing::easeLinear
         );
     }
 

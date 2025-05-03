@@ -139,7 +139,7 @@ public class DifficultyV4 extends Difficulty {
 
         if (path == null) return;
 
-        path = getInfo().getMapDirectory() + "\\" + path;
+        path = (getInfo().getMapDirectory() + "/" + path).replace("\\", "/");
 
         //BeatCraft.LOGGER.info("Load lightshow: \"{}\"", path);
 

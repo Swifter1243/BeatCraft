@@ -56,11 +56,28 @@ public class EventBuilder {
         Function<Float, Float> brightnessDistributionEasing, boolean distributionAffectsFirst
     ) {
 
-        public List<RawLightEventV3> buildEvents(
+        public List<RawLightEventV3> buildEventsV3(
             boolean isFirst,
             float beatOffset, int eventType, int color,
             float brightness, float strobeFrequency,
             float strobeBrightness, boolean strobeFade
+        ) {
+            Function<Float, Float> easing = eventType == 1 ? Easing::easeLinear : Easing::easeStep;
+            return buildEventsV4(
+                isFirst,
+                beatOffset, (Math.max(0, eventType-1)), color,
+                brightness, strobeFrequency,
+                strobeBrightness, strobeFade,
+                easing
+            );
+        }
+
+        public List<RawLightEventV3> buildEventsV4(
+            boolean isFirst,
+            float beatOffset, int eventType, int color,
+            float brightness, float strobeFrequency,
+            float strobeBrightness, boolean strobeFade,
+            Function<Float, Float> easing
         ) {
             var out = new ArrayList<RawLightEventV3>();
             for (var targetSet : filter) {
@@ -85,7 +102,7 @@ public class EventBuilder {
                         distributionAffectsFirst || !isFirst ? durationMod : 0,
                         brightnessDistributionEasing.apply(1+distributionMod) * brightness,
                         strobeFrequency, strobeBrightness, strobeFade,
-                        eventType, color
+                        eventType, color, easing
                     ));
                 }
 
@@ -183,7 +200,8 @@ public class EventBuilder {
         float eventBeat, float beatOffset, int group, int lightID,
         float endOffset, float brightness,
         float strobeFrequency, float strobeBrightness,
-        boolean strobeFade, int eventType, int color
+        boolean strobeFade, int eventType, int color,
+        Function<Float, Float> easing
     ) implements RawEvent {
 
         @Override
@@ -301,7 +319,8 @@ public class EventBuilder {
                     0,
                     new LightState(new Color(0), 0),
                     new LightState(new Color(0), 0),
-                    0, lightID
+                    0, lightID,
+                    Easing::easeLinear
                 )
             );
         }
@@ -397,7 +416,8 @@ public class EventBuilder {
                     0,
                     new LightState(new Color(0), 0),
                     new LightState(new Color(0), 0),
-                    0, lightID
+                    0, lightID,
+                    Easing::easeLinear
                 )
             );
         }

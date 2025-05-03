@@ -110,7 +110,7 @@ public abstract class EnvironmentV3 extends Environment {
                     var strobeBrightness = JsonUtil.getOrDefault(eventData, "sb", JsonElement::getAsFloat, 0f);
                     boolean strobeFade = JsonUtil.getOrDefault(eventData, "sf", JsonElement::getAsInt, 0) > 0;
 
-                    var events = baseData.buildEvents(
+                    var events = baseData.buildEventsV3(
                         isFirst.get(),
                         beatOffset, transitionType, color,
                         brightness, strobeFrequency,
@@ -274,15 +274,81 @@ public abstract class EnvironmentV3 extends Environment {
 
     private void preProcessLightEventsV4(
         EventBuilder builder, float baseBeat, int group,
-        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray eventBoxDataArray, JsonArray indexFilters,
         JsonArray colorEventBoxes, JsonArray colorEventMetaData
     ) {
+        var coveredIDs = new ArrayList<Integer>();
+        var lightCount = getLightCount(group);
 
+        eventBoxDataArray.forEach(rawEventBoxData -> {
+            var eventBoxData = rawEventBoxData.getAsJsonObject();
+
+            var filterIndex = JsonUtil.getOrDefault(eventBoxData, "f", JsonElement::getAsInt, 0);
+            var boxMetaDataIndex = JsonUtil.getOrDefault(eventBoxData, "e", JsonElement::getAsInt, 0);
+            var eventList = eventBoxData.getAsJsonArray("l");
+
+            var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
+            var boxMetaData = colorEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
+
+            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+
+            var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
+            var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
+
+            var brightnessDistributionValue = JsonUtil.getOrDefault(boxMetaData, "s", JsonElement::getAsFloat, 1f);
+            var brightnessDistributionType = JsonUtil.getOrDefault(boxMetaData, "t", JsonElement::getAsInt, 0);
+
+            boolean affectsFirst = JsonUtil.getOrDefault(boxMetaData, "b", JsonElement::getAsInt, 0) > 0;
+
+            var rawDistributionEasing = JsonUtil.getOrDefault(boxMetaData, "e", JsonElement::getAsInt, 0);
+
+            var distributionEasing = Easing.getEasing(String.valueOf(rawDistributionEasing));
+
+
+            var baseData = new EventBuilder.BaseLightData(
+                baseBeat, group, lightCount, filter,
+                beatDistributionType, beatDistributionValue,
+                brightnessDistributionType, brightnessDistributionValue,
+                distributionEasing, affectsFirst
+            );
+
+            AtomicBoolean isFirst = new AtomicBoolean(false);
+            eventList.forEach(rawEventData -> {
+                var eventData = rawEventData.getAsJsonObject();
+
+                var beatOffset = JsonUtil.getOrDefault(eventData, "b", JsonElement::getAsFloat, 0f);
+                var metaDataIndex = JsonUtil.getOrDefault(eventData, "i", JsonElement::getAsInt, 0);
+
+                var metaData = colorEventMetaData.get(metaDataIndex).getAsJsonObject();
+
+                var eventType = JsonUtil.getOrDefault(metaData, "p", JsonElement::getAsInt, 0);
+                var rawEasing = JsonUtil.getOrDefault(metaData, "e", JsonElement::getAsInt, 0);
+                var color = JsonUtil.getOrDefault(metaData, "c", JsonElement::getAsInt, 0);
+                var brightness = JsonUtil.getOrDefault(metaData, "b", JsonElement::getAsFloat, 0f);
+                var strobeFrequency = JsonUtil.getOrDefault(metaData, "f", JsonElement::getAsFloat, 0f);
+                var strobeBrightness = JsonUtil.getOrDefault(metaData, "sb", JsonElement::getAsFloat, 0f);
+                boolean strobeFade = JsonUtil.getOrDefault(metaData, "sf", JsonElement::getAsInt, 0) > 0;
+
+                var easing = Easing.getEasing(String.valueOf(rawEasing));
+
+                var events = baseData.buildEventsV4(
+                    isFirst.get(),
+                    beatOffset, eventType,
+                    color, brightness,
+                    strobeFrequency, strobeBrightness, strobeFade,
+                    easing
+                );
+
+                builder.addRawLightEvents(events);
+
+            });
+
+        });
     }
 
     private void preProcessRotationEventsV4(
         EventBuilder builder, float baseBeat, int group,
-        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray eventBoxDataArray, JsonArray indexFilters,
         JsonArray rotationEventBoxes, JsonArray rotationEventMetaData
     ) {
 
@@ -290,7 +356,7 @@ public abstract class EnvironmentV3 extends Environment {
 
     private void preProcessTranslationEventsV4(
         EventBuilder builder, float baseBeat, int group,
-        JsonArray eventBoxData, JsonArray indexFilters,
+        JsonArray eventBoxDataArray, JsonArray indexFilters,
         JsonArray translationEventBoxes, JsonArray translationEventMetaData
     ) {
 
@@ -315,32 +381,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                     var duration = Math.max(0, endBeat - startBeat);
 
-
-                    if (rawEvent.eventType() == 0) { // instant
-                        var extensionEvent = lastEvent.extendTo(endBeat);
-                        builder.putEvent(group, lightID, extensionEvent);
-
-                        var endState = new LightState(
-                            new BoostableColor(rawEvent.color()),
-                            rawEvent.brightness()
-                        );
-
-                        endState.setStrobeState(
-                            rawEvent.strobeBrightness(),
-                            rawEvent.strobeFrequency(),
-                            rawEvent.strobeFade()
-                        );
-
-                        var instantEvent = new LightEventV3(
-                            endBeat, extensionEvent.lightState.copy(),
-                            endState, 0, lightID
-                        );
-
-
-                        builder.putEvent(group, lightID, instantEvent);
-
-                    }
-                    else if (rawEvent.eventType() == 1) { // transition
+                    if (rawEvent.eventType() == 0) { // transition
 
                         var startState = lastEvent.lightState.copy();
                         var endState = new LightState(
@@ -357,7 +398,8 @@ public abstract class EnvironmentV3 extends Environment {
                         var transitionEvent = new LightEventV3(
                             startBeat,
                             startState, endState,
-                            duration, lightID
+                            duration, lightID,
+                            rawEvent.easing()
                         );
 
                         builder.putEvent(group, lightID, transitionEvent);
