@@ -38,8 +38,13 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
-    protected abstract int getGroupCount();
-    protected abstract int getLightCount(int group);
+    @Override
+    public float getVersion() {
+        return 3;
+    }
+
+    public abstract int getGroupCount();
+    public abstract int getLightCount(int group);
     protected abstract void linkEvents(
         int group, int lightID,
         List<LightEventV3> lightEvents,

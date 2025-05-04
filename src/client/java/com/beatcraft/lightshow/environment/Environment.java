@@ -9,6 +9,8 @@ import net.minecraft.client.util.math.MatrixStack;
 public abstract class Environment {
     public static Color DEFAULT_FOG_COLOR = new Color(0.18823f, 0.5960f, 1);
 
+    public abstract float getVersion();
+
     public Environment() {
         setup();
     }

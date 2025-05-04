@@ -41,6 +41,11 @@ public abstract class EnvironmentV2 extends Environment {
     private HashMap<EventGroup, LightGroupV2> lightGroups;
     private ArrayList<LightGroupV2> uniqueGroups;
 
+    @Override
+    public float getVersion() {
+        return 2;
+    }
+
     public void bindLightGroup(EventGroup eventGroup, LightGroupV2 lightGroup) {
         lightGroups.put(eventGroup, lightGroup);
         if (!uniqueGroups.contains(lightGroup)) {

@@ -34,7 +34,7 @@ public class PlayerConfig {
     private boolean quality_burnMarkTrails = true;
     private boolean quality_sparkParticles = true;
 
-    private ArrayList<String> activeModifiers = new ArrayList<>();
+    private final ArrayList<String> activeModifiers = new ArrayList<>();
 
     private int controller_selectedProfile_index = -1;
 
@@ -53,6 +53,11 @@ public class PlayerConfig {
     private HealthStyle option_healthStyle = HealthStyle.Hearts;
 
     private boolean setting_placeEnvironmentStructures = true;
+
+    private boolean debug_lightshow_doEventRendering = false;
+    private float debug_lightshow_beatSpacing = 8f;
+    private float debug_lightshow_lookAheadDistance = 16f;
+    private float debug_lightshow_lookBehindDistance = 8f;
 
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
@@ -74,6 +79,11 @@ public class PlayerConfig {
         option_reducedDebris = JsonUtil.getOrDefault(json, "option.reduced_debris", JsonElement::getAsBoolean, option_reducedDebris);
         option_trailIntensity = JsonUtil.getOrDefault(json, "option.trail_intensity", JsonElement::getAsInt, option_trailIntensity);
         option_healthStyle = HealthStyle.values()[Math.clamp(JsonUtil.getOrDefault(json, "option.health_style", JsonElement::getAsInt, 0), 0, HealthStyle.values().length-1)];
+
+        debug_lightshow_doEventRendering = JsonUtil.getOrDefault(json, "debug.lightshow.render_events", JsonElement::getAsBoolean, debug_lightshow_doEventRendering);
+        debug_lightshow_lookAheadDistance = JsonUtil.getOrDefault(json, "debug.lightshow.look_ahead", JsonElement::getAsFloat, debug_lightshow_lookAheadDistance);
+        debug_lightshow_lookBehindDistance = JsonUtil.getOrDefault(json, "debug.lightshow.look_behind", JsonElement::getAsFloat, debug_lightshow_lookBehindDistance);
+        debug_lightshow_beatSpacing = JsonUtil.getOrDefault(json, "debug.lightshow.beat_spacing", JsonElement::getAsFloat, debug_lightshow_beatSpacing);
 
         Stash.updateTrailSize(option_trailIntensity);
 
@@ -120,6 +130,12 @@ public class PlayerConfig {
         json.addProperty("option.reduced_debris", option_reducedDebris);
         json.addProperty("option.trail_intensity", option_trailIntensity);
         json.addProperty("option.health_style", option_healthStyle.ordinal());
+
+        json.addProperty("debug.lightshow.render_events", debug_lightshow_doEventRendering);
+        json.addProperty("debug.lightshow.look_ahead", debug_lightshow_lookAheadDistance);
+        json.addProperty("debug.lightshow.look_behind", debug_lightshow_lookBehindDistance);
+        json.addProperty("debug.lightshow.beat_spacing", debug_lightshow_beatSpacing);
+
 
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
@@ -297,6 +313,40 @@ public class PlayerConfig {
         option_healthStyle = HealthStyle.values()[Math.clamp(style, 0, HealthStyle.values().length-1)];
     }
 
+    public void setLightshowEventRendering(boolean state) {
+        debug_lightshow_doEventRendering = state;
+    }
+
+    public boolean doLightshowEventRendering() {
+        return debug_lightshow_doEventRendering;
+    }
+
+    public float getDebugLightshowLookAhead() {
+        return debug_lightshow_lookAheadDistance;
+    }
+
+    public void setDebugLightshowLookAhead(float value) {
+        debug_lightshow_lookAheadDistance = Math.max(1, value);
+    }
+
+    public float getDebugLightshowLookBehind() {
+        return debug_lightshow_lookBehindDistance;
+    }
+
+    public void setDebugLightshowLookBehind(float value) {
+        debug_lightshow_lookBehindDistance = Math.max(1, value);
+    }
+
+    public float getDebugLightshowBeatSpacing() {
+        return debug_lightshow_beatSpacing;
+    }
+
+    public void setDebugLightshowBeatSpacing(float value) {
+        debug_lightshow_beatSpacing = Math.max(1, value);
+    }
+
+
+    // Controller profiles
     public ControllerProfile getActiveControllerProfile() {
         if (profiles.isEmpty() || controller_selectedProfile_index <= -1) {
             return DEFAULT_CONTROLLER_PROFILE;
@@ -317,10 +367,9 @@ public class PlayerConfig {
         return profiles.size();
     }
 
-    public ControllerProfile addProfile() {
+    public void addProfile() {
         ControllerProfile profile = new ControllerProfile();
         profiles.add(profile);
-        return profile;
     }
 
     public void deleteControllerProfile(int index) {

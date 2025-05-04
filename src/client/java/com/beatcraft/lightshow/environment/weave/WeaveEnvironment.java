@@ -477,12 +477,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    protected int getGroupCount() {
+    public int getGroupCount() {
         return 16;
     }
 
     @Override
-    protected int getLightCount(int group) {
+    public int getLightCount(int group) {
         if (group < 12) { return 8; }
         else if (group < 14) { return 12; }
         else { return 10; }
