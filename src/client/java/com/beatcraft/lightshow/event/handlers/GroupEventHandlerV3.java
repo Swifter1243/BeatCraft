@@ -12,9 +12,9 @@ import java.util.List;
 
 public class GroupEventHandlerV3 {
     private final LightGroupV3 lightGroupV3;
-    private final HashMap<Integer, LightEventHandlerV3> lightHandlers = new HashMap<>();
-    private final HashMap<Integer, HashMap<TransformState.Axis, RotationEventHandlerV3>> rotationHandlers = new HashMap<>();
-    private final HashMap<Integer, HashMap<TransformState.Axis, TranslationEventHandler>> translationHandlers = new HashMap<>();
+    public final HashMap<Integer, LightEventHandlerV3> lightHandlers = new HashMap<>();
+    public final HashMap<Integer, HashMap<TransformState.Axis, RotationEventHandlerV3>> rotationHandlers = new HashMap<>();
+    public final HashMap<Integer, HashMap<TransformState.Axis, TranslationEventHandler>> translationHandlers = new HashMap<>();
 
 
     public GroupEventHandlerV3(LightGroupV3 group) {

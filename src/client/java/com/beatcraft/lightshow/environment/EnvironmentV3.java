@@ -2,6 +2,7 @@ package com.beatcraft.lightshow.environment;
 
 import com.beatcraft.animation.Easing;
 import com.beatcraft.beatmap.Difficulty;
+import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.lightshow.event.EventBuilder;
 import com.beatcraft.lightshow.event.Filter;
 import com.beatcraft.lightshow.event.events.ColorBoostEvent;
@@ -9,6 +10,7 @@ import com.beatcraft.lightshow.event.events.LightEventV3;
 import com.beatcraft.lightshow.event.events.RotationEventV3;
 import com.beatcraft.lightshow.event.events.TranslationEvent;
 import com.beatcraft.lightshow.event.handlers.ColorBoostEventHandler;
+import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.utils.JsonUtil;
@@ -17,6 +19,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Pair;
+import oshi.util.tuples.Triplet;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,6 +68,17 @@ public abstract class EnvironmentV3 extends Environment {
         TransformState.Axis.TY,
         TransformState.Axis.TZ
     };
+
+
+    protected abstract HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> getEventGroups();
+    public List<LightEventV3> getLightEvents(int group, int lightID, float start, float end) {
+        var eventGroups = getEventGroups();
+
+        var groupEventHandler = eventGroups.get(group).getRight();
+
+        return groupEventHandler.lightHandlers.get(lightID).getEventsInRange(start, end);
+
+    }
 
     private void preProcessLightEventsV3(EventBuilder builder, JsonArray rawLightEvents) {
         rawLightEvents.forEach(rawBoxGroup -> {
@@ -518,9 +533,8 @@ public abstract class EnvironmentV3 extends Environment {
                 for (var rawEvent : builder.getRawLightEvents(group, lightID)) {
                     var lastEvent = builder.getLatestLightEvent(group, lightID);
 
-                    var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
-
                     var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+                    var startBeat = Math.min(lastEvent.getEventBeat() + lastEvent.getEventDuration(), endBeat);
 
                     var duration = Math.max(0, endBeat - startBeat);
 
@@ -576,9 +590,9 @@ public abstract class EnvironmentV3 extends Environment {
                     for (var rawEvent : builder.getRawRotationEvents(group, lightID, axis)) {
                         var lastEvent = builder.getLatestRotationEvent(group, lightID, axis);
 
-                        var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
 
                         var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+                        var startBeat = Math.min(lastEvent.getEventBeat() + lastEvent.getEventDuration(), endBeat);
 
                         var duration = Math.max(0, endBeat - startBeat);
 
@@ -627,9 +641,9 @@ public abstract class EnvironmentV3 extends Environment {
                     for (var rawEvent : builder.getRawTranslationEvents(group, lightID, axis)) {
                         var lastEvent = builder.getLatestTranslationEvent(group, lightID, axis);
 
-                        var startBeat = lastEvent.getEventBeat() + lastEvent.getEventDuration();
 
                         var endBeat = rawEvent.eventBeat() + rawEvent.beatOffset() + rawEvent.endOffset();
+                        var startBeat = Math.min(lastEvent.getEventBeat() + lastEvent.getEventDuration(), endBeat);
 
                         var duration = Math.max(0, endBeat - startBeat);
 
@@ -671,8 +685,12 @@ public abstract class EnvironmentV3 extends Environment {
         var rawRotationEvents = json.getAsJsonArray("lightRotationEventBoxGroups");
 
         var rawTranslationEvents = json.getAsJsonArray("lightTranslationEventBoxGroups");
+        if (rawTranslationEvents == null) {
+            rawTranslationEvents = new JsonArray();
+        }
 
         var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
+
 
         var boostEvents = new ArrayList<ColorBoostEvent>();
         boostEvents.add(new ColorBoostEvent(0, false));

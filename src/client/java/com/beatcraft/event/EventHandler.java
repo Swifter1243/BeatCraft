@@ -12,6 +12,22 @@ public abstract class EventHandler<D, E extends IEvent> {
     protected final D initialState;
     protected D state;
 
+    public List<E> getEventsInRange(float start, float end) {
+        var out = new ArrayList<E>();
+        for (var event : events) {
+            var s = event.getEventBeat();
+            var e = event.getEventDuration() + s;
+            if (
+                (start <= s && s <= end)
+                || (start <= e && e <= end)
+                || (s <= start && end <= e)
+            ) {
+                out.add(event);
+            }
+        }
+        return out;
+    }
+
     public EventHandler(List<E> events, D initialState) {
         this.events = new ArrayList<>(events);
         this.initialState = initialState;

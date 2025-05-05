@@ -75,6 +75,11 @@ public class WeaveEnvironment extends EnvironmentV3 {
     private HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> eventGroups;
 
     @Override
+    public HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> getEventGroups() {
+        return eventGroups;
+    }
+
+    @Override
     public String getID() {
         return "WeaveEnvironment";
     }

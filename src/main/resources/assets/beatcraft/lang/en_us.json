@@ -34,6 +34,7 @@
   "setting.beatcraft.debug.saber_renderer": "Saber Debug Renderer",
   "setting.beatcraft.debug.hitboxes": "Show Hitboxes",
   "setting.beatcraft.debug.arc_lines": "Arc Debug Lines",
+  "setting.beatcraft.debug.lightshow_events": "Render Lightshow Events",
 
   "itemGroup.beatcraft.group": "BeatCraft",
 

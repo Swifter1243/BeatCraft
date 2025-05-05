@@ -7,6 +7,7 @@ import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.SkyFogController;
+import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -72,6 +73,7 @@ public abstract class WorldRendererMixin {
         BeatCraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
         BeatcraftParticleRenderer.renderParticles();
+        EventVisualizer.render(camera);
         BeatCraftRenderer.render();
         SaberRenderer.renderAll();
         BeatCraftRenderer.bloomfog.renderBloom();
