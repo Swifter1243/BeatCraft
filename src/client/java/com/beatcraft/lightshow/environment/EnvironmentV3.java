@@ -71,13 +71,17 @@ public abstract class EnvironmentV3 extends Environment {
 
 
     protected abstract HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> getEventGroups();
+
     public List<LightEventV3> getLightEvents(int group, int lightID, float start, float end) {
         var eventGroups = getEventGroups();
-
         var groupEventHandler = eventGroups.get(group).getRight();
-
         return groupEventHandler.lightHandlers.get(lightID).getEventsInRange(start, end);
+    }
 
+    public List<RotationEventV3> getRotationEvents(int group, int lightID, TransformState.Axis axis, float start, float end) {
+        var eventGroups = getEventGroups();
+        var groupEventHandler = eventGroups.get(group).getRight();
+        return groupEventHandler.rotationHandlers.get(lightID).get(axis).getEventsInRange(start, end);
     }
 
     private void preProcessLightEventsV3(EventBuilder builder, JsonArray rawLightEvents) {

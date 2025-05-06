@@ -7,6 +7,7 @@ import com.beatcraft.lightshow.environment.EnvironmentV2;
 import com.beatcraft.lightshow.environment.EnvironmentV3;
 import com.beatcraft.lightshow.environment.EnvironmentV4;
 import com.beatcraft.lightshow.event.EventBuilder;
+import com.beatcraft.lightshow.lights.TransformState;
 import com.beatcraft.render.DebugRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
@@ -24,7 +25,7 @@ public class EventVisualizer {
 
     public static Integer previewGroup = null;
 
-    private static ArrayList<EventBuilder.GroupKey> targets = new ArrayList<>();
+    private static final ArrayList<EventBuilder.GroupKey> targets = new ArrayList<>();
 
     private static final float LANE_WIDTH = 1f;
     private static final float LANE_GAP = 0.2f;
@@ -39,8 +40,6 @@ public class EventVisualizer {
     private static float fDist = 1;
     private static float bDist = 1;
 
-    private static final HashMap<Integer, Integer> lightCounts = new HashMap<>();
-
     private static float currentWidth = 0;
 
     public static void refresh() {
@@ -50,22 +49,13 @@ public class EventVisualizer {
         var environment = beatmap.lightShowEnvironment;
         if (environment == null) return;
 
-        lightCounts.clear();
-
         beatSpacing = BeatCraftClient.playerConfig.getDebugLightshowBeatSpacing();
         fDist = BeatCraftClient.playerConfig.getDebugLightshowLookAhead();
         bDist = BeatCraftClient.playerConfig.getDebugLightshowLookBehind();
 
         if (environment instanceof EnvironmentV4 env4) {
-            int groupCount = env4.getGroupCount();
-            for (int group = 0; group < groupCount; group++) {
-                lightCounts.put(group, env4.getLightCount(group));
-            }
         } else if (environment instanceof EnvironmentV3 env3) {
             int groupCount = env3.getGroupCount();
-            for (int group = 0; group < groupCount; group++) {
-                lightCounts.put(group, env3.getLightCount(group));
-            }
 
             targets.clear();
             currentWidth = 0;
@@ -140,6 +130,9 @@ public class EventVisualizer {
                         var cid = target.getLightId();
 
                         var lightEvents = env3.getLightEvents(cg, cid, lowerBound, upperBound);
+                        var rotationXEvents = env3.getRotationEvents(cg, cid, TransformState.Axis.RX, lowerBound, upperBound);
+                        var rotationYEvents = env3.getRotationEvents(cg, cid, TransformState.Axis.RY, lowerBound, upperBound);
+                        var rotationZEvents = env3.getRotationEvents(cg, cid, TransformState.Axis.RZ, lowerBound, upperBound);
                         var c = camera.pos.toVector3f();
 
                         if (lg != cg) {
@@ -162,11 +155,22 @@ public class EventVisualizer {
                             var isStep = event.easing.apply(0.9f) == 0;
                             var endColor = isStep ? startColor : event.lightState.getBloomColor();
 
+                            float startX = x;
+                            float startX2 = x-SUB_LANE_WIDTH;
+                            float endX = x;
+                            float endX2 = x-SUB_LANE_WIDTH;
+                            if (event.lightState.strobeFrequency != 0) {
+                                endX = x-(SUB_LANE_WIDTH/2f);
+                            }
 
-                            buffer.vertex(new Vector3f(x, EVENT_Y, sz).sub(c)).color(startColor);
-                            buffer.vertex(new Vector3f(x, EVENT_Y, ez).sub(c)).color(endColor);
-                            buffer.vertex(new Vector3f(x-SUB_LANE_WIDTH, EVENT_Y, ez).sub(c)).color(endColor);
-                            buffer.vertex(new Vector3f(x-SUB_LANE_WIDTH, EVENT_Y, sz).sub(c)).color(startColor);
+                            if (event.startState.strobeFrequency != 0) {
+                                startX = x-(SUB_LANE_WIDTH/2f);
+                            }
+
+                            buffer.vertex(new Vector3f(startX, EVENT_Y, sz).sub(c)).color(startColor);
+                            buffer.vertex(new Vector3f(endX, EVENT_Y, ez).sub(c)).color(endColor);
+                            buffer.vertex(new Vector3f(endX2, EVENT_Y, ez).sub(c)).color(endColor);
+                            buffer.vertex(new Vector3f(startX2, EVENT_Y, sz).sub(c)).color(startColor);
 
                         }
 
