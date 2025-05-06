@@ -15,6 +15,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -164,7 +165,13 @@ public class BeatmapPlayer {
     public static void setupDifficultyFromFile(String path) throws IOException {
         Path p = Paths.get(path);
         String infoPath = p.getParent().toString() + "/Info.dat";
-        Info info = BeatmapLoader.getInfoFromFile(infoPath);
+        Info info = null;
+        try {
+            info = BeatmapLoader.getInfoFromFile(infoPath);
+        } catch (NoSuchFileException e) {
+            infoPath = p.getParent().toString() + "/info.dat";
+            info = BeatmapLoader.getInfoFromFile(infoPath);
+        }
         currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, info);
         currentInfo = info;
     }
