@@ -12,6 +12,13 @@ public class Hitbox {
         this.max = max;
     }
 
+    public float getVolume() {
+        var x = max.x - min.x;
+        var y = max.y - min.y;
+        var z = max.z - min.z;
+        return x * y * z;
+    }
+
     public boolean checkCollision(Vector3f pointA, Vector3f pointB) {
 
         if (isPointInHitbox(pointA) || isPointInHitbox(pointB)) {

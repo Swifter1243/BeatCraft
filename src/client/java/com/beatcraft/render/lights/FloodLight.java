@@ -51,7 +51,7 @@ public class FloodLight extends LightObject {
         position = pos;
         orientation = rot;
         setDimensions(startOffset, width, length, fadeLength, spread, segmentLengths);
-        lightState = new LightState(new Color(0, 0, 0, 0), 0);
+        lightState = new LightState(new Color(0), 0);
     }
 
     public FloodLight withRotation(Quaternionf rotation) {

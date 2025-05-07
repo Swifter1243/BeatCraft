@@ -34,6 +34,11 @@ repositories {
 
 	maven { url 'https://maven.wispforest.io/releases/' }
 
+	maven {
+		name = "TarsosDSP repository"
+		url = "https://mvn.0110.be/releases"
+	}
+
 //	maven {
 //		name "createmod maven"
 //		url "https://maven.createmod.net/"
@@ -84,6 +89,10 @@ dependencies {
 	// BeatSaver
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
+
+	// Spectrogram visualizer
+	implementation 'be.tarsos.dsp:core:2.5'
+	implementation 'be.tarsos.dsp:jvm:2.5'
 
 	// Flywheel
 //	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"

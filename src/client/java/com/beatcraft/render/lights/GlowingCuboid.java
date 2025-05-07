@@ -26,7 +26,7 @@ public class GlowingCuboid extends LightObject {
         position = pos;
         orientation = rot;
         setDimensions(dimensions);
-        lightState = new LightState(new Color(0, 0, 0, 0), 0);
+        lightState = new LightState(new Color(0), 0);
     }
 
     public GlowingCuboid cloneOffset(Vector3f offset) {

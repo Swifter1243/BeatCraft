@@ -486,6 +486,37 @@ public class BeatCraftRenderer {
         RenderSystem.disableDepthTest();
     }
 
+    public static List<Vector3f[]> getCubeFaces(
+        Vector3f vxyz, Vector3f vxyZ, Vector3f vXyZ, Vector3f vXyz,
+        Vector3f vxYz, Vector3f vxYZ, Vector3f vXYZ, Vector3f vXYz,
+        boolean includeBottomFace
+    ) {
+        var faces = new ArrayList<Vector3f[]>();
+
+        faces.add(new Vector3f[] {
+            vXYz, vXYZ, vxYZ, vxYz
+        });
+        faces.add(new Vector3f[] {
+            vxyZ, vXyZ, vXYZ, vxYZ
+        });
+        faces.add(new Vector3f[] {
+            vXyz, vxyz, vxYz, vXYz
+        });
+        faces.add(new Vector3f[] {
+            vxyz, vxyZ, vxYZ, vxYz
+        });
+        faces.add(new Vector3f[] {
+            vXyZ, vXyz, vXYz, vXYZ
+        });
+        if (includeBottomFace) {
+            faces.add(new Vector3f[] {
+                vxyz, vXyz, vXyZ, vxyZ
+            });
+        }
+
+        return faces;
+    }
+
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {
         List<Vector3f[]> edges = new ArrayList<>();
 
