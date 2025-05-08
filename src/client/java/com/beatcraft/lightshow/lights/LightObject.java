@@ -18,6 +18,8 @@ public abstract class LightObject {
     protected Vector3f offset = new Vector3f();
     protected Quaternionf rotation = new Quaternionf();
 
+    protected Quaternionf rotation2 = new Quaternionf();
+
     protected Quaternionf worldRotation = new Quaternionf();
 
     protected LightState lightState = new LightState(new Color(0, 0, 0, 0), 0);
@@ -79,6 +81,7 @@ public abstract class LightObject {
             position.z
         );
 
+        matrix.rotate(mirrorQuaternion(mirrorDraw, rotation2));
         matrix.rotate(mirrorQuaternion(mirrorDraw, rotation));
         matrix.rotate(mirrorQuaternion(mirrorDraw, transformState.getOrientation(rotationSwizzle, rotationPolarity, quaternionBuilder)));
         matrix.rotate(mirrorQuaternion(mirrorDraw, orientation));
@@ -121,6 +124,10 @@ public abstract class LightObject {
 
     public void setRotation(Quaternionf rotation) {
         this.rotation = rotation;
+    }
+
+    public void setRotation2(Quaternionf rotation) {
+        this.rotation2 = rotation;
     }
 
     public void setWorldRotation(Quaternionf rotation) {

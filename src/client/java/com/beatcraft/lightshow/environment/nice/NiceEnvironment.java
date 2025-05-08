@@ -1,4 +1,4 @@
-package com.beatcraft.lightshow.environment.triangle;
+package com.beatcraft.lightshow.environment.nice;
 
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
@@ -22,7 +22,7 @@ import org.joml.Vector3f;
 import java.io.File;
 import java.util.HashMap;
 
-public class TriangleEnvironment extends EnvironmentV2 {
+public class NiceEnvironment extends EnvironmentV2 {
 
 
     private RingLightGroup ringLights;
@@ -32,7 +32,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
 
     @Override
     public String getID() {
-        return "TriangleEnvironment";
+        return "NiceEnvironment";
     }
 
     @Override
@@ -62,15 +62,17 @@ public class TriangleEnvironment extends EnvironmentV2 {
 
     }
 
-    private static GlowingCuboid getRunway(boolean isLeft) {
+    private static GlowingCuboid getRunway(boolean isLeft, boolean isCenter) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
                 new Hitbox(
-                        new Vector3f(-0.03f, -0.03f, 0),
+                        new Vector3f(-0.03f, -0.03f, isCenter ? 0 : -500),
                         new Vector3f(0.03f, 0.03f, 500)
                 ),
-                new Vector3f(2f * sign, 0, 8),
+                (isCenter ? new Vector3f(2 * sign, 0, 9) :
+                new Vector3f(16f * sign, 1.5f, 8)
+                ),
                 new Quaternionf()
         );
     }
@@ -101,23 +103,63 @@ public class TriangleEnvironment extends EnvironmentV2 {
     }
 
 
+    // additional side lasers:
+    // @ 10 5.5 -14
+    // @ 10 2.5 -17
+    private static GlowingCuboid getTowerLight3(boolean isLeft) {
+        int sign = isLeft ? 1 : -1;
+
+        return new GlowingCuboid(
+            new Hitbox(
+                new Vector3f(-0.1f, -20, -0.1f),
+                new Vector3f(0.1f, 8.5f, 0.1f)
+            ),
+            new Vector3f(10 * sign, -6, -17),
+            new Quaternionf()
+        );
+    }
+
+    private static GlowingCuboid getTowerLight4(boolean isLeft) {
+        int sign = isLeft ? 1 : -1;
+
+        return new GlowingCuboid(
+            new Hitbox(
+                new Vector3f(-0.1f, -15, -0.1f),
+                new Vector3f(0.1f, 11.5f, 0.1f)
+            ),
+            new Vector3f(10 * sign, -6, -14),
+            new Quaternionf()
+        );
+    }
+
 
     // sky lasers:
     // @  22.5 30  19.5
     // @ -22.5 30  19.5
     // @ -12.5 24 -13.5
     // @  12.5 24 -13.5
-    private static GlowingCuboid getSkyLasers(boolean isLeft) {
+    private static GlowingCuboid[] getSkyLasers(boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
-        return new GlowingCuboid(
-            new Hitbox(
-                new Vector3f(-0.2f, 0, -0.2f),
-                new Vector3f(0.2f, 350, 0.2f)
+        // [back, front]
+        return new GlowingCuboid[]{
+            new GlowingCuboid(
+                new Hitbox(
+                    new Vector3f(-0.2f, 0, -0.2f),
+                    new Vector3f(0.2f, 350, 0.2f)
+                ),
+                new Vector3f(12.5f * sign, 24, -13.5f),
+                new Quaternionf()
             ),
-            new Vector3f(22.5f * sign, 30, 19.5f),
-            new Quaternionf()
-        );
+            new GlowingCuboid(
+                new Hitbox(
+                    new Vector3f(-0.2f, 0, -0.2f),
+                    new Vector3f(0.2f, 350, 0.2f)
+                ),
+                new Vector3f(22.5f * sign, 30, 19.5f),
+                new Quaternionf()
+            )
+        };
 
     }
 
@@ -137,10 +179,16 @@ public class TriangleEnvironment extends EnvironmentV2 {
         );
     }
 
-    private static final float ROTATING_LIGHT_X = 25;
-    private static final float ROTATING_LIGHT_Y = -6;
-    private static final float ROTATING_LIGHT_Z = 47.5f;
-    private static final float MIDDLE_LIGHT_Z = 27.5f;
+    private static final float ROTATING_LIGHT_X = 9;
+    private static final float ROTATING_LIGHT_Z = 35;
+    private static final float MIDDLE_LIGHT_Z = 60;
+
+    private static final float[] angles = new float[]{
+        15f * 1.5f,
+        15f * 0.5f,
+        15f * -0.5f,
+        15f * -1.5f,
+    };
 
     @Override
     protected LightGroupV2 setupLeftLasers() {
@@ -148,43 +196,45 @@ public class TriangleEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> staticLights = new HashMap<>();
         int lightID = 1;
 
-        var offset = new Vector3f(0, 0, 0.5f);
-        var left1 = new GlowingCuboid(
+        // TODO: tilted bottom lasers
+
+        for (var angle : angles) {
+
+            var light = new GlowingCuboid(
                 new Hitbox(
-                        new Vector3f(-0.03f, -10, -0.03f),
-                        new Vector3f(0.03f, 800, 0.03f)
+                    new Vector3f(-300, -0.03f, -0.03f),
+                    new Vector3f(300, 0.03f, 0.03f)
                 ),
-                new Vector3f(ROTATING_LIGHT_X, ROTATING_LIGHT_Y, ROTATING_LIGHT_Z),
-                new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
-        );
-        var left2 = left1.cloneOffset(offset);
-        var left3 = left2.cloneOffset(offset);
-        var left4 = left3.cloneOffset(offset);
-        var left5 = left4.cloneOffset(offset);
-        var left6 = left5.cloneOffset(offset);
-        var left7 = left6.cloneOffset(offset);
+                new Vector3f(0, -10, 45),
+                new Quaternionf()//.rotationZ(angle * MathHelper.RADIANS_PER_DEGREE)
+            );
 
-        rotatingLights.put(lightID++, left1);
-        rotatingLights.put(lightID++, left2);
-        rotatingLights.put(lightID++, left3);
-        rotatingLights.put(lightID++, left4);
-        rotatingLights.put(lightID++, left5);
-        rotatingLights.put(lightID++, left6);
-        rotatingLights.put(lightID++, left7);
+            light.setRotation2(
+                new Quaternionf().rotationZ(angle * MathHelper.RADIANS_PER_DEGREE)
+            );
+
+            rotatingLights.put(lightID++, light);
+
+        }
 
 
-
-        var leftRunway = getRunway(true);
+        var leftRunway = getRunway(true, false);
         var leftTowerLight1 = getTowerLight1(true);
         var leftTowerLight2 = getTowerLight2(true);
 
-        var skyLaser = getSkyLasers(true);
+        var leftTowerLight3 = getTowerLight3(true);
+        var leftTowerLight4 = getTowerLight4(true);
+
+        var skyLasers = getSkyLasers(true);
 
         staticLights.put(lightID++, leftRunway);
         staticLights.put(lightID++, leftTowerLight1);
         staticLights.put(lightID++, leftTowerLight2);
 
-        staticLights.put(lightID++, skyLaser);
+        staticLights.put(lightID++, leftTowerLight3);
+        staticLights.put(lightID++, leftTowerLight4);
+        staticLights.put(lightID++, skyLasers[0]);
+        staticLights.put(lightID++, skyLasers[1]);
 
         return new RotatingLightsGroup(rotatingLights, staticLights);
     }
@@ -196,41 +246,45 @@ public class TriangleEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> staticLights = new HashMap<>();
         int lightID = 1;
 
-        var offset = new Vector3f(0, 0, 0.5f);
-        var right1 = new GlowingCuboid(
+        // TODO: tilted top lasers
+
+
+        for (var angle : angles) {
+
+            var light = new GlowingCuboid(
                 new Hitbox(
-                        new Vector3f(-0.03f, -10, -0.03f),
-                        new Vector3f(0.03f, 800, 0.03f)
+                    new Vector3f(-300, -0.03f, -0.03f),
+                    new Vector3f(300, 0.03f, 0.03f)
                 ),
-                new Vector3f(-ROTATING_LIGHT_X, ROTATING_LIGHT_Y, ROTATING_LIGHT_Z),
-                new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
-        );
-        var right2 = right1.cloneOffset(offset);
-        var right3 = right2.cloneOffset(offset);
-        var right4 = right3.cloneOffset(offset);
-        var right5 = right4.cloneOffset(offset);
-        var right6 = right5.cloneOffset(offset);
-        var right7 = right6.cloneOffset(offset);
+                new Vector3f(0, 15, 45),
+                new Quaternionf()
+            );
 
-        rotatingLights.put(lightID++, right1);
-        rotatingLights.put(lightID++, right2);
-        rotatingLights.put(lightID++, right3);
-        rotatingLights.put(lightID++, right4);
-        rotatingLights.put(lightID++, right5);
-        rotatingLights.put(lightID++, right6);
-        rotatingLights.put(lightID++, right7);
+            light.setRotation2(
+                new Quaternionf().rotationZ(angle * MathHelper.RADIANS_PER_DEGREE)
+            );
 
-        var rightRunway = getRunway(false);
+            rotatingLights.put(lightID++, light);
+
+        }
+
+        var rightRunway = getRunway(false, false);
         var rightTowerLight1 = getTowerLight1(false);
         var rightTowerLight2 = getTowerLight2(false);
 
-        var skyLaser = getSkyLasers(false);
+        var rightTowerLight3 = getTowerLight3(false);
+        var rightTowerLight4 = getTowerLight4(false);
+
+        var skyLasers = getSkyLasers(false);
 
         staticLights.put(lightID++, rightRunway);
         staticLights.put(lightID++, rightTowerLight1);
         staticLights.put(lightID++, rightTowerLight2);
 
-        staticLights.put(lightID++, skyLaser);
+        staticLights.put(lightID++, rightTowerLight3);
+        staticLights.put(lightID++, rightTowerLight4);
+        staticLights.put(lightID++, skyLasers[0]);
+        staticLights.put(lightID++, skyLasers[1]);
 
         return new RotatingLightsGroup(rotatingLights, staticLights);
     }
@@ -240,15 +294,15 @@ public class TriangleEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> lights = new HashMap<>();
         int lightID = 1;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             float z = MIDDLE_LIGHT_Z + i * 10;
             var bottomLeftLaser = new GlowingCuboid(
                     new Hitbox(
                             new Vector3f(-0.05f, -150, -0.05f),
                             new Vector3f(0.05f, 0, 0.05f)
                     ),
-                    new Vector3f(2f, -2, z),
-                    new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 30 * MathHelper.RADIANS_PER_DEGREE, 0)
+                    new Vector3f(5f, -2, z),
+                    new Quaternionf().rotationZ(15 * MathHelper.RADIANS_PER_DEGREE)
             );
             lights.put(lightID++, bottomLeftLaser);
 
@@ -257,8 +311,8 @@ public class TriangleEnvironment extends EnvironmentV2 {
                             new Vector3f(-0.05f, -150, -0.05f),
                             new Vector3f(0.05f, 0, 0.05f)
                     ),
-                    new Vector3f(-2f, -2, z),
-                    new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 30 * MathHelper.RADIANS_PER_DEGREE, 0)
+                    new Vector3f(-5f, -2, z),
+                    new Quaternionf().rotationZ(-15 * MathHelper.RADIANS_PER_DEGREE)
             );
             lights.put(lightID++, bottomRightLaser);
         }
@@ -271,15 +325,15 @@ public class TriangleEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> lights = new HashMap<>();
         int lightID = 1;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             float z = MIDDLE_LIGHT_Z + i * 10;
             var topLeftLaser = new GlowingCuboid(
                     new Hitbox(
                             new Vector3f(-0.05f, 0, -0.05f),
                             new Vector3f(0.05f, 200, 0.05f)
                     ),
-                    new Vector3f(3f, -1, z),
-                    new Quaternionf().rotationYXZ(-20 * MathHelper.RADIANS_PER_DEGREE, 30 * MathHelper.RADIANS_PER_DEGREE, 0)
+                    new Vector3f(5f, -2, z),
+                    new Quaternionf().rotationZ(15 * MathHelper.RADIANS_PER_DEGREE)
             );
             lights.put(lightID++, topLeftLaser);
 
@@ -288,17 +342,42 @@ public class TriangleEnvironment extends EnvironmentV2 {
                             new Vector3f(-0.05f, 0, -0.05f),
                             new Vector3f(0.05f, 200, 0.05f)
                     ),
-                    new Vector3f(-3f, -1, z),
-                    new Quaternionf().rotationYXZ(20 * MathHelper.RADIANS_PER_DEGREE, 30 * MathHelper.RADIANS_PER_DEGREE, 0)
+                    new Vector3f(-5f, -2, z),
+                    new Quaternionf().rotationZ(-15 * MathHelper.RADIANS_PER_DEGREE)
             );
             lights.put(lightID++, topRightLaser);
         }
 
-        // TODO: order these slanted lasers correctly
+        var rRunway = getRunway(false, true);
+        var lRunway = getRunway(true, true);
+
+        lights.put(lightID++, lRunway);
+        lights.put(lightID++, rRunway);
+
         var leftSlanted = getSlantedLaser(true);
         var rightSlanted = getSlantedLaser(false);
         lights.put(lightID++, leftSlanted);
         lights.put(lightID++, rightSlanted);
+
+        var chevronLeft = new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.1f, -1.6f, -0.1f),
+                        new Vector3f(0.1f, 0.035f, 0.1f)
+                ),
+                new Vector3f(0, 4, 75),
+                new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
+        );
+        lights.put(lightID++, chevronLeft);
+
+        var chevronRight = new GlowingCuboid(
+                new Hitbox(
+                        new Vector3f(-0.1f, -1.6f, -0.1f),
+                        new Vector3f(0.1f, 0.035f, 0.1f)
+                ),
+                new Vector3f(0, 4, 75),
+                new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
+        );
+        lights.put(lightID++, chevronRight);
 
         return new StaticLightsGroup(lights);
     }
@@ -320,7 +399,8 @@ public class TriangleEnvironment extends EnvironmentV2 {
                 ),
                 new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
                 new Quaternionf()
-            )
+            ),
+            4.25f, 10, 30f, 1.25f
         );
         return ringLights;
     }
@@ -338,7 +418,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
     }
 
     @Override
-    public TriangleEnvironment reset() {
+    public NiceEnvironment reset() {
         super.reset();
         ringLights.reset();
         return this;

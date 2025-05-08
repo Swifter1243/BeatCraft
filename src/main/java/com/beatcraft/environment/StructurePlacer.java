@@ -22,6 +22,7 @@ public class StructurePlacer {
     private static final EnvironmentPlacer EMPTY = new EmptyStructure();
     private static final EnvironmentPlacer STRIPS = new StripRunwayPlacer();
     private static final EnvironmentPlacer TRIANGLE = new TriangleStructure();
+    private static final EnvironmentPlacer NICE = new NiceStructure();
 
     private static final HashMap<String, EnvironmentPlacer> structurePlacers = new HashMap<>();
 
@@ -40,6 +41,7 @@ public class StructurePlacer {
         structurePlacers.put("WeaveEnvironment", EMPTY);
         structurePlacers.put("OriginsEnvironment", STRIPS);
         structurePlacers.put("TriangleEnvironment", TRIANGLE);
+        structurePlacers.put("NiceEnvironment", NICE);
     }
 
     public static void placeStructure(String struct, ServerWorld world) {

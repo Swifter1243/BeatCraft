@@ -62,11 +62,24 @@ public class RingLightGroup extends ActionLightGroupV2 {
         Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
         Callable<LightObject> outerLightFactory
     ) {
+        this(
+            innerRingFactory, outerRingFactory, outerLightFactory,
+            2, 15, 7, 8.75f
+        );
+    }
+
+
+    public RingLightGroup(
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
+        Callable<LightObject> outerLightFactory,
+        float height, int outerRingCount, float outerRingZ, float outerRingSpacing
+    ) {
         // start at idx 1
         super(buildRingLights(outerLightFactory));
 
-        innerRing = new RingLightHandler(innerRingFactory, (v, q) -> null, 30, new Vector3f(0, 2, 14), 5);
-        outerRing = new RingLightHandler(outerRingFactory, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
+        innerRing = new RingLightHandler(innerRingFactory, (v, q) -> null, 30, new Vector3f(0, height, 14), 5);
+        outerRing = new RingLightHandler(outerRingFactory, this::linkLight, outerRingCount, new Vector3f(0, height, outerRingZ), outerRingSpacing);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 
