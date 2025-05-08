@@ -93,27 +93,27 @@ public class Arc extends GameplayObject {
 
     public Arc loadV3(JsonObject json, Difficulty difficulty) {
 
-        noteType = NoteType.values()[json.get("c").getAsInt()];
+        noteType = NoteType.values()[JsonUtil.getOrDefault(json, "c", JsonElement::getAsInt, 0)];
 
-        beat = json.get("b").getAsFloat();
-        tailBeat = json.get("tb").getAsFloat();
+        beat = JsonUtil.getOrDefault(json, "b", JsonElement::getAsFloat, 0f);
+        tailBeat = JsonUtil.getOrDefault(json, "tb", JsonElement::getAsFloat, 0f);
 
         njs = difficulty.getSetDifficulty().getNjs();
         offset = difficulty.getSetDifficulty().getOffset();
 
-        x = json.get("x").getAsFloat();
-        y = json.get("y").getAsFloat();
+        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
+        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
 
-        tailX = json.get("tx").getAsFloat();
-        tailY = json.get("ty").getAsFloat();
+        tailX = JsonUtil.getOrDefault(json, "tx", JsonElement::getAsFloat, 0f);
+        tailY = JsonUtil.getOrDefault(json, "ty", JsonElement::getAsFloat, 0f);
 
-        headCutDirection = CutDirection.values()[json.get("d").getAsInt()];
-        tailCutDirection = CutDirection.values()[json.get("tc").getAsInt()];
+        headCutDirection = CutDirection.values()[JsonUtil.getOrDefault(json, "d", JsonElement::getAsInt, 0)];
+        tailCutDirection = CutDirection.values()[JsonUtil.getOrDefault(json, "tc", JsonElement::getAsInt, 0)];
 
-        headMagnitude = json.get("mu").getAsFloat();
-        tailMagnitude = json.get("tmu").getAsFloat();
+        headMagnitude = JsonUtil.getOrDefault(json, "mu", JsonElement::getAsFloat, 0f);
+        tailMagnitude = JsonUtil.getOrDefault(json, "tmu", JsonElement::getAsFloat, 0f);
 
-        midAnchorMode = MidAnchorMode.values()[json.get("m").getAsInt()];
+        midAnchorMode = MidAnchorMode.values()[JsonUtil.getOrDefault(json, "m", JsonElement::getAsInt, 0)];
 
         checkForNotes(beat, x, y, tailBeat, tailX, tailY, difficulty);
         loadJumps(difficulty.getInfo());

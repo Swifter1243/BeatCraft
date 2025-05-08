@@ -91,8 +91,8 @@ dependencies {
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
 
 	// Spectrogram visualizer
-	implementation 'be.tarsos.dsp:core:2.5'
-	implementation 'be.tarsos.dsp:jvm:2.5'
+	include(implementation('be.tarsos.dsp:core:2.5'))
+	include(implementation('be.tarsos.dsp:jvm:2.5'))
 
 	// Flywheel
 //	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"

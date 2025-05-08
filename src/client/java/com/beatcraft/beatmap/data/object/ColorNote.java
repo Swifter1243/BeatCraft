@@ -54,14 +54,14 @@ public class ColorNote extends GameplayObject implements ScorableObject {
     public ColorNote loadV3(JsonObject json, Difficulty difficulty) {
         super.loadV3(json, difficulty);
 
-        angleOffset = json.get("a").getAsFloat();
-        cutDirection = CutDirection.values()[json.get("d").getAsInt()]; // what the fuck
-        noteType = NoteType.values()[json.get("c").getAsInt()];
+        angleOffset = JsonUtil.getOrDefault(json, "a", JsonElement::getAsFloat, 0f);
+        cutDirection = CutDirection.values()[JsonUtil.getOrDefault(json, "d", JsonElement::getAsInt, 0)]; // what the fuck
+        noteType = NoteType.values()[JsonUtil.getOrDefault(json, "c", JsonElement::getAsInt, 0)];
 
         applyColorScheme(difficulty.getSetDifficulty());
 
         if (json.has("customData")) {
-            JsonObject customData = json.get("customData").getAsJsonObject();
+            JsonObject customData = json.getAsJsonObject("customData");
 
             if (customData.has("color")) {
                 color = Color.fromJsonArray(customData.get("color").getAsJsonArray());

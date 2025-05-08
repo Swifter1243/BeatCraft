@@ -43,7 +43,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
         ChainNoteHead headNote = new ChainNoteHead();
         headNote.loadV3(json, difficulty);
 
-        headNote.cutDirection = CutDirection.values()[json.get("d").getAsInt()];
+        headNote.cutDirection = CutDirection.values()[JsonUtil.getOrDefault(json, "d", JsonElement::getAsInt, 0)];
         headNote.noteType = NoteType.values()[JsonUtil.getOrDefault(json, "c", JsonElement::getAsInt, 0)];
 
         headNote.applyColorScheme(difficulty.getSetDifficulty());
