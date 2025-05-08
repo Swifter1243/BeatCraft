@@ -15,12 +15,13 @@ BeatCraft can be downloaded from here: [https://modrinth.com/mod/beatcraft](http
 or from releases here on GitHub.  
 > made for fabric 1.21.1  
 
-Mod Dependencies: (these will be auto-downloaded if you get the mod with the modrinth app)
+Mod Dependencies: (these will be auto-downloaded if you get the mod with the modrinth/CurseForge app)
 - [Vivecraft](https://modrinth.com/mod/vivecraft)
 - [GeckoLib](https://modrinth.com/mod/geckolib)
 - [owo-lib](https://modrinth.com/mod/owo-lib)
 - [fabric-api](https://modrinth.com/mod/fabric-api)
-- [sodium](https://modrinth.com/mod/sodium) (optional, but recommended)
+- [sodium](https://modrinth.com/mod/sodium)
+- [iris shaders](https://modrinth.com/mod/iris)
 
 # Feature roadmap
 
@@ -31,8 +32,8 @@ Mod Dependencies: (these will be auto-downloaded if you get the mod with the mod
 - [x] AnimateTrack, AssignPathAnimation events
 - [ ] AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
 - [x] V2 lightshows
-- [ ] V3 lightshows
-- [ ] maybe V4 lightshows
+- [x] V3 lightshows
+- [ ] V4 lightshows
 - [x] Chroma coloring features
 - [x] Ingame song selection menu
 - [x] Ingame Beatsaver downloader
@@ -68,7 +69,10 @@ a set of blocks so you can build environments that feel closer to beat saber.
 Black Mirror Block  
 > has no relation to black mirror.  
 > just a solid black block.  
-> at some point, I'd like this block to be reflective either with shaders or some other magic.  
+
+Reflective Mirror Block
+> top surface will be a mirror if the block is placed at y = -1  
+> Reflections can be disabled in quality settings
 
 Light Tile Blocks  
 > Look kinda glowy.  
@@ -152,5 +156,3 @@ Apon joining a new world for the first time:
 ## Multiplayer
 > [!WARNING]
 > All multiplayer features may be very buggy, so please report bugs [here](https://github.com/Swifter1243/BeatCraft/issues)
-
-Currently, multiplayer lets you and your friends take turns playing maps in the same world.  
