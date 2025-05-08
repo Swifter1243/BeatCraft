@@ -19,6 +19,7 @@ import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
@@ -485,6 +486,50 @@ public class BeatCraftRenderer {
         RenderSystem.disableBlend();
         RenderSystem.disableDepthTest();
     }
+
+    public static List<Vector3f[]> getGlowingQuadAsTris(Vector2f quadSize, float glowSpread) {
+        List<Vector3f[]> tris = new ArrayList<>();
+
+        float halfWidth = quadSize.x / 2f;
+        float halfHeight = quadSize.y / 2f;
+        float outerHalfWidth = halfWidth + glowSpread;
+        float outerHalfHeight = halfHeight + glowSpread;
+
+        // Outer corners (alpha = 0)
+        Vector3f topLeftOuter     = new Vector3f(-outerHalfWidth,  outerHalfHeight, 0f);
+        Vector3f topRightOuter    = new Vector3f( outerHalfWidth,  outerHalfHeight, 0f);
+        Vector3f bottomLeftOuter  = new Vector3f(-outerHalfWidth, -outerHalfHeight, 0f);
+        Vector3f bottomRightOuter = new Vector3f( outerHalfWidth, -outerHalfHeight, 0f);
+
+        // Inner corners (alpha = 1)
+        Vector3f topLeftInner     = new Vector3f(-halfWidth,  halfHeight, 1f);
+        Vector3f topRightInner    = new Vector3f( halfWidth,  halfHeight, 1f);
+        Vector3f bottomLeftInner  = new Vector3f(-halfWidth, -halfHeight, 1f);
+        Vector3f bottomRightInner = new Vector3f( halfWidth, -halfHeight, 1f);
+
+        // Center quad
+        tris.add(new Vector3f[] { topLeftInner, bottomLeftInner, bottomRightInner });
+        tris.add(new Vector3f[] { topLeftInner, bottomRightInner, topRightInner });
+
+        // Top glow
+        tris.add(new Vector3f[] { topLeftOuter, topLeftInner, topRightInner });
+        tris.add(new Vector3f[] { topLeftOuter, topRightInner, topRightOuter });
+
+        // Bottom glow
+        tris.add(new Vector3f[] { bottomLeftInner, bottomLeftOuter, bottomRightOuter });
+        tris.add(new Vector3f[] { bottomLeftInner, bottomRightOuter, bottomRightInner });
+
+        // Left glow
+        tris.add(new Vector3f[] { topLeftInner, topLeftOuter, bottomLeftOuter });
+        tris.add(new Vector3f[] { topLeftInner, bottomLeftOuter, bottomLeftInner });
+
+        // Right glow
+        tris.add(new Vector3f[] { bottomRightInner, bottomRightOuter, topRightOuter });
+        tris.add(new Vector3f[] { bottomRightInner, topRightOuter, topRightInner });
+
+        return tris;
+    }
+
 
     public static List<Vector3f[]> getCubeFaces(
         Vector3f vxyz, Vector3f vxyZ, Vector3f vXyZ, Vector3f vXyz,

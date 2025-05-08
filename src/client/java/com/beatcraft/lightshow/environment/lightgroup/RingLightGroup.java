@@ -17,6 +17,9 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
+import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class RingLightGroup extends ActionLightGroupV2 {
 
@@ -25,22 +28,17 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
 
 
-    private static final float ringRadius = 27;
-    private static final float lightLength = 6;
-    private static final float lightSize = 0.2f;
 
-    private static HashMap<Integer, LightObject> buildRingLights() {
+    private static HashMap<Integer, LightObject> buildRingLights(Callable<LightObject> lightFactory) {
         HashMap<Integer, LightObject> map = new HashMap<>();
 
         for (int i = 1; i <= 30*4; i++) {
-            map.put(i, new GlowingCuboid(
-                new Hitbox(
-                    new Vector3f(-lightLength/2, -lightSize, -lightSize),
-                    new Vector3f(lightLength/2, lightSize, lightSize)
-                ),
-                new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
-                new Quaternionf()
-            ));
+            try {
+                map.put(i, lightFactory.call());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
         }
 
         return map;
@@ -59,12 +57,16 @@ public class RingLightGroup extends ActionLightGroupV2 {
         outerRing.reset();
     }
 
-    public RingLightGroup() {
+    public RingLightGroup(
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
+        Callable<LightObject> outerLightFactory
+    ) {
         // start at idx 1
-        super(buildRingLights());
+        super(buildRingLights(outerLightFactory));
 
-        innerRing = new RingLightHandler(InnerRing::getInstance, (v, q) -> null, 30, new Vector3f(0, 2, 14), 5);
-        outerRing = new RingLightHandler(OuterRing::new, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
+        innerRing = new RingLightHandler(innerRingFactory, (v, q) -> null, 30, new Vector3f(0, 2, 14), 5);
+        outerRing = new RingLightHandler(outerRingFactory, this::linkLight, 15, new Vector3f(0, 2, 7), 8.75f);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 

@@ -376,9 +376,25 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         return new StaticLightsGroup(lights);
     }
 
+
+    private static final float ringRadius = 27;
+    private static final float lightLength = 6;
+    private static final float lightSize = 0.2f;
+
     @Override
     protected LightGroupV2 setupRingLights() {
-        ringLights = new RingLightGroup();
+        ringLights = new RingLightGroup(
+            InnerRing::getInstance,
+            OuterRing::new,
+            () -> new GlowingCuboid(
+                new Hitbox(
+                    new Vector3f(-lightLength/2, -lightSize, -lightSize),
+                    new Vector3f(lightLength/2, lightSize, lightSize)
+                ),
+                new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
+                new Quaternionf()
+            )
+        );
         return ringLights;
     }
 

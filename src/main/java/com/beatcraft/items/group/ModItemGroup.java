@@ -38,6 +38,9 @@ public class ModItemGroup {
             group.add(ModBlocks.CORNER_LIGHT_TILE_BLOCK);
             group.add(ModBlocks.COLUMN_LIGHT_TILE_BLOCK);
             group.add(ModBlocks.END_LIGHT_TILE_BLOCK);
+
+            group.add(ModBlocks.REFLECTIVE_MIRROR_BLOCK);
+            group.add(ModBlocks.REFLECTIVE_MIRROR_STRIP_BLOCK);
         });
     }
 

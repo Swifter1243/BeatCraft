@@ -3,6 +3,7 @@ package com.beatcraft.environment;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.environment.structure_placers.EmptyStructure;
 import com.beatcraft.environment.structure_placers.EnvironmentPlacer;
+import com.beatcraft.environment.structure_placers.StripRunwayPlacer;
 import com.beatcraft.environment.structure_placers.TheFirstStructure;
 import com.beatcraft.world.PlacedEnvironmentState;
 import net.minecraft.server.world.ServerWorld;
@@ -22,6 +23,7 @@ public class StructurePlacer {
 
     private static final EnvironmentPlacer DEFAULT = new TheFirstStructure();
     private static final EnvironmentPlacer EMPTY = new EmptyStructure();
+    private static final EnvironmentPlacer STRIPS = new StripRunwayPlacer();
 
     private static final HashMap<String, EnvironmentPlacer> structurePlacers = new HashMap<>();
 
@@ -38,6 +40,7 @@ public class StructurePlacer {
     public static void init() {
         structurePlacers.put("Default", DEFAULT);
         structurePlacers.put("WeaveEnvironment", EMPTY);
+        structurePlacers.put("OriginsEnvironment", STRIPS);
     }
 
     public static void placeStructure(String struct, ServerWorld world) {
