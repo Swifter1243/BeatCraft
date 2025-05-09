@@ -42,6 +42,7 @@
 
   "block.beatcraft.black_mirror_block": "Black Mirror Block",
   "block.beatcraft.reflective_mirror_block": "Reflective Mirror Block",
+  "block.beatcraft.reflective_mirror_strip_block": "Reflective Mirror Strip Block",
   "tooltip.beatcraft.reflective_mirror_block": "Only works when placed at Y = -1",
 
   "block.beatcraft.filled_light_tile": "Full Light Tile",

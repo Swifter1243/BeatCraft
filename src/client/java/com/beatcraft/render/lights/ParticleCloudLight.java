@@ -71,6 +71,8 @@ public class ParticleCloudLight extends LightObject {
         t = (System.nanoTime() / 1_000_000_000f);
         var dt = t - pt;
 
+        if (dt > 0.35f) return;
+
         float expectedParticles = (density * regionVolume / averageLifetime) * dt;
         int count = (int) expectedParticles;
 
