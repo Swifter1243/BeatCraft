@@ -378,32 +378,6 @@ public class EventBuilder {
 
     }
 
-    public void applyRotationEventBeatCutoff(int group, float beat, Filter filter) {
-        var targets = filter.getTargets();
-        rawRotationEvents.sort(EventBuilder::rawEventComparator);
-        var filtered = rawRotationEvents.stream().filter(e -> {
-            if (e.group == group && targets.contains(e.lightID)) {
-                return e.eventBeat + e.beatOffset < beat;
-            }
-            return true;
-        }).toList();
-        rawRotationEvents.clear();
-        rawRotationEvents.addAll(filtered);
-    }
-
-    public void applyLightEventBeatCutoff(int group, float beat, Filter filter) {
-        var targets = filter.getTargets();
-        rawLightEvents.sort(EventBuilder::rawEventComparator);
-        var filtered = rawLightEvents.stream().filter(e -> {
-            if (e.group == group && targets.contains(e.lightID)) {
-                return e.eventBeat + e.beatOffset < beat;
-            }
-            return true;
-        }).toList();
-        rawLightEvents.clear();
-        rawLightEvents.addAll(filtered);
-    }
-
     public LightEventV3 getLatestLightEvent(int group, int lightID) {
         var key = new GroupKey(group, lightID);
         if (!lightEvents.containsKey(key)) {
