@@ -12,7 +12,7 @@ import java.util.*;
 public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
 
 
-    public static Filter processFilter(Random random, int lightCount, ArrayList<Integer> coveredIds, JsonObject filter) {
+    public static Filter processFilter(int lightCount, ArrayList<Integer> coveredIds, JsonObject filter) {
 
         var chunks = JsonUtil.getOrDefault(filter, "c", JsonElement::getAsInt, 0);
         var type = JsonUtil.getOrDefault(filter, "f", JsonElement::getAsInt, 0);
@@ -36,14 +36,14 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
                 return new Filter(
                     start, Math.max(0, start - sector + 1),
                     lightCount, randomBehavior, randomSeed, chunkSize,
-                    limitBehavior, limitPercent
+                    limitBehavior, limitPercent, coveredIds
                 );
             }
             int sector2 = sector * p1;
             return new Filter(
                 sector2, Math.min(chunkCount - 1, sector2 + sector - 1),
                 lightCount, randomBehavior, randomSeed,
-                chunkSize, limitBehavior, limitPercent
+                chunkSize, limitBehavior, limitPercent, coveredIds
             );
         } else { // step/offset = 2
             var size = (float) (chunkCount - p0);
@@ -52,13 +52,13 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
                 return new Filter(
                     chunkCount - 1 - p0, -p1, count, lightCount,
                     randomBehavior, randomSeed, chunkSize,
-                    limitBehavior, limitPercent
+                    limitBehavior, limitPercent, coveredIds
                 );
             }
             return new Filter(
                 p0, p1, count,
                 lightCount, randomBehavior, randomSeed,
-                chunkSize, limitBehavior, limitPercent
+                chunkSize, limitBehavior, limitPercent, coveredIds
             );
         }
 
@@ -131,16 +131,16 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
         return out;
     }
 
-    public Filter(int start, int end, int lightCount, int randomBehavior, int randomSeed, int chunkSize, int limitBehavior, float limitPercent) {
+    public Filter(int start, int end, int lightCount, int randomBehavior, int randomSeed, int chunkSize, int limitBehavior, float limitPercent, ArrayList<Integer> coveredIds) {
         this(
             start, end - start >= 0 ? 1 : -1,
             Math.abs(end - start) + 1, lightCount,
             randomBehavior, randomSeed, chunkSize,
-            limitBehavior, limitPercent
+            limitBehavior, limitPercent, coveredIds
         );
     }
 
-    public Filter(int start, int step, int count, int lightCount, int randomBehavior, int randomSeed, int chunkSize, int limitBehavior, float limitPercentage) {
+    public Filter(int start, int step, int count, int lightCount, int randomBehavior, int randomSeed, int chunkSize, int limitBehavior, float limitPercentage, ArrayList<Integer> coveredIds) {
         this.start = start;
         this.step = step;
         this.count = count;
@@ -185,7 +185,6 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
             var id = pair.getLeft();
             var index = pair.getRight();
 
-
             var durationMod = limitDuration ? limitedIndex : index;
             var distributionMod = limitDistribution ? limitedIndex : index;
             maxDurationIndex = Math.max(maxDurationIndex, durationMod);
@@ -200,6 +199,7 @@ public class Filter implements Iterable<Triplet<Integer[], Float, Float>> {
 
             }
 
+            coveredIds.addAll(indices);
             targets.add(new Triplet<>(indices.toArray(new Integer[0]), (float) durationMod, (float) distributionMod));
 
             limitedIndex++;

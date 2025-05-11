@@ -16,7 +16,6 @@ public class EnvironmentUtils {
     public static EnvironmentV3 weave = null;
 
     public static Environment setupEnvironment(String environment) {
-        nice = null;
         return (switch (environment) {
             case "OriginsEnvironment" -> origins == null ? origins = new OriginsEnvironment() : origins;
             case "TriangleEnvironment" -> triangle == null ? triangle = new TriangleEnvironment() : triangle;
@@ -26,12 +25,9 @@ public class EnvironmentUtils {
         }).reset();
     }
 
-
     public static Environment load(Difficulty difficulty, JsonObject json) {
         Environment env = setupEnvironment(difficulty.getInfo().getEnvironmentName());
-
         env.loadLightshow(difficulty, json);
-
         return env;
     }
 

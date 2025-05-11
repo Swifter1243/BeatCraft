@@ -29,8 +29,6 @@ public abstract class EnvironmentV3 extends Environment {
 
     protected ColorBoostEventHandler boostEventHandler;
 
-    private Random random = new Random();
-
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
 
         var version = json.get("version").getAsString().split("\\.")[0];
@@ -107,7 +105,7 @@ public abstract class EnvironmentV3 extends Environment {
                 boolean affectsFirst = JsonUtil.getOrDefault(eventLaneData, "b", JsonElement::getAsInt, 0) > 0;
                 var rawBrightnessEasing = JsonUtil.getOrDefault(eventLaneData, "group", JsonElement::getAsInt, 0);
 
-                var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+                var filter = Filter.processFilter(lightCount, coveredIDs, rawFilter);
                 var brightnessEasing = Easing.getEasing(String.valueOf(rawBrightnessEasing));
 
                 //builder.applyLightEventBeatCutoff(group, baseBeat, filter);
@@ -183,7 +181,7 @@ public abstract class EnvironmentV3 extends Environment {
                     coveredIDs.put(axis, new ArrayList<>());
                 }
                 var covered = coveredIDs.get(axis);
-                var filter = Filter.processFilter(random, lightCount, covered, rawFilter);
+                var filter = Filter.processFilter(lightCount, covered, rawFilter);
 
                 //builder.applyRotationEventBeatCutoff(group, baseBeat, filter);
 
@@ -258,7 +256,7 @@ public abstract class EnvironmentV3 extends Environment {
                     coveredIDs.put(axis, new ArrayList<>());
                 }
                 var covered = coveredIDs.get(axis);
-                var filter = Filter.processFilter(random, lightCount, covered, rawFilter);
+                var filter = Filter.processFilter(lightCount, covered, rawFilter);
 
                 var baseData = new EventBuilder.BaseTranslationData(
                     baseBeat, group, lightCount, filter,
@@ -313,7 +311,7 @@ public abstract class EnvironmentV3 extends Environment {
             var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
             var boxMetaData = colorEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
 
-            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+            var filter = Filter.processFilter(lightCount, coveredIDs, rawFilter);
 
             var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
             var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
@@ -387,7 +385,7 @@ public abstract class EnvironmentV3 extends Environment {
             var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
             var boxMetaData = rotationEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
 
-            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+            var filter = Filter.processFilter(lightCount, coveredIDs, rawFilter);
 
             var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
             var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
@@ -466,7 +464,7 @@ public abstract class EnvironmentV3 extends Environment {
             var rawFilter = indexFilters.get(filterIndex).getAsJsonObject();
             var boxMetaData = translationEventBoxes.get(boxMetaDataIndex).getAsJsonObject();
 
-            var filter = Filter.processFilter(random, lightCount, coveredIDs, rawFilter);
+            var filter = Filter.processFilter(lightCount, coveredIDs, rawFilter);
 
             var beatDistributionValue = JsonUtil.getOrDefault(boxMetaData, "w", JsonElement::getAsFloat, 1f);
             var beatDistributionType = JsonUtil.getOrDefault(boxMetaData, "d", JsonElement::getAsInt, 0);
@@ -694,7 +692,6 @@ public abstract class EnvironmentV3 extends Environment {
         }
 
         var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
-
 
         var boostEvents = new ArrayList<ColorBoostEvent>();
         boostEvents.add(new ColorBoostEvent(0, false));
