@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ErrorMessageMenu extends Menu {
-    public ArrayList<String> lines = new ArrayList<>(List.of("Test", "Second line!!"));
+    public ArrayList<String> lines = new ArrayList<>();
 
     public void setContent(String message) {
         lines = new ArrayList<>(Arrays.stream(message.split("\n")).toList());

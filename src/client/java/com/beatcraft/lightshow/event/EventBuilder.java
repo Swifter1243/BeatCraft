@@ -99,7 +99,7 @@ public class EventBuilder {
 
                     out.add(new RawLightEventV3(
                         beat, beatOffset, group, target,
-                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        (distributionAffectsFirst || !isFirst) ? durationMod : 0,
                         brightnessDistributionEasing.apply(1+distributionMod) * brightness,
                         strobeFrequency, strobeBrightness, strobeFade,
                         eventType, color, easing
