@@ -29,12 +29,12 @@ public class Easing {
             case "easeInCirc", "19" -> Easing::easeInCirc;
             case "easeOutCirc", "20" -> Easing::easeOutCirc;
             case "easeInOutCirc", "21" -> Easing::easeInOutCirc;
-            case "easeInElastic", "22" -> Easing::easeInElastic;
-            case "easeOutElastic", "23" -> Easing::easeOutElastic;
-            case "easeInOutElastic", "24" -> Easing::easeInOutElastic;
-            case "easeInBack", "25" -> Easing::easeInBack;
-            case "easeOutBack", "26" -> Easing::easeOutBack;
-            case "easeInOutBack", "27" -> Easing::easeInOutBack;
+            case "easeInBack", "22" -> Easing::easeInBack;
+            case "easeOutBack", "23" -> Easing::easeOutBack;
+            case "easeInOutBack", "24" -> Easing::easeInOutBack;
+            case "easeInElastic", "25" -> Easing::easeInElastic;
+            case "easeOutElastic", "26" -> Easing::easeOutElastic;
+            case "easeInOutElastic", "27" -> Easing::easeInOutElastic;
             case "easeInBounce", "28" -> Easing::easeInBounce;
             case "easeOutBounce", "29" -> Easing::easeOutBounce;
             case "easeInOutBounce", "30" -> Easing::easeInOutBounce;
