@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.environment.origins;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.lights.ParticleCloudLight;
 import com.beatcraft.render.particle.Particle;
 import net.minecraft.client.render.BufferBuilder;
@@ -44,6 +45,8 @@ public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleS
 
         @Override
         public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
+            if (HUDRenderer.scene != HUDRenderer.MenuScene.InGame) return;
+
             var t = System.nanoTime() / 1_000_000_000d;
             var dt = t - spawnTime;
 
