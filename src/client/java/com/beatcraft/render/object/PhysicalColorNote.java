@@ -123,6 +123,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
             var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f()).add(camPos);
             MemoryPool.release(camPos);
             var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
             BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
                 MeshLoader.COLOR_NOTE_RENDER_MESH.color = data.getColor().toARGB();
                 MeshLoader.COLOR_NOTE_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);

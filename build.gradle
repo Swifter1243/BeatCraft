@@ -39,10 +39,6 @@ repositories {
 		url = "https://mvn.0110.be/releases"
 	}
 
-//	maven {
-//		name "createmod maven"
-//		url "https://maven.createmod.net/"
-//	}
 }
 
 fabricApi {
@@ -94,9 +90,6 @@ dependencies {
 	include(implementation('be.tarsos.dsp:core:2.5'))
 	include(implementation('be.tarsos.dsp:jvm:2.5'))
 
-	// Flywheel
-//	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"
-//	modImplementation "dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_version}"
 }
 
 

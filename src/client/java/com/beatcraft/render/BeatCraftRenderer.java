@@ -290,6 +290,12 @@ public class BeatCraftRenderer {
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
+        noteRenderCalls.clear();
+        arrowRenderCalls.clear();
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+    }
+
+    private static void renderNotes0(Tessellator tessellator, Vector3f cameraPos) {
         // notes and debris
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 

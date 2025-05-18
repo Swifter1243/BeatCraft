@@ -17,6 +17,7 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.item.GeckolibRenderInit;
 import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.replay.PlayRecorder;
@@ -161,6 +162,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
+            InstancedMesh.destroyAll();
             BeatCraftRenderer.bloomfog.unload();
             BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();
