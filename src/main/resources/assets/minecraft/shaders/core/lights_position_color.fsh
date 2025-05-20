@@ -13,15 +13,15 @@ void main() {
     vec2 uv = (screenUV.xy / (screenUV.z * 2.0)) + 0.5;
     float depth = texture(Sampler0, uv).r;
 
-    float fadeHeight = min(max(0, (worldPos.y + 50) / 35), 1);
+    float fadeHeight = clamp((worldPos.y + 50.0) / 35.0, 0.0, 1.0);
 
     color *= fadeHeight;
 
-    if (color.a == 0) {
+    if (color.a == 0.0) {
         discard;
     }
 
-    if (gl_FragCoord.z < depth-0.00001) {
+    if (gl_FragCoord.z < depth + 0.0001) {
         discard;
     }
 

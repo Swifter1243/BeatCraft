@@ -5,7 +5,9 @@ import com.beatcraft.beatmap.Info;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.types.Color;
+import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.joml.Vector3f;
 
@@ -28,7 +30,7 @@ public class ChainNoteLink extends GameplayObject implements ScorableObject {
     public ChainNoteLink loadV3(JsonObject json, Difficulty difficulty) {
         super.loadV3(json, difficulty);
 
-        noteType = NoteType.values()[json.get("c").getAsInt()];
+        noteType = NoteType.values()[JsonUtil.getOrDefault(json, "c", JsonElement::getAsInt, 0)];
 
         applyColorScheme(difficulty.getSetDifficulty());
 

@@ -11,6 +11,7 @@ import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.lightshow.environment.Environment;
 import com.beatcraft.render.HUDRenderer;
+import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
@@ -51,7 +52,7 @@ public abstract class Difficulty {
         this.setDifficulty = setDifficulty;
     }
 
-    public int compareObjects(BeatmapObject o1, BeatmapObject o2) {
+    public static int compareObjects(BeatmapObject o1, BeatmapObject o2) {
         float a = o1.getBeat();
         float b = o2.getBeat();
 
@@ -85,9 +86,9 @@ public abstract class Difficulty {
         chainLinkNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         obstacles.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         arcs.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
-        rotationEvents.sort(this::compareObjects);
-        animateTracks.sort(this::compareObjects);
-        assignPathAnimations.sort(this::compareObjects);
+        rotationEvents.sort(Difficulty::compareObjects);
+        animateTracks.sort(Difficulty::compareObjects);
+        assignPathAnimations.sort(Difficulty::compareObjects);
     }
 
     private void applyRotationEvents() {
@@ -168,7 +169,9 @@ public abstract class Difficulty {
 
     public void render(MatrixStack matrices, Camera camera) {
         if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
-        if (lightShowEnvironment != null) lightShowEnvironment.render(matrices, camera);
+        if (lightShowEnvironment != null) {
+            lightShowEnvironment.render(matrices, camera);
+        }
         if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.render(matrices, camera));
         if (!BeatCraftClient.playerConfig.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.render(matrices, camera));
@@ -195,7 +198,10 @@ public abstract class Difficulty {
     public void update(float beat, double deltaTime) {
         trackLibrary.update(beat);
         parentHandler.update(beat);
-        if (lightShowEnvironment != null) lightShowEnvironment.update(beat, deltaTime);
+        if (lightShowEnvironment != null) {
+            lightShowEnvironment.update(beat, deltaTime);
+            EventVisualizer.update(beat);
+        }
         if (BeatCraftClient.playerConfig.isModifierActive("Zen Mode")) return;
         colorNotes.forEach(o -> o.update(beat));
         if (!BeatCraftClient.playerConfig.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.update(beat));

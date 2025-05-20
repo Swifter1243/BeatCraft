@@ -5,7 +5,12 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 
-public abstract class EnvironmentV4 extends Environment {
+public abstract class EnvironmentV4 extends EnvironmentV3 {
+
+    @Override
+    public float getVersion() {
+        return 4;
+    }
 
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
         loadV4(difficulty, json);

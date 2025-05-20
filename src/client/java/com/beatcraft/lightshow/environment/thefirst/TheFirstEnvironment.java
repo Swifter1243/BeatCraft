@@ -1,18 +1,25 @@
 package com.beatcraft.lightshow.environment.thefirst;
 
-import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.animation.Easing;
+import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.lightshow.environment.EnvironmentV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.RingLightGroup;
 import com.beatcraft.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.lightshow.lights.LightObject;
+import com.beatcraft.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.lights.GlowingCuboid;
+import com.google.gson.JsonObject;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class TheFirstEnvironment extends EnvironmentV2 {
@@ -36,6 +43,36 @@ public class TheFirstEnvironment extends EnvironmentV2 {
      */
 
     private RingLightGroup ringLights;
+
+    private SpectrogramTowers leftSpectrogramTowers;
+    private SpectrogramTowers rightSpectrogramTowers;
+
+    @Override
+    public void loadLightshow(Difficulty difficulty, JsonObject json) {
+        super.loadLightshow(difficulty, json);
+
+        var f = new File(difficulty.getInfo().getSongFilename());
+
+        leftSpectrogramTowers = new SpectrogramTowers(
+            new Vector3f(13.5f, -5f, -80.5f),
+            new Quaternionf(),
+            new Vector3f(0, 0, 2),
+            127,
+            f,
+            SpectrogramTowers.TowerStyle.Cuboid,
+            true
+        );
+        rightSpectrogramTowers = leftSpectrogramTowers.copyTo(
+            new Vector3f(-13.5f, -5f, -80.5f),
+            new Quaternionf()
+        );
+        leftSpectrogramTowers.levelModifier = 0.75f;
+        rightSpectrogramTowers.levelModifier = 0.75f;
+        leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
+        rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
+
+
+    }
 
     private static GlowingCuboid getRunway(boolean isLeft) {
         int sign = isLeft ? 1 : -1;
@@ -339,10 +376,38 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         return new StaticLightsGroup(lights);
     }
 
+
+    private static final float ringRadius = 27;
+    private static final float lightLength = 6;
+    private static final float lightSize = 0.2f;
+
     @Override
     protected LightGroupV2 setupRingLights() {
-        ringLights = new RingLightGroup();
+        ringLights = new RingLightGroup(
+            InnerRing::getInstance,
+            OuterRing::new,
+            () -> new GlowingCuboid(
+                new Hitbox(
+                    new Vector3f(-lightLength/2, -lightSize, -lightSize),
+                    new Vector3f(lightLength/2, lightSize, lightSize)
+                ),
+                new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
+                new Quaternionf()
+            )
+        );
         return ringLights;
+    }
+
+
+    @Override
+    public void render(MatrixStack matrices, Camera camera) {
+        super.render(matrices, camera);
+
+        var t = BeatmapPlayer.getCurrentSeconds();
+
+        leftSpectrogramTowers.render(t);
+        rightSpectrogramTowers.render(t);
+
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.beatcraft.networking.BeatCraftNetworking;
 import com.beatcraft.networking.s2c.MapSyncS2CPayload;
 import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
 import com.beatcraft.world.FirstJoinState;
+import com.beatcraft.world.PlacedEnvironmentState;
 import com.beatcraft.world.gen.BeatCraftWorldGeneration;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.Message;
@@ -65,6 +66,12 @@ public class BeatCraft implements ModInitializer {
 		null
 	);
 
+	private static final PersistentState.Type<PlacedEnvironmentState> placedEnvironmentType = new PersistentState.Type<>(
+		PlacedEnvironmentState::new,
+		PlacedEnvironmentState::fromNbt,
+		null
+	);
+
 	public static Identifier id(String path) {
 		return Identifier.of(MOD_ID, path);
 	}
@@ -110,6 +117,8 @@ public class BeatCraft implements ModInitializer {
 			var stateManager = world.getPersistentStateManager();
 
 			FirstJoinState state = stateManager.getOrCreate(joinStateType, "beatcraft_join_state");
+
+			StructurePlacer.setState(stateManager.getOrCreate(placedEnvironmentType, "beatcraft_placed_environment"));
 
 			isFlatWorld = server.getSaveProperties().isFlatWorld();
 

@@ -16,9 +16,9 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
-import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.ReplayHandler;
 import com.beatcraft.replay.Replayer;
@@ -658,6 +658,29 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int startEventVisualizer(CommandContext<FabricClientCommandSource> context) {
+        EventVisualizer.refresh();
+        return 1;
+    }
+
+    private int setEventVisualizerLookahead(CommandContext<FabricClientCommandSource> context) {
+        playerConfig.setDebugLightshowLookAhead(IntegerArgumentType.getInteger(context, "distance"));
+        EventVisualizer.refresh();
+        return 1;
+    }
+
+    private int setEventVisualizerLookbehind(CommandContext<FabricClientCommandSource> context) {
+        playerConfig.setDebugLightshowLookBehind(IntegerArgumentType.getInteger(context, "distance"));
+        EventVisualizer.refresh();
+        return 1;
+    }
+
+    private int setEventVisualizerSpacing(CommandContext<FabricClientCommandSource> context) {
+        playerConfig.setDebugLightshowBeatSpacing(IntegerArgumentType.getInteger(context, "size"));
+        EventVisualizer.refresh();
+        return 1;
+    }
+
 
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
@@ -745,11 +768,11 @@ public class BeatCraftClient implements ClientModInitializer {
                 .then(literal("disable").executes(this::disableFPFC))
                 .executes(this::toggleFPFC)
             );
-            dispatcher.register(literal("debug")
+            dispatcher.register(literal("bcdebug")
                 .then(literal("set")
-                    .then(argument("key", StringArgumentType.greedyString())
-                        .then(argument("type", StringArgumentType.greedyString())
-                            .then(argument("value", StringArgumentType.greedyString())
+                    .then(argument("key", StringArgumentType.string())
+                        .then(argument("type", StringArgumentType.string())
+                            .then(argument("value", StringArgumentType.string())
                                 .executes(this::setDebugValue)
                             )
                         )
@@ -763,6 +786,26 @@ public class BeatCraftClient implements ClientModInitializer {
                 .then(literal("remove")
                     .then(argument("key", StringArgumentType.greedyString())
                         .executes(this::removeDebugValue)
+                    )
+                )
+            );
+            dispatcher.register(literal("event_renderer")
+                .then(literal("start")
+                    .executes(this::startEventVisualizer)
+                )
+                .then(literal("lookahead")
+                    .then(argument("distance", IntegerArgumentType.integer(0))
+                        .executes(this::setEventVisualizerLookahead)
+                    )
+                )
+                .then(literal("lookbehind")
+                    .then(argument("distance", IntegerArgumentType.integer(0))
+                        .executes(this::setEventVisualizerLookbehind)
+                    )
+                )
+                .then(literal("spacing")
+                    .then(argument("size", IntegerArgumentType.integer(0))
+                        .executes(this::setEventVisualizerSpacing)
                     )
                 )
             );

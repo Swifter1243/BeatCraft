@@ -12,6 +12,28 @@ public class Hitbox {
         this.max = max;
     }
 
+    public float getVolume() {
+        float x = max.x - min.x;
+        float y = max.y - min.y;
+        float z = max.z - min.z;
+
+        int zeroCount = 0;
+        if (x == 0) zeroCount++;
+        if (y == 0) zeroCount++;
+        if (z == 0) zeroCount++;
+
+        if (zeroCount == 0) {
+            return x * y * z;
+        } else if (zeroCount == 1) {
+            return (x == 0) ? y * z : (y == 0) ? x * z : x * y;
+        } else if (zeroCount == 2) {
+            return (x != 0) ? x : (y != 0) ? y : z;
+        } else {
+            return 0f;
+        }
+    }
+
+
     public boolean checkCollision(Vector3f pointA, Vector3f pointB) {
 
         if (isPointInHitbox(pointA) || isPointInHitbox(pointB)) {

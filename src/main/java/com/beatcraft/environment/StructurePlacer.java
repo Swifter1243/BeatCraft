@@ -1,8 +1,8 @@
 package com.beatcraft.environment;
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.environment.structure_placers.EnvironmentPlacer;
-import com.beatcraft.environment.structure_placers.TheFirstStructure;
+import com.beatcraft.environment.structure_placers.*;
+import com.beatcraft.world.PlacedEnvironmentState;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
@@ -11,8 +11,18 @@ import java.util.List;
 
 public class StructurePlacer {
     public static String currentStructure = "";
+    private static PlacedEnvironmentState worldPlacementState;
+
+    public static void setState(PlacedEnvironmentState state) {
+        worldPlacementState = state;
+        currentStructure = state.getPlacedEnvironment();
+    }
 
     private static final EnvironmentPlacer DEFAULT = new TheFirstStructure();
+    private static final EnvironmentPlacer EMPTY = new EmptyStructure();
+    private static final EnvironmentPlacer STRIPS = new StripRunwayPlacer();
+    private static final EnvironmentPlacer TRIANGLE = new TriangleStructure();
+    private static final EnvironmentPlacer NICE = new NiceStructure();
 
     private static final HashMap<String, EnvironmentPlacer> structurePlacers = new HashMap<>();
 
@@ -28,6 +38,10 @@ public class StructurePlacer {
 
     public static void init() {
         structurePlacers.put("Default", DEFAULT);
+        structurePlacers.put("WeaveEnvironment", EMPTY);
+        structurePlacers.put("OriginsEnvironment", STRIPS);
+        structurePlacers.put("TriangleEnvironment", TRIANGLE);
+        structurePlacers.put("NiceEnvironment", NICE);
     }
 
     public static void placeStructure(String struct, ServerWorld world) {
@@ -47,6 +61,7 @@ public class StructurePlacer {
                 }
 
                 currentStructure = struct;
+                worldPlacementState.setPlacedEnvironment(currentStructure);
 
                 current.placeStructure(world);
             }
@@ -67,6 +82,7 @@ public class StructurePlacer {
         }
 
         currentStructure = "";
+        worldPlacementState.setPlacedEnvironment("");
 
         return true;
     }

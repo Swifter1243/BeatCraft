@@ -2,17 +2,19 @@ package com.beatcraft.audio;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.render.HUDRenderer;
 import net.minecraft.client.sound.OggAudioStream;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 
 import javax.sound.sampled.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class BeatmapAudio {
     private int buffer;
@@ -108,22 +110,58 @@ public class BeatmapAudio {
         return (float) size / (frequency * channels * bytesPerSample);
     }
 
+    private static void logErrorAndReset(String path) {
+        HUDRenderer.errorMessagePanel.setContent("\nSong Failed to load!\n\nPlease view logs\nfor more info");
+        BeatCraft.LOGGER.error(
+            """
+                
+                ///
+                /// Song Failed to load: {}
+                /// This is most likely due to the song's encoding.
+                /// Check here for how to fix: https://github.com/Swifter1243/BeatCraft/wiki/Troubleshooting#encoding-issues
+                ///
+                """,
+            path
+        );
+        BeatmapPlayer.currentInfo = null;
+        BeatmapPlayer.currentBeatmap = null;
+        HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+    }
+
     public void loadAudioFromFile(String path) throws IOException {
         closeBuffer();
 
         InputStream inputStream = Files.newInputStream(Path.of(path));
-        OggAudioStream oggAudioStream = new OggAudioStream(inputStream);
+        OggAudioStream oggAudioStream;
+        try {
+            oggAudioStream = new OggAudioStream(inputStream);
+        } catch (IOException e) {
+            logErrorAndReset(path);
+            throw e;
+        }
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
 
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
 
-        ByteBuffer audioData = oggAudioStream.readAll();
+        ByteBuffer audioData;
+        try {
+            audioData = oggAudioStream.readAll();
+        } catch (IOException e) {
+            logErrorAndReset(path);
+            throw e;
+        }
         AL10.alBufferData(buffer, formatID, audioData, sampleRate);
         AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
 
         songDuration = getDuration(buffer);
+
+        if (songDuration == 0) {
+            logErrorAndReset(path);
+            throw new IOException("Song has 0 duration");
+        }
+
 
         isLoaded = true;
         inputStream.close();

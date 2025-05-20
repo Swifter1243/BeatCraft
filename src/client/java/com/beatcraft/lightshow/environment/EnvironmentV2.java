@@ -5,9 +5,11 @@ import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.data.EventGroup;
 import com.beatcraft.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
-import com.beatcraft.lightshow.event.events.LightEvent;
+import com.beatcraft.lightshow.event.events.ColorBoostEvent;
+import com.beatcraft.lightshow.event.events.LightEventV2;
 import com.beatcraft.lightshow.event.events.ValueEvent;
 import com.beatcraft.lightshow.event.handlers.ActionEventHandlerV2;
+import com.beatcraft.lightshow.event.handlers.ColorBoostEventHandler;
 import com.beatcraft.lightshow.event.handlers.LightGroupEventHandlerV2;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
@@ -20,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class EnvironmentV2 extends Environment {
+
+    private ColorBoostEventHandler colorBoostEventHandler = null;
 
     private LightGroupEventHandlerV2 leftRotatingLaserLightHandler = null;
     private LightGroupEventHandlerV2 rightRotatingLaserLightHandler = null;
@@ -36,6 +40,11 @@ public abstract class EnvironmentV2 extends Environment {
 
     private HashMap<EventGroup, LightGroupV2> lightGroups;
     private ArrayList<LightGroupV2> uniqueGroups;
+
+    @Override
+    public float getVersion() {
+        return 2;
+    }
 
     public void bindLightGroup(EventGroup eventGroup, LightGroupV2 lightGroup) {
         lightGroups.put(eventGroup, lightGroup);
@@ -88,28 +97,39 @@ public abstract class EnvironmentV2 extends Environment {
 
     private void loadV2(Difficulty difficulty, JsonObject json) {
         JsonArray events = json.getAsJsonArray("_events");
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
+        var lrlEvents = new ArrayList<LightEventV2>();
+        var rrlEvents = new ArrayList<LightEventV2>();
+        var lrrEvents = new ArrayList<ValueEvent>();
+        var rrrEvents = new ArrayList<ValueEvent>();
+        var backEvents = new ArrayList<LightEventV2>();
+        var centerEvents = new ArrayList<LightEventV2>();
+        var rlEvents = new ArrayList<LightEventV2>();
+        var rlsEvents = new ArrayList<ValueEvent>();
+        var rlzEvents = new ArrayList<ValueEvent>();
+        var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
 
         events.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            EventGroup group = EventGroup.fromType(obj.get("_type").getAsInt());
+            int eventType = obj.get("_type").getAsInt();
+
+            if (eventType == 5) {
+                boostEvents.add(new ColorBoostEvent().loadV2(obj, difficulty));
+
+                return;
+            }
+
+            EventGroup group = EventGroup.fromType(eventType);
+
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV2(obj, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV2(obj, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV2(obj, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV2(obj, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV2(obj, difficulty));
                 case null, default -> {}
@@ -117,15 +137,16 @@ public abstract class EnvironmentV2 extends Environment {
 
         });
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        boostEvents.sort(Difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
 
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
@@ -140,32 +161,42 @@ public abstract class EnvironmentV2 extends Environment {
         ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
+        colorBoostEventHandler = new ColorBoostEventHandler(boostEvents);
     }
 
     private void loadV3(Difficulty difficulty, JsonObject json) {
-        JsonArray events = json.getAsJsonArray("basicBeatmapEvents");
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
+        var events = json.getAsJsonArray("basicBeatmapEvents");
+        var rawBoostEvents = json.getAsJsonArray("colorBoostBeatmapEvents");
+
+        var lrlEvents = new ArrayList<LightEventV2>();
+        var rrlEvents = new ArrayList<LightEventV2>();
+        var lrrEvents = new ArrayList<ValueEvent>();
+        var rrrEvents = new ArrayList<ValueEvent>();
+        var backEvents = new ArrayList<LightEventV2>();
+        var centerEvents = new ArrayList<LightEventV2>();
+        var rlEvents = new ArrayList<LightEventV2>();
+        var rlsEvents = new ArrayList<ValueEvent>();
+        var rlzEvents = new ArrayList<ValueEvent>();
+        var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
+
+        rawBoostEvents.forEach(rawEvent -> {
+            var eventData = rawEvent.getAsJsonObject();
+            boostEvents.add(new ColorBoostEvent().loadV3(eventData, difficulty));
+        });
 
         events.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
             EventGroup group = EventGroup.fromType(obj.get("et").getAsInt());
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV3(obj, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV3(obj, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV3(obj, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV3(obj, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV3(obj, difficulty));
                 case null, default -> {}
@@ -173,15 +204,16 @@ public abstract class EnvironmentV2 extends Environment {
 
         });
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
+        boostEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
@@ -197,21 +229,32 @@ public abstract class EnvironmentV2 extends Environment {
         ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
+        colorBoostEventHandler = new ColorBoostEventHandler(boostEvents);
     }
 
     private void loadV4(Difficulty difficulty, JsonObject json) {
         JsonArray events = json.getAsJsonArray("basicEvents");
         JsonArray eventsData = json.getAsJsonArray("basicEventsData");
 
-        ArrayList<LightEvent> lrlEvents = new ArrayList<>();
-        ArrayList<LightEvent> rrlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> lrrEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rrrEvents = new ArrayList<>();
-        ArrayList<LightEvent> backEvents = new ArrayList<>();
-        ArrayList<LightEvent> centerEvents = new ArrayList<>();
-        ArrayList<LightEvent> rlEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlsEvents = new ArrayList<>();
-        ArrayList<ValueEvent> rlzEvents = new ArrayList<>();
+        var rawBoostEvents = json.getAsJsonArray("colorBoostEvents");
+        var rawBoostEventsData = json.getAsJsonArray("colorBoostEventsData");
+
+        var lrlEvents = new ArrayList<LightEventV2>();
+        var rrlEvents = new ArrayList<LightEventV2>();
+        var lrrEvents = new ArrayList<ValueEvent>();
+        var rrrEvents = new ArrayList<ValueEvent>();
+        var backEvents = new ArrayList<LightEventV2>();
+        var centerEvents = new ArrayList<LightEventV2>();
+        var rlEvents = new ArrayList<LightEventV2>();
+        var rlsEvents = new ArrayList<ValueEvent>();
+        var rlzEvents = new ArrayList<ValueEvent>();
+        var boostEvents = new ArrayList<ColorBoostEvent>();
+        boostEvents.add(new ColorBoostEvent(0, false));
+
+        rawBoostEvents.forEach(rawEvent -> {
+            var obj = rawEvent.getAsJsonObject();
+            boostEvents.add(new ColorBoostEvent().loadV4(obj, rawBoostEventsData, difficulty));
+        });
 
         events.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
@@ -223,13 +266,13 @@ public abstract class EnvironmentV2 extends Environment {
             EventGroup group = EventGroup.fromType(JsonUtil.getOrDefault(data, "t", JsonElement::getAsInt, 0));
 
             switch (group) {
-                case LEFT_LASERS -> lrlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case RIGHT_LASERS -> rrlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
+                case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
-                case BACK_LASERS -> backEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case CENTER_LASERS -> centerEvents.add(new LightEvent().loadV4(obj, data, difficulty));
-                case RING_LIGHTS -> rlEvents.add(new LightEvent().loadV4(obj, data, difficulty));
+                case BACK_LASERS -> backEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
+                case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
                 case null, default -> {}
@@ -238,15 +281,16 @@ public abstract class EnvironmentV2 extends Environment {
         });
 
 
-        lrlEvents.sort(difficulty::compareObjects);
-        rrlEvents.sort(difficulty::compareObjects);
-        lrrEvents.sort(difficulty::compareObjects);
-        rrrEvents.sort(difficulty::compareObjects);
-        backEvents.sort(difficulty::compareObjects);
-        centerEvents.sort(difficulty::compareObjects);
-        rlEvents.sort(difficulty::compareObjects);
-        rlsEvents.sort(difficulty::compareObjects);
-        rlzEvents.sort(difficulty::compareObjects);
+        lrlEvents.sort(Difficulty::compareObjects);
+        rrlEvents.sort(Difficulty::compareObjects);
+        lrrEvents.sort(Difficulty::compareObjects);
+        rrrEvents.sort(Difficulty::compareObjects);
+        backEvents.sort(Difficulty::compareObjects);
+        centerEvents.sort(Difficulty::compareObjects);
+        rlEvents.sort(Difficulty::compareObjects);
+        rlsEvents.sort(Difficulty::compareObjects);
+        rlzEvents.sort(Difficulty::compareObjects);
+        boostEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
@@ -261,6 +305,8 @@ public abstract class EnvironmentV2 extends Environment {
         ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
         ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
+
+        colorBoostEventHandler = new ColorBoostEventHandler(boostEvents);
     }
 
 
@@ -277,6 +323,8 @@ public abstract class EnvironmentV2 extends Environment {
         ringLightHandler.update(beat);
         ringSpinHandler.update(beat);
         ringZoomHandler.update(beat);
+
+        colorBoostEventHandler.update(beat);
 
         for (var group : uniqueGroups) {
             group.update(beat, deltaTime);
@@ -306,6 +354,8 @@ public abstract class EnvironmentV2 extends Environment {
         ringLightHandler.reset();
         ringSpinHandler.reset();
         ringZoomHandler.reset();
+
+        colorBoostEventHandler.reset();
 
         return this;
     }

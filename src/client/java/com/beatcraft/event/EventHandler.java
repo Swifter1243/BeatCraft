@@ -7,13 +7,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class EventHandler<D, E extends IEvent> {
-    private final List<E> events;
-    private final List<E> upcoming = new ArrayList<>();
+    protected final ArrayList<E> events;
+    protected final List<E> upcoming = new ArrayList<>();
     protected final D initialState;
     protected D state;
 
+    public List<E> getEventsInRange(float start, float end) {
+        var out = new ArrayList<E>();
+        for (var event : events) {
+            var s = event.getEventBeat();
+            var e = event.getEventDuration() + s;
+            if (
+                (start <= s && s <= end)
+                || (start <= e && e <= end)
+                || (s <= start && end <= e)
+            ) {
+                out.add(event);
+            }
+        }
+        return out;
+    }
+
     public EventHandler(List<E> events, D initialState) {
-        this.events = events;
+        this.events = new ArrayList<>(events);
         this.initialState = initialState;
         reset();
     }

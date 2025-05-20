@@ -197,6 +197,12 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
                 DebugRenderer.renderArcDebugLines,
                 this::toggleArcLineRenderer
             )
+        ).child(Components.spacer(2)).child(
+            toggleOption(
+                "setting.beatcraft.debug.lightshow_events",
+                BeatCraftClient.playerConfig.doLightshowEventRendering(),
+                this::toggleLightshowEventRendering
+            )
         );
     }
 
@@ -266,6 +272,11 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
     private void toggleArcLineRenderer(ButtonComponent button) {
         DebugRenderer.renderArcDebugLines = !DebugRenderer.renderArcDebugLines;
         button.setMessage(getToggleText(DebugRenderer.renderArcDebugLines));
+    }
+
+    private void toggleLightshowEventRendering(ButtonComponent button) {
+        BeatCraftClient.playerConfig.setLightshowEventRendering(!BeatCraftClient.playerConfig.doLightshowEventRendering());
+        button.setMessage(getToggleText(BeatCraftClient.playerConfig.doLightshowEventRendering()));
     }
 
     private Text getToggleText(boolean state) {

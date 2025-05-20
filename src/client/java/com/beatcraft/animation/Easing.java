@@ -7,37 +7,43 @@ public class Easing {
 
     public static Function<Float, Float> getEasing(String easing) {
         return switch (easing) {
-            case "easeStep" -> Easing::easeStep;
-            case "easeOutQuad" -> Easing::easeOutQuad;
-            case "easeInQuad" -> Easing::easeInQuad;
-            case "easeInOutQuad" -> Easing::easeInOutQuad;
-            case "easeInCubic" -> Easing::easeInCubic;
-            case "easeOutCubic" -> Easing::easeOutCubic;
-            case "easeInOutCubic" -> Easing::easeInOutCubic;
-            case "easeInQuart" -> Easing::easeInQuart;
-            case "easeOutQuart" -> Easing::easeOutQuart;
-            case "easeInOutQuart" -> Easing::easeInOutQuart;
-            case "easeInQuint" -> Easing::easeInQuint;
-            case "easeOutQuint" -> Easing::easeOutQuint;
-            case "easeInOutQuint" -> Easing::easeInOutQuint;
-            case "easeInSine" -> Easing::easeInSine;
-            case "easeOutSine" -> Easing::easeOutSine;
-            case "easeInOutSine" -> Easing::easeInOutSine;
-            case "easeInCirc" -> Easing::easeInCirc;
-            case "easeOutCirc" -> Easing::easeOutCirc;
-            case "easeInOutCirc" -> Easing::easeInOutCirc;
-            case "easeInExpo" -> Easing::easeInExpo;
-            case "easeOutExpo" -> Easing::easeOutExpo;
-            case "easeInOutExpo" -> Easing::easeInOutExpo;
-            case "easeInElastic" -> Easing::easeInElastic;
-            case "easeOutElastic" -> Easing::easeOutElastic;
-            case "easeInOutElastic" -> Easing::easeInOutElastic;
-            case "easeInBack" -> Easing::easeInBack;
-            case "easeOutBack" -> Easing::easeOutBack;
-            case "easeInOutBack" -> Easing::easeInOutBack;
-            case "easeInBounce" -> Easing::easeInBounce;
-            case "easeOutBounce" -> Easing::easeOutBounce;
-            case "easeInOutBounce" -> Easing::easeInOutBounce;
+            case "easeStep", "none", "-1" -> Easing::easeStep;
+            case "easeInQuad", "1" -> Easing::easeInQuad;
+            case "easeOutQuad", "2" -> Easing::easeOutQuad;
+            case "easeInOutQuad", "3" -> Easing::easeInOutQuad;
+            case "easeInSine", "4" -> Easing::easeInSine;
+            case "easeOutSine", "5" -> Easing::easeOutSine;
+            case "easeInOutSine", "6" -> Easing::easeInOutSine;
+            case "easeInCubic", "7" -> Easing::easeInCubic;
+            case "easeOutCubic", "8" -> Easing::easeOutCubic;
+            case "easeInOutCubic", "9" -> Easing::easeInOutCubic;
+            case "easeInQuart", "10" -> Easing::easeInQuart;
+            case "easeOutQuart", "11" -> Easing::easeOutQuart;
+            case "easeInOutQuart", "12" -> Easing::easeInOutQuart;
+            case "easeInQuint", "13" -> Easing::easeInQuint;
+            case "easeOutQuint", "14" -> Easing::easeOutQuint;
+            case "easeInOutQuint", "15" -> Easing::easeInOutQuint;
+            case "easeInExpo", "16" -> Easing::easeInExpo;
+            case "easeOutExpo", "17" -> Easing::easeOutExpo;
+            case "easeInOutExpo", "18" -> Easing::easeInOutExpo;
+            case "easeInCirc", "19" -> Easing::easeInCirc;
+            case "easeOutCirc", "20" -> Easing::easeOutCirc;
+            case "easeInOutCirc", "21" -> Easing::easeInOutCirc;
+            case "easeInBack", "22" -> Easing::easeInBack;
+            case "easeOutBack", "23" -> Easing::easeOutBack;
+            case "easeInOutBack", "24" -> Easing::easeInOutBack;
+            case "easeInElastic", "25" -> Easing::easeInElastic;
+            case "easeOutElastic", "26" -> Easing::easeOutElastic;
+            case "easeInOutElastic", "27" -> Easing::easeInOutElastic;
+            case "easeInBounce", "28" -> Easing::easeInBounce;
+            case "easeOutBounce", "29" -> Easing::easeOutBounce;
+            case "easeInOutBounce", "30" -> Easing::easeInOutBounce;
+
+            // TODO: figure out what these functions should actually be?
+            case "easeBeatSaberInOutBack", "100" -> Easing::easeInOutBack;
+            case "easeBeatSaberInOutElastic", "101" -> Easing::easeInOutElastic;
+            case "easeBeatSaberInOutBounce", "102" -> Easing::easeInOutBounce;
+
             default -> Easing::easeLinear;
         };
     }

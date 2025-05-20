@@ -23,6 +23,13 @@ public class OuterRing extends LightObject {
     private static final int color = 0xFF000000;
     private static final float lightSize = 0.2f;
     private static final float lightOffset = 0.001f;
+    protected boolean lightsOnly = false;
+
+    public static OuterRing getLightsOnly(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
+        var a = new OuterRing(lightFactory);
+        a.lightsOnly = true;
+        return a;
+    }
 
     public OuterRing(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
         orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
@@ -35,6 +42,11 @@ public class OuterRing extends LightObject {
     }
 
     @Override
+    public OuterRing cloneOffset(Vector3f offset) {
+        return this;
+    }
+
+    @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
 
         var pos = new Vector3f(position);
@@ -42,9 +54,11 @@ public class OuterRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
-            _render(b, c, pos, off, ori, rot, bloomfog)
-        );
+        if (!lightsOnly) {
+            BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
+                _render(b, c, pos, off, ori, rot, bloomfog)
+            );
+        }
 
         for (var light : lights) {
             light.setWorldRotation(new Quaternionf(orientation).mul(rotation));

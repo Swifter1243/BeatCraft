@@ -2,6 +2,7 @@ package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -55,7 +56,8 @@ public class Bloomfog {
     public Framebuffer overrideFramebuffer = null;
 
     public SimpleFramebuffer framebuffer;
-    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>();
+    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>(); // Line renders
+    private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls2 = new ArrayList<>(); // Quad renders
     private final Identifier textureId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/main");
     private final BloomfogTex tex;
 
@@ -81,6 +83,7 @@ public class Bloomfog {
     public static ShaderProgram bloomfogColorFix;
     public static ShaderProgram blueNoise;
     public static ShaderProgram lightsPositionColorShader;
+    public static ShaderProgram backlightsPositionColorShader;
 
     public static ShaderProgram blitShader;
     public static ShaderProgram compositeShader;
@@ -99,7 +102,7 @@ public class Bloomfog {
 
     public static SimpleFramebuffer lightDepth;
 
-    private static float radius = 10;
+    private static float radius = 6;
 
     private static final int LAYERS = 5;
 
@@ -119,6 +122,7 @@ public class Bloomfog {
             compositeShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "composite", VertexFormats.POSITION_TEXTURE_COLOR);
             bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
             lightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "lights_position_color", VertexFormats.POSITION_COLOR);
+            backlightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "backlights_position_color", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
             bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
@@ -291,15 +295,13 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
-        SkyFogController.render(buffer, cameraPos, invCameraRotation);
+        //SkyFogController.render(buffer, cameraPos, invCameraRotation);
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation, false);
             MirrorHandler.recordMirrorLightDraw(call);
         }
-
         renderCalls.clear();
-
         var buff = buffer.endNullable();
         if (buff != null) {
             RenderSystem.setShader(() -> bloomfogLineShader);
@@ -367,8 +369,10 @@ public class Bloomfog {
         int l;
         for (l = 0; l < layers; l++) {
             applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE);
-            applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-            applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            if (l == 0) {
+                applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
+                applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
+            }
             //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
             //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //if (l > 0) {

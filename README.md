@@ -3,24 +3,25 @@ A fan-made, faithful recreation of [Beat Saber](https://beatsaber.com/) in Minec
 
 This mod was inspired by deep knowledge of how Beat Saber functions, created from members of the community who have been studying it for years. 
 
-Not only does this mod function like Beat Saber, it's also playable inside of virtual reality using [Vivecraft!](https://modrinth.com/mod/vivecraft) This allows for a truly accurate experience, as you'll really be swinging your sabers physically in 3D space!
+Not only does this mod function like Beat Saber, it's also playable inside virtual reality using [Vivecraft!](https://modrinth.com/mod/vivecraft) This allows for a truly accurate experience, as you'll really be swinging your sabers physically in 3D space!
 
 Experience a unique take on virtual reality's most popular rhythm game, all within the confines of the blocky sandbox we all know and love!
 
 > [!NOTE]
-> This mod is still in active development, please be patient about features that haven't been added yet, and report bugs to the github [here](https://github.com/Swifter1243/BeatCraft/issues) (check that it hasn't already been reported first please)
+> This mod is still in active development, please be patient about features that haven't been added yet, and report bugs to the GitHub [here](https://github.com/Swifter1243/BeatCraft/issues) (check that it hasn't already been reported first please)
 
 ### Download the mod from modrinth!
 BeatCraft can be downloaded from here: [https://modrinth.com/mod/beatcraft](https://modrinth.com/mod/beatcraft)  
 or from releases here on GitHub.  
 > made for fabric 1.21.1  
 
-Mod Dependencies: (these will be auto-downloaded if you get the mod with the modrinth app)
+Mod Dependencies: (these will be auto-downloaded if you get the mod with the modrinth/CurseForge app)
 - [Vivecraft](https://modrinth.com/mod/vivecraft)
 - [GeckoLib](https://modrinth.com/mod/geckolib)
 - [owo-lib](https://modrinth.com/mod/owo-lib)
 - [fabric-api](https://modrinth.com/mod/fabric-api)
-- [sodium](https://modrinth.com/mod/sodium) (optional, but recommended)
+- [sodium](https://modrinth.com/mod/sodium)
+- [iris shaders](https://modrinth.com/mod/iris)
 
 # Feature roadmap
 
@@ -31,8 +32,8 @@ Mod Dependencies: (these will be auto-downloaded if you get the mod with the mod
 - [x] AnimateTrack, AssignPathAnimation events
 - [ ] AssignPlayerToTrack (yes, separating hands and head stuff too), and AssignTrackParent events.
 - [x] V2 lightshows
-- [ ] V3 lightshows
-- [ ] maybe V4 lightshows
+- [x] V3 lightshows
+- [ ] V4 lightshows
 - [x] Chroma coloring features
 - [x] Ingame song selection menu
 - [x] Ingame Beatsaver downloader
@@ -54,7 +55,7 @@ If you break the play area or lose your sabers, refer to [commands](#commands)
 from the creative inventory, sabers will appear black.  
 to fix this there are 2 item components that modify the saber colors:  
 `beatcraft:saber_color`:  
-> a packed color integer. the base 10 equivelent to a hexadecimal value. (ei. 0xFFFFFF, which would be white, is 16777215 in base 10)  
+> a packed color integer. the base 10 equivalent to a hexadecimal value. (ei. 0xFFFFFF, which would be white, is 16777215 in base 10)  
 
 `beatcraft:sync_color`:  
 > can be -1, 0, or 1  
@@ -68,7 +69,10 @@ a set of blocks so you can build environments that feel closer to beat saber.
 Black Mirror Block  
 > has no relation to black mirror.  
 > just a solid black block.  
-> at some point, I'd like this block to be reflective either with shaders or some other magic.  
+
+Reflective Mirror Block
+> top surface will be a mirror if the block is placed at y = -1  
+> Reflections can be disabled in quality settings
 
 Light Tile Blocks  
 > Look kinda glowy.  
@@ -76,7 +80,7 @@ Light Tile Blocks
 
 ## World Gen
 There is a new `BeatCraft` worldgen preset that generates an empty world with a layer of barriers to stand on.  
-Apon joining a new world for the first time:
+Upon joining a new world for the first time:
 - you will be teleported to 0 0 0
 - you will be given a pair of sabers
 - the time will be set to midnight
@@ -92,7 +96,7 @@ Apon joining a new world for the first time:
 > generates the default pillar and runway for playing.  
 
 ### /fpfc <"enable"|"disable">
-> enables/disables FPFC mode, alowing you to interact with the menu while not in VR.
+> enables/disables FPFC mode, allowing you to interact with the menu while not in VR.
 
 ### /color_helper
 `/color_helper hex <hex_code>`  
@@ -123,7 +127,7 @@ Apon joining a new world for the first time:
 > "reset" sets the speed to 1.0. otherwise speed is set to the specified value as long as it's between 0.0001 and 5.0
 
 `/song unload`
-> [!WANRING]
+> [!WARNING]
 > unloads the current map.  
 > running this is likely to break/softlock the mod.
 
@@ -152,5 +156,3 @@ Apon joining a new world for the first time:
 ## Multiplayer
 > [!WARNING]
 > All multiplayer features may be very buggy, so please report bugs [here](https://github.com/Swifter1243/BeatCraft/issues)
-
-Currently, multiplayer lets you and your friends take turns playing maps in the same world.  

@@ -17,6 +17,7 @@ public class MathUtil {
     public static final float RAD2DEG = 180f / (float)Math.PI;
 
     public static float inverseLerp(float a, float b, float t) {
+        if (a == b) return 0;
         return (t - a) / (b - a);
     }
     public static double inverseLerp(double a, double b, double t) {

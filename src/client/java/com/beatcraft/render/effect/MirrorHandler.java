@@ -330,7 +330,7 @@ public class MirrorHandler {
         buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         for (var call : mirrorDraws) {
-            call.accept(buffer, cameraPos, invCameraRotation, true);
+            call.accept(buffer, cameraPos, new Quaternionf(), true);
         }
         mirrorDraws.clear();
         buff = buffer.endNullable();

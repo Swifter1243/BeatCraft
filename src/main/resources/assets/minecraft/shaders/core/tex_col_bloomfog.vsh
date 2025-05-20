@@ -19,7 +19,7 @@ void main() {
     gl_Position = ProjMat * pos2;
     screenUV = vec3(gl_Position.xyz);
 
-    worldPos = WorldTransform * pos2;
+    worldPos = vec4(WorldTransform * pos2).xyz;
     vertexColor = Color;
     texCoord0 = UV0;
 }

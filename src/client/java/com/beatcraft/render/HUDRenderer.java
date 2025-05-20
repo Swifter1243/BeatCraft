@@ -10,6 +10,7 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Rank;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
+import com.beatcraft.menu.ErrorMessageMenu;
 import com.beatcraft.menu.ModifierMenu;
 import com.beatcraft.menu.SongSelectMenu;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
@@ -73,6 +74,7 @@ public class HUDRenderer {
     // Menu Panels
     public static final SongSelectMenu songSelectMenu = new SongSelectMenu();
     public static SongSelectMenuPanel songSelectMenuPanel = null;
+    public static ErrorMessagePanel errorMessagePanel = new ErrorMessagePanel(new ErrorMessageMenu());
 
     public static final PauseScreenPanel pauseScreenPanel = new PauseScreenPanel();
 
@@ -210,9 +212,22 @@ public class HUDRenderer {
         var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
-        var pair = songSelectMenuPanel.raycast(saberPos, saberRot);
+        var pair = errorMessagePanel.raycast(saberPos, saberRot);
 
         Vector2f local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+
+            local = pair.getRight();
+        }
+
+        errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
+        pair = songSelectMenuPanel.raycast(saberPos, saberRot);
+
+        local = null;
 
         if (pair != null) {
             spawnMenuPointerParticle(pair.getLeft(), songSelectMenuPanel.getNormal());

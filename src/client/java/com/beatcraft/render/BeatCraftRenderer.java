@@ -8,6 +8,7 @@ import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
@@ -188,13 +190,12 @@ public class BeatCraftRenderer {
 
     private static void renderLightDepth(Tessellator tessellator, Vector3f cameraPos) {
 
-        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
-        Bloomfog.lightDepth.clear(true);
-
         bloomfog.overrideBuffer = true;
         bloomfog.overrideFramebuffer = Bloomfog.lightDepth;
 
         Bloomfog.lightDepth.beginWrite(true);
+        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
+        Bloomfog.lightDepth.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.enableBlend();
@@ -223,6 +224,30 @@ public class BeatCraftRenderer {
 
     }
 
+    private static void renderBackgroundLights(Tessellator tessellator, Vector3f cameraPos, Matrix4f worldTransform) {
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        var buff = buffer.endNullable();
+        if (buff != null) {
+            Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
+            RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            BufferRenderer.drawWithGlobalProgram(buff);
+        }
+    }
+
     private static void renderEnvironmentLights(Tessellator tessellator, Vector3f cameraPos) {
         // environment lights
 
@@ -232,14 +257,21 @@ public class BeatCraftRenderer {
 
         renderLightDepth(tessellator, cameraPos);
 
+        //renderBackgroundLights(tessellator, cameraPos, worldTransform);
+        //
+        //lightRenderCalls.clear();
+        //if (true) return;
+
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        RenderSystem.setShader(() -> Bloomfog.lightsPositionColorShader);
+        RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
         RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+        //RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+
+        RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
+        RenderSystem.depthMask(false);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -249,12 +281,12 @@ public class BeatCraftRenderer {
 
         var buff = buffer.endNullable();
         if (buff != null) {
-            //buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorter.BY_DISTANCE);
-            Bloomfog.lightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
+            Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
-            Bloomfog.lightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
             BufferRenderer.drawWithGlobalProgram(buff);
         }
+        RenderSystem.defaultBlendFunc();
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
@@ -392,7 +424,8 @@ public class BeatCraftRenderer {
     public static void earlyRender(VertexConsumerProvider vcp) {
 
         Tessellator tessellator = Tessellator.getInstance();
-        Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        var camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+        Vector3f cameraPos = camera.getPos().toVector3f();
 
         renderEarly(vcp);
         renderBloomfogPosCol(tessellator, cameraPos);
@@ -454,6 +487,81 @@ public class BeatCraftRenderer {
         RenderSystem.disableDepthTest();
     }
 
+    public static List<Vector3f[]> getGlowingQuadAsTris(Vector2f quadSize, float glowSpread) {
+        List<Vector3f[]> tris = new ArrayList<>();
+
+        float halfWidth = quadSize.x / 2f;
+        float halfHeight = quadSize.y / 2f;
+        float outerHalfWidth = halfWidth + glowSpread;
+        float outerHalfHeight = halfHeight + glowSpread;
+
+        // Outer corners (alpha = 0)
+        Vector3f topLeftOuter     = new Vector3f(-outerHalfWidth,  outerHalfHeight, 0f);
+        Vector3f topRightOuter    = new Vector3f( outerHalfWidth,  outerHalfHeight, 0f);
+        Vector3f bottomLeftOuter  = new Vector3f(-outerHalfWidth, -outerHalfHeight, 0f);
+        Vector3f bottomRightOuter = new Vector3f( outerHalfWidth, -outerHalfHeight, 0f);
+
+        // Inner corners (alpha = 1)
+        Vector3f topLeftInner     = new Vector3f(-halfWidth,  halfHeight, 1f);
+        Vector3f topRightInner    = new Vector3f( halfWidth,  halfHeight, 1f);
+        Vector3f bottomLeftInner  = new Vector3f(-halfWidth, -halfHeight, 1f);
+        Vector3f bottomRightInner = new Vector3f( halfWidth, -halfHeight, 1f);
+
+        // Center quad
+        tris.add(new Vector3f[] { topLeftInner, bottomLeftInner, bottomRightInner });
+        tris.add(new Vector3f[] { topLeftInner, bottomRightInner, topRightInner });
+
+        // Top glow
+        tris.add(new Vector3f[] { topLeftOuter, topLeftInner, topRightInner });
+        tris.add(new Vector3f[] { topLeftOuter, topRightInner, topRightOuter });
+
+        // Bottom glow
+        tris.add(new Vector3f[] { bottomLeftInner, bottomLeftOuter, bottomRightOuter });
+        tris.add(new Vector3f[] { bottomLeftInner, bottomRightOuter, bottomRightInner });
+
+        // Left glow
+        tris.add(new Vector3f[] { topLeftInner, topLeftOuter, bottomLeftOuter });
+        tris.add(new Vector3f[] { topLeftInner, bottomLeftOuter, bottomLeftInner });
+
+        // Right glow
+        tris.add(new Vector3f[] { bottomRightInner, bottomRightOuter, topRightOuter });
+        tris.add(new Vector3f[] { bottomRightInner, topRightOuter, topRightInner });
+
+        return tris;
+    }
+
+
+    public static List<Vector3f[]> getCubeFaces(
+        Vector3f vxyz, Vector3f vxyZ, Vector3f vXyZ, Vector3f vXyz,
+        Vector3f vxYz, Vector3f vxYZ, Vector3f vXYZ, Vector3f vXYz,
+        boolean includeBottomFace
+    ) {
+        var faces = new ArrayList<Vector3f[]>();
+
+        faces.add(new Vector3f[] {
+            vXYz, vXYZ, vxYZ, vxYz
+        });
+        faces.add(new Vector3f[] {
+            vxyZ, vXyZ, vXYZ, vxYZ
+        });
+        faces.add(new Vector3f[] {
+            vXyz, vxyz, vxYz, vXYz
+        });
+        faces.add(new Vector3f[] {
+            vxyz, vxyZ, vxYZ, vxYz
+        });
+        faces.add(new Vector3f[] {
+            vXyZ, vXyz, vXYz, vXYZ
+        });
+        if (includeBottomFace) {
+            faces.add(new Vector3f[] {
+                vxyz, vXyz, vXyZ, vxyZ
+            });
+        }
+
+        return faces;
+    }
+
     public static List<Vector3f[]> getCubeEdges(Vector3f minPos, Vector3f maxPos) {
         List<Vector3f[]> edges = new ArrayList<>();
 
@@ -501,12 +609,12 @@ public class BeatCraftRenderer {
 
 
         int[][] faceIndices = new int[][] {
-            {0, 1, 2, 3}, // F
+            {3, 2, 1, 0}, // F
             {4, 5, 6, 7}, // B
-            {0, 3, 7, 4}, // L
-            {1, 5, 6, 2}, // R
-            {3, 2, 6, 7}, // T
-            {0, 4, 5, 1}  // D
+            {4, 7, 3, 0}, // L
+            {2, 6, 5, 1}, // R
+            {7, 6, 2, 3}, // T
+            {1, 5, 4, 0}  // D
         };
 
         for (int[] pair : faceIndices) {

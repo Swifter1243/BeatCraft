@@ -125,6 +125,7 @@ public class RingLightHandler extends LightObject {
         }
 
         protected void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+            if (ringLight == null) return;
             ringLight.setOffset(
                 new Vector3f(0, 0, controller.ringOffset * lerpZoom(BeatmapPlayer.getCurrentSeconds()) * index)
                     .rotate(controller.orientation).rotate(controller.rotation)
@@ -170,6 +171,11 @@ public class RingLightHandler extends LightObject {
 
     public void update(float songTime) {
         headRing.update(songTime);
+    }
+
+    @Override
+    public RingLightHandler cloneOffset(Vector3f offset) {
+        return this;
     }
 
     @Override

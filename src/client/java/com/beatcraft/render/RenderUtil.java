@@ -1,5 +1,6 @@
 package com.beatcraft.render;
 
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -81,6 +82,45 @@ public class RenderUtil {
 
         return segments;
     }
+
+    public static List<Pair<Vector3f, Float>[]> chopEdgeLerp(Vector3f a, Vector3f b, float subsection_size, float fa, float fb) {
+        ArrayList<Pair<Vector3f, Float>[]> segments = new ArrayList<>();
+
+        float totalDistance = a.distance(b);
+        Vector3f direction = b.sub(a, new Vector3f()).normalize().mul(subsection_size);
+
+        Vector3f current = new Vector3f(a);
+        float currentDistance = 0;
+
+        while (current.distance(b) > subsection_size) {
+            Vector3f next = new Vector3f(current).add(direction);
+            currentDistance += subsection_size;
+
+            float t1 = currentDistance / totalDistance;
+            float t0 = (currentDistance - subsection_size) / totalDistance;
+
+            float interpolatedA = fa + (fb - fa) * t0;
+            float interpolatedB = fa + (fb - fa) * t1;
+
+            segments.add(new Pair[]{
+                new Pair<>(new Vector3f(current), interpolatedA),
+                new Pair<>(new Vector3f(next), interpolatedB)
+            });
+
+            current.set(next);
+        }
+
+        float tLast = current.distance(a) / totalDistance;
+        float interpolatedLast = fa + (fb - fa) * tLast;
+
+        segments.add(new Pair[]{
+            new Pair<>(new Vector3f(current), interpolatedLast),
+            new Pair<>(new Vector3f(b), fb)
+        });
+
+        return segments;
+    }
+
 
     public static List<Vector3f[]> sliceQuad(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3, float subsection_size) {
         List<Vector3f[]> slicedQuads = new ArrayList<>();
