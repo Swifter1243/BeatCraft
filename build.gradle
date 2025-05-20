@@ -90,22 +90,9 @@ dependencies {
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
 
-	// Spectrogram visualizer
-	include(implementation('be.tarsos.dsp:core:2.5'))
-	include(implementation('be.tarsos.dsp:jvm:2.5'))
+	// Spectrograms
+	include(implementation('org.apache.commons:commons-math3:3.6.1'))
 
-	// Vorbis SPI (OGG decoder)
-	implementation 'com.googlecode.soundlibs:vorbisspi:1.0.3.3'
-
-	// Tritonus Shared Components (needed by VorbisSPI)
-	implementation 'com.googlecode.soundlibs:tritonus-share:0.3.7.2'
-
-	// JOrbis (used internally by VorbisSPI)
-	implementation 'com.googlecode.soundlibs:jorbis:0.0.17.4'
-
-	// Flywheel
-//	modApi "dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_version}"
-//	modImplementation "dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_version}"
 }
 
 
