@@ -1,89 +1,147 @@
 package com.beatcraft.audio;
 
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
-import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
-import be.tarsos.dsp.util.fft.FFT;
-import be.tarsos.dsp.util.fft.HammingWindow;
-import be.tarsos.dsp.util.fft.WindowFunction;
-
 import java.io.File;
-import java.util.Arrays;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
+
+import org.lwjgl.stb.STBVorbis;
+import org.lwjgl.stb.STBVorbisInfo;
+import org.lwjgl.system.MemoryStack;
 
 public class SpectrogramAnalyzer {
     private final int numBars;
-    private final float sampleRate;
-    private final int bufferSize;
-    private final float[][] spectrogram;
-    private final float frameDuration;
-    private final int totalFrames;
+    private final int sampleRate;
+    private final int channels;
+    private final float duration;
+    private final File audioFile;
+    private final boolean loadedSuccessfully;
 
-    public SpectrogramAnalyzer(File oggFile, int numBars) {
+    private static final int FFT_SIZE = 1024;
+
+    private static final float MAGNITUDE_MULTIPLIER = 0.00001f;
+
+    private long decoder;
+
+    public SpectrogramAnalyzer(File audioFile, int numBars) {
         this.numBars = numBars;
-        this.sampleRate = 44100f;
-        this.bufferSize = 1024;
-        this.frameDuration = bufferSize / sampleRate;
+        this.audioFile = audioFile;
 
-        AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(
-            oggFile.getAbsolutePath(),
-            (int) sampleRate,
-            bufferSize,
-            0
-        );
+        int tempSampleRate = 44100;
+        int tempChannels = 2;
+        float tempDuration = 0;
+        boolean success = false;
 
-        FFT fft = new FFT(bufferSize);
-        WindowFunction window = new HammingWindow();
-        int numBins = bufferSize / 2;
-        final float[][][] tempSpectrogram = {new float[4096][numBars]};
-        int[] frameCounter = {0};
+        if (audioFile.exists()) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                IntBuffer error = stack.mallocInt(1);
 
-        dispatcher.addAudioProcessor(new AudioProcessor() {
-            @Override
-            public boolean process(AudioEvent audioEvent) {
-                float[] originalBuffer = audioEvent.getFloatBuffer();
-                float[] buffer = Arrays.copyOf(originalBuffer, originalBuffer.length); // Safe copy
+                decoder = STBVorbis.stb_vorbis_open_filename(audioFile.getAbsolutePath(), error, null);
 
-                window.apply(buffer);
-                float[] amplitudes = new float[numBins];
-                fft.forwardTransform(buffer);
-                fft.modulus(buffer, amplitudes);
+                if (decoder != 0) {
+                    STBVorbisInfo info = STBVorbisInfo.malloc(stack);
+                    STBVorbis.stb_vorbis_get_info(decoder, info);
 
-                float[] bars = new float[numBars];
-                int binPerBar = numBins / numBars;
-                for (int i = 0; i < numBars; i++) {
-                    float sum = 0f;
-                    for (int j = 0; j < binPerBar; j++) {
-                        int binIndex = i * binPerBar + j;
-                        if (binIndex < amplitudes.length)
-                            sum += amplitudes[binIndex];
-                    }
-                    bars[i] = sum / binPerBar;
+                    tempChannels = info.channels();
+                    tempSampleRate = info.sample_rate();
+                    tempDuration = STBVorbis.stb_vorbis_stream_length_in_seconds(decoder);
+                    success = true;
                 }
-
-                if (frameCounter[0] >= tempSpectrogram[0].length) {
-                    tempSpectrogram[0] = Arrays.copyOf(tempSpectrogram[0], tempSpectrogram[0].length * 2);
+            } catch (Exception e) {
+                if (decoder != 0) {
+                    STBVorbis.stb_vorbis_close(decoder);
+                    decoder = 0;
                 }
-
-                tempSpectrogram[0][frameCounter[0]++] = bars;
-                return true;
             }
+        }
 
-            @Override
-            public void processingFinished() {}
-        });
-
-        dispatcher.run();
-
-        totalFrames = frameCounter[0];
-        spectrogram = Arrays.copyOf(tempSpectrogram[0], totalFrames);
+        this.channels = tempChannels;
+        this.sampleRate = tempSampleRate;
+        this.duration = tempDuration;
+        this.loadedSuccessfully = success;
     }
 
     public float[] getLevels(float timeInSeconds) {
-        int frameIndex = (int) (timeInSeconds / frameDuration);
-        if (frameIndex < 0 || frameIndex >= totalFrames) {
-            return new float[numBars]; // silence
+        if (!loadedSuccessfully || decoder == 0) {
+            return new float[numBars];
         }
-        return spectrogram[frameIndex];
+
+        timeInSeconds = Math.max(0, Math.min(duration, timeInSeconds));
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ShortBuffer audioBuffer = stack.mallocShort(FFT_SIZE * channels);
+
+            STBVorbis.stb_vorbis_seek_frame(decoder, (int)(timeInSeconds * sampleRate));
+
+            int samplesRead = STBVorbis.stb_vorbis_get_samples_short_interleaved(decoder, channels, audioBuffer);
+
+            if (samplesRead <= 0) {
+                return new float[numBars];
+            }
+
+            double[] windowedData = new double[FFT_SIZE];
+
+            for (int i = 0; i < FFT_SIZE && i < samplesRead; i++) {
+                short sample;
+
+                if (channels == 2) {
+                    if (i*2+1 < audioBuffer.capacity()) {
+                        sample = (short)((audioBuffer.get(i*2) + audioBuffer.get(i*2+1)) / 2);
+                    } else {
+                        sample = 0;
+                    }
+                } else {
+                    if (i < audioBuffer.capacity()) {
+                        sample = audioBuffer.get(i);
+                    } else {
+                        sample = 0;
+                    }
+                }
+
+                double hammingWindow = 0.54 - 0.46 * Math.cos(2 * Math.PI * i / (FFT_SIZE - 1));
+                windowedData[i] = sample * hammingWindow;
+            }
+
+            for (int i = samplesRead; i < FFT_SIZE; i++) {
+                windowedData[i] = 0;
+            }
+
+            FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+            Complex[] spectrum = fft.transform(windowedData, TransformType.FORWARD);
+
+            int numBins = FFT_SIZE / 2;
+            float[] amplitudes = new float[numBins];
+
+            for (int i = 0; i < numBins; i++) {
+                amplitudes[i] = (float)spectrum[i].abs() * MAGNITUDE_MULTIPLIER;
+            }
+
+            float[] bars = new float[numBars];
+            int binsPerBar = numBins / numBars;
+
+            for (int i = 0; i < numBars; i++) {
+                float sum = 0f;
+                for (int j = 0; j < binsPerBar; j++) {
+                    int binIndex = i * binsPerBar + j;
+                    if (binIndex < amplitudes.length) {
+                        sum += amplitudes[binIndex];
+                    }
+                }
+                bars[i] = sum / binsPerBar;
+            }
+
+            return bars;
+        } catch (Exception e) {
+            return new float[numBars];
+        }
     }
+
+    public float getDuration() {
+        return this.duration;
+    }
+
 }

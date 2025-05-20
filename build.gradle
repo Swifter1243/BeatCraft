@@ -86,9 +86,8 @@ dependencies {
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
 
-	// Spectrogram visualizer
-	include(implementation('be.tarsos.dsp:core:2.5'))
-	include(implementation('be.tarsos.dsp:jvm:2.5'))
+	// Spectrograms
+	include(implementation('org.apache.commons:commons-math3:3.6.1'))
 
 }
 
