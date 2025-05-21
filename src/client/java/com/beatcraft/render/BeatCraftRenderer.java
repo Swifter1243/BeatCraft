@@ -2,12 +2,16 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.Debris;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -17,10 +21,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -393,9 +394,31 @@ public class BeatCraftRenderer {
 
     }
 
-    public static void render() {
 
+    private static Debris test1;
+    private static Debris test2;
+
+    public static void render() {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        if (test1 == null) {
+            test1 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFFFF0000));
+            test2 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFF0000FF));
+
+            test1.persistent = true;
+            test2.persistent = true;
+            BeatcraftParticleRenderer.addParticle(test1);
+            BeatcraftParticleRenderer.addParticle(test2);
+
+        } else {
+            var n = MinecraftClient.getInstance().player.getPos().toVector3f().sub(0, 1.8f, 0);
+            n.normalize();
+            test1.slice.set(n.x, n.y, n.z, (float) BeatCraftDebug.getValue("d", 0f));
+            test2.slice.set(-n.x, -n.y, -n.z, -(float) BeatCraftDebug.getValue("d", 0f));
+
+        }
+
+
 
         renderArcs(Tessellator.getInstance(), cameraPos);
 

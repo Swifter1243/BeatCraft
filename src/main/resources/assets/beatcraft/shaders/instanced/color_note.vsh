@@ -10,6 +10,7 @@ layout(location = 5) in vec4 instance_model_col2;
 layout(location = 6) in vec4 instance_model_col3;
 layout(location = 7) in vec4 instance_color;
 layout(location = 8) in vec2 dissolve_index;
+layout(location = 9) in vec4 slice;
 
 uniform mat4 u_projection;
 uniform mat4 u_view;
@@ -18,6 +19,8 @@ out vec2 v_uv;
 out vec4 v_color;
 out float v_dissolve;
 out float v_index;
+out vec4 v_slice;
+out vec3 v_pos;
 
 void main() {
     mat4 instance_model = mat4(
@@ -32,4 +35,6 @@ void main() {
     v_color = instance_color;
     v_dissolve = dissolve_index.x;
     v_index = dissolve_index.y;
+    v_slice = slice;
+    v_pos = in_position - vec3(0.5);
 }

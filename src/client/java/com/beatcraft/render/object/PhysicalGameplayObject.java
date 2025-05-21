@@ -7,6 +7,7 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
@@ -427,8 +428,35 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return null;
     }
 
-    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
-        // TODO: instance-based system with cut-plane in shader
+    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
+
+        float d = planeNormal.normalize(new Vector3f()).dot(planeIncident);
+
+        var slice = new Vector4f(planeNormal, d);
+        var slice2 = new Vector4f(planeNormal.negate(), d);
+
+
+        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
+
+        Debris left = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
+            slice, color
+        );
+
+        Debris right = new Debris(
+            new Vector3f(notePos),
+            new Quaternionf(noteOrientation),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
+            slice2, color
+        );
+
+        BeatcraftParticleRenderer.addParticle(left);
+        BeatcraftParticleRenderer.addParticle(right);
+
     }
 
 }

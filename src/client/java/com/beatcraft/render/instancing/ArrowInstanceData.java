@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL20;
 import java.nio.FloatBuffer;
 
 import static com.beatcraft.render.instancing.InstancedMesh.*;
-import static com.beatcraft.render.instancing.InstancedMesh.COLOR_SIZE_BYTES;
+import static com.beatcraft.render.instancing.InstancedMesh.VEC4_SIZE_BYTES;
 import static com.beatcraft.render.instancing.InstancedMesh.MATRIX4F_SIZE_BYTES;
 
 public class ArrowInstanceData implements InstancedMesh.InstanceData {
@@ -52,13 +52,13 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
         for (int i = 0; i < 4; i++) {
             int location = TRANSFORM_LOCATION + i;
             GL20.glVertexAttribPointer(location, 4, GL11.GL_FLOAT, false,
-                MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, i * 4 * FLOAT_SIZE_BYTES);
+                MATRIX4F_SIZE_BYTES + VEC4_SIZE_BYTES, i * 4 * FLOAT_SIZE_BYTES);
             GL20.glEnableVertexAttribArray(location);
             ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
         }
 
         GL20.glVertexAttribPointer(COLOR_LOCATION, 4, GL11.GL_FLOAT, false,
-            MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, MATRIX4F_SIZE_BYTES);
+            MATRIX4F_SIZE_BYTES + VEC4_SIZE_BYTES, MATRIX4F_SIZE_BYTES);
         GL20.glEnableVertexAttribArray(COLOR_LOCATION);
         ARBInstancedArrays.glVertexAttribDivisorARB(COLOR_LOCATION, 1);
     }

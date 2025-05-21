@@ -1,45 +1,67 @@
 package com.beatcraft.render.particle;
 
+import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class Debris implements Particle {
 
-    private final TriangleMesh mesh;
     private final Vector3f position;
     private final Quaternionf orientation;
     private final Vector3f velocity;
     private final Vector3f decay;
     private final Quaternionf spin;
+    public Vector4f slice;
+    private final Color color;
     private final double spawnTime;
 
-    public Debris(Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, TriangleMesh mesh) {
-        this.mesh = mesh;
+    public boolean persistent = false;
+
+    public Debris(Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color) {
         this.position = position;
         this.velocity = velocity;
         this.orientation = orientation;
         this.spin = spin;
+        this.slice = slice;
+        this.color = color;
         this.decay = new Vector3f(0.99f, 0.99f, 0.99f);
         this.spawnTime = System.nanoTime() / 1_000_000_000d;
     }
 
     @Override
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
-        orientation.add(spin.mul(deltaTime, new Quaternionf()));
-        position.add(velocity.mul(deltaTime, new Vector3f()));
-        velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
-        velocity.mul(decay);
+        if (!persistent) {
+            orientation.add(spin.mul(deltaTime, new Quaternionf()));
+            position.add(velocity.mul(deltaTime, new Vector3f()));
+            velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
+            velocity.mul(decay);
+        }
 
+        var pos = new Matrix4f().identity();
+        pos.translate(position);
+        pos.translate(new Vector3f(cameraPos).negate());
+        pos.rotate(orientation);
+
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(
+            pos, color,
+            (float) BeatCraftDebug.getValue("dissolve", 0f),
+            slice.hashCode(), slice
+        ));
         // TODO: setup instance-based with cut plane
 
     }
 
     @Override
     public boolean shouldRemove() {
-        return MathUtil.inverseLerp(spawnTime, spawnTime+5f, System.nanoTime()/1_000_000_000d) >= 1;
+        return (!persistent) && MathUtil.inverseLerp(spawnTime, spawnTime+5f, System.nanoTime()/1_000_000_000d) >= 1;
     }
 }

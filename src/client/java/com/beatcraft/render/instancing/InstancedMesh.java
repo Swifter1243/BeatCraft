@@ -2,7 +2,6 @@ package com.beatcraft.render.instancing;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.resource.ResourceFactory;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -10,7 +9,6 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
-import com.beatcraft.data.types.Color;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -19,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
@@ -36,7 +33,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     public static final int VECTOR3F_SIZE_BYTES = 3 * FLOAT_SIZE_BYTES;
     public static final int VECTOR2F_SIZE_BYTES = 2 * FLOAT_SIZE_BYTES;
     public static final int MATRIX4F_SIZE_BYTES = 16 * FLOAT_SIZE_BYTES;
-    public static final int COLOR_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
+    public static final int VEC4_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
 
     private static final int POSITION_LOCATION = 0;
     private static final int TEXCOORD_LOCATION = 1;
