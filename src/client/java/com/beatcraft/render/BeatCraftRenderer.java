@@ -22,6 +22,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.*;
+import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -402,13 +403,14 @@ public class BeatCraftRenderer {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         if (test1 == null) {
-            test1 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFFFF0000));
-            test2 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFF0000FF));
+            test1 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFFFF0000), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
+            test2 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFF0000FF), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
 
             test1.persistent = true;
             test2.persistent = true;
             BeatcraftParticleRenderer.addParticle(test1);
             BeatcraftParticleRenderer.addParticle(test2);
+
 
         } else {
             var n = MinecraftClient.getInstance().player.getPos().toVector3f().sub(0, 1.8f, 0);

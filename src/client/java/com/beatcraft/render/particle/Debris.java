@@ -1,9 +1,11 @@
 package com.beatcraft.render.particle;
 
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
@@ -23,10 +25,11 @@ public class Debris implements Particle {
     public Vector4f slice;
     private final Color color;
     private final double spawnTime;
+    private final InstancedMesh<ColorNoteInstanceData> mesh;
 
     public boolean persistent = false;
 
-    public Debris(Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color) {
+    public Debris(Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color, InstancedMesh<ColorNoteInstanceData> mesh) {
         this.position = position;
         this.velocity = velocity;
         this.orientation = orientation;
@@ -35,12 +38,13 @@ public class Debris implements Particle {
         this.color = color;
         this.decay = new Vector3f(0.99f, 0.99f, 0.99f);
         this.spawnTime = System.nanoTime() / 1_000_000_000d;
+        this.mesh = mesh;
     }
 
     @Override
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
-        if (!persistent) {
-            orientation.add(spin.mul(deltaTime, new Quaternionf()));
+        if (!(persistent || !BeatmapPlayer.isPlaying())) {
+            orientation.mul(spin.mul(deltaTime, new Quaternionf())).normalize();
             position.add(velocity.mul(deltaTime, new Vector3f()));
             velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
             velocity.mul(decay);
@@ -51,7 +55,9 @@ public class Debris implements Particle {
         pos.translate(new Vector3f(cameraPos).negate());
         pos.rotate(orientation);
 
-        MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(
+        pos.scale(0.5f);
+
+        mesh.draw(new ColorNoteInstanceData(
             pos, color,
             (float) BeatCraftDebug.getValue("dissolve", 0f),
             slice.hashCode(), slice

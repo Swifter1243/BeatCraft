@@ -12,6 +12,8 @@ import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.Debris;
 import com.beatcraft.render.mesh.MeshLoader;
@@ -424,17 +426,19 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         contactColor = color;
     }
 
-    public QuadMesh getMesh() {
+    public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return null;
     }
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
 
+        var m = getMesh();
+        if (m == null) return;
+
         float d = planeNormal.normalize(new Vector3f()).dot(planeIncident);
 
         var slice = new Vector4f(planeNormal, d);
         var slice2 = new Vector4f(planeNormal.negate(), d);
-
 
         float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
 
@@ -443,7 +447,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             new Quaternionf(noteOrientation),
             new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
-            slice, color
+            slice, color, m
         );
 
         Debris right = new Debris(
@@ -451,7 +455,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             new Quaternionf(noteOrientation),
             new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
-            slice2, color
+            slice2, color, m
         );
 
         BeatcraftParticleRenderer.addParticle(left);

@@ -13,6 +13,7 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.instancing.ArrowInstanceData;
 import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.logic.GameLogicHandler;
@@ -223,4 +224,8 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
         return getLaneRotation();
     }
 
+    @Override
+    public InstancedMesh<ColorNoteInstanceData> getMesh() {
+        return MeshLoader.COLOR_NOTE_INSTANCED_MESH;
+    }
 }

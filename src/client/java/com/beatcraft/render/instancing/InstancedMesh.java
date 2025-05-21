@@ -218,6 +218,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         setupFrame.init();
 
         GL30.glBindVertexArray(0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
         initialized = true;
     }
@@ -275,9 +276,11 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        GL30.glBindVertexArray(0);
-
         deactivateShaderAndTexture();
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+        GL30.glBindVertexArray(0);
 
         instanceDataList.clear();
     }

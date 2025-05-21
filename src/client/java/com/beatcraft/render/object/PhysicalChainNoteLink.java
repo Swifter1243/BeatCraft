@@ -13,6 +13,7 @@ import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.instancing.ArrowInstanceData;
 import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -172,4 +173,8 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return getLaneRotation();
     }
 
+    @Override
+    public InstancedMesh<ColorNoteInstanceData> getMesh() {
+        return MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH;
+    }
 }
