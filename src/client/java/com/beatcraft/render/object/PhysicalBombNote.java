@@ -38,16 +38,8 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-        BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
-            MeshLoader.BOMB_RENDER_MESH.color = data.getColor().toARGB();
-            MeshLoader.BOMB_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-        });
-        MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
-            MeshLoader.BOMB_RENDER_MESH.color = data.getColor().toARGB();
-            MeshLoader.BOMB_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-        });
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+        // TODO: draw mirrored mesh
 
     }
 

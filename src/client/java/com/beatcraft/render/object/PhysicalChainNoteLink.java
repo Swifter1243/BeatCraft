@@ -5,6 +5,7 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ScorableObject;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatCraftRenderer;
@@ -69,45 +70,20 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return a;
     }
 
+    private static final Color WHITE = new Color(0xFFFFFFFF);
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel arrowModel = mc.getBakedModelManager().getModel(chainDotModelID);
-
         if (!isBaseDissolved()) {
-            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
-                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-            });
-            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
-                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-            });
-            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
-            //    MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-            //    MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
-            //});
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+            // TODO: draw mirrored
         }
 
 
         if (!isArrowDissolved()) {
-            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-            });
-            MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-            });
-            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
-            });
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(localPos.getPositionMatrix(), WHITE);
+            // TODO: draw mirrored, and in bloom
         }
     }
 
@@ -193,8 +169,4 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return getLaneRotation();
     }
 
-    @Override
-    public QuadMesh getMesh() {
-        return MeshLoader.CHAIN_LINK_MESH;
-    }
 }

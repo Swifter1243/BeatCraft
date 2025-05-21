@@ -162,7 +162,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
-            InstancedMesh.destroyAll();
+            InstancedMesh.cleanupAll();
             BeatCraftRenderer.bloomfog.unload();
             BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();

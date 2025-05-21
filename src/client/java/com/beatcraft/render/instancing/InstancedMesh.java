@@ -1,152 +1,340 @@
 package com.beatcraft.render.instancing;
 
-import com.beatcraft.data.types.Color;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.resource.ResourceFactory;
 import net.minecraft.util.Identifier;
-import org.joml.*;
-import org.lwjgl.BufferUtils;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
+import com.beatcraft.data.types.Color;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InstancedMesh {
+
+    private record InstanceData(Matrix4f transform, Color color) {}
+
     private static final ArrayList<InstancedMesh> meshes = new ArrayList<>();
+
+    private static final int FLOAT_SIZE_BYTES = 4;
+    private static final int VECTOR3F_SIZE_BYTES = 3 * FLOAT_SIZE_BYTES;
+    private static final int VECTOR2F_SIZE_BYTES = 2 * FLOAT_SIZE_BYTES;
+    private static final int MATRIX4F_SIZE_BYTES = 16 * FLOAT_SIZE_BYTES;
+    private static final int COLOR_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
+
+    private static final int POSITION_LOCATION = 0;
+    private static final int TEXCOORD_LOCATION = 1;
+    private static final int NORMAL_LOCATION = 2;
+    private static final int TRANSFORM_LOCATION = 3;
+    private static final int COLOR_LOCATION = 7;
+
+    private final Identifier shaderName;
+    private final Identifier texture;
+    private final Triplet<Vector3f, Vector2f, Vector3f>[] vertices;
 
     private int vao;
     private int vertexVbo;
+    private int uvVbo;
+    private int normalVbo;
     private int instanceVbo;
+    private int indicesVbo;
+    private int[] indices;
     private final int vertexCount;
+    private int instanceCount;
 
-    private ShaderProgram shader;
-    private final Identifier shaderName;
+    private final List<InstanceData> instanceDataList;
+    private boolean initialized;
 
-    private boolean initialized = false;
+    private static final Map<Identifier, Integer> shaderProgramCache = new HashMap<>();
 
-    private final Triplet<Vector3f, Vector2f, Vector3f>[] vertices;
+    private int createShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
 
-    private final List<InstanceData> instances = new ArrayList<>();
+        int program = GL20.glCreateProgram();
 
-    public InstancedMesh(Identifier shaderName, Triplet<Vector3f, Vector2f, Vector3f>[] vertices) {
-        this.vertexCount = vertices.length;
-        this.shaderName = shaderName;
-        meshes.add(this);
-        this.vertices = vertices;
+        try {
+            int vertexShader = compileShader(GL20.GL_VERTEX_SHADER, vertexShaderLoc);
+            int fragmentShader = compileShader(GL20.GL_FRAGMENT_SHADER, fragmentShaderLoc);
+
+            GL20.glAttachShader(program, vertexShader);
+            GL20.glAttachShader(program, fragmentShader);
+
+            GL20.glLinkProgram(program);
+            if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+                String log = GL20.glGetProgramInfoLog(program);
+                throw new RuntimeException("Failed to link shader program: " + log);
+            }
+
+            GL20.glValidateProgram(program);
+            if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
+                String log = GL20.glGetProgramInfoLog(program);
+                throw new RuntimeException("Failed to validate shader program: " + log);
+            }
+
+            GL20.glDetachShader(program, vertexShader);
+            GL20.glDetachShader(program, fragmentShader);
+            GL20.glDeleteShader(vertexShader);
+            GL20.glDeleteShader(fragmentShader);
+
+            return program;
+        } catch (Exception e) {
+            GL20.glDeleteProgram(program);
+            throw new RuntimeException("Failed to create shader program", e);
+        }
     }
 
-    private void init() {
-        initialized = true;
-        this.shader = new ShaderProgram(shaderName);
+    private int compileShader(int type, Identifier shaderLoc) throws IOException {
+        var shader = GL20.glCreateShader(type);
+
+        var resourceManager = MinecraftClient.getInstance().getResourceManager();
+        var source = resourceManager.getResource(shaderLoc)
+            .orElseThrow(() -> new IOException("Could not find shader: " + shaderLoc))
+            .getReader()
+            .lines()
+            .reduce("", (a, b) -> a + b + "\n");
+
+        GL20.glShaderSource(shader, source);
+        GL20.glCompileShader(shader);
+
+        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
+            String log = GL20.glGetShaderInfoLog(shader);
+            GL20.glDeleteShader(shader);
+            throw new RuntimeException("Failed to compile shader: " + log);
+        }
+
+        return shader;
+    }
+
+    private int getOrCreateShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
+        var cacheKey = Identifier.of(
+            vertexShaderLoc.getNamespace(),
+            vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath()
+        );
+
+        return shaderProgramCache.computeIfAbsent(cacheKey,
+            k -> createShaderProgram(vertexShaderLoc, fragmentShaderLoc));
+    }
+
+
+    public InstancedMesh(Identifier shaderName, Identifier texture, Triplet<Vector3f, Vector2f, Vector3f>[] vertices) {
+        this.shaderName = shaderName;
+        this.texture = texture;
+        this.vertices = vertices;
+        this.vertexCount = vertices.length;
+        this.instanceDataList = new ArrayList<>();
+        this.instanceCount = 0;
+        this.initialized = false;
+
+        generateIndices();
+
+        meshes.add(this);
+    }
+
+    private void generateIndices() {
+        var indexList = new ArrayList<Integer>();
+
+        for (int i = 0; i < vertexCount; i += 3) {
+            indexList.add(i);
+            indexList.add(i + 1);
+            indexList.add(i + 2);
+        }
+
+        indices = new int[indexList.size()];
+        for (int i = 0; i < indexList.size(); i++) {
+            indices[i] = indexList.get(i);
+        }
+    }
+
+    public void init() {
+        if (initialized) {
+            return;
+        }
 
         vao = GL30.glGenVertexArrays();
-        vertexVbo = GL15.glGenBuffers();
-        instanceVbo = GL15.glGenBuffers();
-
         GL30.glBindVertexArray(vao);
 
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexCount * 8); // 3 pos + 2 uv + 3 norm
-        for (Triplet<Vector3f, Vector2f, Vector3f> v : vertices) {
-            Vector3f pos = v.getA();
-            Vector2f uv = v.getB();
-            Vector3f normal = v.getC();
-
-            vertexBuffer.put(pos.x).put(pos.y).put(pos.z);
-            vertexBuffer.put(uv.x).put(uv.y);
-            vertexBuffer.put(normal.x).put(normal.y).put(normal.z);
+        vertexVbo = GL15.glGenBuffers();
+        FloatBuffer posBuffer = MemoryUtil.memAllocFloat(vertices.length * 3);
+        for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
+            Vector3f pos = vertex.getA();
+            posBuffer.put(pos.x).put(pos.y).put(pos.z);
         }
-        vertexBuffer.flip();
+        posBuffer.flip();
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexVbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexBuffer, GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, posBuffer, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(POSITION_LOCATION, 3, GL11.GL_FLOAT, false, 0, 0);
+        GL20.glEnableVertexAttribArray(POSITION_LOCATION);
+        MemoryUtil.memFree(posBuffer);
 
-        // Vertex attributes: position, uv, normal
-        int stride = 8 * Float.BYTES;
-        int index = 0;
+        uvVbo = GL15.glGenBuffers();
+        FloatBuffer uvBuffer = MemoryUtil.memAllocFloat(vertices.length * 2);
+        for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
+            Vector2f uv = vertex.getB();
+            uvBuffer.put(uv.x).put(uv.y);
+        }
+        uvBuffer.flip();
 
-        // position (location = 0)
-        GL20.glEnableVertexAttribArray(index);
-        GL20.glVertexAttribPointer(index++, 3, GL11.GL_FLOAT, false, stride, 0L);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, uvVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uvBuffer, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(TEXCOORD_LOCATION, 2, GL11.GL_FLOAT, false, 0, 0);
+        GL20.glEnableVertexAttribArray(TEXCOORD_LOCATION);
+        MemoryUtil.memFree(uvBuffer);
 
-        // uv (location = 1)
-        GL20.glEnableVertexAttribArray(index);
-        GL20.glVertexAttribPointer(index++, 2, GL11.GL_FLOAT, false, stride, 3L * Float.BYTES);
+        normalVbo = GL15.glGenBuffers();
+        FloatBuffer normalBuffer = MemoryUtil.memAllocFloat(vertices.length * 3);
+        for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
+            Vector3f normal = vertex.getC();
+            normalBuffer.put(normal.x).put(normal.y).put(normal.z);
+        }
+        normalBuffer.flip();
 
-        // normal (location = 2)
-        GL20.glEnableVertexAttribArray(index);
-        GL20.glVertexAttribPointer(index++, 3, GL11.GL_FLOAT, false, stride, 5L * Float.BYTES);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, normalBuffer, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(NORMAL_LOCATION, 3, GL11.GL_FLOAT, false, 0, 0);
+        GL20.glEnableVertexAttribArray(NORMAL_LOCATION);
+        MemoryUtil.memFree(normalBuffer);
 
+        indicesVbo = GL15.glGenBuffers();
+        IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indices.length);
+        indicesBuffer.put(indices).flip();
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL15.GL_STATIC_DRAW);
+        MemoryUtil.memFree(indicesBuffer);
+
+        instanceVbo = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
-        int instanceStride = 16 * Float.BYTES + 4 * Float.BYTES; // mat4 + vec4
 
-        // Matrix4f (4 vec4s) at location 3 (3-6)
         for (int i = 0; i < 4; i++) {
-            GL20.glEnableVertexAttribArray(index);
-            GL20.glVertexAttribPointer(index, 4, GL11.GL_FLOAT, false, instanceStride, (long) i * 16L);
-            GL33.glVertexAttribDivisor(index++, 1);
+            int location = TRANSFORM_LOCATION + i;
+            GL20.glVertexAttribPointer(location, 4, GL11.GL_FLOAT, false,
+                MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, i * 4 * FLOAT_SIZE_BYTES);
+            GL20.glEnableVertexAttribArray(location);
+            ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
         }
 
-        // Color (vec4) at location 7
-        GL20.glEnableVertexAttribArray(index);
-        GL20.glVertexAttribPointer(index, 4, GL11.GL_FLOAT, false, instanceStride, 64L);
-        GL33.glVertexAttribDivisor(index++, 1);
+        GL20.glVertexAttribPointer(COLOR_LOCATION, 4, GL11.GL_FLOAT, false,
+            MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, MATRIX4F_SIZE_BYTES);
+        GL20.glEnableVertexAttribArray(COLOR_LOCATION);
+        ARBInstancedArrays.glVertexAttribDivisorARB(COLOR_LOCATION, 1);
 
         GL30.glBindVertexArray(0);
 
-        int err = GL11.glGetError();
-        if (err != GL11.GL_NO_ERROR) {
-            System.err.println("OpenGL Error after init: " + err);
-        }
+        initialized = true;
     }
 
-
     public void draw(Matrix4f transform, Color color) {
-        instances.add(new InstanceData(transform, color));
+        instanceDataList.add(new InstanceData(new Matrix4f(transform), color));
     }
 
     public void render(Vector3f cameraPos) {
-        if (instances.isEmpty()) return;
         if (!initialized) init();
-
-        shader.bind();
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(instances.size() * (16 + 4));
-        for (InstanceData instance : instances) {
-            instance.transform.get(buffer);
-            buffer.put(instance.color.getRed());
-            buffer.put(instance.color.getGreen());
-            buffer.put(instance.color.getBlue());
-            buffer.put(instance.color.getAlpha());
+        if (instanceDataList.isEmpty()) {
+            return;
         }
-        buffer.flip();
 
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STREAM_DRAW);
+        instanceCount = instanceDataList.size();
+
+        instanceDataList.sort((a, b) -> {
+            var posA = new Vector3f(a.transform.m30(), a.transform.m31(), a.transform.m32());
+            var posB = new Vector3f(b.transform.m30(), b.transform.m31(), b.transform.m32());
+
+            var distA = posA.distanceSquared(cameraPos);
+            var distB = posB.distanceSquared(cameraPos);
+
+            return Float.compare(distB, distA);
+        });
+
+        activateShaderAndTexture();
 
         GL30.glBindVertexArray(vao);
-        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, vertexCount, instances.size());
+
+        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * (16 + 4));
+
+        for (InstanceData data : instanceDataList) {
+            var matrix = data.transform;
+            instanceDataBuffer.put(matrix.m00()).put(matrix.m01()).put(matrix.m02()).put(matrix.m03());
+            instanceDataBuffer.put(matrix.m10()).put(matrix.m11()).put(matrix.m12()).put(matrix.m13());
+            instanceDataBuffer.put(matrix.m20()).put(matrix.m21()).put(matrix.m22()).put(matrix.m23());
+            instanceDataBuffer.put(matrix.m30()).put(matrix.m31()).put(matrix.m32()).put(matrix.m33());
+
+            var c = data.color;
+            instanceDataBuffer.put(c.getRed()).put(c.getGreen()).put(c.getBlue()).put(c.getAlpha());
+        }
+        instanceDataBuffer.flip();
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceDataBuffer, GL15.GL_DYNAMIC_DRAW);
+        MemoryUtil.memFree(instanceDataBuffer);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+
+        GL31.glDrawElementsInstanced(
+            GL11.GL_TRIANGLES,
+            indices.length,
+            GL11.GL_UNSIGNED_INT,
+            0,
+            instanceCount);
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+
         GL30.glBindVertexArray(0);
 
-        instances.clear();
+        deactivateShaderAndTexture();
+
+        instanceDataList.clear();
     }
 
-    private record InstanceData(Matrix4f transform, Color color) {
-        private InstanceData(Matrix4f transform, Color color) {
-            this.transform = new Matrix4f(transform);
-            this.color = color;
-        }
+    private void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
+        int uniLoc = GL20.glGetUniformLocation(shaderProgram, uni);
+        GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
     }
 
-    private void destroy() {
-        shader.destroy();
+    private void activateShaderAndTexture() {
+        var vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
+        var fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
+
+        int shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
+        GL20.glUseProgram(shaderProgram);
+
+        RenderSystem.setShaderTexture(0, texture);
+
+        RenderSystem.bindTexture(0);
+
+        var projMat = RenderSystem.getProjectionMatrix();
+        var viewMat = RenderSystem.getModelViewMatrix();
+        setMat4f(shaderProgram, "u_projection", projMat);
+        setMat4f(shaderProgram, "u_view", viewMat);
+
+    }
+
+    private void deactivateShaderAndTexture() {
+        GL20.glUseProgram(0);
+    }
+
+    public void cleanup() {
         GL15.glDeleteBuffers(vertexVbo);
+        GL15.glDeleteBuffers(uvVbo);
+        GL15.glDeleteBuffers(normalVbo);
         GL15.glDeleteBuffers(instanceVbo);
+        GL15.glDeleteBuffers(indicesVbo);
         GL30.glDeleteVertexArrays(vao);
     }
 
-    public static void destroyAll() {
-        meshes.forEach(InstancedMesh::destroy);
+    public static void cleanupAll() {
+        meshes.forEach(InstancedMesh::cleanup);
         meshes.clear();
     }
 
 }
-

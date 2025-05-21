@@ -428,43 +428,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
-        if (BeatCraftClient.playerConfig.isReducedDebris() || BeatmapPlayer.currentBeatmap == null) return;
-        QuadMesh mesh = getMesh();
-        if (mesh == null) return;
-        Pair<TriangleMesh, TriangleMesh> meshes = MeshSlicer.sliceMesh(planeIncident, planeNormal, mesh);
-
-        if (color == NoteType.RED) {
-            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
-            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
-        } else {
-            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
-            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
-        }
-
-        meshes.getLeft().texture = MeshLoader.NOTE_TEXTURE;
-        meshes.getRight().texture = MeshLoader.NOTE_TEXTURE;
-
-        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
-
-        Debris left = new Debris(
-            new Vector3f(notePos),
-            new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
-            new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
-            meshes.getLeft()
-        );
-
-        Debris right = new Debris(
-            new Vector3f(notePos),
-            new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
-            new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
-            meshes.getRight()
-        );
-
-        BeatcraftParticleRenderer.addParticle(left);
-        BeatcraftParticleRenderer.addParticle(right);
-
+        // TODO: instance-based system with cut-plane in shader
     }
 
 }

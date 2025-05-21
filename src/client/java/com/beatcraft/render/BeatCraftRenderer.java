@@ -35,8 +35,6 @@ public class BeatCraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
-    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
-    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arrowRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserPreRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
@@ -65,14 +63,6 @@ public class BeatCraftRenderer {
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         BeatmapPlayer.onRender(matrices, camera, tickDelta);
-    }
-
-    public static void recordNoteRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        noteRenderCalls.add(call);
-    }
-
-    public static void recordArrowRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        arrowRenderCalls.add(call);
     }
 
     public static void recordObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
@@ -290,58 +280,13 @@ public class BeatCraftRenderer {
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
-        noteRenderCalls.clear();
-        arrowRenderCalls.clear();
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
-    }
-
-    private static void renderNotes0(Tessellator tessellator, Vector3f cameraPos) {
-        // notes and debris
-        BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(() -> noteShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
-        for (var renderCall : noteRenderCalls) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                BeatCraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        var triBuff = triBuffer.endNullable();
-        if (triBuff != null) {
-            BufferRenderer.drawWithGlobalProgram(triBuff);
-        }
-
-        triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        RenderSystem.setShader(() -> arrowShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
-        for (var renderCall : arrowRenderCalls) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                BeatCraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        triBuff = triBuffer.endNullable();
-        if (triBuff != null) {
-            BufferRenderer.drawWithGlobalProgram(triBuff);
-        }
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
-        noteRenderCalls.clear();
-        arrowRenderCalls.clear();
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
     }
 
     private static void renderFloorLightsPhase1(Tessellator tessellator, Vector3f cameraPos) {

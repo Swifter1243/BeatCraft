@@ -1,99 +1,130 @@
 package com.beatcraft.render.instancing;
 
-import com.beatcraft.BeatCraft;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.FloatBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class ShaderProgram {
     private final int programId;
+    private int vertexShaderId;
+    private int fragmentShaderId;
+    private final Map<String, Integer> uniforms;
 
-    public ShaderProgram(Identifier basePath) {
-        this(
-            loadShaderSource(BeatCraft.id(basePath.getPath() + ".vsh")),
-            loadShaderSource(BeatCraft.id(basePath.getPath() + ".fsh"))
-        );
-    }
-
-    private static String loadShaderSource(Identifier id) {
-        try {
-            Resource resource = MinecraftClient.getInstance()
-                .getResourceManager()
-                .getResource(id)
-                .orElseThrow(() -> new RuntimeException("Shader not found: " + id));
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load shader: " + id, e);
-        }
-    }
-
-    public ShaderProgram(String vertexSource, String fragmentSource) {
-        int vertexShader = compileShader(vertexSource, GL20.GL_VERTEX_SHADER);
-        int fragmentShader = compileShader(fragmentSource, GL20.GL_FRAGMENT_SHADER);
-
+    public ShaderProgram(Identifier shaderId) {
         programId = GL20.glCreateProgram();
-        GL20.glAttachShader(programId, vertexShader);
-        GL20.glAttachShader(programId, fragmentShader);
+        if (programId == 0) {
+            throw new RuntimeException("Could not create shader program");
+        }
+        uniforms = new HashMap<>();
+
+        // Load and compile shaders
+        Identifier vertexShaderPath = Identifier.of(shaderId.getNamespace(), "shaders/" + shaderId.getPath() + ".vert");
+        Identifier fragmentShaderPath = Identifier.of(shaderId.getNamespace(), "shaders/" + shaderId.getPath() + ".frag");
+
+        vertexShaderId = createShader(loadShaderSource(vertexShaderPath), GL20.GL_VERTEX_SHADER);
+        fragmentShaderId = createShader(loadShaderSource(fragmentShaderPath), GL20.GL_FRAGMENT_SHADER);
+
+        link();
+
+        // Create uniforms for commonly used matrices and other values
+        createUniform("viewPos");
+    }
+
+    private String loadShaderSource(Identifier identifier) {
+        StringBuilder shaderSource = new StringBuilder();
+        ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
+        Optional<Resource> resource = resourceManager.getResource(identifier);
+
+        if (resource.isPresent()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.get().getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    shaderSource.append(line).append("\n");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load shader: " + identifier, e);
+            }
+        } else {
+            throw new RuntimeException("Shader not found: " + identifier);
+        }
+
+        return shaderSource.toString();
+    }
+
+    private int createShader(String shaderCode, int shaderType) {
+        int shaderId = GL20.glCreateShader(shaderType);
+        if (shaderId == 0) {
+            throw new RuntimeException("Error creating shader. Type: " + shaderType);
+        }
+
+        GL20.glShaderSource(shaderId, shaderCode);
+        GL20.glCompileShader(shaderId);
+
+        if (GL20.glGetShaderi(shaderId, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
+            String errorLog = GL20.glGetShaderInfoLog(shaderId);
+            throw new RuntimeException("Error compiling shader: " + errorLog);
+        }
+
+        GL20.glAttachShader(programId, shaderId);
+        return shaderId;
+    }
+
+    private void link() {
         GL20.glLinkProgram(programId);
-
-        if (GL20.glGetProgrami(programId, GL20.GL_LINK_STATUS) == 0) {
-            throw new RuntimeException("Failed to link shader: " + GL20.glGetProgramInfoLog(programId));
+        if (GL20.glGetProgrami(programId, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+            String errorLog = GL20.glGetProgramInfoLog(programId);
+            throw new RuntimeException("Error linking shader program: " + errorLog);
         }
 
-        GL20.glDeleteShader(vertexShader);
-        GL20.glDeleteShader(fragmentShader);
-    }
-
-    private int compileShader(String source, int type) {
-        int shader = GL20.glCreateShader(type);
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
-
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == 0) {
-            throw new RuntimeException("Failed to compile shader: " + GL20.glGetShaderInfoLog(shader));
+        // Validate program
+        GL20.glValidateProgram(programId);
+        if (GL20.glGetProgrami(programId, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
+            String errorLog = GL20.glGetProgramInfoLog(programId);
+            throw new RuntimeException("Error validating shader program: " + errorLog);
         }
-
-        return shader;
     }
 
-    public void bind() {
+    public void createUniform(String uniformName) {
+        int uniformLocation = GL20.glGetUniformLocation(programId, uniformName);
+        if (uniformLocation < 0) {
+            throw new RuntimeException("Could not find uniform: " + uniformName);
+        }
+        uniforms.put(uniformName, uniformLocation);
+    }
+
+    public void setUniform(String uniformName, Vector3f value) {
+        if (!uniforms.containsKey(uniformName)) {
+            createUniform(uniformName);
+        }
+        GL20.glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
+    }
+
+    public void use() {
         GL20.glUseProgram(programId);
     }
 
-    public void destroy() {
-        GL20.glDeleteProgram(programId);
-    }
-
-    public int getId() {
-        return programId;
-    }
-
-    public int getUniform(String name) {
-        return GL20.glGetUniformLocation(programId, name);
-    }
-
-    public void setUniformMat4(String name, Matrix4f matrix) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer fb = stack.mallocFloat(16);
-            matrix.get(fb);
-            GL20.glUniformMatrix4fv(getUniform(name), false, fb);
+    public void cleanup() {
+        if (programId != 0) {
+            if (vertexShaderId != 0) {
+                GL20.glDetachShader(programId, vertexShaderId);
+                GL20.glDeleteShader(vertexShaderId);
+            }
+            if (fragmentShaderId != 0) {
+                GL20.glDetachShader(programId, fragmentShaderId);
+                GL20.glDeleteShader(fragmentShaderId);
+            }
+            GL20.glDeleteProgram(programId);
         }
     }
-
-    public void setUniformInt(String name, int value) {
-        GL20.glUniform1i(getUniform(name), value);
-    }
 }
-

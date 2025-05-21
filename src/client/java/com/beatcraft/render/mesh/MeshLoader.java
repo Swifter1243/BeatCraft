@@ -24,20 +24,9 @@ public class MeshLoader {
     public static InstancedMesh BOMB_NOTE_INSTANCED_MESH;
     public static InstancedMesh CHAIN_HEAD_NOTE_INSTANCED_MESH;
     public static InstancedMesh CHAIN_LINK_NOTE_INSTANCED_MESH;
-
-
-    public static QuadMesh COLOR_NOTE_MESH;
-    public static QuadMesh CHAIN_HEAD_MESH;
-    public static QuadMesh CHAIN_LINK_MESH;
-    public static QuadMesh BOMB_MESH;
-
-    public static TriangleMesh COLOR_NOTE_RENDER_MESH;
-    public static TriangleMesh CHAIN_HEAD_RENDER_MESH;
-    public static TriangleMesh CHAIN_LINK_RENDER_MESH;
-    public static TriangleMesh NOTE_ARROW_RENDER_MESH;
-    public static TriangleMesh NOTE_DOT_RENDER_MESH;
-    public static TriangleMesh CHAIN_DOT_RENDER_MESH;
-    public static TriangleMesh BOMB_RENDER_MESH;
+    public static InstancedMesh NOTE_ARROW_INSTANCED_MESH;
+    public static InstancedMesh NOTE_DOT_INSTANCED_MESH;
+    public static InstancedMesh CHAIN_DOT_INSTANCED_MESH;
 
     public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
     public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
@@ -47,44 +36,24 @@ public class MeshLoader {
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
         MeshLoader.modelLoader = modelLoader;
-
-        COLOR_NOTE_MESH = loadMesh(BeatCraft.id("item/color_note"));
-        COLOR_NOTE_MESH.texture = NOTE_TEXTURE;
-        CHAIN_HEAD_MESH = loadMesh(BeatCraft.id("item/color_note_chain_head"));
-        CHAIN_HEAD_MESH.texture = NOTE_TEXTURE;
-        CHAIN_LINK_MESH = loadMesh(BeatCraft.id("item/color_note_chain_link"));
-        CHAIN_LINK_MESH.texture = NOTE_TEXTURE;
-        BOMB_MESH = loadMesh(BeatCraft.id("item/bomb_note"));
-        BOMB_MESH.texture = NOTE_TEXTURE;
-
-        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note"));
-
-        var arrow_mesh = loadMesh(BeatCraft.id("item/note_arrow"));
-        arrow_mesh.texture = ARROW_TEXTURE;
-        var dot_mesh = loadMesh(BeatCraft.id("item/note_dot"));
-        dot_mesh.texture = ARROW_TEXTURE;
-        var chain_dot_mesh = loadMesh(BeatCraft.id("item/chain_note_dot"));
-        chain_dot_mesh.texture = ARROW_TEXTURE;
-
-        COLOR_NOTE_RENDER_MESH = COLOR_NOTE_MESH.toTriangleMesh();
-        CHAIN_HEAD_RENDER_MESH = CHAIN_HEAD_MESH.toTriangleMesh();
-        CHAIN_LINK_RENDER_MESH = CHAIN_LINK_MESH.toTriangleMesh();
-        BOMB_RENDER_MESH = BOMB_MESH.toTriangleMesh();
-
-        NOTE_ARROW_RENDER_MESH = arrow_mesh.toTriangleMesh();
-        NOTE_DOT_RENDER_MESH = dot_mesh.toTriangleMesh();
-        CHAIN_DOT_RENDER_MESH = chain_dot_mesh.toTriangleMesh();
+        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note"), NOTE_TEXTURE, "instanced/color_note");
+        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_head"), NOTE_TEXTURE, "instanced/color_note");
+        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_link"), NOTE_TEXTURE, "instanced/color_note");
+        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/bomb_note"), NOTE_TEXTURE, "instanced/bomb_note");
+        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_arrow"), ARROW_TEXTURE, "instanced/arrow");
+        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_dot"), ARROW_TEXTURE, "instanced/arrow");
+        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/chain_note_dot"), ARROW_TEXTURE, "instanced/arrow");
 
     }
 
-    public static InstancedMesh loadInstancedMesh(Identifier identifier) {
+    public static InstancedMesh loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet) {
         try {
             JsonUnbakedModel model = modelLoader.beatCraft$loadJsonModel(identifier);
             var vertices = new ArrayList<Triplet<Vector3f, Vector2f, Vector3f>>();
 
             model.getElements().forEach(element -> {
-                Vector3f min = element.from.mul(1/32f, new Vector3f());
-                Vector3f max = element.to.mul(1/32f, new Vector3f());
+                Vector3f min = element.from.mul(1/16f, new Vector3f());
+                Vector3f max = element.to.mul(1/16f, new Vector3f());
 
                 float angleDegrees;
                 Direction.Axis axis;
@@ -92,7 +61,7 @@ public class MeshLoader {
                 if (element.rotation != null) {
                     angleDegrees = element.rotation.angle();
                     axis = element.rotation.axis();
-                    origin = element.rotation.origin().mul(0.5f);
+                    origin = element.rotation.origin();
                 } else {
                     axis = Direction.Axis.X;
                     angleDegrees = 0;
@@ -172,10 +141,12 @@ public class MeshLoader {
                     }
 
                     vertices.addAll(List.of(
-                        new Triplet<>(verts.get(0), uvs[0], new Vector3f(normal)),
-                        new Triplet<>(verts.get(1), uvs[1], new Vector3f(normal)),
+                        new Triplet<>(verts.get(3), uvs[3], new Vector3f(normal)),
                         new Triplet<>(verts.get(2), uvs[2], new Vector3f(normal)),
-                        new Triplet<>(verts.get(3), uvs[3], normal)
+                        new Triplet<>(verts.get(0), uvs[0], new Vector3f(normal)),
+                        new Triplet<>(verts.get(2), uvs[2], new Vector3f(normal)),
+                        new Triplet<>(verts.get(1), uvs[1], new Vector3f(normal)),
+                        new Triplet<>(verts.get(0), uvs[0], normal)
                     ));
 
                 });
@@ -187,7 +158,7 @@ public class MeshLoader {
             for (int i = 0; i < vertices.size(); i++) {
                 arr[i] = vertices.get(i);
             }
-            return new InstancedMesh(BeatCraft.id("shaders/instanced/color_note"), arr);
+            return new InstancedMesh(BeatCraft.id(shaderSet), texture, arr);
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to load model json!", e);
             throw new RuntimeException(e);
