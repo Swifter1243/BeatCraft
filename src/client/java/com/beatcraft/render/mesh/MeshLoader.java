@@ -2,6 +2,9 @@ package com.beatcraft.render.mesh;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
+import com.beatcraft.render.instancing.ArrowInstanceData;
+import com.beatcraft.render.instancing.BombNoteInstanceData;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.instancing.InstancedMesh;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElementFace;
@@ -20,13 +23,13 @@ import java.util.List;
 
 public class MeshLoader {
 
-    public static InstancedMesh COLOR_NOTE_INSTANCED_MESH;
-    public static InstancedMesh BOMB_NOTE_INSTANCED_MESH;
-    public static InstancedMesh CHAIN_HEAD_NOTE_INSTANCED_MESH;
-    public static InstancedMesh CHAIN_LINK_NOTE_INSTANCED_MESH;
-    public static InstancedMesh NOTE_ARROW_INSTANCED_MESH;
-    public static InstancedMesh NOTE_DOT_INSTANCED_MESH;
-    public static InstancedMesh CHAIN_DOT_INSTANCED_MESH;
+    public static InstancedMesh<ColorNoteInstanceData> COLOR_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<BombNoteInstanceData> BOMB_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ColorNoteInstanceData> CHAIN_HEAD_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ColorNoteInstanceData> CHAIN_LINK_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> NOTE_ARROW_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> NOTE_DOT_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> CHAIN_DOT_INSTANCED_MESH;
 
     public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
     public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
@@ -46,7 +49,7 @@ public class MeshLoader {
 
     }
 
-    public static InstancedMesh loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet) {
+    public static <T extends InstancedMesh.InstanceData> InstancedMesh<T> loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet) {
         try {
             JsonUnbakedModel model = modelLoader.beatCraft$loadJsonModel(identifier);
             var vertices = new ArrayList<Triplet<Vector3f, Vector2f, Vector3f>>();
@@ -158,7 +161,7 @@ public class MeshLoader {
             for (int i = 0; i < vertices.size(); i++) {
                 arr[i] = vertices.get(i);
             }
-            return new InstancedMesh(BeatCraft.id(shaderSet), texture, arr);
+            return new InstancedMesh<>(BeatCraft.id(shaderSet), texture, arr);
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to load model json!", e);
             throw new RuntimeException(e);

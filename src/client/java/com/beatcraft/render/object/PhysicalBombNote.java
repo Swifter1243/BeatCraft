@@ -6,6 +6,7 @@ import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.BombNoteInstanceData;
 import com.beatcraft.render.mesh.MeshLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
@@ -38,7 +39,7 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor()));
         // TODO: draw mirrored mesh
 
     }

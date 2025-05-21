@@ -19,24 +19,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
-public class InstancedMesh {
+public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
-    private record InstanceData(Matrix4f transform, Color color) {}
+    public interface InstanceData {
+        Matrix4f getTransform();
+        void putData(FloatBuffer buffer);
+        int getFrameSize();
+        void init();
+    }
 
-    private static final ArrayList<InstancedMesh> meshes = new ArrayList<>();
+    private static final ArrayList<InstancedMesh<? extends InstanceData>> meshes = new ArrayList<>();
 
-    private static final int FLOAT_SIZE_BYTES = 4;
-    private static final int VECTOR3F_SIZE_BYTES = 3 * FLOAT_SIZE_BYTES;
-    private static final int VECTOR2F_SIZE_BYTES = 2 * FLOAT_SIZE_BYTES;
-    private static final int MATRIX4F_SIZE_BYTES = 16 * FLOAT_SIZE_BYTES;
-    private static final int COLOR_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
+    public static final int FLOAT_SIZE_BYTES = 4;
+    public static final int VECTOR3F_SIZE_BYTES = 3 * FLOAT_SIZE_BYTES;
+    public static final int VECTOR2F_SIZE_BYTES = 2 * FLOAT_SIZE_BYTES;
+    public static final int MATRIX4F_SIZE_BYTES = 16 * FLOAT_SIZE_BYTES;
+    public static final int COLOR_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
 
     private static final int POSITION_LOCATION = 0;
     private static final int TEXCOORD_LOCATION = 1;
     private static final int NORMAL_LOCATION = 2;
-    private static final int TRANSFORM_LOCATION = 3;
-    private static final int COLOR_LOCATION = 7;
 
     private final Identifier shaderName;
     private final Identifier texture;
@@ -52,7 +56,7 @@ public class InstancedMesh {
     private final int vertexCount;
     private int instanceCount;
 
-    private final List<InstanceData> instanceDataList;
+    private final List<I> instanceDataList;
     private boolean initialized;
 
     private static final Map<Identifier, Integer> shaderProgramCache = new HashMap<>();
@@ -154,7 +158,7 @@ public class InstancedMesh {
         }
     }
 
-    public void init() {
+    public void init(I setupFrame) {
         if (initialized) {
             return;
         }
@@ -214,39 +218,30 @@ public class InstancedMesh {
         instanceVbo = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
 
-        for (int i = 0; i < 4; i++) {
-            int location = TRANSFORM_LOCATION + i;
-            GL20.glVertexAttribPointer(location, 4, GL11.GL_FLOAT, false,
-                MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, i * 4 * FLOAT_SIZE_BYTES);
-            GL20.glEnableVertexAttribArray(location);
-            ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
-        }
-
-        GL20.glVertexAttribPointer(COLOR_LOCATION, 4, GL11.GL_FLOAT, false,
-            MATRIX4F_SIZE_BYTES + COLOR_SIZE_BYTES, MATRIX4F_SIZE_BYTES);
-        GL20.glEnableVertexAttribArray(COLOR_LOCATION);
-        ARBInstancedArrays.glVertexAttribDivisorARB(COLOR_LOCATION, 1);
+        setupFrame.init();
 
         GL30.glBindVertexArray(0);
 
         initialized = true;
     }
 
-    public void draw(Matrix4f transform, Color color) {
-        instanceDataList.add(new InstanceData(new Matrix4f(transform), color));
+    public void draw(I data) {
+        instanceDataList.add(data);
     }
 
     public void render(Vector3f cameraPos) {
-        if (!initialized) init();
         if (instanceDataList.isEmpty()) {
             return;
         }
+        if (!initialized) init(instanceDataList.getFirst());
 
         instanceCount = instanceDataList.size();
 
         instanceDataList.sort((a, b) -> {
-            var posA = new Vector3f(a.transform.m30(), a.transform.m31(), a.transform.m32());
-            var posB = new Vector3f(b.transform.m30(), b.transform.m31(), b.transform.m32());
+            var ta = a.getTransform();
+            var tb = b.getTransform();
+            var posA = new Vector3f(ta.m30(), ta.m31(), ta.m32());
+            var posB = new Vector3f(tb.m30(), tb.m31(), tb.m32());
 
             var distA = posA.distanceSquared(cameraPos);
             var distB = posB.distanceSquared(cameraPos);
@@ -258,17 +253,11 @@ public class InstancedMesh {
 
         GL30.glBindVertexArray(vao);
 
-        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * (16 + 4));
+        // mat4 + vec4 + float
+        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * instanceDataList.getFirst().getFrameSize());
 
         for (InstanceData data : instanceDataList) {
-            var matrix = data.transform;
-            instanceDataBuffer.put(matrix.m00()).put(matrix.m01()).put(matrix.m02()).put(matrix.m03());
-            instanceDataBuffer.put(matrix.m10()).put(matrix.m11()).put(matrix.m12()).put(matrix.m13());
-            instanceDataBuffer.put(matrix.m20()).put(matrix.m21()).put(matrix.m22()).put(matrix.m23());
-            instanceDataBuffer.put(matrix.m30()).put(matrix.m31()).put(matrix.m32()).put(matrix.m33());
-
-            var c = data.color;
-            instanceDataBuffer.put(c.getRed()).put(c.getGreen()).put(c.getBlue()).put(c.getAlpha());
+            data.putData(instanceDataBuffer);
         }
         instanceDataBuffer.flip();
 

@@ -9,6 +9,7 @@ layout(location = 4) in vec4 instance_model_col1;
 layout(location = 5) in vec4 instance_model_col2;
 layout(location = 6) in vec4 instance_model_col3;
 layout(location = 7) in vec4 instance_color;
+layout(location = 8) in float dissolve;
 
 uniform mat4 u_projection;
 uniform mat4 u_view;

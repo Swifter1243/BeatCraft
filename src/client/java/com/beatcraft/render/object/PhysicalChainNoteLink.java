@@ -6,10 +6,13 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.ArrowInstanceData;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -76,13 +79,13 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         var localPos = matrices.peek();
 
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
             // TODO: draw mirrored
         }
 
 
         if (!isArrowDissolved()) {
-            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(localPos.getPositionMatrix(), WHITE);
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
             // TODO: draw mirrored, and in bloom
         }
     }

@@ -6,10 +6,13 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ChainNoteHead;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.ArrowInstanceData;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -54,16 +57,13 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel arrowModel = mc.getBakedModelManager().getModel(PhysicalColorNote.noteArrowModelID);
-
-
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
             // TODO: draw mirrored mesh
         }
 
         if (!isArrowDissolved()) {
-            MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(localPos.getPositionMatrix(), WHITE);
+            MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
             // TODO: draw mirrored, and in bloom
 
         }

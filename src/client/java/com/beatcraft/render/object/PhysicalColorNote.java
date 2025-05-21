@@ -7,9 +7,12 @@ import com.beatcraft.beatmap.data.object.ColorNote;
 import com.beatcraft.beatmap.data.CutDirection;
 import com.beatcraft.beatmap.data.object.ScorableObject;
 import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.ArrowInstanceData;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.logic.GameLogicHandler;
@@ -121,16 +124,16 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
 
         if (!isBaseDissolved()) {
-            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(localPos.getPositionMatrix(), data.getColor());
+            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
             // TODO: draw mirrored
         }
 
         if (!isArrowDissolved()) {
             if (getData().getCutDirection() == CutDirection.DOT) {
-                MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(localPos.getPositionMatrix(), WHITE);
+                MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
                 // TODO: draw mirrored and bloom
             } else {
-                MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(localPos.getPositionMatrix(), WHITE);
+                MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
                 // TODO: draw mirrored and bloom
             }
         }
