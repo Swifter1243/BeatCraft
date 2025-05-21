@@ -58,7 +58,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         var localPos = matrices.peek();
 
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
+            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
             // TODO: draw mirrored mesh
         }
 

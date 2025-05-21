@@ -63,6 +63,21 @@ public abstract class Difficulty {
         }
     }
 
+    private void indexObjects() {
+        int i = 0;
+        for (var note : colorNotes) note.getData().setIndex(i++);
+        i = 0;
+        for (var bomb : bombNotes) bomb.getData().setIndex(i++);
+        i = 0;
+        for (var head : chainHeadNotes) head.getData().setIndex(i++);
+        i = 0;
+        for (var link : chainLinkNotes) link.getData().setIndex(i++);
+        i = 0;
+        for (var wall : obstacles) wall.getData().setIndex(i++);
+        i = 0;
+        for (var arc : arcs) arc.getData().setIndex(i++);
+    }
+
     private void sortObjectsByTime() {
         colorNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
         bombNotes.sort((o1, o2) -> compareObjects(o1.getData(), o2.getData()));
@@ -140,6 +155,7 @@ public abstract class Difficulty {
         finalizeBaseRotations();
         applyRotationEvents();
         setupAnimatedProperties();
+        indexObjects();
     }
 
     public Info getInfo() {

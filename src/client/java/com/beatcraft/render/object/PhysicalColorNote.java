@@ -124,7 +124,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
 
         if (!isBaseDissolved()) {
-            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
+            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
             // TODO: draw mirrored
         }
 

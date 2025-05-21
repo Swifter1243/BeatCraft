@@ -79,7 +79,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         var localPos = matrices.peek();
 
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f)));
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
             // TODO: draw mirrored
         }
 
