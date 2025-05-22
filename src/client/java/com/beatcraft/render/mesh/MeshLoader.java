@@ -31,6 +31,18 @@ public class MeshLoader {
     public static InstancedMesh<ArrowInstanceData> NOTE_DOT_INSTANCED_MESH;
     public static InstancedMesh<ArrowInstanceData> CHAIN_DOT_INSTANCED_MESH;
 
+    public static InstancedMesh<ColorNoteInstanceData> MIRROR_COLOR_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<BombNoteInstanceData> MIRROR_BOMB_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ColorNoteInstanceData> MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ColorNoteInstanceData> MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> MIRROR_NOTE_ARROW_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> MIRROR_NOTE_DOT_INSTANCED_MESH;
+    public static InstancedMesh<ArrowInstanceData> MIRROR_CHAIN_DOT_INSTANCED_MESH;
+
+    public static TriangleMesh NOTE_ARROW_RENDER_MESH;
+    public static TriangleMesh NOTE_DOT_RENDER_MESH;
+    public static TriangleMesh CHAIN_DOT_RENDER_MESH;
+
     public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
     public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
 
@@ -46,6 +58,25 @@ public class MeshLoader {
         NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_arrow"), ARROW_TEXTURE, "instanced/arrow");
         NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_dot"), ARROW_TEXTURE, "instanced/arrow");
         CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/chain_note_dot"), ARROW_TEXTURE, "instanced/arrow");
+
+        MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
+        MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH = CHAIN_HEAD_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH = CHAIN_LINK_NOTE_INSTANCED_MESH.copy();
+        MIRROR_NOTE_ARROW_INSTANCED_MESH = NOTE_ARROW_INSTANCED_MESH.copy();
+        MIRROR_NOTE_DOT_INSTANCED_MESH = NOTE_DOT_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_DOT_INSTANCED_MESH = CHAIN_DOT_INSTANCED_MESH.copy();
+
+        var arrow_mesh = loadMesh(BeatCraft.id("item/note_arrow"));
+        arrow_mesh.texture = ARROW_TEXTURE;
+        var dot_mesh = loadMesh(BeatCraft.id("item/note_dot"));
+        dot_mesh.texture = ARROW_TEXTURE;
+        var chain_dot_mesh = loadMesh(BeatCraft.id("item/chain_note_dot"));
+        chain_dot_mesh.texture = ARROW_TEXTURE;
+
+        NOTE_ARROW_RENDER_MESH = arrow_mesh.toTriangleMesh();
+        NOTE_DOT_RENDER_MESH = dot_mesh.toTriangleMesh();
+        CHAIN_DOT_RENDER_MESH = chain_dot_mesh.toTriangleMesh();
 
     }
 

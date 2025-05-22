@@ -17,6 +17,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -151,6 +152,24 @@ public class MirrorHandler {
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+    }
+
+    private static void renderNotes0(Tessellator tessellator, Vector3f cameraPos) {
         // notes and debris
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
@@ -313,6 +332,13 @@ public class MirrorHandler {
             mirrorArrows.clear();
             mirrorWallGlows.clear();
             obstacleRenderCalls.clear();
+            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
             RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.disableDepthTest();

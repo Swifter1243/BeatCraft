@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
@@ -25,6 +26,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         void putData(FloatBuffer buffer);
         int getFrameSize();
         void init();
+        int[] getLocations();
     }
 
     private static final ArrayList<InstancedMesh<? extends InstanceData>> meshes = new ArrayList<>();
@@ -140,6 +142,10 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         meshes.add(this);
     }
 
+    public InstancedMesh<I> copy() {
+        return new InstancedMesh<>(shaderName, texture, vertices);
+    }
+
     private void generateIndices() {
         var indexList = new ArrayList<Integer>();
 
@@ -227,11 +233,17 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         instanceDataList.add(data);
     }
 
+    public void cancelDraws() {
+        instanceDataList.clear();
+    }
+
     public void render(Vector3f cameraPos) {
         if (instanceDataList.isEmpty()) {
             return;
         }
         if (!initialized) init(instanceDataList.getFirst());
+
+        var attrLocations = instanceDataList.getFirst().getLocations();
 
         instanceCount = instanceDataList.size();
 
@@ -247,9 +259,22 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             return Float.compare(distB, distA);
         });
 
-        activateShaderAndTexture();
+        IntBuffer vaoBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL30.GL_VERTEX_ARRAY_BINDING, vaoBuf);
+        int oldVAO = vaoBuf.get(0);
+
+        IntBuffer vboBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL15.GL_ARRAY_BUFFER_BINDING, vboBuf);
+        int oldVBO = vboBuf.get(0);
 
         GL30.glBindVertexArray(vao);
+
+        for (var loc : attrLocations) {
+            ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
+        }
+
+        activateShaderAndTexture();
+
 
         // mat4 + vec4 + float
         FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * instanceDataList.getFirst().getFrameSize());
@@ -278,11 +303,16 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         deactivateShaderAndTexture();
 
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        for (var loc : attrLocations) {
+            ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
+        }
 
-        GL30.glBindVertexArray(0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
+        GL30.glBindVertexArray(oldVAO);
 
         instanceDataList.clear();
+
+
     }
 
     private void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {

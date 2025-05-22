@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.BombNote;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.instancing.BombNoteInstanceData;
@@ -14,6 +15,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -39,8 +41,20 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
+        var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+        var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var flipped = new Matrix4f().scale(1, -1, 1);
+        flipped.translate(0, c.y * 2f, 0);
+        flipped.translate(renderPos);
+        flipped.rotate(renderRotation);
+        flipped.scale(0.5f);
+
+        renderPos.add(c);
+
         MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor()));
-        // TODO: draw mirrored mesh
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor()));
 
     }
 

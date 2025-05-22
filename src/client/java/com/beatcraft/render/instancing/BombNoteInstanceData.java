@@ -30,6 +30,14 @@ public class BombNoteInstanceData implements InstancedMesh.InstanceData {
     }
 
     @Override
+    public int[] getLocations() {
+        return new int[]{
+            TRANSFORM_LOCATION,
+            COLOR_LOCATION
+        };
+    }
+
+    @Override
     public void putData(FloatBuffer buffer) {
         buffer.put(transform.m00()).put(transform.m01()).put(transform.m02()).put(transform.m03());
         buffer.put(transform.m10()).put(transform.m11()).put(transform.m12()).put(transform.m13());

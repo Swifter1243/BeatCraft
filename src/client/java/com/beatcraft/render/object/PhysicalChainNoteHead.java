@@ -9,6 +9,7 @@ import com.beatcraft.data.types.Color;
 import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.instancing.ArrowInstanceData;
@@ -25,6 +26,7 @@ import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Math;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -58,15 +60,30 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
+        var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+        var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var flipped = new Matrix4f().scale(1, -1, 1);
+        flipped.translate(0, c.y * 2f, 0);
+        flipped.translate(renderPos);
+        flipped.rotate(renderRotation);
+        flipped.scale(0.5f);
+
+        renderPos.add(c);
+
         if (!isBaseDissolved()) {
             MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
-            // TODO: draw mirrored mesh
+            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
-            // TODO: draw mirrored, and in bloom
-
+            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE));
+            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
+                MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+            });
         }
     }
 

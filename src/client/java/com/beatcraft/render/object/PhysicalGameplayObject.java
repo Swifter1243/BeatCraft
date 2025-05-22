@@ -1,6 +1,5 @@
 package com.beatcraft.render.object;
 
-import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
@@ -16,14 +15,9 @@ import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.Debris;
-import com.beatcraft.render.mesh.MeshLoader;
-import com.beatcraft.render.mesh.MeshSlicer;
-import com.beatcraft.render.mesh.QuadMesh;
-import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
@@ -429,6 +423,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return null;
     }
+
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
 

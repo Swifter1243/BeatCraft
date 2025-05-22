@@ -26,10 +26,8 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> implements PhysicalScorableObject {
     public static final ModelIdentifier colorNoteBlockModelID = new ModelIdentifier(Identifier.of(BeatCraft.MOD_ID, "color_note"), "inventory");
@@ -123,19 +121,39 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
+        var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+        var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var flipped = new Matrix4f().scale(1, -1, 1);
+        flipped.translate(0, c.y * 2f, 0);
+        flipped.translate(renderPos);
+        flipped.rotate(renderRotation);
+        flipped.scale(0.5f);
+
+        renderPos.add(c);
 
         if (!isBaseDissolved()) {
             MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
-            // TODO: draw mirrored
+            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
+
         }
 
         if (!isArrowDissolved()) {
             if (getData().getCutDirection() == CutDirection.DOT) {
                 MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
-                // TODO: draw mirrored and bloom
+                MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE));
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+                });
             } else {
                 MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
-                // TODO: draw mirrored and bloom
+                MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE));
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+                });
             }
         }
     }

@@ -70,6 +70,16 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
     private static final int SLICE_LOCATION = 9;
 
     @Override
+    public int[] getLocations() {
+        return new int[]{
+            TRANSFORM_LOCATION,
+            COLOR_LOCATION,
+            DISSOLVE_INDEX_LOCATION,
+            SLICE_LOCATION
+        };
+    }
+
+    @Override
     public void init() {
 
         int stride = getFrameSize() * FLOAT_SIZE_BYTES;
