@@ -2,11 +2,12 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "beatcraft:item/saber"
+		"1": "beatcraft:item/saber",
+		"particle": "beatcraft:item/saber"
 	},
 	"elements": [
 		{
-			"name": "bloom",
+			"name": "//",
 			"from": [7, 0, 7],
 			"to": [9, 8, 9],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
@@ -34,9 +35,9 @@
 			}
 		},
 		{
-			"name": "swivel:y;bloom",
-			"from": [7.2, 8, 8],
-			"to": [8.8, 49, 8],
+			"name": "//",
+			"from": [7.2, 8, 7.2],
+			"to": [8.8, 49, 8.8],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
 			"faces": {
 				"north": {"uv": [2.25, 0.25, 2.5, 10.5], "texture": "#1"},
@@ -45,34 +46,6 @@
 				"west": {"uv": [2.5, 0.25, 2.75, 10.5], "texture": "#1"},
 				"up": {"uv": [2.5, 0.25, 2.25, 0], "texture": "#1"},
 				"down": {"uv": [2.75, 0, 2.5, 0.25], "texture": "#1"}
-			}
-		},
-		{
-			"name": "bloom;shader:circle:r1",
-			"from": [7.2, 8.1, 7.25],
-			"to": [8.8, 8.1, 8.85],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8.1, 8]},
-			"faces": {
-				"north": {"uv": [2.25, 0.25, 2.5, 10.5], "texture": "#1"},
-				"east": {"uv": [2, 0.25, 2.25, 10.5], "texture": "#1"},
-				"south": {"uv": [2.75, 0.25, 3, 10.5], "texture": "#1"},
-				"west": {"uv": [2.5, 0.25, 2.75, 10.5], "texture": "#1"},
-				"up": {"uv": [0, 0, 16, 16], "texture": "#1"},
-				"down": {"uv": [0, 0, 16, 16], "texture": "#1"}
-			}
-		},
-		{
-			"name": "bloom;shader:circle:r1",
-			"from": [7.2, 49, 7.25],
-			"to": [8.8, 49, 8.85],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8, 49, 7.975]},
-			"faces": {
-				"north": {"uv": [2.25, 0.25, 2.5, 10.5], "texture": "#1"},
-				"east": {"uv": [2, 0.25, 2.25, 10.5], "texture": "#1"},
-				"south": {"uv": [2.75, 0.25, 3, 10.5], "texture": "#1"},
-				"west": {"uv": [2.5, 0.25, 2.75, 10.5], "texture": "#1"},
-				"up": {"uv": [0, 0, 16, 16], "texture": "#1"},
-				"down": {"uv": [0, 0, 16, 16], "texture": "#1"}
 			}
 		}
 	],
@@ -87,9 +60,9 @@
 			"name": "colored",
 			"origin": [8, 4, 8],
 			"color": 1,
-			"children": [1, 2, 3, 4]
+			"children": [1, 2]
 		}
 	],
-	"display_name": "Default Saber",
+	"display_name": "Legacy BeatCraft Saber",
 	"authors": ["BeatCraft"]
 }

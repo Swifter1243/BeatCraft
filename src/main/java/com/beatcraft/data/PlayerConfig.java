@@ -59,6 +59,9 @@ public class PlayerConfig {
     private float debug_lightshow_lookAheadDistance = 16f;
     private float debug_lightshow_lookBehindDistance = 8f;
 
+    private String option_saber_name = "Default Saber";
+    private List<String> option_saber_authors = List.of("Westbot");
+
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
 
@@ -84,6 +87,16 @@ public class PlayerConfig {
         debug_lightshow_lookAheadDistance = JsonUtil.getOrDefault(json, "debug.lightshow.look_ahead", JsonElement::getAsFloat, debug_lightshow_lookAheadDistance);
         debug_lightshow_lookBehindDistance = JsonUtil.getOrDefault(json, "debug.lightshow.look_behind", JsonElement::getAsFloat, debug_lightshow_lookBehindDistance);
         debug_lightshow_beatSpacing = JsonUtil.getOrDefault(json, "debug.lightshow.beat_spacing", JsonElement::getAsFloat, debug_lightshow_beatSpacing);
+
+        var custom_saber_model = JsonUtil.getOrDefault(json, "option.selected_saber_model", JsonElement::getAsJsonObject, new JsonObject());
+
+        option_saber_name = JsonUtil.getOrDefault(custom_saber_model, "name", JsonElement::getAsString, option_saber_name);
+        var defaultArray = new JsonArray();
+        for (var auth : option_saber_authors) {
+            defaultArray.add(auth);
+        }
+        option_saber_authors = JsonUtil.getOrDefault(custom_saber_model, "authors", JsonElement::getAsJsonArray, defaultArray)
+            .asList().stream().map(JsonElement::getAsString).toList();
 
         Stash.updateTrailSize(option_trailIntensity);
 
@@ -136,10 +149,19 @@ public class PlayerConfig {
         json.addProperty("debug.lightshow.look_behind", debug_lightshow_lookBehindDistance);
         json.addProperty("debug.lightshow.beat_spacing", debug_lightshow_beatSpacing);
 
-
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
         json.addProperty("setting.placeEnvironmentStructures", setting_placeEnvironmentStructures);
+
+        var auths = new JsonArray();
+        for (var auth : option_saber_authors) {
+            auths.add(auth);
+        }
+        var selected_model = new JsonObject();
+        selected_model.addProperty("name", option_saber_name);
+        selected_model.add("authors", auths);
+
+        json.add("option.selected_saber_model", selected_model);
 
         JsonArray array = new JsonArray();
 
@@ -345,6 +367,21 @@ public class PlayerConfig {
         debug_lightshow_beatSpacing = Math.max(1, value);
     }
 
+    public String getSelectedSaberModelName() {
+        return option_saber_name;
+    }
+
+    public List<String> getSelectedSaberModelAuthors() {
+        return option_saber_authors;
+    }
+
+    public void setSelectedSaberModelName(String name) {
+        option_saber_name = name;
+    }
+
+    public void setSelectedSaberModelAuthors(List<String> authors) {
+        option_saber_authors = authors;
+    }
 
     // Controller profiles
     public ControllerProfile getActiveControllerProfile() {

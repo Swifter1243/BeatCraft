@@ -35,7 +35,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         PlayerOptions,
         Settings,
         Downloader,
-        Replay
+        Replay,
+        Sabers
     }
 
     private SongSelectPage currentPage = SongSelectPage.Modifiers;
@@ -46,6 +47,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private final ContainerWidget downloaderPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget replayPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget replayPageStatic = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
+    private final ContainerWidget customSaberPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
 
     public ModifierMenuPanel(ModifierMenu data) {
         super(data);
@@ -64,13 +66,14 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private void initLayout() {
 
         // Top buttons: Modifiers | Player Options | Settings | BeatSaver | Replay
-        int BUTTON_COUNT = 5;
+        int BUTTON_COUNT = 6;
         widgets.addAll(List.of(
             getOptionButton("Modifiers", 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
             getOptionButton("Player Options", 1, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
             getOptionButton("Settings", 2, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
             getOptionButton("BeatSaver", 3, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
-            getOptionButton("Replay", 4, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay)
+            getOptionButton("Replay", 4, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay),
+            getOptionButton("Custom Sabers", 5, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
         ));
 
         modifierPage.children.addAll(List.of(
@@ -206,6 +209,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new Vector2f(350, 50)
         ));
 
+        customSaberPage.children.add(new TextWidget("WIP. for now use /custom_sabers", new Vector3f(0, -11, 0.01f), 4));
+
         setupReplayPageStatic();
         //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
@@ -298,6 +303,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private void setReplayPage() {
         currentPage = SongSelectPage.Replay;
         HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+    }
+
+    private void setSabersPage() {
+        currentPage = SongSelectPage.Sabers;
+        HUDRenderer.scene = HUDRenderer.MenuScene.SaberPreview;
     }
 
     // Modifier Toggles

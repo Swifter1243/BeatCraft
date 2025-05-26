@@ -1,6 +1,7 @@
 package com.beatcraft.render.item;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Color;
@@ -23,6 +24,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL31;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.FloatBuffer;
@@ -494,19 +496,94 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
     }
 
-    private static ArrayList<SaberModel> models = new ArrayList<>();
-
+    public static final ArrayList<SaberModel> models = new ArrayList<>();
     private static SaberModel active = null;
+    private static SaberModel builtin = null;
 
     private static boolean initialized = false;
+
+    private static void loadCustomModels() {
+        String rootModelFolder = MinecraftClient.getInstance().runDirectory.toPath() + "/beatcraft/custom_sabers/";
+
+        File folder = new File(rootModelFolder);
+
+        if (!folder.exists()) {
+            if (!folder.mkdirs()) {
+                BeatCraft.LOGGER.error("Failed to create custom sabers folder");
+                return;
+            }
+        }
+
+        File[] modelFolders = folder.listFiles(File::isDirectory);
+
+        if (modelFolders == null) {
+            BeatCraft.LOGGER.error("Failed to load custom sabers");
+            return;
+        }
+
+        models.clear();
+
+        for (File modelFolder : modelFolders) {
+            var pngs = modelFolder.listFiles(f -> f.isFile() && f.getAbsolutePath().endsWith(".png"));
+            var models = modelFolder.listFiles(f -> f.isFile() && f.getAbsolutePath().endsWith(".json"));
+
+            if (models == null) {
+                BeatCraft.LOGGER.error("No model files found in model folder. make sure models are in blockbench's java block/item json format");
+                continue;
+            }
+            if (pngs == null) {
+                BeatCraft.LOGGER.error("No image files found in model folder. check that images are valid png files");
+                continue;
+            }
+
+            var textureLookup = new HashMap<String, File>();
+
+            for (var png : pngs) {
+                var name = png.getName().replaceFirst("\\.png$", "");
+                textureLookup.put(name, png);
+            }
+
+            for (var modelFile : models) {
+                var model = MeshLoader.loadSaberMesh(modelFile.getAbsolutePath(), textureLookup);
+                if (model == null) continue;
+                SaberItemRenderer.models.add(model);
+            }
+        }
+
+        var legacy = MeshLoader.loadSaberMesh(BeatCraft.id("saber/legacy.json"), BeatCraft.id("textures/item/saber.png"));
+        models.add(legacy);
+        legacy = MeshLoader.loadSaberMesh(BeatCraft.id("saber/legacy_updated.json"), BeatCraft.id("textures/item/saber.png"));
+        models.add(legacy);
+
+    }
+
+    public static boolean selectModel(String name, List<String> authors) {
+        var found = false;
+        for (var model : models) {
+            if (model.modelName.equals(name) && authors.equals(model.authors)) {
+                active = model;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            active = builtin;
+        }
+        BeatCraftClient.playerConfig.setSelectedSaberModelName(active.modelName);
+        BeatCraftClient.playerConfig.setSelectedSaberModelAuthors(active.authors);
+        return found;
+    }
 
     public static void init() {
         AttributedMesh.init();
 
-        var builtin = MeshLoader.loadSaberMesh(BeatCraft.id("saber/builtin_saber.json"), BeatCraft.id("textures/item/saber.png"));
+        loadCustomModels();
+
+        builtin = MeshLoader.loadSaberMesh(BeatCraft.id("saber/builtin_saber.json"), BeatCraft.id("textures/item/saber.png"));
         models.add(builtin);
 
-        active = builtin;
+        selectModel(BeatCraftClient.playerConfig.getSelectedSaberModelName(), BeatCraftClient.playerConfig.getSelectedSaberModelAuthors());
+
         initialized = true;
     }
 

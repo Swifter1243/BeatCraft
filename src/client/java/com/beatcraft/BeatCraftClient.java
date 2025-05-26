@@ -19,6 +19,7 @@ import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.item.ItemRenderSettings;
+import com.beatcraft.render.item.SaberItemRenderer;
 import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.ReplayHandler;
@@ -44,7 +45,9 @@ import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
+import net.minecraft.command.argument.NbtCompoundArgumentType;
+import net.minecraft.nbt.*;
+import net.minecraft.text.*;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
@@ -52,6 +55,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -684,6 +688,55 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int selectSaber(CommandContext<FabricClientCommandSource> context) {
+        var selector = NbtCompoundArgumentType.getNbtCompound(context, "data");
+
+        var name = selector.getString("name");
+        var auths = selector.getList("authors", NbtElement.STRING_TYPE);
+        var authors = auths.stream().map(NbtElement::asString).toList();
+
+        var found = SaberItemRenderer.selectModel(name, authors);
+
+        if (!found) {
+            context.getSource().sendFeedback(Text.literal("failed to load model"));
+        }
+
+        return 1;
+    }
+
+    private int listSabers(CommandContext<FabricClientCommandSource> context) {
+
+        for (var model : SaberItemRenderer.models) {
+
+            var auths = String.join("§f, §d", model.authors);
+
+            MutableText message = Text.literal("§a" + model.modelName + "§f [§d" + auths + "§f]");
+
+            var nbt = new NbtCompound();
+            nbt.putString("name", model.modelName);
+            var ls = new NbtList();
+            for (var auth : model.authors) {
+                ls.add(NbtString.of(auth));
+            }
+            nbt.put("authors", ls);
+
+             message.fillStyle(message.getStyle()
+                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, nbt.asString()))
+                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy selection data to clipboard")))
+             );
+
+             context.getSource().sendFeedback(message);
+        }
+
+        return 1;
+    }
+
+    private int reloadSaberModels(CommandContext<FabricClientCommandSource> context) {
+        SaberItemRenderer.init();
+        context.getSource().sendFeedback(Text.literal("Reloaded saber models"));
+        return 1;
+    }
+
 
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
@@ -810,6 +863,19 @@ public class BeatCraftClient implements ClientModInitializer {
                     .then(argument("size", IntegerArgumentType.integer(0))
                         .executes(this::setEventVisualizerSpacing)
                     )
+                )
+            );
+            dispatcher.register(literal("custom_sabers")
+                .then(literal("select")
+                    .then(argument("data", NbtCompoundArgumentType.nbtCompound())
+                        .executes(this::selectSaber)
+                    )
+                )
+                .then(literal("list")
+                    .executes(this::listSabers)
+                )
+                .then(literal("refresh")
+                    .executes(this::reloadSaberModels)
                 )
             );
         }));

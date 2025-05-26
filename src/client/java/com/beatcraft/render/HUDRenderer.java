@@ -43,7 +43,8 @@ public class HUDRenderer {
         Downloader,
         EndScreen,
         ConfirmSongDelete,
-        Paused
+        Paused,
+        SaberPreview,
     }
 
     public static MenuScene scene = MenuScene.SongSelect;
@@ -128,6 +129,9 @@ public class HUDRenderer {
             }
             case Paused -> {
                 renderPauseScreen(immediate);
+            }
+            case SaberPreview -> {
+                renderSaberPreviewScreen(immediate);
             }
         }
 
@@ -392,6 +396,27 @@ public class HUDRenderer {
         }
 
         pauseScreenPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+    }
+
+    private static void renderSaberPreviewScreen(VertexConsumerProvider immediate) {
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        Vector2f local;
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
+
     }
 
     private static void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {

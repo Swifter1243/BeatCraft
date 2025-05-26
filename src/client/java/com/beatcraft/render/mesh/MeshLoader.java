@@ -25,6 +25,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import oshi.util.tuples.Triplet;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -331,12 +332,24 @@ public class MeshLoader {
         }
     }
 
-    public static SaberItemRenderer.SaberModel loadSaberMesh(String filePath) {
+    public static SaberItemRenderer.SaberModel loadSaberMesh(String filePath, HashMap<String, File> textureLookup) {
         try {
             var p = Path.of(filePath);
             var rawJson = Files.readString(p);
             var json = JsonParser.parseString(rawJson).getAsJsonObject();
-            var tex = new DynamicTexture(p.getParent().toString() + "/texture.png");
+
+            var textures = json.getAsJsonObject("textures");
+            var parts = textures.get("1").getAsString().split("[/:]");
+            var name = parts[parts.length-1];
+
+            var f = textureLookup.get(name);
+
+            if (f == null) {
+                BeatCraft.LOGGER.error("Undefined texture: '{}'", name);
+                return null;
+            }
+
+            var tex = new DynamicTexture(f.getAbsolutePath());
             return loadSectionedMesh(json, p.getFileName().toString(), tex.id());
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to load model json!", e);
