@@ -97,7 +97,7 @@ public class Bloomfog {
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> bloomCalls = new ArrayList<>();
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> noteBloomCalls = new ArrayList<>();
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> arrowBloomCalls = new ArrayList<>();
-    public ArrayList<BiConsumer<Vector3f, Quaternionf>> miscBloomCalls = new ArrayList<>();
+    public ArrayList<TriConsumer<Vector3f, Quaternionf, Integer>> miscBloomCalls = new ArrayList<>();
     public static SimpleFramebuffer bloomInput;
     private static SimpleFramebuffer bloomSwap;
     public static SimpleFramebuffer bloomOutput;
@@ -469,7 +469,7 @@ public class Bloomfog {
         bloomCalls.add(call);
     }
 
-    public void recordMiscBloomCall(BiConsumer<Vector3f, Quaternionf> call) {
+    public void recordMiscBloomCall(TriConsumer<Vector3f, Quaternionf, Integer> call) {
         if (!BeatCraftClient.playerConfig.doBloom()) return;
         miscBloomCalls.add(call);
     }
@@ -579,7 +579,7 @@ public class Bloomfog {
         }
 
         for (var call : miscBloomCalls) {
-            call.accept(cameraPos, invCameraRotation);
+            call.accept(cameraPos, invCameraRotation, sceneDepthBuffer);
         }
         miscBloomCalls.clear();
 
@@ -593,6 +593,8 @@ public class Bloomfog {
         var r = radius;
         radius = 3;
 
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
 
         applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H);
         applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V);
@@ -619,6 +621,7 @@ public class Bloomfog {
         RenderSystem.setShader(() -> blitShader);
         RenderSystem.setShaderTexture(0, bloomOutput.getColorAttachment());
         RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
         var oldProjMat = RenderSystem.getProjectionMatrix();
         var oldVertexSort = RenderSystem.getVertexSorting();
         var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);

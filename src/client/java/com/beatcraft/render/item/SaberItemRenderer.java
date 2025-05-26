@@ -4,8 +4,8 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.data.types.Color;
-import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.TriangleMesh;
@@ -21,6 +21,7 @@ import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL31;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.lang.Math;
@@ -46,12 +47,17 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
         private int vao = -1;
         private int vbo = -1;
-        private boolean initialized = false;
+
+        private int bloom_vao = -1;
+        private int bloom_vbo = -1;
+        private int bloomShaderProgram = 0;
+        private String[] shaderVariables;
 
         private static final HashMap<String, String> shaderSources = new HashMap<>();
 
         private static final String[] sources = new String[]{
             "circle.fsh",
+            "circle_bloom_mask.fsh",
             "vertex.vsh"
         };
         public static void init() {
@@ -72,12 +78,33 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
         }
 
-        public void initCustom() {
+        private void initCustom() {
             vao = GL31.glGenVertexArrays();
             vbo = GL31.glGenBuffers();
 
             GL31.glBindVertexArray(vao);
             GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, vbo);
+
+            int stride = (3 + 2 + 4) * Float.BYTES;
+
+            GL31.glEnableVertexAttribArray(0);
+            GL31.glVertexAttribPointer(0, 3, GL31.GL_FLOAT, false, stride, 0);
+
+            GL31.glEnableVertexAttribArray(1);
+            GL31.glVertexAttribPointer(1, 2, GL31.GL_FLOAT, false, stride, 3 * Float.BYTES);
+
+            GL31.glEnableVertexAttribArray(2);
+            GL31.glVertexAttribPointer(2, 4, GL31.GL_FLOAT, false, stride, (3 + 2) * Float.BYTES);
+
+            GL31.glBindVertexArray(0);
+        }
+
+        private void initCustomBloom() {
+            bloom_vao = GL31.glGenVertexArrays();
+            bloom_vbo = GL31.glGenBuffers();
+
+            GL31.glBindVertexArray(bloom_vao);
+            GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, bloom_vbo);
 
             int stride = (3 + 2 + 4) * Float.BYTES;
 
@@ -130,7 +157,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
                     this.shader = shaderName;
 
-                    String[] vars = Arrays.stream(shaderVars.splitWithDelimiters("[a-zA-Z]+", 0)).filter(e -> !e.isBlank()).toArray(String[]::new);
+                    shaderVariables = Arrays.stream(shaderVars.splitWithDelimiters("[a-zA-Z]+", 0)).filter(e -> !e.isBlank()).toArray(String[]::new);
 
                     var src = shaderSources.getOrDefault(shaderName + ".fsh", null);
 
@@ -141,14 +168,13 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                         throw new RuntimeException("Saber shader name '" + shaderName + "' is not valid");
                     }
 
-                    BeatCraft.LOGGER.info("shader vars: {}", (Object) vars);
-                    for (int i = 0; i < vars.length; i += 2) {
-                        var vName = vars[i];
+                    for (int i = 0; i < shaderVariables.length; i += 2) {
+                        var vName = shaderVariables[i];
                         var vVal = 0f;
                         try {
-                            vVal = Float.parseFloat(vars[i + 1]);
+                            vVal = Float.parseFloat(shaderVariables[i + 1]);
                         } catch (NumberFormatException e) {
-                            BeatCraft.LOGGER.error("Saber shader variable '{}' had non-parseable float value: '{}'", vName, vars[i+1]);
+                            BeatCraft.LOGGER.error("Saber shader variable '{}' had non-parseable float value: '{}'", vName, shaderVariables[i+1]);
                         }
 
                         src = src.replace("${" + vName + "}", String.valueOf(vVal));
@@ -162,6 +188,30 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                 }
             }
 
+            if (shaderProgram != 0 && doBloom) {
+                var src = shaderSources.getOrDefault(shader + "_bloom_mask.fsh", null);
+
+                var vert = shaderSources.get("vertex.vsh");
+
+                for (int i = 0; i < shaderVariables.length; i += 2) {
+                    var vName = shaderVariables[i];
+                    var vVal = 0f;
+                    try {
+                        vVal = Float.parseFloat(shaderVariables[i + 1]);
+                    } catch (NumberFormatException e) {
+                        BeatCraft.LOGGER.error("Saber bloom shader variable '{}' had non-parseable float value: '{}'", vName, shaderVariables[i+1]);
+                    }
+
+                    src = src.replace("${" + vName + "}", String.valueOf(vVal));
+
+                }
+
+                BeatCraft.LOGGER.info("generated shaders:\nvert:\n{}\nfrag:\n{}\n", vert, src);
+
+                bloomShaderProgram = GlUtil.createShaderProgram(vert, src);
+                initCustomBloom();
+            }
+
         }
 
         private void addVertex(List<Float> list, Vector3f pos, Vector2f uv, Vector4f color) {
@@ -170,7 +220,11 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             list.add(color.x); list.add(color.y); list.add(color.z); list.add(color.w);
         }
 
-        private void customRender(int c, Identifier texture, Matrix4f mts, Quaternionf ori, Quaternionf cameraRot) {
+        private void customRender(int c, Identifier texture, Matrix4f mts, Quaternionf ori, Quaternionf cameraRot, boolean isBloom, int depthBuffer) {
+
+            var vVao = isBloom ? bloom_vao : vao;
+            var vVbo = isBloom ? bloom_vbo : vbo;
+            var program = isBloom ? bloomShaderProgram : shaderProgram;
 
             if (shader.equals("circle")) {
                 IntBuffer vaoBuf = BufferUtils.createIntBuffer(1);
@@ -182,18 +236,25 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                 int oldVBO = vboBuf.get(0);
 
 
-                GL31.glBindVertexArray(vao);
+                GL31.glBindVertexArray(vVao);
 
-                GL31.glUseProgram(shaderProgram);
+                GL31.glUseProgram(program);
 
                 var projMat = RenderSystem.getProjectionMatrix();
                 var viewMat = RenderSystem.getModelViewMatrix();
 
-                GlUtil.setMat4f(shaderProgram, "u_projection", projMat);
-                GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
+                GlUtil.setMat4f(program, "u_projection", projMat);
+                GlUtil.setMat4f(program, "u_view", viewMat);
 
                 RenderSystem.setShaderTexture(0, texture);
-                RenderSystem.bindTexture(0);
+
+                if (isBloom) {
+                    GL31.glActiveTexture(GL31.GL_TEXTURE1);
+                    var loc = GL31.glGetUniformLocation(program, "u_depth");
+                    GL31.glBindTexture(GL31.GL_TEXTURE_2D, depthBuffer);
+                    GL31.glUniform1i(loc, 1);
+                }
+
                 var col = new Color(c);
 
                 var vColor = new Vector4f(col.getRed(), col.getGreen(), col.getBlue(), col.getAlpha());
@@ -216,6 +277,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     v0.rotate(cameraRot);
                     v1.rotate(cameraRot);
                     v2.rotate(cameraRot);
+
                     var uv0 = tri.uvA();
                     var uv1 = tri.uvB();
                     var uv2 = tri.uvC();
@@ -230,11 +292,13 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                 vertexBuffer.flip();
 
                 RenderSystem.enableCull();
-                RenderSystem.enableDepthTest();
-                RenderSystem.depthMask(true);
+                if (!isBloom) {
+                    RenderSystem.enableDepthTest();
+                    RenderSystem.depthMask(true);
+                }
                 RenderSystem.enableBlend();
 
-                GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, vbo);
+                GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, vVbo);
                 GL31.glBufferData(GL31.GL_ARRAY_BUFFER, vertexBuffer, GL31.GL_DYNAMIC_DRAW);
 
                 GL31.glDrawArrays(GL31.GL_TRIANGLES, 0, dataList.size() / 9);
@@ -245,7 +309,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             }
         }
 
-        public void draw(Matrix4f matrices, int color, Vector3f cameraPos, BufferBuilder buffer, ArrayList<Runnable> afterCalls, Identifier texture) {
+        public void draw(Matrix4f matrices, int color, Vector3f cameraPos, BufferBuilder buffer, ArrayList<Runnable> afterCalls, Identifier texture, boolean isFirstPerson) {
 
             var c = tinted ? color : 0xFFFFFFFF;
 
@@ -310,14 +374,16 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             } else {
                 var mts = new Matrix4f(matrices);
                 var ori = new Quaternionf(orientation);
-                afterCalls.add(() -> customRender(c, texture, mts, ori, new Quaternionf()));
+                afterCalls.add(() -> customRender(c, texture, mts, ori, new Quaternionf(), false, 0));
             }
 
-            if (doBloom) {
+            var vrActive = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
+
+            if (doBloom && !(isFirstPerson && !vrActive)) {
                 var mts = new Matrix4f(matrices);
                 var ori = new Quaternionf(orientation);
                 if (shaderProgram == 0) {
-                    BeatCraftRenderer.bloomfog.recordMiscBloomCall((camPos, cameraRot) -> {
+                    BeatCraftRenderer.bloomfog.recordMiscBloomCall((camPos, cameraRot, depthBuffer) -> {
                         var b = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
                         for (var tri : mesh.tris) {
                             var v0 = new Vector3f(mesh.vertices.get(tri.a()));
@@ -345,15 +411,18 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                         var buff = b.endNullable();
 
                         if (buff != null) {
+
                             RenderSystem.setShaderTexture(0, texture);
-                            RenderSystem.bindTexture(0);
-                            RenderSystem.setShader(() -> BeatCraftRenderer.BCPosTexColShader);
+                            RenderSystem.setShaderTexture(1, depthBuffer);
+                            RenderSystem.enableBlend();
+                            RenderSystem.setShader(() -> Bloomfog.bloomMaskLightTextureShader);
                             BufferRenderer.drawWithGlobalProgram(buff);
+
                         }
 
                     });
                 } else {
-                    BeatCraftRenderer.bloomfog.recordMiscBloomCall((v, q) -> customRender(c, texture, mts, ori, q));
+                    BeatCraftRenderer.bloomfog.recordMiscBloomCall((v, q, d) -> customRender(c, texture, mts, ori, q, true, d));
                 }
             }
 
@@ -384,7 +453,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             this.texture = texture;
         }
 
-        public void render(Matrix4f matrices, int color, Vector3f cameraPos) {
+        public void render(Matrix4f matrices, int color, Vector3f cameraPos, boolean isFirstPerson) {
 
             var tessellator = Tessellator.getInstance();
             var buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -392,7 +461,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             var afterCalls = new ArrayList<Runnable>();
 
             for (var mesh : meshComponents) {
-                mesh.draw(matrices, color, cameraPos, buffer, afterCalls, texture);
+                mesh.draw(matrices, color, cameraPos, buffer, afterCalls, texture, isFirstPerson);
             }
 
             var buff = buffer.endNullable();
@@ -460,7 +529,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
 
-        active.render(matrices.peek().getPositionMatrix(), color, cameraPos);
+        active.render(matrices.peek().getPositionMatrix(), color, cameraPos, mode == ModelTransformationMode.FIRST_PERSON_RIGHT_HAND || mode == ModelTransformationMode.FIRST_PERSON_LEFT_HAND);
 
     }
 }

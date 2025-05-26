@@ -8,7 +8,7 @@
 	},
 	"elements": [
 		{
-			"name": "static",
+			"name": "bloom",
 			"from": [7, 0, 7],
 			"to": [9, 8, 9],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},

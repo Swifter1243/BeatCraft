@@ -9,9 +9,13 @@ uniform mat4 u_view;
 
 out vec2 v_uv;
 out vec4 v_color;
+out vec3 screenUV;
 
 void main() {
-    gl_Position = u_projection * u_view * vec4(in_position, 1.0);
+    vec4 pos = vec4(u_view * vec4(in_position, 1.0));
+    gl_Position = u_projection * pos;
+
+    screenUV = vec3(gl_Position.xy, pos.z);
     v_uv = in_uv;
     v_color = in_color;
 }
