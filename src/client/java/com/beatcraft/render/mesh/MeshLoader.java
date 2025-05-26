@@ -2,10 +2,18 @@ package com.beatcraft.render.mesh;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
+import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.instancing.ArrowInstanceData;
 import com.beatcraft.render.instancing.BombNoteInstanceData;
 import com.beatcraft.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.render.instancing.InstancedMesh;
+import com.beatcraft.render.item.SaberItemRenderer;
+import com.beatcraft.utils.JsonUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.json.JsonUnbakedModel;
 import net.minecraft.client.render.model.json.ModelElementFace;
 import net.minecraft.util.Identifier;
@@ -18,8 +26,13 @@ import org.joml.Vector3f;
 import oshi.util.tuples.Triplet;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 
 public class MeshLoader {
 
@@ -303,6 +316,180 @@ public class MeshLoader {
             BeatCraft.LOGGER.error("Failed to load model json!", e);
             throw new RuntimeException(e);
         }
+    }
+
+    public static SaberItemRenderer.SaberModel loadSaberMesh(Identifier identifier, Identifier texture) {
+        try {
+            var reader = MinecraftClient.getInstance().getResourceManager().getResource(identifier).orElseThrow().getReader();
+            var rawJson = String.join("\n", reader.lines().toList());
+            var json = JsonParser.parseString(rawJson).getAsJsonObject();
+            var split = identifier.getPath().split("/");
+            return loadSectionedMesh(json, split[split.length-1], texture);
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to load model json!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static SaberItemRenderer.SaberModel loadSaberMesh(String filePath) {
+        try {
+            var p = Path.of(filePath);
+            var rawJson = Files.readString(p);
+            var json = JsonParser.parseString(rawJson).getAsJsonObject();
+            var tex = new DynamicTexture(p.getParent().toString() + "/texture.png");
+            return loadSectionedMesh(json, p.getFileName().toString(), tex.id());
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Failed to load model json!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static SaberItemRenderer.SaberModel loadSectionedMesh(JsonObject json, String fileName, Identifier texture) {
+        var displayName = JsonUtil.getOrDefault(json, "display_name", JsonElement::getAsString, fileName);
+        var authors = JsonUtil.getOrDefault(json, "authors", JsonElement::getAsJsonArray, new JsonArray()).asList().stream().map(JsonElement::getAsString).toList();
+
+        AtomicInteger complexityScore = new AtomicInteger();
+
+        var textureSize = json.getAsJsonArray("texture_size").asList().stream().map(JsonElement::getAsInt).toList();
+
+        var texSize = new Vector2f(textureSize.getFirst(), textureSize.get(1));
+
+        var groupAttrs = new HashMap<Integer, String>();
+        var origins = new HashMap<Integer, Vector3f>();
+
+        var groups = json.getAsJsonArray("groups");
+
+        groups.forEach(o -> {
+            var obj = o.getAsJsonObject();
+            var indices = obj.getAsJsonArray("children").asList().stream().map(JsonElement::getAsInt).toList();
+            var groupAttr = obj.get("name").getAsString();
+            var origin = JsonUtil.getVector3(obj.getAsJsonArray("origin"));
+
+            for (var idx : indices) {
+                groupAttrs.put(idx, groupAttr + ";");
+                origins.put(idx, origin);
+            }
+
+        });
+
+        var elements = json.getAsJsonArray("elements");
+
+        var meshes = new ArrayList<SaberItemRenderer.AttributedMesh>();
+
+        BiFunction<Vector3f, String, SaberItemRenderer.AttributedMesh> getMesh = (v, s) -> {
+            for (var m : meshes) {
+                if (m.matchesAttributes(new SaberItemRenderer.AttributedMesh(null, v, s))) {
+                    return m;
+                }
+            }
+            var m = new SaberItemRenderer.AttributedMesh(new TriangleMesh(List.of(), List.of()), v, s);
+            meshes.add(m);
+            complexityScore.getAndIncrement();
+            return m;
+        };
+
+        AtomicInteger i = new AtomicInteger(0);
+        elements.forEach(e -> {
+            var obj = e.getAsJsonObject();
+            var idx = i.getAndIncrement();
+
+            var attrs = groupAttrs.getOrDefault(idx, "") + obj.get("name").getAsString();
+
+            var swivel = origins.computeIfAbsent(idx, x -> new Vector3f());
+
+            var min = JsonUtil.getVector3(obj.getAsJsonArray("from"));
+            var max = JsonUtil.getVector3(obj.getAsJsonArray("to"));
+
+            var include = new ArrayList<>(List.of("north", "east", "south", "west", "up", "down"));
+
+            if (min.x == max.x) {
+                include.removeAll(List.of("north", "south", "up", "down"));
+            }
+            if (min.y == max.y) {
+                include.removeAll(List.of("north", "east", "south", "west"));
+            }
+            if (min.z == max.z) {
+                include.removeAll(List.of("east", "west", "up", "down"));
+            }
+
+            if (include.isEmpty()) return;
+
+            var mesh = getMesh.apply(swivel, attrs);
+
+            var verts = new ArrayList<Vector3f>();
+            var tris = new ArrayList<Triangle>();
+
+            var rawFaces = obj.getAsJsonObject("faces");
+
+            var n = 0;
+            for (var faceId : include) {
+                var rawFace = rawFaces.getAsJsonObject(faceId);
+                var uv = JsonUtil.getVector4(rawFace.getAsJsonArray("uv"));
+                uv.div(texSize.x, texSize.y, texSize.x, texSize.y);
+                switch (faceId) {
+                    case "north" -> {
+                        verts.addAll(List.of(
+                            new Vector3f(max.x, min.y, min.z),
+                            new Vector3f(max.x, max.y, min.z),
+                            new Vector3f(min.x, max.y, min.z),
+                            min
+                        ));
+                    }
+                    case "east" -> {
+                        verts.addAll(List.of(
+                            new Vector3f(max.x, min.y, max.z),
+                            max,
+                            new Vector3f(max.x, max.y, min.z),
+                            new Vector3f(max.x, min.y, min.z)
+                        ));
+                    }
+                    case "south" -> {
+                        verts.addAll(List.of(
+                            new Vector3f(min.x, min.y, max.z),
+                            new Vector3f(min.x, max.y, max.z),
+                            max,
+                            new Vector3f(max.x, min.y, max.z)
+                        ));
+                    }
+                    case "west" -> {
+                        verts.addAll(List.of(
+                            min,
+                            new Vector3f(min.x, max.y, min.z),
+                            new Vector3f(min.x, max.y, max.z),
+                            new Vector3f(min.x, min.y, max.z)
+                        ));
+                    }
+                    case "up" -> {
+                        verts.addAll(List.of(
+                            new Vector3f(min.x, max.y, max.z),
+                            new Vector3f(min.x, max.y, min.z),
+                            new Vector3f(max.x, max.y, min.z),
+                            max
+                        ));
+                    }
+                    case "down" -> {
+                        verts.addAll(List.of(
+                            min,
+                            new Vector3f(min.x, min.y, max.z),
+                            new Vector3f(max.x, min.y, max.z),
+                            new Vector3f(max.x, min.y, min.z)
+                        ));
+                    }
+                }
+                var x = n * 4;
+                tris.addAll(List.of(
+                    new Triangle(x, x + 1, x + 2, new Vector2f(uv.x, uv.w), new Vector2f(uv.x, uv.y), new Vector2f(uv.z, uv.y)),
+                    new Triangle(x, x + 2, x + 3, new Vector2f(uv.x, uv.w), new Vector2f(uv.z, uv.y), new Vector2f(uv.z, uv.w))
+                ));
+                n++;
+            }
+
+            mesh.mesh.addGeometry(verts, tris);
+
+        });
+
+        return new SaberItemRenderer.SaberModel(displayName, authors, meshes, complexityScore.get(), texture);
+
     }
 
     private static Vector2f @NotNull [] getUvs(ModelElementFace face) {

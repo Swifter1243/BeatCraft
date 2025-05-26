@@ -1,7 +1,7 @@
 package com.beatcraft.render.instancing;
 
+import com.beatcraft.render.gl.GlUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -11,13 +11,12 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static com.beatcraft.render.gl.GlUtil.getOrCreateShaderProgram;
 
 public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
@@ -58,74 +57,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     private final List<I> instanceDataList;
     private boolean initialized;
 
-    private static final Map<Identifier, Integer> shaderProgramCache = new HashMap<>();
-
-    private int createShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
-
-        int program = GL20.glCreateProgram();
-
-        try {
-            int vertexShader = compileShader(GL20.GL_VERTEX_SHADER, vertexShaderLoc);
-            int fragmentShader = compileShader(GL20.GL_FRAGMENT_SHADER, fragmentShaderLoc);
-
-            GL20.glAttachShader(program, vertexShader);
-            GL20.glAttachShader(program, fragmentShader);
-
-            GL20.glLinkProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
-                throw new RuntimeException("Failed to link shader program: " + log);
-            }
-
-            GL20.glValidateProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
-                throw new RuntimeException("Failed to validate shader program: " + log);
-            }
-
-            GL20.glDetachShader(program, vertexShader);
-            GL20.glDetachShader(program, fragmentShader);
-            GL20.glDeleteShader(vertexShader);
-            GL20.glDeleteShader(fragmentShader);
-
-            return program;
-        } catch (Exception e) {
-            GL20.glDeleteProgram(program);
-            throw new RuntimeException("Failed to create shader program", e);
-        }
-    }
-
-    private int compileShader(int type, Identifier shaderLoc) throws IOException {
-        var shader = GL20.glCreateShader(type);
-
-        var resourceManager = MinecraftClient.getInstance().getResourceManager();
-        var source = resourceManager.getResource(shaderLoc)
-            .orElseThrow(() -> new IOException("Could not find shader: " + shaderLoc))
-            .getReader()
-            .lines()
-            .reduce("", (a, b) -> a + b + "\n");
-
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
-
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            String log = GL20.glGetShaderInfoLog(shader);
-            GL20.glDeleteShader(shader);
-            throw new RuntimeException("Failed to compile shader: " + log);
-        }
-
-        return shader;
-    }
-
-    private int getOrCreateShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
-        var cacheKey = Identifier.of(
-            vertexShaderLoc.getNamespace(),
-            vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath()
-        );
-
-        return shaderProgramCache.computeIfAbsent(cacheKey,
-            k -> createShaderProgram(vertexShaderLoc, fragmentShaderLoc));
-    }
+    private Identifier vertexShaderLoc;
+    private Identifier fragmentShaderLoc;
 
 
     public InstancedMesh(Identifier shaderName, Identifier texture, Triplet<Vector3f, Vector2f, Vector3f>[] vertices) {
@@ -165,6 +98,10 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         if (initialized) {
             return;
         }
+
+        vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
+        fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
+
 
         vao = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vao);
@@ -321,8 +258,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     }
 
     private void activateShaderAndTexture() {
-        var vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
-        var fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
 
         int shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
         GL20.glUseProgram(shaderProgram);
@@ -349,6 +284,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glDeleteBuffers(instanceVbo);
         GL15.glDeleteBuffers(indicesVbo);
         GL30.glDeleteVertexArrays(vao);
+        GlUtil.destroyShaderProgram(vertexShaderLoc, fragmentShaderLoc);
     }
 
     public static void cleanupAll() {

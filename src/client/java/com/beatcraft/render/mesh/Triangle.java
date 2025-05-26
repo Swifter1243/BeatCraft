@@ -25,6 +25,12 @@ public class Triangle implements Geometry {
         uvs = new Vector2f[]{uvA, uvB, uvC};
     }
 
+    public void offsetTri(int offset) {
+        indices[0] += offset;
+        indices[1] += offset;
+        indices[2] += offset;
+    }
+
     public int a() {
         return indices[0];
     }

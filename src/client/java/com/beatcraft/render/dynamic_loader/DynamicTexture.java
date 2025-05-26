@@ -11,10 +11,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /// MAKE SURE TO CALL DynamicTexture#unloadTexture() WHEN DONE USING THE TEXTURE
 public class DynamicTexture {
-    private static final ArrayList<Identifier> loadedTextures = new ArrayList<>();
+    private static final HashMap<Identifier, DynamicTexture> loadedTextures = new HashMap<>();
     private final Identifier textureID;
     private final int width;
     private final int height;
@@ -40,7 +41,7 @@ public class DynamicTexture {
 
         MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
 
-        loadedTextures.add(textureID);
+        loadedTextures.put(textureID, this);
     }
 
     public void reload() {
@@ -52,13 +53,17 @@ public class DynamicTexture {
             BeatCraft.LOGGER.error("Failed to reload texture '{}'", this.path, e);
         }
         MinecraftClient.getInstance().getTextureManager().registerTexture(textureID, (AbstractTexture) tex);
-        if (!loadedTextures.contains(textureID)) {
-            loadedTextures.add(textureID);
+        if (!loadedTextures.containsKey(textureID)) {
+            loadedTextures.put(textureID, this);
         }
     }
 
     public boolean isLoaded() {
-        return loadedTextures.contains(textureID);
+        return loadedTextures.containsKey(textureID);
+    }
+
+    public DynamicTexture getFromId(Identifier id) {
+        return loadedTextures.get(id);
     }
 
     public Identifier id() {
@@ -74,7 +79,7 @@ public class DynamicTexture {
     }
 
     public static void unloadAllTextures() {
-        for (Identifier id : loadedTextures) {
+        for (Identifier id : loadedTextures.keySet()) {
             MinecraftClient.getInstance().getTextureManager().destroyTexture(id);
         }
         loadedTextures.clear();
@@ -87,7 +92,7 @@ public class DynamicTexture {
     }
 
     public static void unloadTextureFromId(Identifier id) {
-        if (loadedTextures.contains(id)) {
+        if (loadedTextures.containsKey(id)) {
             MinecraftClient.getInstance().getTextureManager().destroyTexture(id);
             loadedTextures.remove(id);
         }

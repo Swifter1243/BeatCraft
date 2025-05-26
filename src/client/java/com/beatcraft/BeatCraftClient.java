@@ -18,7 +18,7 @@ import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.instancing.InstancedMesh;
-import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.render.item.ItemRenderSettings;
 import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.ReplayHandler;
@@ -91,7 +91,7 @@ public class BeatCraftClient implements ClientModInitializer {
         registerCommands();
 
         BlockRenderSettings.init();
-        GeckolibRenderInit.init();
+        ItemRenderSettings.init();
 
         BeatCraftClientNetworking.init();
 
@@ -187,10 +187,11 @@ public class BeatCraftClient implements ClientModInitializer {
     private void setupFiles() {
         String runDirectory = MinecraftClient.getInstance().runDirectory.getAbsolutePath();
         List<String> makeFolders = List.of(
-            runDirectory + "/beatmaps/",          // for beatmaps
-            runDirectory + "/beatcraft/",         // root directory for other data
-            runDirectory + "/beatcraft/replay/",  // replay files
-            runDirectory + "/beatcraft/temp/"     // for stuff like temporary images for song covers and audio previews
+            runDirectory + "/beatmaps/",               // for beatmaps
+            runDirectory + "/beatcraft/",              // root directory for other data
+            runDirectory + "/beatcraft/replay/",       // replay files
+            runDirectory + "/beatcraft/temp/",         // for stuff like temporary images for song covers and audio previews
+            runDirectory + "/beatcraft/custom_sabers/" // for custom sabers
         );
 
         for (String folderPath : makeFolders) {
