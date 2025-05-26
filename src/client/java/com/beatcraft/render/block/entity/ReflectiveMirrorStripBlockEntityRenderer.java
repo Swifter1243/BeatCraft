@@ -56,14 +56,14 @@ public class ReflectiveMirrorStripBlockEntityRenderer implements BlockEntityRend
         var f2 = MemoryPool.newVector3f(localVertices[face[2]]).rotate(q);
         var f3 = MemoryPool.newVector3f(localVertices[face[3]]).rotate(q);
 
-        MemoryPool.release(q);
+        MemoryPool.releaseSafe(q);
 
         var v0 = center.add(f0, MemoryPool.newVector3f()).sub(cameraPos);
         var v1 = center.add(f1, MemoryPool.newVector3f()).sub(cameraPos);
         var v2 = center.add(f2, MemoryPool.newVector3f()).sub(cameraPos);
         var v3 = center.add(f3, MemoryPool.newVector3f()).sub(cameraPos);
 
-        MemoryPool.release(f0, f1, f2, f3);
+        MemoryPool.releaseSafe(f0, f1, f2, f3);
 
         MirrorHandler.recordPlainCall((b, _c) -> _drawQuad(v0, v1, v2, v3, b));
 

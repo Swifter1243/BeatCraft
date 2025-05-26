@@ -16,6 +16,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -96,6 +97,7 @@ public class Bloomfog {
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> bloomCalls = new ArrayList<>();
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> noteBloomCalls = new ArrayList<>();
     public ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> arrowBloomCalls = new ArrayList<>();
+    public ArrayList<BiConsumer<Vector3f, Quaternionf>> miscBloomCalls = new ArrayList<>();
     public static SimpleFramebuffer bloomInput;
     private static SimpleFramebuffer bloomSwap;
     public static SimpleFramebuffer bloomOutput;
@@ -467,6 +469,12 @@ public class Bloomfog {
         bloomCalls.add(call);
     }
 
+    public void recordMiscBloomCall(BiConsumer<Vector3f, Quaternionf> call) {
+        if (!BeatCraftClient.playerConfig.doBloom()) return;
+        miscBloomCalls.add(call);
+    }
+
+
     public void recordNoteBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
         if (!BeatCraftClient.playerConfig.doBloom()) return;
         noteBloomCalls.add(call);
@@ -570,6 +578,10 @@ public class Bloomfog {
             RenderSystem.enableDepthTest();
         }
 
+        for (var call : miscBloomCalls) {
+            call.accept(cameraPos, invCameraRotation);
+        }
+        miscBloomCalls.clear();
 
         bloomInput.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;

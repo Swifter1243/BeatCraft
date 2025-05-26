@@ -45,6 +45,7 @@ public class BeatCraftRenderer {
     public static ShaderProgram noteShader;
     public static ShaderProgram arrowShader;
     public static ShaderProgram heartHealthShader;
+    public static ShaderProgram BCPosTexColShader;
 
     public static void init() {
         bloomfog = Bloomfog.create();
@@ -53,6 +54,7 @@ public class BeatCraftRenderer {
             noteShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "note_shader", VertexFormats.POSITION_TEXTURE_COLOR);
             arrowShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "arrow_shader", VertexFormats.POSITION_TEXTURE_COLOR);
             heartHealthShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "health_hearts", VertexFormats.POSITION_TEXTURE_COLOR);
+            BCPosTexColShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bc_tex_col", VertexFormats.POSITION_TEXTURE_COLOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

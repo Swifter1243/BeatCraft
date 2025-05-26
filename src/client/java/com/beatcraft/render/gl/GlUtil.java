@@ -2,8 +2,9 @@ package com.beatcraft.render.gl;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import org.lwjgl.opengl.GL11;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL31;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,83 +18,83 @@ public class GlUtil {
 
     public static int createShaderProgram(String vshSource, String fshSource) {
 
-        int program = GL20.glCreateProgram();
+        int program = GL31.glCreateProgram();
 
         try {
-            int vertexShader = compileShader(GL20.GL_VERTEX_SHADER, vshSource);
-            int fragmentShader = compileShader(GL20.GL_FRAGMENT_SHADER, fshSource);
+            int vertexShader = compileShader(GL31.GL_VERTEX_SHADER, vshSource);
+            int fragmentShader = compileShader(GL31.GL_FRAGMENT_SHADER, fshSource);
 
-            GL20.glAttachShader(program, vertexShader);
-            GL20.glAttachShader(program, fragmentShader);
+            GL31.glAttachShader(program, vertexShader);
+            GL31.glAttachShader(program, fragmentShader);
 
-            GL20.glLinkProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
+            GL31.glLinkProgram(program);
+            if (GL31.glGetProgrami(program, GL31.GL_LINK_STATUS) == GL31.GL_FALSE) {
+                String log = GL31.glGetProgramInfoLog(program);
                 throw new RuntimeException("Failed to link shader program: " + log);
             }
 
-            GL20.glValidateProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
+            GL31.glValidateProgram(program);
+            if (GL31.glGetProgrami(program, GL31.GL_VALIDATE_STATUS) == GL31.GL_FALSE) {
+                String log = GL31.glGetProgramInfoLog(program);
                 throw new RuntimeException("Failed to validate shader program: " + log);
             }
 
-            GL20.glDetachShader(program, vertexShader);
-            GL20.glDetachShader(program, fragmentShader);
-            GL20.glDeleteShader(vertexShader);
-            GL20.glDeleteShader(fragmentShader);
+            GL31.glDetachShader(program, vertexShader);
+            GL31.glDetachShader(program, fragmentShader);
+            GL31.glDeleteShader(vertexShader);
+            GL31.glDeleteShader(fragmentShader);
 
             return program;
         } catch (Exception e) {
-            GL20.glDeleteProgram(program);
+            GL31.glDeleteProgram(program);
             throw new RuntimeException("Failed to create shader program", e);
         }
     }
 
     public static int createShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
 
-        int program = GL20.glCreateProgram();
+        int program = GL31.glCreateProgram();
 
         try {
-            int vertexShader = compileShader(GL20.GL_VERTEX_SHADER, vertexShaderLoc);
-            int fragmentShader = compileShader(GL20.GL_FRAGMENT_SHADER, fragmentShaderLoc);
+            int vertexShader = compileShader(GL31.GL_VERTEX_SHADER, vertexShaderLoc);
+            int fragmentShader = compileShader(GL31.GL_FRAGMENT_SHADER, fragmentShaderLoc);
 
-            GL20.glAttachShader(program, vertexShader);
-            GL20.glAttachShader(program, fragmentShader);
+            GL31.glAttachShader(program, vertexShader);
+            GL31.glAttachShader(program, fragmentShader);
 
-            GL20.glLinkProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
+            GL31.glLinkProgram(program);
+            if (GL31.glGetProgrami(program, GL31.GL_LINK_STATUS) == GL31.GL_FALSE) {
+                String log = GL31.glGetProgramInfoLog(program);
                 throw new RuntimeException("Failed to link shader program: " + log);
             }
 
-            GL20.glValidateProgram(program);
-            if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
-                String log = GL20.glGetProgramInfoLog(program);
+            GL31.glValidateProgram(program);
+            if (GL31.glGetProgrami(program, GL31.GL_VALIDATE_STATUS) == GL31.GL_FALSE) {
+                String log = GL31.glGetProgramInfoLog(program);
                 throw new RuntimeException("Failed to validate shader program: " + log);
             }
 
-            GL20.glDetachShader(program, vertexShader);
-            GL20.glDetachShader(program, fragmentShader);
-            GL20.glDeleteShader(vertexShader);
-            GL20.glDeleteShader(fragmentShader);
+            GL31.glDetachShader(program, vertexShader);
+            GL31.glDetachShader(program, fragmentShader);
+            GL31.glDeleteShader(vertexShader);
+            GL31.glDeleteShader(fragmentShader);
 
             return program;
         } catch (Exception e) {
-            GL20.glDeleteProgram(program);
+            GL31.glDeleteProgram(program);
             throw new RuntimeException("Failed to create shader program", e);
         }
     }
 
     public static int compileShader(int type, String source) {
-        var shader = GL20.glCreateShader(type);
+        var shader = GL31.glCreateShader(type);
 
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
+        GL31.glShaderSource(shader, source);
+        GL31.glCompileShader(shader);
 
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            String log = GL20.glGetShaderInfoLog(shader);
-            GL20.glDeleteShader(shader);
+        if (GL31.glGetShaderi(shader, GL31.GL_COMPILE_STATUS) == GL31.GL_FALSE) {
+            String log = GL31.glGetShaderInfoLog(shader);
+            GL31.glDeleteShader(shader);
             throw new RuntimeException("Failed to compile shader: " + log);
         }
 
@@ -101,7 +102,7 @@ public class GlUtil {
     }
 
     public static int compileShader(int type, Identifier shaderLoc) throws IOException {
-        var shader = GL20.glCreateShader(type);
+        var shader = GL31.glCreateShader(type);
 
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
         var source = resourceManager.getResource(shaderLoc)
@@ -110,12 +111,12 @@ public class GlUtil {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
+        GL31.glShaderSource(shader, source);
+        GL31.glCompileShader(shader);
 
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            String log = GL20.glGetShaderInfoLog(shader);
-            GL20.glDeleteShader(shader);
+        if (GL31.glGetShaderi(shader, GL31.GL_COMPILE_STATUS) == GL31.GL_FALSE) {
+            String log = GL31.glGetShaderInfoLog(shader);
+            GL31.glDeleteShader(shader);
             throw new RuntimeException("Failed to compile shader: " + log);
         }
 
@@ -140,9 +141,14 @@ public class GlUtil {
 
         if (shaderProgramCache.containsKey(cacheKey)) {
             var program = shaderProgramCache.remove(cacheKey);
-            GL20.glDeleteProgram(program);
+            GL31.glDeleteProgram(program);
         }
 
+    }
+
+    public static void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
+        int uniLoc = GL20.glGetUniformLocation(shaderProgram, uni);
+        GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
     }
 
 }

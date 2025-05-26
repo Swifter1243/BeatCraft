@@ -363,7 +363,7 @@ public class MeshLoader {
             var obj = o.getAsJsonObject();
             var indices = obj.getAsJsonArray("children").asList().stream().map(JsonElement::getAsInt).toList();
             var groupAttr = obj.get("name").getAsString();
-            var origin = JsonUtil.getVector3(obj.getAsJsonArray("origin"));
+            var origin = JsonUtil.getVector3(obj.getAsJsonArray("origin")).div(16f);
 
             for (var idx : indices) {
                 groupAttrs.put(idx, groupAttr + ";");
@@ -397,8 +397,8 @@ public class MeshLoader {
 
             var swivel = origins.computeIfAbsent(idx, x -> new Vector3f());
 
-            var min = JsonUtil.getVector3(obj.getAsJsonArray("from"));
-            var max = JsonUtil.getVector3(obj.getAsJsonArray("to"));
+            var min = JsonUtil.getVector3(obj.getAsJsonArray("from")).div(16f).add(0, 0.5f, 0);
+            var max = JsonUtil.getVector3(obj.getAsJsonArray("to")).div(16f).add(0, 0.5f, 0);
 
             var include = new ArrayList<>(List.of("north", "east", "south", "west", "up", "down"));
 
@@ -425,54 +425,54 @@ public class MeshLoader {
             for (var faceId : include) {
                 var rawFace = rawFaces.getAsJsonObject(faceId);
                 var uv = JsonUtil.getVector4(rawFace.getAsJsonArray("uv"));
-                uv.div(texSize.x, texSize.y, texSize.x, texSize.y);
+                uv.div(16f);
                 switch (faceId) {
                     case "north" -> {
                         verts.addAll(List.of(
-                            new Vector3f(max.x, min.y, min.z),
-                            new Vector3f(max.x, max.y, min.z),
+                            min,
                             new Vector3f(min.x, max.y, min.z),
-                            min
+                            new Vector3f(max.x, max.y, min.z),
+                            new Vector3f(max.x, min.y, min.z)
                         ));
                     }
                     case "east" -> {
                         verts.addAll(List.of(
-                            new Vector3f(max.x, min.y, max.z),
-                            max,
+                            new Vector3f(max.x, min.y, min.z),
                             new Vector3f(max.x, max.y, min.z),
-                            new Vector3f(max.x, min.y, min.z)
-                        ));
-                    }
-                    case "south" -> {
-                        verts.addAll(List.of(
-                            new Vector3f(min.x, min.y, max.z),
-                            new Vector3f(min.x, max.y, max.z),
                             max,
                             new Vector3f(max.x, min.y, max.z)
                         ));
                     }
-                    case "west" -> {
+                    case "south" -> {
                         verts.addAll(List.of(
-                            min,
-                            new Vector3f(min.x, max.y, min.z),
+                            new Vector3f(max.x, min.y, max.z),
+                            max,
                             new Vector3f(min.x, max.y, max.z),
                             new Vector3f(min.x, min.y, max.z)
                         ));
                     }
-                    case "up" -> {
+                    case "west" -> {
                         verts.addAll(List.of(
+                            new Vector3f(min.x, min.y, max.z),
                             new Vector3f(min.x, max.y, max.z),
                             new Vector3f(min.x, max.y, min.z),
+                            min
+                        ));
+                    }
+                    case "up" -> {
+                        verts.addAll(List.of(
+                            max,
                             new Vector3f(max.x, max.y, min.z),
-                            max
+                            new Vector3f(min.x, max.y, min.z),
+                            new Vector3f(min.x, max.y, max.z)
                         ));
                     }
                     case "down" -> {
                         verts.addAll(List.of(
-                            min,
-                            new Vector3f(min.x, min.y, max.z),
+                            new Vector3f(max.x, min.y, min.z),
                             new Vector3f(max.x, min.y, max.z),
-                            new Vector3f(max.x, min.y, min.z)
+                            new Vector3f(min.x, min.y, max.z),
+                            min
                         ));
                     }
                 }

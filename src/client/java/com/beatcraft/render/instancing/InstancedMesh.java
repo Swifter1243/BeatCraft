@@ -252,10 +252,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
     }
 
-    private void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
-        int uniLoc = GL20.glGetUniformLocation(shaderProgram, uni);
-        GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
-    }
 
     private void activateShaderAndTexture() {
 
@@ -268,8 +264,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         var projMat = RenderSystem.getProjectionMatrix();
         var viewMat = RenderSystem.getModelViewMatrix();
-        setMat4f(shaderProgram, "u_projection", projMat);
-        setMat4f(shaderProgram, "u_view", viewMat);
+        GlUtil.setMat4f(shaderProgram, "u_projection", projMat);
+        GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
 
     }
 

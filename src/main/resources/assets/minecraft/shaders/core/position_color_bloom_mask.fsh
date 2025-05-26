@@ -13,7 +13,7 @@ void main() {
 
     float sceneDepth = texture(Sampler0, uv).r;
 
-    if (sceneDepth < gl_FragCoord.z-0.000001) {
+    if (sceneDepth < gl_FragCoord.z-0.00001) {
         discard;
     }
 
