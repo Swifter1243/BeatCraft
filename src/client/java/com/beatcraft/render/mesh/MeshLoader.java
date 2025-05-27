@@ -365,8 +365,6 @@ public class MeshLoader {
 
         var textureSize = json.getAsJsonArray("texture_size").asList().stream().map(JsonElement::getAsInt).toList();
 
-        var texSize = new Vector2f(textureSize.getFirst(), textureSize.get(1));
-
         var groupAttrs = new HashMap<Integer, String>();
         var origins = new HashMap<Integer, Vector3f>();
 
@@ -380,7 +378,7 @@ public class MeshLoader {
 
             for (var idx : indices) {
                 groupAttrs.put(idx, groupAttr + ";");
-                origins.put(idx, origin);
+                origins.put(idx, origin.add(0, 0.5f, 0));
             }
 
         });

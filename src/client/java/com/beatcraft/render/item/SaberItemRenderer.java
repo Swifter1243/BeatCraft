@@ -30,6 +30,7 @@ import java.lang.Math;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer {
@@ -38,8 +39,12 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
         public TriangleMesh mesh;
 
         private boolean swivel = false;
-        private int swivelAxis = 0b000;
-        private final Vector3f swivelPivot;
+        private Vector3f swivelAxis;
+        private final Vector3f pivot;
+
+        private boolean spin = false;
+        private Vector3f spinAxis;
+        private float spinSecondsPerRev;
 
         private boolean doBloom = false;
         private boolean tinted = false;
@@ -127,16 +132,38 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             return (
                 swivel == other.swivel &&
                 swivelAxis == other.swivelAxis &&
-                swivelPivot == other.swivelPivot &&
+                pivot == other.pivot &&
                 doBloom == other.doBloom &&
                 tinted == other.tinted &&
                 Objects.equals(shader, other.shader)
             );
         }
 
-        public AttributedMesh(TriangleMesh mesh, Vector3f swivelPivot, String attributes) {
+        // Matches: xFLOATyFLOATzFLOAT
+        private static final Pattern axesPattern = Pattern.compile("(?:x(?<x>[+-]?(?:\\d+\\.\\d*|\\.\\d+|\\d+)(?:[eE][+-]?\\d+)?[fF]?)?)?(?:y(?<y>[+-]?(?:\\d+\\.\\d*|\\.\\d+|\\d+)(?:[eE][+-]?\\d+)?[fF]?)?)?(?:z(?<z>[+-]?(?:\\d+\\.\\d*|\\.\\d+|\\d+)(?:[eE][+-]?\\d+)?[fF]?)?)?");
+
+        private static Vector3f getAxis(String in) {
+            var matcher = axesPattern.matcher(in);
+
+            var x = in.contains("x") ? 1f : 0f;
+            var y = in.contains("y") ? 1f : 0f;
+            var z = in.contains("z") ? 1f : 0f;
+
+            if (matcher.find()) {
+                var rx = matcher.group("x");
+                var ry = matcher.group("y");
+                var rz = matcher.group("z");
+                if (rx != null) x = Float.parseFloat(rx);
+                if (ry != null) y = Float.parseFloat(ry);
+                if (rz != null) z = Float.parseFloat(rz);
+            }
+
+            return new Vector3f(x, y, z).normalize();
+        }
+
+        public AttributedMesh(TriangleMesh mesh, Vector3f pivot, String attributes) {
             this.mesh = mesh;
-            this.swivelPivot = swivelPivot;
+            this.pivot = pivot;
 
             for (var attr : attributes.split(";")) {
                 if (attr.equals("bloom")) {
@@ -145,12 +172,14 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     tinted = true;
                 } else if (attr.startsWith("swivel:")) {
                     var axis = attr.replace("swivel:", "").toLowerCase();
-                    swivelAxis = (
-                        (axis.contains("x") ? 0b100 : 0b0) +
-                        (axis.contains("y") ? 0b010 : 0b0) +
-                        (axis.contains("z") ? 0b001 : 0b0)
-                    );
+                    swivelAxis = getAxis(axis);
                     swivel = true;
+                } else if (attr.startsWith("spin:")) {
+                    var axisSpeed = attr.replace("spin:", "").toLowerCase().split(":");
+                    var axis = axisSpeed[0];
+                    spinAxis = getAxis(axis);
+                    spinSecondsPerRev = Float.parseFloat(axisSpeed[1]);
+                    spin = true;
                 } else if (attr.startsWith("shader:") && mesh != null) {
                     var shaderData = attr.replace("shader:", "");
                     var nameVars = shaderData.split(":", 2);
@@ -268,9 +297,9 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     var v1 = new Vector3f(mesh.vertices.get(tri.b()));
                     var v2 = new Vector3f(mesh.vertices.get(tri.c()));
 
-                    v0.sub(swivelPivot).rotate(ori).add(swivelPivot);
-                    v1.sub(swivelPivot).rotate(ori).add(swivelPivot);
-                    v2.sub(swivelPivot).rotate(ori).add(swivelPivot);
+                    v0.sub(pivot).rotate(ori).add(pivot);
+                    v1.sub(pivot).rotate(ori).add(pivot);
+                    v2.sub(pivot).rotate(ori).add(pivot);
 
                     mts.transformPosition(v0);
                     mts.transformPosition(v1);
@@ -298,6 +327,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     RenderSystem.enableDepthTest();
                     RenderSystem.depthMask(true);
                 }
+
                 RenderSystem.enableBlend();
 
                 GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, vVbo);
@@ -318,17 +348,19 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             Quaternionf currentOri = matrices.getUnnormalizedRotation(new Quaternionf());
             Quaternionf orientation = new Quaternionf();
 
+            if (spin) {
+                double s = System.nanoTime() / 1_000_000_000d;
+                double revs = s / spinSecondsPerRev;
+                float angle = (float) ((revs * 2d * Math.PI) % (2d * Math.PI));
+                orientation.rotateAxis(angle, spinAxis);
+            }
+
+
             if (swivel) {
-                Vector3f axisLocal = switch (swivelAxis) {
-                    case 0b100 -> new Vector3f(1, 0, 0);
-                    case 0b010 -> new Vector3f(0, 1, 0);
-                    case 0b001 -> new Vector3f(0, 0, 1);
-                    default -> new Vector3f();
-                };
 
-                Vector3f axisWorld = new Vector3f(axisLocal).normalize().rotate(currentOri);
+                Vector3f axisWorld = new Vector3f(swivelAxis).normalize().rotate(currentOri);
 
-                Vector3f modelWorldPos = new Vector3f(swivelPivot).mulPosition(matrices);
+                Vector3f modelWorldPos = new Vector3f(pivot).mulPosition(matrices);
 
                 Vector3f toModel = new Vector3f(modelWorldPos).negate();
 
@@ -353,7 +385,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     float sign = Math.signum(cross.dot(axisWorld));
                     angle *= sign;
 
-                    orientation.rotateAxis(angle, axisLocal);
+                    orientation.rotateAxis(angle, swivelAxis);
                 }
             }
 
@@ -364,9 +396,9 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                     var v1 = new Vector3f(mesh.vertices.get(tri.b()));
                     var v2 = new Vector3f(mesh.vertices.get(tri.c()));
 
-                    v0.sub(swivelPivot).rotate(orientation).add(swivelPivot);
-                    v1.sub(swivelPivot).rotate(orientation).add(swivelPivot);
-                    v2.sub(swivelPivot).rotate(orientation).add(swivelPivot);
+                    v0.sub(pivot).rotate(orientation).add(pivot);
+                    v1.sub(pivot).rotate(orientation).add(pivot);
+                    v2.sub(pivot).rotate(orientation).add(pivot);
 
                     buffer.vertex(matrices, v0.x, v0.y, v0.z).texture(tri.uvA().x, tri.uvA().y).color(c);
                     buffer.vertex(matrices, v1.x, v1.y, v1.z).texture(tri.uvB().x, tri.uvB().y).color(c);
@@ -392,9 +424,9 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                             var v1 = new Vector3f(mesh.vertices.get(tri.b()));
                             var v2 = new Vector3f(mesh.vertices.get(tri.c()));
 
-                            v0.sub(swivelPivot).rotate(ori).add(swivelPivot);
-                            v1.sub(swivelPivot).rotate(ori).add(swivelPivot);
-                            v2.sub(swivelPivot).rotate(ori).add(swivelPivot);
+                            v0.sub(pivot).rotate(ori).add(pivot);
+                            v1.sub(pivot).rotate(ori).add(pivot);
+                            v2.sub(pivot).rotate(ori).add(pivot);
 
                             mts.transformPosition(v0);
                             mts.transformPosition(v1);
