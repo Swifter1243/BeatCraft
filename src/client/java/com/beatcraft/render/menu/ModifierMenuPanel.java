@@ -574,6 +574,9 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 replayPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
                 replayPageStatic.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
             }
+            case Sabers -> {
+                customSaberPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
+            }
         }
 
         context.draw();
