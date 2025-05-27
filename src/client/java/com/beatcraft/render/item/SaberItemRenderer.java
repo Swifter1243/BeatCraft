@@ -432,8 +432,20 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
         public void destroy() {
             if (shaderProgram != 0) {
+                GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+                GL30.glBindVertexArray(0);
+                GL15.glDeleteBuffers(vbo);
+                GL30.glDeleteVertexArrays(vao);
                 GL31.glDeleteProgram(shaderProgram);
+                if (doBloom && bloomShaderProgram != 0) {
+                    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+                    GL30.glBindVertexArray(0);
+                    GL15.glDeleteBuffers(bloom_vbo);
+                    GL30.glDeleteVertexArrays(bloom_vao);
+                    GL32.glDeleteProgram(bloomShaderProgram);
+                }
             }
+
         }
 
     }
@@ -494,6 +506,11 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
         }
 
+        public void destroy() {
+            meshComponents.forEach(AttributedMesh::destroy);
+            meshComponents.clear();
+        }
+
     }
 
     public static final ArrayList<SaberModel> models = new ArrayList<>();
@@ -521,6 +538,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             return;
         }
 
+        models.forEach(SaberModel::destroy);
         models.clear();
 
         for (File modelFolder : modelFolders) {

@@ -17,7 +17,6 @@ or from releases here on GitHub.
 
 Mod Dependencies: (these will be auto-downloaded if you get the mod with the modrinth/CurseForge app)
 - [Vivecraft](https://modrinth.com/mod/vivecraft)
-- [GeckoLib](https://modrinth.com/mod/geckolib)
 - [owo-lib](https://modrinth.com/mod/owo-lib)
 - [fabric-api](https://modrinth.com/mod/fabric-api)
 - [sodium](https://modrinth.com/mod/sodium)
@@ -91,6 +90,17 @@ Upon joining a new world for the first time:
 
 ### /sabers
 > gives you sabers that default to the iconic red and blue of beat saber, but will also auto-sync to the current map's color scheme.  
+
+### /custom_sabers
+`/custom_sabers list`
+> displays a list of all loaded saber models.  
+> Click a model name in chat to copy the selector to the clipboard.  
+
+`/custom_sabers refresh`
+> re-scans the custom saber directory and reloads all models.  
+
+`/custom_sabers select <data>`
+> paste the content from clicking on a model from `list` to select that model.  
 
 ### /playarea
 > generates the default pillar and runway for playing.  
