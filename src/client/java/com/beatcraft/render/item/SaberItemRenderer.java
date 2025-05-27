@@ -311,7 +311,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             }
         }
 
-        public void draw(Matrix4f matrices, int color, Vector3f cameraPos, BufferBuilder buffer, ArrayList<Runnable> afterCalls, Identifier texture, boolean isFirstPerson) {
+        public void draw(Matrix4f matrices, int color, Vector3f cameraPos, BufferBuilder buffer, ArrayList<Runnable> afterCalls, Identifier texture, boolean bypassBloom) {
 
             var c = tinted ? color : 0xFFFFFFFF;
 
@@ -381,7 +381,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
             var vrActive = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
 
-            if (doBloom && !(isFirstPerson && !vrActive)) {
+            if (doBloom && !(bypassBloom && !vrActive)) {
                 var mts = new Matrix4f(matrices);
                 var ori = new Quaternionf(orientation);
                 if (shaderProgram == 0) {
@@ -455,7 +455,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             this.texture = texture;
         }
 
-        public void render(Matrix4f matrices, int color, Vector3f cameraPos, boolean isFirstPerson) {
+        public void render(Matrix4f matrices, int color, Vector3f cameraPos, boolean bypassBloom) {
 
             var tessellator = Tessellator.getInstance();
             var buffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -463,7 +463,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             var afterCalls = new ArrayList<Runnable>();
 
             for (var mesh : meshComponents) {
-                mesh.draw(matrices, color, cameraPos, buffer, afterCalls, texture, isFirstPerson);
+                mesh.draw(matrices, color, cameraPos, buffer, afterCalls, texture, bypassBloom);
             }
 
             var buff = buffer.endNullable();
@@ -606,7 +606,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
             color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
 
-        active.render(matrices.peek().getPositionMatrix(), color, cameraPos, mode == ModelTransformationMode.FIRST_PERSON_RIGHT_HAND || mode == ModelTransformationMode.FIRST_PERSON_LEFT_HAND);
+        active.render(matrices.peek().getPositionMatrix(), color, cameraPos, mode == ModelTransformationMode.FIRST_PERSON_RIGHT_HAND || mode == ModelTransformationMode.FIRST_PERSON_LEFT_HAND || mode == ModelTransformationMode.GUI);
 
     }
 }
