@@ -73,8 +73,8 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         renderPos.add(c);
 
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), (float) BeatCraftDebug.getValue("dissolve", 0f), data.getMapIndex()));
+            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {

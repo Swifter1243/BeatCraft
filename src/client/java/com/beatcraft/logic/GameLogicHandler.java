@@ -79,6 +79,11 @@ public class GameLogicHandler {
     private static boolean failed = false;
     public static boolean noFail = false;
 
+    private static boolean failAnim = false;
+    public static float globalDissolve = 0;
+    private static double failTime = 0;
+    private static final double DISSOLVE_TIME = 2.5;
+
     // health values:
     // start: 50
     // miss: -15
@@ -161,7 +166,10 @@ public class GameLogicHandler {
     }
 
     public static void update(double deltaTime, float tickDelta) {
+
+        // only update on first render pass per-frame
         if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
+
         assert MinecraftClient.getInstance().player != null;
         headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
         headRot.set(MirrorHandler.invCameraRotation).conjugate();
@@ -198,6 +206,25 @@ public class GameLogicHandler {
             processDamage(WALL_HP * (float) deltaTime);
             checkFail();
             breakCombo();
+        }
+
+        if (failAnim) {
+            var t = System.nanoTime() / 1_000_000_000d;
+            var normalized = MathUtil.inverseLerp(failTime, failTime+DISSOLVE_TIME, t);
+
+            var n = (float) Math.clamp(normalized, 0, 1);
+
+            BeatmapPlayer.setPlaybackSpeed(0.1f + ((1f-n) * 0.9f));
+
+            if (normalized <= 1.0) {
+                globalDissolve = (float) normalized;
+            } else if (normalized >= 1.1) {
+                failAnim = false;
+                failTime = 0;
+                resetToMenu();
+                BeatmapPlayer.setPlaybackSpeed(1);
+            }
+
         }
 
     }
@@ -326,6 +353,8 @@ public class GameLogicHandler {
         }
 
         assert MinecraftClient.getInstance().player != null;
+
+        if (failAnim) return;
 
         if (note instanceof PhysicalScorableObject scorable) {
             if (scorable.score$getData().score$getNoteType() == saberColor) {
@@ -554,23 +583,27 @@ public class GameLogicHandler {
     }
 
     private static void checkFail() {
-        if (health <= 0) {
+        if (health <= 0 && !failed) {
             health = 0;
             failed = true;
             if (!noFail) {
-                // trigger fail animation
-                HUDRenderer.endScreenPanel.setFailed();
-                HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
-
-                try {
-                    PlayRecorder.save();
-                } catch (IOException e) {
-                    BeatCraft.LOGGER.error("Error saving recording", e);
-                }
-
-                unloadAll();
+                failAnim = true;
+                failTime = System.nanoTime() / 1_000_000_000d;
             }
         }
+    }
+
+    private static void resetToMenu() {
+        HUDRenderer.endScreenPanel.setFailed();
+        HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
+
+        try {
+            PlayRecorder.save();
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Error saving recording", e);
+        }
+
+        unloadAll();
     }
 
     public static void incrementCombo() {
@@ -641,6 +674,9 @@ public class GameLogicHandler {
         failed = false;
         health = maxHealth == 100 ? 50 : maxHealth == 4 ? 4 : 1;
         inWall = false;
+        failTime = 0;
+        failAnim = false;
+        globalDissolve = 0;
         MemoryPool.clear();
     }
 
