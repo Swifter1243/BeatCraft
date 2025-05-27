@@ -387,6 +387,7 @@ public class MeshLoader {
 
         var elements = json.getAsJsonArray("elements");
 
+
         var meshes = new ArrayList<SaberItemRenderer.AttributedMesh>();
 
         BiFunction<Vector3f, String, SaberItemRenderer.AttributedMesh> getMesh = (v, s) -> {
@@ -426,6 +427,21 @@ public class MeshLoader {
             }
 
             if (include.isEmpty()) return;
+
+
+            var rawRotation = obj.getAsJsonObject("rotation");
+            var angleDegrees = rawRotation.get("angle").getAsFloat();
+            var rotationAxis = rawRotation.get("axis").getAsString();
+            var rotationOrigin = JsonUtil.getVector3(rawRotation.getAsJsonArray("origin")).div(16f);
+
+            var rotQt = new Quaternionf().rotationAxis(
+                angleDegrees * MathHelper.RADIANS_PER_DEGREE,
+                new Vector3f(
+                    rotationAxis.equals("x") ? 1 : 0,
+                    rotationAxis.equals("y") ? 1 : 0,
+                    rotationAxis.equals("z") ? 1 : 0
+                )
+            );
 
             var mesh = getMesh.apply(swivel, attrs);
 
@@ -495,6 +511,10 @@ public class MeshLoader {
                     new Triangle(x, x + 2, x + 3, new Vector2f(uv.x, uv.w), new Vector2f(uv.z, uv.y), new Vector2f(uv.z, uv.w))
                 ));
                 n++;
+            }
+
+            for (var vert : verts) {
+                vert.sub(rotationOrigin).rotate(rotQt).add(rotationOrigin);
             }
 
             mesh.mesh.addGeometry(verts, tris);

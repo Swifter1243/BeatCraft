@@ -2,8 +2,7 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "beatcraft:item/saber",
-		"particle": "beatcraft:item/saber"
+		"1": "beatcraft:item/saber"
 	},
 	"elements": [
 		{
@@ -37,7 +36,7 @@
 		{
 			"name": "bloom",
 			"from": [7.2, 8, 7.2],
-			"to": [8.8, 49, 8.8],
+			"to": [8.8, 50, 8.8],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
 			"faces": {
 				"north": {"uv": [2.25, 0.25, 2.5, 10.5], "texture": "#1"},
