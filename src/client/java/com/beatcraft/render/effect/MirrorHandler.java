@@ -156,6 +156,7 @@ public class MirrorHandler {
         RenderSystem.depthMask(true);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
+        var q = MemoryPool.newQuaternionf();
         MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
@@ -163,6 +164,7 @@ public class MirrorHandler {
         MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
         MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
+        MemoryPool.releaseSafe(q);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();

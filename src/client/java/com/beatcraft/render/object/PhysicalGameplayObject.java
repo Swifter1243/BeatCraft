@@ -128,7 +128,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (dissolve == null) {
             return false;
         } else {
-            return dissolve < 0.5;
+            return dissolve == 0;
+        }
+    }
+
+    public float getBaseDissolve() {
+        Float dissolve = animationState.getDissolve();
+        if (dissolve == null) {
+            return 0;
+        } else {
+            return 1-dissolve;
         }
     }
 
@@ -137,7 +146,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (dissolveArrow == null) {
             return false;
         } else {
-            return dissolveArrow < 0.5;
+            return dissolveArrow == 0;
+        }
+    }
+
+    public float getArrowDissolve() {
+        Float dissolve = animationState.getDissolveArrow();
+        if (dissolve == null) {
+            return 0;
+        } else {
+            return 1-dissolve;
         }
     }
 

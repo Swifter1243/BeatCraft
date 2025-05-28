@@ -1,9 +1,11 @@
 package com.beatcraft.render.instancing;
 
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.gl.GlUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -54,7 +56,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     private final int vertexCount;
     private int instanceCount;
 
-    private final List<I> instanceDataList;
+    private final ArrayList<I> instanceDataList;
+    private final ArrayList<I> bloomCopyCalls;
     private boolean initialized;
 
     private Identifier vertexShaderLoc;
@@ -67,6 +70,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         this.vertices = vertices;
         this.vertexCount = vertices.length;
         this.instanceDataList = new ArrayList<>();
+        this.bloomCopyCalls = new ArrayList<>();
         this.instanceCount = 0;
         this.initialized = false;
 
@@ -171,23 +175,42 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         instanceDataList.add(data);
     }
 
+    public void copyDrawToBloom() {
+        bloomCopyCalls.add(instanceDataList.getLast());
+    }
+
     public void cancelDraws() {
         instanceDataList.clear();
+        bloomCopyCalls.clear();
+    }
+
+    public void render(Vector3f cameraPos, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
+        render(cameraPos, bloomCopyCalls, cameraRotation, arrowBloomProgram, depthBuffer);
     }
 
     public void render(Vector3f cameraPos) {
+        var q = MemoryPool.newQuaternionf();
+        render(cameraPos, instanceDataList, q, -1, -1);
+        MemoryPool.releaseSafe(q);
+    }
 
-        if (instanceDataList.isEmpty()) {
+    public void cancelBloomCalls() {
+        bloomCopyCalls.clear();
+    }
+
+    protected void render(Vector3f cameraPos, ArrayList<I> dataList, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
+
+        if (dataList.isEmpty()) {
             return;
         }
 
-        if (!initialized) init(instanceDataList.getFirst());
+        if (!initialized) init(dataList.getFirst());
 
-        var attrLocations = instanceDataList.getFirst().getLocations();
+        var attrLocations = dataList.getFirst().getLocations();
 
-        instanceCount = instanceDataList.size();
+        instanceCount = dataList.size();
 
-        instanceDataList.sort((a, b) -> {
+        dataList.sort((a, b) -> {
             var ta = a.getTransform();
             var tb = b.getTransform();
             var posA = new Vector3f(ta.m30(), ta.m31(), ta.m32());
@@ -213,12 +236,12 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
         }
 
-        activateShaderAndTexture();
+        activateShaderAndTexture(cameraRotation, arrowBloomProgram, depthBuffer);
 
         // mat4 + vec4 + float
-        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * instanceDataList.getFirst().getFrameSize());
+        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * dataList.getFirst().getFrameSize());
 
-        for (InstanceData data : instanceDataList) {
+        for (InstanceData data : dataList) {
             data.putData(instanceDataBuffer);
         }
 
@@ -253,13 +276,14 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
         GL30.glBindVertexArray(oldVAO);
 
-        instanceDataList.clear();
+        dataList.clear();
     }
 
 
-    private void activateShaderAndTexture() {
+    private void activateShaderAndTexture(Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
 
         int shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
+        shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
         GL20.glUseProgram(shaderProgram);
 
         RenderSystem.setShaderTexture(0, texture);
@@ -267,9 +291,16 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         RenderSystem.bindTexture(0);
 
         var projMat = RenderSystem.getProjectionMatrix();
-        var viewMat = RenderSystem.getModelViewMatrix();
+        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation);
         GlUtil.setMat4f(shaderProgram, "u_projection", projMat);
         GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
+
+        if (arrowBloomProgram != -1) {
+            GL31.glActiveTexture(GL31.GL_TEXTURE1);
+            var loc = GL31.glGetUniformLocation(arrowBloomProgram, "u_depth");
+            GL31.glBindTexture(GL31.GL_TEXTURE_2D, depthBuffer);
+            GL31.glUniform1i(loc, 1);
+        }
 
     }
 

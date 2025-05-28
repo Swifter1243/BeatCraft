@@ -387,14 +387,17 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     private void toggleSlowerSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 0.85f : 1);
+        GameLogicHandler.mapSpeed = state ? 0.85f : 1f;
     }
 
     private void toggleFasterSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 1.2f : 1);
+        GameLogicHandler.mapSpeed = state ? 1.2f : 1f;
     }
 
     private void toggleSuperFastSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 1.5f : 1);
+        GameLogicHandler.mapSpeed = state ? 1.5f : 1f;
     }
 
     // ^ Modifier Toggles

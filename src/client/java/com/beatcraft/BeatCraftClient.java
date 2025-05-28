@@ -235,6 +235,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     private int songSpeedReset(CommandContext<FabricClientCommandSource> context) {
         BeatmapPlayer.setPlaybackSpeed(1);
+        GameLogicHandler.mapSpeed = 1;
         context.getSource().sendFeedback(Text.literal("Song speed reset! (1.0)"));
         return 1;
     }
@@ -242,6 +243,7 @@ public class BeatCraftClient implements ClientModInitializer {
     private int songSpeedScalar(CommandContext<FabricClientCommandSource> context) {
         float speed = FloatArgumentType.getFloat(context, "scalar");
         BeatmapPlayer.setPlaybackSpeed(speed);
+        GameLogicHandler.mapSpeed = speed;
         context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
         return 1;
     }

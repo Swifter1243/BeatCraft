@@ -16,6 +16,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -54,8 +55,9 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
 
         renderPos.add(c);
 
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
-        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
+        var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor(), dissolve, data.getMapIndex()));
 
     }
 

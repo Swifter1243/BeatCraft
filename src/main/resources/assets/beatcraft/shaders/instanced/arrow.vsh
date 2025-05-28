@@ -19,6 +19,7 @@ out vec4 v_color;
 out float v_dissolve;
 out float v_index;
 out vec3 v_pos;
+out vec3 screenUV;
 
 void main() {
     mat4 instance_model = mat4(
@@ -28,7 +29,9 @@ void main() {
         instance_model_col3
     );
 
-    gl_Position = u_projection * u_view * instance_model * vec4(in_position, 1.0);
+    vec4 pos = vec4(u_view * instance_model * vec4(in_position, 1.0));
+    gl_Position = u_projection * pos;
+    screenUV = vec3(gl_Position.xy, pos.z);
     v_uv = in_uv;
     v_color = instance_color;
     v_dissolve = dissolve_index.x;

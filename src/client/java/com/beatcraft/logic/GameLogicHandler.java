@@ -35,6 +35,7 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
@@ -122,6 +123,8 @@ public class GameLogicHandler {
 
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
+
+    public static float mapSpeed = 1f;
 
 
     public static void trackPlayer(UUID uuid) {
@@ -214,7 +217,7 @@ public class GameLogicHandler {
 
             var n = (float) Math.clamp(normalized, 0, 1);
 
-            BeatmapPlayer.setPlaybackSpeed(0.1f + ((1f-n) * 0.9f));
+            BeatmapPlayer.setPlaybackSpeed((0.1f * mapSpeed) + ((mapSpeed-n) * (0.9f * mapSpeed)));
 
             if (normalized <= 1.0) {
                 globalDissolve = (float) normalized;

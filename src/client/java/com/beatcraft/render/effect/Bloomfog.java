@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -113,6 +114,8 @@ public class Bloomfog {
     private SimpleFramebuffer[] pyramidBuffers2 = new SimpleFramebuffer[LAYERS];
     private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
 
+    private static int arrowShaderProgram = 0;
+
     public static void initShaders() {
         try {
             blurShaderUp = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_upsample", VertexFormats.POSITION_TEXTURE_COLOR);
@@ -130,6 +133,12 @@ public class Bloomfog {
             bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
             bloomMaskLightShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_bloom_mask", VertexFormats.POSITION_COLOR);
             bloomMaskLightTextureShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_texture_bloom_mask", VertexFormats.POSITION_TEXTURE_COLOR);
+
+            var vertexShaderLoc = BeatCraft.id("shaders/instanced/arrow.vsh");
+            var fragmentShaderLoc = BeatCraft.id("shaders/instanced/arrow_bloom_mask.fsh");
+
+            arrowShaderProgram = GlUtil.createShaderProgram(vertexShaderLoc, fragmentShaderLoc);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -491,6 +500,16 @@ public class Bloomfog {
             bloomCalls.clear();
             noteBloomCalls.clear();
             arrowBloomCalls.clear();
+            miscBloomCalls.clear();
+
+            MeshLoader.COLOR_NOTE_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.BOMB_NOTE_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.NOTE_ARROW_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.NOTE_DOT_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.cancelBloomCalls();
+
             bloomOutput.setClearColor(0, 0, 0, 0);
             bloomOutput.clear(MinecraftClient.IS_SYSTEM_MAC);
             MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
@@ -582,6 +601,16 @@ public class Bloomfog {
             call.accept(cameraPos, invCameraRotation, sceneDepthBuffer);
         }
         miscBloomCalls.clear();
+
+
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+
 
         bloomInput.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;

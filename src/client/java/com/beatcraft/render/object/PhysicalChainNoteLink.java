@@ -94,19 +94,22 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         renderPos.add(c);
 
         if (!isBaseDissolved()) {
-            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
+            var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), dissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
-            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE, GameLogicHandler.globalDissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE, GameLogicHandler.globalDissolve, data.getMapIndex()));
-            if (GameLogicHandler.globalDissolve == 0) {
-                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-                    MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
-                    MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
-                });
-            }
+            var dissolve = Math.max(GameLogicHandler.globalDissolve, getArrowDissolve());
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom();
+            //if (dissolve == 0) {
+            //    BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+            //        MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
+            //        MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+            //    });
+            //}
         }
     }
 
