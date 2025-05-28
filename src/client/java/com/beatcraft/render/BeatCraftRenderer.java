@@ -403,8 +403,8 @@ public class BeatCraftRenderer {
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         if (test1 == null) {
-            test1 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFFFF0000), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
-            test2 = new Debris(new Vector3f(0, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFF0000FF), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
+            test1 = new Debris(new Vector3f(1.5f, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFFFF0000), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
+            test2 = new Debris(new Vector3f(-1.5f, 1, 0), new Quaternionf(), new Vector3f(), new Quaternionf(), new Vector4f(), new Color(0xFF0000FF), MeshLoader.COLOR_NOTE_INSTANCED_MESH);
 
             test1.persistent = true;
             test2.persistent = true;
@@ -414,7 +414,7 @@ public class BeatCraftRenderer {
 
         } else {
             var n = MinecraftClient.getInstance().player.getPos().toVector3f().sub(0, 1.8f, 0);
-            n.normalize();
+            n.normalize().mul((float) BeatCraftDebug.getValue("n", 1f));
             test1.slice.set(n.x, n.y, n.z, (float) BeatCraftDebug.getValue("d", 0f));
             test2.slice.set(-n.x, -n.y, -n.z, -(float) BeatCraftDebug.getValue("d", 0f));
 

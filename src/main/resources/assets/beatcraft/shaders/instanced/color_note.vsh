@@ -36,5 +36,5 @@ void main() {
     v_dissolve = dissolve_index.x;
     v_index = dissolve_index.y;
     v_slice = slice;
-    v_pos = in_position - vec3(0.5);
+    v_pos = in_position;
 }
