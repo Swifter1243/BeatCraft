@@ -9,23 +9,29 @@ layout(location = 4) in vec4 instance_model_col1;
 layout(location = 5) in vec4 instance_model_col2;
 layout(location = 6) in vec4 instance_model_col3;
 layout(location = 7) in vec4 instance_color;
-layout(location = 8) in float dissolve;
+layout(location = 8) in vec2 dissolve_index;
 
 uniform mat4 u_projection;
 uniform mat4 u_view;
 
 out vec2 v_uv;
 out vec4 v_color;
+out float v_dissolve;
+out float v_index;
+out vec3 v_pos;
 
 void main() {
     mat4 instance_model = mat4(
-        instance_model_col0,
-        instance_model_col1,
-        instance_model_col2,
-        instance_model_col3
+    instance_model_col0,
+    instance_model_col1,
+    instance_model_col2,
+    instance_model_col3
     );
 
     gl_Position = u_projection * u_view * instance_model * vec4(in_position, 1.0);
     v_uv = in_uv;
     v_color = instance_color;
+    v_dissolve = dissolve_index.x;
+    v_index = dissolve_index.y;
+    v_pos = in_position;
 }

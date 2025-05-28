@@ -99,12 +99,14 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         }
 
         if (!isArrowDissolved()) {
-            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE));
-            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE));
-            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
-            });
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE, GameLogicHandler.globalDissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE, GameLogicHandler.globalDissolve, data.getMapIndex()));
+            if (GameLogicHandler.globalDissolve == 0) {
+                BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
+                    MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
+                    MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
+                });
+            }
         }
     }
 

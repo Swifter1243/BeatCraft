@@ -104,8 +104,6 @@ void main() {
         }
     }
 
-
-
     float noise = (cnoise(clamped + vec3(0, v_index, 0)) + 1.0) * 0.5;
     vec4 tex = texture(u_texture, v_uv);
 
@@ -116,7 +114,6 @@ void main() {
         float t = ((v_dissolve+EDGE_DIST)-noise)/EDGE_DIST;
         c = mix(c, vec4(1.0), t);
     }
+
     fragColor = c;
-
-
 }

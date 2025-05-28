@@ -3,6 +3,7 @@ package com.beatcraft.render.object;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.BombNote;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
@@ -53,8 +54,8 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
 
         renderPos.add(c);
 
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor()));
-        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor()));
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor(), GameLogicHandler.globalDissolve, data.getMapIndex()));
 
     }
 

@@ -15,10 +15,14 @@ import static com.beatcraft.render.instancing.InstancedMesh.MATRIX4F_SIZE_BYTES;
 public class ArrowInstanceData implements InstancedMesh.InstanceData {
     private final Matrix4f transform;
     private final Color color;
+    private final float dissolve;
+    private final int index;
 
-    public ArrowInstanceData(Matrix4f transform, Color color) {
+    public ArrowInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
         this.transform = new Matrix4f(transform);
         this.color = color;
+        this.dissolve = dissolve;
+        this.index = index;
     }
 
     @Override
@@ -28,14 +32,15 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
 
     @Override
     public int getFrameSize() {
-        return 16 + 4;
+        return 16 + 4 + 4;
     }
 
     @Override
     public int[] getLocations() {
         return new int[]{
             TRANSFORM_LOCATION,
-            COLOR_LOCATION
+            COLOR_LOCATION,
+            DISSOLVE_INDEX_LOCATION
         };
     }
 
@@ -49,26 +54,40 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
         var c = color;
         buffer.put(c.getRed()).put(c.getGreen()).put(c.getBlue()).put(c.getAlpha());
 
+        buffer.put(dissolve);
+        buffer.put((float) index);
+        buffer.put(0).put(0);
+
     }
 
     private static final int TRANSFORM_LOCATION = 3;
     private static final int COLOR_LOCATION = 7;
+    private static final int DISSOLVE_INDEX_LOCATION = 8;
 
     @Override
     public void init() {
 
+        int stride = getFrameSize() * FLOAT_SIZE_BYTES;
+
         for (int i = 0; i < 4; i++) {
             int location = TRANSFORM_LOCATION + i;
             GL20.glVertexAttribPointer(location, 4, GL11.GL_FLOAT, false,
-                MATRIX4F_SIZE_BYTES + VEC4_SIZE_BYTES, i * 4 * FLOAT_SIZE_BYTES);
+                stride, i * 4 * FLOAT_SIZE_BYTES);
             GL20.glEnableVertexAttribArray(location);
             ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
         }
 
         GL20.glVertexAttribPointer(COLOR_LOCATION, 4, GL11.GL_FLOAT, false,
-            MATRIX4F_SIZE_BYTES + VEC4_SIZE_BYTES, MATRIX4F_SIZE_BYTES);
+            stride, MATRIX4F_SIZE_BYTES);
         GL20.glEnableVertexAttribArray(COLOR_LOCATION);
         ARBInstancedArrays.glVertexAttribDivisorARB(COLOR_LOCATION, 1);
+
+
+        GL20.glVertexAttribPointer(DISSOLVE_INDEX_LOCATION, 2, GL11.GL_FLOAT, false,
+            stride, MATRIX4F_SIZE_BYTES + VEC4_SIZE_BYTES);
+        GL20.glEnableVertexAttribArray(DISSOLVE_INDEX_LOCATION);
+        ARBInstancedArrays.glVertexAttribDivisorARB(DISSOLVE_INDEX_LOCATION, 1);
+
     }
 
 }
