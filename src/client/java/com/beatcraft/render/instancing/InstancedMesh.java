@@ -92,6 +92,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         for (int i = 0; i < indexList.size(); i++) {
             indices[i] = indexList.get(i);
         }
+
     }
 
     public void init(I setupFrame) {
@@ -175,9 +176,11 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     }
 
     public void render(Vector3f cameraPos) {
+
         if (instanceDataList.isEmpty()) {
             return;
         }
+
         if (!initialized) init(instanceDataList.getFirst());
 
         var attrLocations = instanceDataList.getFirst().getLocations();
@@ -212,13 +215,13 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         activateShaderAndTexture();
 
-
         // mat4 + vec4 + float
         FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * instanceDataList.getFirst().getFrameSize());
 
         for (InstanceData data : instanceDataList) {
             data.putData(instanceDataBuffer);
         }
+
         instanceDataBuffer.flip();
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
@@ -227,16 +230,19 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
 
         GL31.glDrawElementsInstanced(
             GL11.GL_TRIANGLES,
             indices.length,
             GL11.GL_UNSIGNED_INT,
             0,
-            instanceCount);
+            instanceCount
+        );
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
+        RenderSystem.enableCull();
 
         deactivateShaderAndTexture();
 
@@ -248,8 +254,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL30.glBindVertexArray(oldVAO);
 
         instanceDataList.clear();
-
-
     }
 
 

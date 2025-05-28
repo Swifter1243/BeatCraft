@@ -10,6 +10,7 @@ import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.util.math.random.Random;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -23,6 +24,7 @@ public class Debris implements Particle {
     private final Vector3f decay;
     private final Quaternionf spin;
     public Vector4f slice;
+    private final int randomIndex;
     private final Color color;
     private final double spawnTime;
     private final InstancedMesh<ColorNoteInstanceData> mesh;
@@ -39,6 +41,7 @@ public class Debris implements Particle {
         this.decay = new Vector3f(0.99f, 0.99f, 0.99f);
         this.spawnTime = System.nanoTime() / 1_000_000_000d;
         this.mesh = mesh;
+        this.randomIndex = Random.create().nextBetween(0, 200);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class Debris implements Particle {
         mesh.draw(new ColorNoteInstanceData(
             pos, color,
             (float) BeatCraftDebug.getValue("dissolve", 0f),
-            slice.hashCode(), slice
+            randomIndex, slice
         ));
         // TODO: setup instance-based with cut plane
 
