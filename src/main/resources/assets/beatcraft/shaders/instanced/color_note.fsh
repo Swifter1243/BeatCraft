@@ -98,8 +98,8 @@ void main() {
         float d = dot(n, clamped) + v_slice.w;
         if (d < 0.0) {
             discard;
-        } else if (d - EDGE_DIST < 0.0) {
-            float t = (-(d-EDGE_DIST))/EDGE_DIST;
+        } else if (d - EDGE_DIST < EDGE_DIST) {
+            float t = min(1, (-(d-(EDGE_DIST*2)))/(EDGE_DIST*2));
             c = mix(c, vec4(1.0), t);
         }
     }

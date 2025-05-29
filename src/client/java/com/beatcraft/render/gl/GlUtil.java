@@ -129,8 +129,10 @@ public class GlUtil {
             vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath()
         );
 
-        return shaderProgramCache.computeIfAbsent(cacheKey,
-            k -> createShaderProgram(vertexShaderLoc, fragmentShaderLoc));
+        return shaderProgramCache.computeIfAbsent(
+            cacheKey,
+            k -> createShaderProgram(vertexShaderLoc, fragmentShaderLoc)
+        );
     }
 
     public static void destroyShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {

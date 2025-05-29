@@ -29,6 +29,8 @@ public class Debris implements Particle {
     private final double spawnTime;
     private final InstancedMesh<ColorNoteInstanceData> mesh;
 
+    private static final float DISSOLVE_TIME = 2f;
+
     public boolean persistent = false;
 
     public Debris(Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color, InstancedMesh<ColorNoteInstanceData> mesh) {
@@ -60,9 +62,11 @@ public class Debris implements Particle {
 
         pos.scale(0.5f);
 
+        var t = MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d);
+
         mesh.draw(new ColorNoteInstanceData(
             pos, color,
-            (float) BeatCraftDebug.getValue("dissolve", 0f),
+            (float) t,
             randomIndex, slice
         ));
         // TODO: setup instance-based with cut plane
@@ -71,6 +75,6 @@ public class Debris implements Particle {
 
     @Override
     public boolean shouldRemove() {
-        return (!persistent) && MathUtil.inverseLerp(spawnTime, spawnTime+5f, System.nanoTime()/1_000_000_000d) >= 1;
+        return (!persistent) && MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d) >= 1;
     }
 }
