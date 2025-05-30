@@ -305,9 +305,9 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
     public void tryPlayMap(SongData data, SongData.BeatmapInfo info, String set, String diff) {
         try {
             if (song_play_request != null) song_play_request.cancel(true);
+            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
             currentDisplay = null;
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
-            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
             // send structure place method so it can happen while the song loads client-side
             if (BeatCraftClient.playerConfig.doEnvironmentPlacing() && BeatmapPlayer.currentBeatmap.lightShowEnvironment != null) {
                 String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
@@ -326,8 +326,12 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 ReplayHandler.setup(data.getId(), set, diff);
             }
 
-        } catch (IOException e) {
-            BeatCraft.LOGGER.error("There was a tragic failure whilst loading a beatmap", e);
+        } catch (Exception e) {
+            HUDRenderer.errorMessagePanel.setContent("Map failed to load\nsee console for error");
+            HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+            BeatmapPlayer.currentBeatmap = null;
+            BeatmapPlayer.currentInfo = null;
+            BeatCraft.LOGGER.error("Map failed to load", e);
         }
     }
 
