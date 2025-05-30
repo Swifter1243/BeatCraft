@@ -428,6 +428,7 @@ public class BeatCraftRenderer {
         MinecraftClient.getInstance().getFramebuffer().endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = Bloomfog.bloomInput;
+        Bloomfog.bloomInput.clear(MinecraftClient.IS_SYSTEM_MAC);
         Bloomfog.bloomInput.beginWrite(true);
 
         MeshLoader.SMOKE_INSTANCED_MESH.render(cameraPos);

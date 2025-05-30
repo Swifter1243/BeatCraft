@@ -453,11 +453,15 @@ public class Bloomfog {
 
         RenderSystem.setShader(() -> shader);
 
+        GL31.glUseProgram(shader.getGlRef());
+        GlUtil.setTex(shader.getGlRef(), "Sampler0", 0, in.getColorAttachment());
         if (overrideSampleMode) {
-            GL31.glUseProgram(shader.getGlRef());
-            GlUtil.setTex(shader.getGlRef(), "Sampler0", 0, in.getColorAttachment());
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_LINEAR);
+        } else {
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_NEAREST);
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_NEAREST);
+
         }
         if (pass == PassType.BLUE_NOISE) {
             //shader.addSampler("Sampler1", blueNoiseTexture);
