@@ -237,8 +237,6 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
                 }
 
-                BeatCraft.LOGGER.info("generated shaders:\nvert:\n{}\nfrag:\n{}\n", vert, src);
-
                 bloomShaderProgram = GlUtil.createShaderProgram(vert, src);
                 initCustomBloom();
             }
