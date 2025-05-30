@@ -22,6 +22,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL31;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
@@ -105,9 +106,9 @@ public class Bloomfog {
 
     public static SimpleFramebuffer lightDepth;
 
-    private static float radius = 6;
+    private static float radius = 10;
 
-    private static final int LAYERS = 5;
+    private static final int LAYERS = 10;
 
     private Identifier[] pyramidTexIds = new Identifier[LAYERS];
     private SimpleFramebuffer[] pyramidBuffers = new SimpleFramebuffer[LAYERS];
@@ -211,7 +212,8 @@ public class Bloomfog {
 
         //double num = (Math.log((float) Math.max(width, height)) / Math.log(2f)) + Math.min(radius, 10f) - 10f;
         //int num2 = (int) Math.floor(num);
-        layers = 4;//Math.clamp(num2, 1, 16);
+        layers = 7;//Math.clamp(num2, 1, 10);
+        //BeatCraft.LOGGER.info("Layers: {}", layers);
 
         float mod = 2;
         for (int l = 0; l < layers; l++) {
@@ -298,6 +300,7 @@ public class Bloomfog {
         BeatCraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
 
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
@@ -379,11 +382,11 @@ public class Bloomfog {
         var current = framebuffer;
         int l;
         for (l = 0; l < layers; l++) {
-            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE);
-            if (l == 0) {
-                applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
-                applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
-            }
+            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true);
+            //if (l == 0) {
+            //    applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V, true);
+            //    applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H, true);
+            //}
             //applyBlurPass(pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V);
             //applyBlurPass(pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H);
             //if (l > 0) {
@@ -396,12 +399,15 @@ public class Bloomfog {
 
         }
 
-        applyEffectPass(isMirror, current, blurredBuffer, PassType.UPSAMPLE);
-        applyEffectPass(isMirror, blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
+        applyEffectPass(isMirror, current, blurredBuffer, PassType.UPSAMPLE, true);
+        applyEffectPass(isMirror, blurredBuffer, framebuffer, PassType.GAUSSIAN_V, true);
         //applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
         //applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
-        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H);
-        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE);
+        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true);
+        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false);
+
+
+
     }
 
 
@@ -416,6 +422,10 @@ public class Bloomfog {
     }
 
     private void applyEffectPass(boolean isMirror, Framebuffer in, Framebuffer out, PassType pass) {
+        applyEffectPass(isMirror, in, out, pass, false);
+    }
+
+    private void applyEffectPass(boolean isMirror, Framebuffer in, Framebuffer out, PassType pass, boolean overrideSampleMode) {
 
         out.setClearColor(0, 0, 0, 0);
         out.clear(MinecraftClient.IS_SYSTEM_MAC);
@@ -443,6 +453,12 @@ public class Bloomfog {
 
         RenderSystem.setShader(() -> shader);
 
+        if (overrideSampleMode) {
+            GL31.glUseProgram(shader.getGlRef());
+            GlUtil.setTex(shader.getGlRef(), "Sampler0", 0, in.getColorAttachment());
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_LINEAR);
+        }
         if (pass == PassType.BLUE_NOISE) {
             //shader.addSampler("Sampler1", blueNoiseTexture);
             RenderSystem.setShaderTexture(1, blueNoiseTexture);
@@ -494,6 +510,7 @@ public class Bloomfog {
         arrowBloomCalls.add(call);
     }
 
+    public static int sceneDepthBuffer;
     public void renderBloom() {
 
         if (!BeatCraftClient.playerConfig.doBloom()) {
@@ -516,13 +533,15 @@ public class Bloomfog {
             return;
         }
 
+
+
         var old = new Matrix4f(RenderSystem.getModelViewMatrix());
         RenderSystem.getModelViewMatrix().identity();
         RenderSystem.disableCull();
 
         bloomInput.setClearColor(0, 0, 0, 0);
         bloomInput.clear(MinecraftClient.IS_SYSTEM_MAC);
-        int sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
+        sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
 
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
@@ -625,8 +644,8 @@ public class Bloomfog {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
 
-        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H);
-        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V);
+        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H, true);
+        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true);
 
         //applyEffectPass(false, bloomInput, bloomOutput, PassType.BLIT);
 

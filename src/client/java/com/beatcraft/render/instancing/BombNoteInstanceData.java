@@ -87,4 +87,8 @@ public class BombNoteInstanceData implements InstancedMesh.InstanceData {
         ARBInstancedArrays.glVertexAttribDivisorARB(DISSOLVE_INDEX_LOCATION, 1);
 
     }
+
+    public void setup(int program) {}
+    public void cleanup() {}
+
 }

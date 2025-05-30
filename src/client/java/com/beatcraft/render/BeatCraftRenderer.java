@@ -2,8 +2,6 @@ package com.beatcraft.render;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
-import com.beatcraft.data.types.Color;
-import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
@@ -11,7 +9,7 @@ import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
-import com.beatcraft.render.particle.Debris;
+import com.beatcraft.render.particle.SmokeParticle;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -19,10 +17,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.random.Random;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.*;
-import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -412,6 +410,51 @@ public class BeatCraftRenderer {
         renderCalls.clear();
 
         renderFootPosIndicator();
+
+    }
+
+    private static double lastSmokeSpawn = 0;
+    private static final Random random = Random.create();
+
+    public static void renderSmoke(Vector3f cameraPos) {
+        var t = System.nanoTime() / 1_000_000_000d;
+
+        if ((t - lastSmokeSpawn) > SmokeParticle.SPAWN_INTERVAL) {
+            lastSmokeSpawn = t;
+            BeatcraftParticleRenderer.addParticle(new SmokeParticle(random));
+        }
+        Bloomfog.sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
+
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = Bloomfog.bloomInput;
+        Bloomfog.bloomInput.beginWrite(true);
+
+        MeshLoader.SMOKE_INSTANCED_MESH.render(cameraPos);
+
+        Bloomfog.bloomInput.endWrite();
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        RenderSystem.setShaderTexture(0, Bloomfog.bloomInput.getColorAttachment());
+        RenderSystem.setShader(() -> Bloomfog.blitShader);
+        float z = 0;
+        buffer.vertex(new Vector3f(-1, -1, z)).texture(0, 0).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1, -1, z)).texture(1, 0).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1,  1, z)).texture(1, 1).color(0xFF020200);
+        buffer.vertex(new Vector3f(-1,  1, z)).texture(0, 1).color(0xFF020200);
+
+
+        var old = new Matrix4f(RenderSystem.getModelViewMatrix());
+        RenderSystem.getModelViewMatrix().identity();
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+        RenderSystem.getModelViewMatrix().set(old);
 
     }
 

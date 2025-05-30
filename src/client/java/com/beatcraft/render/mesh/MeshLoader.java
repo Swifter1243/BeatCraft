@@ -3,10 +3,7 @@ package com.beatcraft.render.mesh;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
-import com.beatcraft.render.instancing.ArrowInstanceData;
-import com.beatcraft.render.instancing.BombNoteInstanceData;
-import com.beatcraft.render.instancing.ColorNoteInstanceData;
-import com.beatcraft.render.instancing.InstancedMesh;
+import com.beatcraft.render.instancing.*;
 import com.beatcraft.render.item.SaberItemRenderer;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
@@ -53,25 +50,24 @@ public class MeshLoader {
     public static InstancedMesh<ArrowInstanceData> MIRROR_NOTE_DOT_INSTANCED_MESH;
     public static InstancedMesh<ArrowInstanceData> MIRROR_CHAIN_DOT_INSTANCED_MESH;
 
-    public static TriangleMesh NOTE_ARROW_RENDER_MESH;
-    public static TriangleMesh NOTE_DOT_RENDER_MESH;
-    public static TriangleMesh CHAIN_DOT_RENDER_MESH;
-
     public static final Identifier NOTE_TEXTURE = BeatCraft.id("textures/gameplay_objects/color_note.png");
     public static final Identifier ARROW_TEXTURE = BeatCraft.id("textures/gameplay_objects/arrow.png");
+    public static final Identifier SMOKE_TEXTURE = BeatCraft.id("textures/noise/smoke.png");
+
+    public static InstancedMesh<SmokeInstanceData> SMOKE_INSTANCED_MESH;
 
     private static ModelLoaderAccessor modelLoader;
 
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
         MeshLoader.modelLoader = modelLoader;
-        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note"), NOTE_TEXTURE, "instanced/color_note");
-        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_head"), NOTE_TEXTURE, "instanced/color_note");
-        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_link"), NOTE_TEXTURE, "instanced/color_note");
-        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/bomb_note"), NOTE_TEXTURE, "instanced/bomb_note");
-        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_arrow"), ARROW_TEXTURE, "instanced/arrow");
-        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_dot"), ARROW_TEXTURE, "instanced/arrow");
-        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/chain_note_dot"), ARROW_TEXTURE, "instanced/arrow");
+        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_head"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_link"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/bomb_note"), NOTE_TEXTURE, "instanced/bomb_note", 1f);
+        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_arrow"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_dot"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/chain_note_dot"), ARROW_TEXTURE, "instanced/arrow", 1f);
 
         MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
         MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();
@@ -81,27 +77,18 @@ public class MeshLoader {
         MIRROR_NOTE_DOT_INSTANCED_MESH = NOTE_DOT_INSTANCED_MESH.copy();
         MIRROR_CHAIN_DOT_INSTANCED_MESH = CHAIN_DOT_INSTANCED_MESH.copy();
 
-        var arrow_mesh = loadMesh(BeatCraft.id("item/note_arrow"));
-        arrow_mesh.texture = ARROW_TEXTURE;
-        var dot_mesh = loadMesh(BeatCraft.id("item/note_dot"));
-        dot_mesh.texture = ARROW_TEXTURE;
-        var chain_dot_mesh = loadMesh(BeatCraft.id("item/chain_note_dot"));
-        chain_dot_mesh.texture = ARROW_TEXTURE;
-
-        NOTE_ARROW_RENDER_MESH = arrow_mesh.toTriangleMesh();
-        NOTE_DOT_RENDER_MESH = dot_mesh.toTriangleMesh();
-        CHAIN_DOT_RENDER_MESH = chain_dot_mesh.toTriangleMesh();
+        SMOKE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("gameplay/smoke"), SMOKE_TEXTURE, "instanced/smoke", 6f);
 
     }
 
-    public static <T extends InstancedMesh.InstanceData> InstancedMesh<T> loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet) {
+    public static <T extends InstancedMesh.InstanceData> InstancedMesh<T> loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet, float sizeMultiplier) {
         try {
             JsonUnbakedModel model = modelLoader.beatCraft$loadJsonModel(identifier);
             var vertices = new ArrayList<Triplet<Vector3f, Vector2f, Vector3f>>();
 
             model.getElements().forEach(element -> {
-                Vector3f min = element.from.mul(1/16f, new Vector3f());
-                Vector3f max = element.to.mul(1/16f, new Vector3f());
+                Vector3f min = element.from.mul(sizeMultiplier/16f, new Vector3f());
+                Vector3f max = element.to.mul(sizeMultiplier/16f, new Vector3f());
 
                 float angleDegrees;
                 Direction.Axis axis;
@@ -109,7 +96,7 @@ public class MeshLoader {
                 if (element.rotation != null) {
                     angleDegrees = element.rotation.angle();
                     axis = element.rotation.axis();
-                    origin = element.rotation.origin();
+                    origin = element.rotation.origin().mul(sizeMultiplier);
                 } else {
                     axis = Direction.Axis.X;
                     angleDegrees = 0;

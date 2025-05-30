@@ -28,6 +28,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         int getFrameSize();
         void init();
         int[] getLocations();
+        void setup(int program);
+        void cleanup();
     }
 
     private static final ArrayList<InstancedMesh<? extends InstanceData>> meshes = new ArrayList<>();
@@ -55,6 +57,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     private int[] indices;
     private final int vertexCount;
     private int instanceCount;
+    private int shaderProgram;
 
     private final ArrayList<I> instanceDataList;
     private final ArrayList<I> bloomCopyCalls;
@@ -204,9 +207,11 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             return;
         }
 
-        if (!initialized) init(dataList.getFirst());
+        var first = dataList.getFirst();
 
-        var attrLocations = dataList.getFirst().getLocations();
+        if (!initialized) init(first);
+
+        var attrLocations = first.getLocations();
 
         instanceCount = dataList.size();
 
@@ -238,8 +243,14 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         activateShaderAndTexture(cameraRotation, arrowBloomProgram, depthBuffer);
 
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
+
+        first.setup(shaderProgram);
+
         // mat4 + vec4 + float
-        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * dataList.getFirst().getFrameSize());
+        FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * first.getFrameSize());
 
         for (InstanceData data : dataList) {
             data.putData(instanceDataBuffer);
@@ -251,9 +262,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceDataBuffer, GL15.GL_DYNAMIC_DRAW);
         MemoryUtil.memFree(instanceDataBuffer);
 
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableCull();
 
         GL31.glDrawElementsInstanced(
             GL11.GL_TRIANGLES,
@@ -262,6 +270,9 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             0,
             instanceCount
         );
+
+
+        first.cleanup();
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -282,7 +293,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
     private void activateShaderAndTexture(Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
 
-        int shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
+        shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
         shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
         GL20.glUseProgram(shaderProgram);
 
@@ -296,10 +307,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
 
         if (arrowBloomProgram != -1) {
-            GL31.glActiveTexture(GL31.GL_TEXTURE1);
-            var loc = GL31.glGetUniformLocation(arrowBloomProgram, "u_depth");
-            GL31.glBindTexture(GL31.GL_TEXTURE_2D, depthBuffer);
-            GL31.glUniform1i(loc, 1);
+            GlUtil.setTex(arrowBloomProgram, "u_depth", 1, depthBuffer);
         }
 
     }

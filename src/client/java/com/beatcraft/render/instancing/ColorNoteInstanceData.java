@@ -108,4 +108,8 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
         ARBInstancedArrays.glVertexAttribDivisorARB(SLICE_LOCATION, 1);
 
     }
+
+    public void setup(int program) {}
+    public void cleanup() {}
+
 }

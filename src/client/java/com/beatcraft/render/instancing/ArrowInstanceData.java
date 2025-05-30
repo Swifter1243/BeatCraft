@@ -90,4 +90,7 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
 
     }
 
+    public void setup(int program) {}
+    public void cleanup() {}
+
 }

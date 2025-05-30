@@ -278,10 +278,7 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
                 RenderSystem.setShaderTexture(0, texture);
 
                 if (isBloom) {
-                    GL31.glActiveTexture(GL31.GL_TEXTURE1);
-                    var loc = GL31.glGetUniformLocation(program, "u_depth");
-                    GL31.glBindTexture(GL31.GL_TEXTURE_2D, depthBuffer);
-                    GL31.glUniform1i(loc, 1);
+                    GlUtil.setTex(program, "u_depth", 1, depthBuffer);
                 }
 
                 var col = new Color(c);

@@ -153,4 +153,11 @@ public class GlUtil {
         GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
     }
 
+    public static void setTex(int program, String name, int textureSlot, int glId) {
+        GL31.glActiveTexture(GL31.GL_TEXTURE0 + textureSlot);
+        var loc = GL31.glGetUniformLocation(program, name);
+        GL31.glBindTexture(GL31.GL_TEXTURE_2D, glId);
+        GL31.glUniform1i(loc, textureSlot);
+    }
+
 }
