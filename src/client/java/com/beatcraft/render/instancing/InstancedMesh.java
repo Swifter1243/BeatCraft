@@ -30,6 +30,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         int[] getLocations();
         void setup(int program);
         void cleanup();
+        void free();
     }
 
     private static final ArrayList<InstancedMesh<? extends InstanceData>> meshes = new ArrayList<>();
@@ -287,6 +288,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
         GL30.glBindVertexArray(oldVAO);
 
+        dataList.forEach(InstancedMesh.InstanceData::free);
         dataList.clear();
     }
 

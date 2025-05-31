@@ -56,8 +56,8 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
         renderPos.add(c);
 
         var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
-        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(new BombNoteInstanceData(flipped, data.getColor(), dissolve, data.getMapIndex()));
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
 
     }
 

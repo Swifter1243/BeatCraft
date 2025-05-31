@@ -74,14 +74,14 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
 
         if (!isBaseDissolved()) {
             var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
-            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(new ColorNoteInstanceData(flipped, data.getColor(), dissolve, data.getMapIndex()));
+            MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
             var dissolve = Math.max(GameLogicHandler.globalDissolve, getArrowDissolve());
-            MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(new ArrowInstanceData(flipped, WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom();
             //if (dissolve == 0) {
             //    BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {

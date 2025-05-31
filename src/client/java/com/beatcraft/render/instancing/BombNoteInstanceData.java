@@ -7,20 +7,41 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import static com.beatcraft.render.instancing.InstancedMesh.*;
 
 public class BombNoteInstanceData implements InstancedMesh.InstanceData {
     private final Matrix4f transform;
     private final Color color;
-    private final float dissolve;
-    private final int index;
+    private float dissolve;
+    private int index;
 
-    public BombNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
+    private static final ArrayList<BombNoteInstanceData> sharedCache = new ArrayList<>();
+
+    private BombNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
         this.transform = new Matrix4f(transform);
         this.color = color;
         this.dissolve = dissolve;
         this.index = index;
+    }
+
+    public static BombNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
+        if (sharedCache.isEmpty()) {
+            return new BombNoteInstanceData(transform, color, dissolve, index);
+        } else {
+            var x = sharedCache.removeLast();
+            x.transform.set(transform);
+            x.color.set(color);
+            x.dissolve = dissolve;
+            x.index = index;
+            return x;
+        }
+    }
+
+    @Override
+    public void free() {
+        sharedCache.add(this);
     }
 
     @Override

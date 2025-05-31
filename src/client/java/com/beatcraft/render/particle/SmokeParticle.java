@@ -41,7 +41,7 @@ public class SmokeParticle implements Particle {
         orientation.mul(spin.scale(deltaTime, new Quaternionf()).normalize());
         double t = System.nanoTime() / 1_000_000_000d;
         float delta = (float) MathUtil.inverseLerp(spawnTime, spawnTime+LIFETIME, t);
-        MeshLoader.SMOKE_INSTANCED_MESH.draw(new SmokeInstanceData(orientation, cameraPos, delta));
+        MeshLoader.SMOKE_INSTANCED_MESH.draw(SmokeInstanceData.create(orientation, cameraPos, delta));
     }
 
     @Override

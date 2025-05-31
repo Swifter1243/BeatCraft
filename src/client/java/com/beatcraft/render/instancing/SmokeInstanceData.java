@@ -1,5 +1,6 @@
 package com.beatcraft.render.instancing;
 
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.gl.GlUtil;
@@ -14,6 +15,7 @@ import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.GL31;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import static com.beatcraft.render.instancing.InstancedMesh.FLOAT_SIZE_BYTES;
 import static com.beatcraft.render.instancing.InstancedMesh.MATRIX4F_SIZE_BYTES;
@@ -21,19 +23,40 @@ import static com.beatcraft.render.instancing.InstancedMesh.MATRIX4F_SIZE_BYTES;
 public class SmokeInstanceData implements InstancedMesh.InstanceData {
 
     private final Matrix4f transform;
-    private final float delta;
+    private float delta;
 
     private static final int TRANSFORM_LOCATION = 3;
     private static final int DELTA_LOCATION = 7;
 
-    public SmokeInstanceData(Quaternionf orientation, Vector3f cameraPos, float delta) {
-        var cameraRot = MinecraftClient.getInstance().gameRenderer.getCamera().getRotation().conjugate(new Quaternionf());
+    private static final ArrayList<SmokeInstanceData> sharedCache = new ArrayList<>();
+
+    private SmokeInstanceData(Quaternionf orientation, Vector3f cameraPos, float delta) {
+        var v = MemoryPool.newVector3f();
         transform = new Matrix4f()
             //.rotate(cameraRot.conjugate(new Quaternionf()))
-            .translate(cameraPos.negate(new Vector3f()))
+            .translate(cameraPos.negate(v))
             .rotate(orientation)
         ;
+        MemoryPool.releaseSafe(v);
         this.delta = delta;
+    }
+
+    public static SmokeInstanceData create(Quaternionf orientation, Vector3f cameraPos, float delta) {
+        if (sharedCache.isEmpty()) {
+            return new SmokeInstanceData(orientation, cameraPos, delta);
+        } else {
+            var x = sharedCache.removeLast();
+            var v = MemoryPool.newVector3f();
+            x.transform.identity().translate(cameraPos.negate(v)).rotate(orientation);
+            MemoryPool.releaseSafe(v);
+            x.delta = delta;
+            return x;
+        }
+    }
+
+    @Override
+    public void free() {
+        sharedCache.add(this);
     }
 
     @Override

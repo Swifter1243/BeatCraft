@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import static com.beatcraft.render.instancing.InstancedMesh.*;
 
@@ -15,11 +16,13 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
 
     private final Matrix4f transform;
     private final Color color;
-    private final float dissolve;
-    private final int index;
+    private float dissolve;
+    private int index;
     private final Vector4f slicePosition;
 
-    public ColorNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index, Vector4f slicePosition) {
+    private static final ArrayList<ColorNoteInstanceData> sharedCache = new ArrayList<>();
+
+    private ColorNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index, Vector4f slicePosition) {
         this.transform = new Matrix4f(transform);
         this.color = color;
         this.dissolve = dissolve;
@@ -27,10 +30,28 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
         this.slicePosition = slicePosition;
     }
 
+    public static ColorNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index, Vector4f slicePosition) {
+        if (sharedCache.isEmpty()) {
+            return new ColorNoteInstanceData(transform, color, dissolve, index, slicePosition);
+        } else {
+            var x = sharedCache.removeLast();
+            x.transform.set(transform);
+            x.color.set(color);
+            x.dissolve = dissolve;
+            x.index = index;
+            x.slicePosition.set(slicePosition);
+            return x;
+        }
+    }
+
+    @Override
+    public void free() {
+        sharedCache.add(this);
+    }
 
     private static final Vector4f ZERO = new Vector4f(0);
-    public ColorNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
-        this(transform, color, dissolve, index, ZERO);
+    public static ColorNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
+        return create(transform, color, dissolve, index, ZERO);
     }
 
     @Override
