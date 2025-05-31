@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
@@ -61,13 +62,13 @@ public class MeshLoader {
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
         MeshLoader.modelLoader = modelLoader;
-        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_head"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/color_note_chain_link"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/bomb_note"), NOTE_TEXTURE, "instanced/bomb_note", 1f);
-        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_arrow"), ARROW_TEXTURE, "instanced/arrow", 1f);
-        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/note_dot"), ARROW_TEXTURE, "instanced/arrow", 1f);
-        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("item/chain_note_dot"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note_chain_head.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note_chain_link.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/bomb_note.json"), NOTE_TEXTURE, "instanced/bomb_note", 1f);
+        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/note_arrow.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/chain_note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
 
         MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
         MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();
@@ -77,13 +78,100 @@ public class MeshLoader {
         MIRROR_NOTE_DOT_INSTANCED_MESH = NOTE_DOT_INSTANCED_MESH.copy();
         MIRROR_CHAIN_DOT_INSTANCED_MESH = CHAIN_DOT_INSTANCED_MESH.copy();
 
-        SMOKE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("gameplay/smoke"), SMOKE_TEXTURE, "instanced/smoke", 6f);
+        SMOKE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/gameplay/smoke.json"), SMOKE_TEXTURE, "instanced/smoke", 6f);
 
+    }
+
+    protected static class UnboundJsonModel {
+        protected record UnboundJsonRotation(int axis, float angle, Vector3f origin) {
+            protected static UnboundJsonRotation parse(JsonObject json) {
+                if (json == null) {
+                    return new UnboundJsonRotation(0, 0, new Vector3f());
+                }
+                var ax = json.get("axis").getAsString();
+                return new UnboundJsonRotation(
+                    ax.equals("x") ? 0 : ax.equals("y") ? 1 : 2,
+                    json.get("angle").getAsFloat(),
+                    JsonUtil.getVector3(json.getAsJsonArray("origin")).mul(1f/16f)
+                );
+            }
+        }
+        protected static class UnboundJsonFace {
+            protected UnboundTextureData texData;
+            protected UnboundTextureData textureData() {
+                return texData;
+            }
+            private static final String[] directions = new String[]{
+                "north", "east", "south",
+                "west", "up", "down"
+            };
+            protected static Map<Direction, UnboundJsonFace> parseFaces(JsonObject json) {
+                var map = new HashMap<Direction, UnboundJsonFace>();
+                for (var face : directions) {
+                    if (json.has(face)) {
+                        map.put(Direction.byName(face), parseFace(json.getAsJsonObject(face)));
+                    }
+                }
+                return map;
+            }
+            protected static UnboundJsonFace parseFace(JsonObject json) {
+                var f = new UnboundJsonFace();
+                f.texData = new UnboundTextureData();
+                var rawUvs = json.getAsJsonArray("uv");
+                f.texData.uvs = new float[]{
+                    rawUvs.get(0).getAsFloat(),
+                    rawUvs.get(1).getAsFloat(),
+                    rawUvs.get(2).getAsFloat(),
+                    rawUvs.get(3).getAsFloat()
+                };
+                f.texData.rotation = JsonUtil.getOrDefault(json, "rotation", JsonElement::getAsFloat, 0f);
+                return f;
+            }
+        }
+        protected static class UnboundTextureData {
+            float rotation;
+            float[] uvs;
+        }
+
+        protected static class UnboundJsonElement {
+            protected Vector3f from;
+            protected Vector3f to;
+            protected UnboundJsonRotation rotation;
+            protected Map<Direction, UnboundJsonFace> faces;
+        }
+
+        private final List<UnboundJsonElement> elements;
+
+        protected List<UnboundJsonElement> getElements() {
+            return elements;
+        }
+
+        protected UnboundJsonModel(Identifier identifier) throws IOException {
+            var reader = MinecraftClient.getInstance().getResourceManager().getResource(identifier).orElseThrow().getReader();
+            var rawJson = String.join("\n", reader.lines().toList());
+            var json = JsonParser.parseString(rawJson).getAsJsonObject();
+
+            var arr = new ArrayList<UnboundJsonElement>();
+
+            var rawElements = json.getAsJsonArray("elements");
+
+            rawElements.forEach(re -> {
+                var elementData = re.getAsJsonObject();
+                var element = new UnboundJsonElement();
+                element.to = JsonUtil.getVector3(elementData.getAsJsonArray("to"));
+                element.from = JsonUtil.getVector3(elementData.getAsJsonArray("from"));
+                element.rotation = UnboundJsonRotation.parse(elementData.getAsJsonObject("rotation"));
+                element.faces = UnboundJsonFace.parseFaces(elementData.getAsJsonObject("faces"));
+                arr.add(element);
+            });
+
+            elements = arr;
+        }
     }
 
     public static <T extends InstancedMesh.InstanceData> InstancedMesh<T> loadInstancedMesh(Identifier identifier, Identifier texture, String shaderSet, float sizeMultiplier) {
         try {
-            JsonUnbakedModel model = modelLoader.beatCraft$loadJsonModel(identifier);
+            var model = new UnboundJsonModel(identifier);
             var vertices = new ArrayList<Triplet<Vector3f, Vector2f, Vector3f>>();
 
             model.getElements().forEach(element -> {
@@ -91,14 +179,14 @@ public class MeshLoader {
                 Vector3f max = element.to.mul(sizeMultiplier/16f, new Vector3f());
 
                 float angleDegrees;
-                Direction.Axis axis;
+                int axis;
                 Vector3f origin;
                 if (element.rotation != null) {
                     angleDegrees = element.rotation.angle();
                     axis = element.rotation.axis();
                     origin = element.rotation.origin().mul(sizeMultiplier);
                 } else {
-                    axis = Direction.Axis.X;
+                    axis = 0;
                     angleDegrees = 0;
                     origin = new Vector3f(0, 0, 0);
                 }
@@ -166,7 +254,7 @@ public class MeshLoader {
                     }
 
                     if (angleDegrees != 0) {
-                        var rotationAxis = axis == Direction.Axis.X ? new Vector3f(1, 0, 0) : axis == Direction.Axis.Y ? new Vector3f(0, 1, 0) : new Vector3f(0, 0, 1);
+                        var rotationAxis = axis == 0 ? new Vector3f(1, 0, 0) : axis == 1 ? new Vector3f(0, 1, 0) : new Vector3f(0, 0, 1);
                         var rotation = new Quaternionf().rotationAxis(angleDegrees * MathHelper.RADIANS_PER_DEGREE, rotationAxis);
                         verts.forEach(vert -> {
                             vert.sub(origin).rotate(rotation).add(origin);
@@ -510,6 +598,24 @@ public class MeshLoader {
 
     }
 
+    private static Vector2f @NotNull [] getUvs(UnboundJsonModel.UnboundJsonFace face) {
+        int rotation = (int) face.textureData().rotation;
+        float[] rawUvs = face.textureData().uvs;
+        Vector2f[] uvs = new Vector2f[]{
+            new Vector2f(rawUvs[0]/16f, rawUvs[1]/16f),
+            new Vector2f(rawUvs[2]/16f, rawUvs[1]/16f),
+            new Vector2f(rawUvs[0]/16f, rawUvs[3]/16f),
+            new Vector2f(rawUvs[2]/16f, rawUvs[3]/16f)
+        }; // order: tl, tr, bl, br
+
+        while (rotation > 0) {
+            uvs = new Vector2f[]{
+                uvs[2], uvs[0], uvs[3], uvs[1]
+            };
+            rotation -= 90;
+        }
+        return uvs;
+    }
     private static Vector2f @NotNull [] getUvs(ModelElementFace face) {
         int rotation = face.textureData().rotation;
         float[] rawUvs = face.textureData().uvs;

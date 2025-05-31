@@ -28,7 +28,7 @@ public class BombNoteInstanceData implements InstancedMesh.InstanceData {
 
     public static BombNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
         if (sharedCache.isEmpty()) {
-            return new BombNoteInstanceData(transform, color, dissolve, index);
+            return new BombNoteInstanceData(new Matrix4f(transform), new Color(color), dissolve, index);
         } else {
             var x = sharedCache.removeLast();
             x.transform.set(transform);
@@ -37,6 +37,11 @@ public class BombNoteInstanceData implements InstancedMesh.InstanceData {
             x.index = index;
             return x;
         }
+    }
+
+    @Override
+    public InstanceData copy() {
+        return BombNoteInstanceData.create(transform, color, dissolve, index);
     }
 
     @Override

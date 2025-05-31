@@ -30,7 +30,7 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
 
     public static ArrowInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
         if (sharedCache.isEmpty()) {
-            return new ArrowInstanceData(transform, color, dissolve, index);
+            return new ArrowInstanceData(new Matrix4f(transform), new Color(color), dissolve, index);
         } else {
             var x = sharedCache.removeLast();
             x.transform.set(transform);
@@ -39,6 +39,11 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
             x.index = index;
             return x;
         }
+    }
+
+    @Override
+    public ArrowInstanceData copy() {
+        return ArrowInstanceData.create(transform, color, dissolve, index);
     }
 
     @Override

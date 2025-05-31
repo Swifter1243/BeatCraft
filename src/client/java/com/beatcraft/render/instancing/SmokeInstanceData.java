@@ -31,6 +31,8 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
     private static final ArrayList<SmokeInstanceData> sharedCache = new ArrayList<>();
 
     private SmokeInstanceData(Quaternionf orientation, Vector3f cameraPos, float delta) {
+        rot = orientation;
+        pos = cameraPos;
         var v = MemoryPool.newVector3f();
         transform = new Matrix4f()
             //.rotate(cameraRot.conjugate(new Quaternionf()))
@@ -41,9 +43,12 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
         this.delta = delta;
     }
 
+    private Quaternionf rot;
+    private Vector3f pos;
+
     public static SmokeInstanceData create(Quaternionf orientation, Vector3f cameraPos, float delta) {
         if (sharedCache.isEmpty()) {
-            return new SmokeInstanceData(orientation, cameraPos, delta);
+            return new SmokeInstanceData(new Quaternionf(orientation), new Vector3f(cameraPos), delta);
         } else {
             var x = sharedCache.removeLast();
             var v = MemoryPool.newVector3f();
@@ -52,6 +57,11 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
             x.delta = delta;
             return x;
         }
+    }
+
+    @Override
+    public InstancedMesh.InstanceData copy() {
+        return SmokeInstanceData.create(rot, pos, delta);
     }
 
     @Override

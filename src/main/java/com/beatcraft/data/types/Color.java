@@ -23,6 +23,13 @@ public class Color {
         this.setAlpha(alpha);
     }
 
+    public Color(Color other) {
+        this.red = other.red;
+        this.green = other.green;
+        this.blue = other.blue;
+        this.alpha = other.alpha;
+    }
+
     public Color(int hex) {
         int a = (hex >> 24) & 0xFF;
         int r = (hex >> 16) & 0xFF;

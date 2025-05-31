@@ -32,7 +32,7 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
 
     public static ColorNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index, Vector4f slicePosition) {
         if (sharedCache.isEmpty()) {
-            return new ColorNoteInstanceData(transform, color, dissolve, index, slicePosition);
+            return new ColorNoteInstanceData(new Matrix4f(transform), new Color(color), dissolve, index, new Vector4f(slicePosition));
         } else {
             var x = sharedCache.removeLast();
             x.transform.set(transform);
@@ -42,6 +42,11 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
             x.slicePosition.set(slicePosition);
             return x;
         }
+    }
+
+    @Override
+    public ColorNoteInstanceData copy() {
+        return ColorNoteInstanceData.create(transform, color, dissolve, index, slicePosition);
     }
 
     @Override

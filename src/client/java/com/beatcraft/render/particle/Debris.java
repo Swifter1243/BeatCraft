@@ -64,12 +64,11 @@ public class Debris implements Particle {
 
         var t = MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d);
 
-        mesh.draw(new ColorNoteInstanceData(
+        mesh.draw(ColorNoteInstanceData.create(
             pos, color,
             (float) t,
             randomIndex, slice
         ));
-        // TODO: setup instance-based with cut plane
 
     }
 

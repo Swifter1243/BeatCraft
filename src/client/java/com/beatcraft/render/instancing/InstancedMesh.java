@@ -31,6 +31,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         void setup(int program);
         void cleanup();
         void free();
+        InstanceData copy();
     }
 
     private static final ArrayList<InstancedMesh<? extends InstanceData>> meshes = new ArrayList<>();
@@ -180,7 +181,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     }
 
     public void copyDrawToBloom() {
-        bloomCopyCalls.add(instanceDataList.getLast());
+        bloomCopyCalls.add((I) instanceDataList.getLast().copy());
     }
 
     public void cancelDraws() {
