@@ -74,8 +74,7 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
         buffer.put(transform.m20()).put(transform.m21()).put(transform.m22()).put(transform.m23());
         buffer.put(transform.m30()).put(transform.m31()).put(transform.m32()).put(transform.m33());
 
-        var c = color;
-        buffer.put(c.getRed()).put(c.getGreen()).put(c.getBlue()).put(c.getAlpha());
+        buffer.put(color.getRed()).put(color.getGreen()).put(color.getBlue()).put(color.getAlpha());
 
         buffer.put(dissolve);
         buffer.put((float) index);

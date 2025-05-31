@@ -106,7 +106,7 @@ public class Bloomfog {
 
     public static SimpleFramebuffer lightDepth;
 
-    private static float radius = 10;
+    private static float radius = 11;
 
     private static final int LAYERS = 10;
 
@@ -383,7 +383,7 @@ public class Bloomfog {
         int l;
         for (l = 0; l < layers; l++) {
             applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true);
-            //if (l == 0) {
+            //if (l == layers-1) {
             //    applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V, true);
             //    applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H, true);
             //}
@@ -399,10 +399,8 @@ public class Bloomfog {
 
         }
 
-        applyEffectPass(isMirror, current, blurredBuffer, PassType.UPSAMPLE, true);
-        applyEffectPass(isMirror, blurredBuffer, framebuffer, PassType.GAUSSIAN_V, true);
-        //applyBlurPass(framebuffer, blurredBuffer, PassType.GAUSSIAN_H);
-        //applyBlurPass(blurredBuffer, framebuffer, PassType.GAUSSIAN_V);
+        applyEffectPass(isMirror, current, extraBuffer, PassType.UPSAMPLE, true);
+        applyEffectPass(isMirror, extraBuffer, framebuffer, PassType.GAUSSIAN_V, true);
         applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true);
         applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false);
 

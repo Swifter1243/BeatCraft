@@ -6,8 +6,6 @@ import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.gl.GlUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import org.apache.commons.math3.analysis.function.Min;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -55,6 +53,8 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
             x.transform.identity().translate(cameraPos.negate(v)).rotate(orientation);
             MemoryPool.releaseSafe(v);
             x.delta = delta;
+            x.rot = orientation;
+            x.pos = cameraPos;
             return x;
         }
     }
