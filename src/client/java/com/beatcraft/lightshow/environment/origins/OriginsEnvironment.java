@@ -158,7 +158,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
                 new Vector3f(0.03f, 800, 0.03f)
             ),
             new Vector3f(-ROTATING_LIGHT_X, -5f, ROTATING_LIGHT_Z),
-            new Quaternionf().rotationZ(55 * MathHelper.RADIANS_PER_DEGREE)
+            new Quaternionf().rotationZ(-55 * MathHelper.RADIANS_PER_DEGREE)
         );
         var left2 = left1.cloneOffset(offset);
         var left3 = left2.cloneOffset(offset);
