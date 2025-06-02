@@ -1,5 +1,6 @@
 package com.beatcraft.vivify.assetbundle.files;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.vivify.assetbundle.EndianBinaryReader;
 import com.beatcraft.vivify.assetbundle.Readable;
 import com.beatcraft.vivify.assetbundle.util.FileType;
@@ -21,6 +22,10 @@ public abstract class UnityFile implements Readable {
     private boolean isDependency;
     private UnityFile parent;
 
+    @Override
+    public String getName() {
+        return name;
+    }
 
     public UnityFile(@Nullable UnityFile parent, @Nullable String name) {
         this(parent, name, false);
@@ -126,6 +131,7 @@ public abstract class UnityFile implements Readable {
     protected static Readable parseFile(EndianBinaryReader reader, UnityFile parent, String name, FileType type, boolean isDependency) throws IOException {
         if (type == null) {
             type = checkFileType(reader);
+            BeatCraft.LOGGER.info("File type has been determined to be: {}", type);
         }
         if (type == FileType.AssetsFile && !extensions.matcher(name).find()) {
             return new SerializedFile(reader, parent, name, isDependency);

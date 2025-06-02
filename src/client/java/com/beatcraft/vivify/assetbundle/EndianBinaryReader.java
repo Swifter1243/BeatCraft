@@ -14,6 +14,16 @@ public class EndianBinaryReader implements Readable {
     private long position;
     private long baseOffset;
 
+    @Override
+    public void setFlags(int f) {
+
+    }
+
+    @Override
+    public String getName() {
+        return "<Binary Reader>";
+    }
+
     public EndianBinaryReader(RandomAccessFile file, String endian, int offset) {
         this(BackendWrapper.from(file), endian, offset);
     }
@@ -41,6 +51,10 @@ public class EndianBinaryReader implements Readable {
 
     public byte[] read(int length) throws IOException {
         return reader.read(length);
+    }
+
+    public boolean readBoolean() throws IOException {
+        return reader.read(1)[0] != 0;
     }
 
     public String readCString(int maxLength) throws IOException {
@@ -95,6 +109,21 @@ public class EndianBinaryReader implements Readable {
             ret |= Byte.toUnsignedInt(b);
         }
         return ret;
+    }
+
+    public int[] readIntArray(int length) throws IOException {
+        if (length < 0) {
+            length = readInt();
+        }
+        var out = new int[length];
+        for (int i = 0; i < length; i++) {
+            out[i] = readInt();
+        }
+        return out;
+    }
+
+    public int[] readIntArray() throws IOException {
+        return readIntArray(-1);
     }
 
     public void align(int alignment) throws IOException {

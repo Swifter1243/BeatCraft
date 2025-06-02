@@ -742,6 +742,11 @@ public class BeatCraftClient implements ClientModInitializer {
     private int listBundleAssets(CommandContext<FabricClientCommandSource> context) {
         var path = StringArgumentType.getString(context, "asset_path");
         var bundle = BundleFile.tryLoadBundle(path);
+        if (bundle != null) {
+            for (var asset : bundle.getAssets()) {
+                BeatCraft.LOGGER.info("Found asset: {}", asset.getName());
+            }
+        }
         // TODO: list assets further than just the logger.info in the loading process
         return 1;
     }
