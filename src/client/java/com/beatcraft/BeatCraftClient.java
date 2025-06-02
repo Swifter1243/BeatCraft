@@ -26,6 +26,7 @@ import com.beatcraft.replay.ReplayHandler;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
 import com.beatcraft.screen.SongDownloaderScreen;
+import com.beatcraft.vivify.assetbundle.files.BundleFile;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -55,7 +56,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -739,6 +739,13 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int listBundleAssets(CommandContext<FabricClientCommandSource> context) {
+        var path = StringArgumentType.getString(context, "asset_path");
+        var bundle = BundleFile.tryLoadBundle(path);
+        // TODO: list assets further than just the logger.info in the loading process
+        return 1;
+    }
+
 
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
@@ -878,6 +885,15 @@ public class BeatCraftClient implements ClientModInitializer {
                 )
                 .then(literal("refresh")
                     .executes(this::reloadSaberModels)
+                )
+            );
+            dispatcher.register(literal("vivify")
+                .then(literal("bundle")
+                    .then(literal("list-assets")
+                        .then(argument("asset_path", StringArgumentType.greedyString())
+                            .executes(this::listBundleAssets)
+                        )
+                    )
                 )
             );
         }));
