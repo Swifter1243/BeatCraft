@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public abstract class UnityFile implements Readable {
@@ -29,6 +30,22 @@ public abstract class UnityFile implements Readable {
         this.parent = parent;
         this.name = name;
         this.isDependency = isDependency;
+    }
+
+    public List<Readable> getAssets() {
+        if (this instanceof SerializedFile) {
+            return List.of(this);
+        }
+        var out = new ArrayList<Readable>();
+        for (var f : files.values()) {
+            if (f instanceof BundleFile || f instanceof WebFile) {
+                out.addAll(((UnityFile) f).getAssets());
+            }
+            else if (f instanceof SerializedFile) {
+                out.add(f);
+            }
+        }
+        return out;
     }
 
 
