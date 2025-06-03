@@ -137,12 +137,11 @@ public class CompoundTransformState {
         };
     }
 
-    public Vector3f getTranslation(Swizzle axisSwizzle, Polarity polarity) {
+    public void getTranslation(Swizzle axisSwizzle, Polarity polarity, Vector3f dest) {
 
         var xyz = applyPolarity(applySwizzle(new float[]{tx, ty, tz}, axisSwizzle), polarity);
 
-
-        return new Vector3f(xyz);
+        dest.set(xyz);
     }
 
     public Quaternionf getOrientation(Swizzle axisSwizzle, Polarity polarity, TriFunction<Float, Float, Float, Quaternionf> quaternionBuilder) {

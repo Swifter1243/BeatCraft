@@ -33,6 +33,21 @@ public class Hitbox {
         }
     }
 
+    public void getVisualCenter(Vector3f dest) {
+        dest.set(
+            (min.x + max.x) / 2.0,
+            (min.y + max.y) / 2.0,
+            (min.z + max.z) / 2.0
+        );
+    }
+
+    public void getVisualExtents(Vector3f dest) {
+        dest.set(
+            (max.x - min.x) / 2.0,
+            (max.y - min.y) / 2.0,
+            (max.z - min.z) / 2.0
+        );
+    }
 
     public boolean checkCollision(Vector3f pointA, Vector3f pointB) {
 

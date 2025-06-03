@@ -60,7 +60,8 @@ public abstract class LightObject {
         Matrix4f matrix = new Matrix4f().identity();
         matrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        Vector3f transformTranslation = transformState.getTranslation(translationSwizzle, translationPolarity);
+        Vector3f transformTranslation = new Vector3f();
+        transformState.getTranslation(translationSwizzle, translationPolarity, transformTranslation);
         matrix.translate(
             transformTranslation.x,
             mirrorDraw ? -transformTranslation.y : transformTranslation.y,
@@ -157,11 +158,13 @@ public abstract class LightObject {
 
     /// returns the absolute world-space position
     public Vector3f getPos() {
+        var v = new Vector3f();
+        transformState.getTranslation(translationSwizzle, translationPolarity, v);
         return new Vector3f(position)
             .rotate(rotation)
             .rotate(transformState.getOrientation(rotationSwizzle, rotationPolarity, quaternionBuilder))
             .add(offset)
-            .add(transformState.getTranslation(translationSwizzle, translationPolarity));
+            .add(v);
     }
 
     public void resetState() {
