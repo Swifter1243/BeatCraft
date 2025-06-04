@@ -2,6 +2,7 @@ package com.beatcraft.render.effect;
 
 import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.gl.GlUtil;
@@ -80,18 +81,18 @@ public class Bloomfog {
     public static ShaderProgram blurShaderDown;
     public static ShaderProgram gaussianV;
     public static ShaderProgram gaussianH;
-    public static ShaderProgram bloomfogSolidShader;
+    //public static ShaderProgram bloomfogSolidShader; //
     public static ShaderProgram bloomfogLineShader;
-    public static ShaderProgram bloomfogPositionColor;
+    public static ShaderProgram bloomfogPositionColor; //
     public static ShaderProgram bloomfogColorFix;
     public static ShaderProgram blueNoise;
-    public static ShaderProgram lightsPositionColorShader;
-    public static ShaderProgram backlightsPositionColorShader;
+    //public static ShaderProgram lightsPositionColorShader; //
+    public static ShaderProgram backlightsPositionColorShader; //
 
     public static ShaderProgram blitShader;
     public static ShaderProgram compositeShader;
 
-    public static ShaderProgram bloomMaskLightShader;
+    public static ShaderProgram bloomMaskLightShader; //
     public static ShaderProgram bloomMaskLightTextureShader;
 
     private static final Identifier blueNoiseTexture = BeatCraft.id("textures/noise/blue_noise.png");
@@ -126,13 +127,13 @@ public class Bloomfog {
             blueNoise = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "blue_noise", VertexFormats.POSITION_TEXTURE_COLOR);
             blitShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "beatcraft_blit", VertexFormats.POSITION_TEXTURE_COLOR);
             compositeShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "composite", VertexFormats.POSITION_TEXTURE_COLOR);
-            bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
-            lightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "lights_position_color", VertexFormats.POSITION_COLOR);
-            backlightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "backlights_position_color", VertexFormats.POSITION_COLOR);
+            /**/bloomfogPositionColor = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "col_bloomfog", VertexFormats.POSITION_COLOR);
+            // /**/lightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "lights_position_color", VertexFormats.POSITION_COLOR);
+            /**/backlightsPositionColorShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "backlights_position_color", VertexFormats.POSITION_COLOR);
             bloomfogLineShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_lines", VertexFormats.LINES);
             bloomfogColorFix = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_colorfix", VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
-            bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
-            bloomMaskLightShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_bloom_mask", VertexFormats.POSITION_COLOR);
+            // /**/bloomfogSolidShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bloomfog_solid", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+            /**/bloomMaskLightShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_bloom_mask", VertexFormats.POSITION_COLOR);
             bloomMaskLightTextureShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "position_color_texture_bloom_mask", VertexFormats.POSITION_TEXTURE_COLOR);
 
             var vertexShaderLoc = BeatCraft.id("shaders/instanced/arrow.vsh");
@@ -143,6 +144,18 @@ public class Bloomfog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static final float[] DEFAULT_FOG_HEIGHTS = new float[]{-50, -30};
+    public static float[] getFogHeights() {
+        var map = BeatmapPlayer.currentBeatmap;
+        if (map != null) {
+            var ls = map.lightShowEnvironment;
+            if (ls != null) {
+                return ls.getFogHeights();
+            }
+        }
+        return DEFAULT_FOG_HEIGHTS;
     }
 
     /// DO NOT CALL: use Bloomfog.create()
@@ -451,7 +464,7 @@ public class Bloomfog {
 
         RenderSystem.setShader(() -> shader);
 
-        GL31.glUseProgram(shader.getGlRef());
+        GlUtil.useProgram(shader.getGlRef());
         GlUtil.setTex(shader.getGlRef(), "Sampler0", 0, in.getColorAttachment());
         if (overrideSampleMode) {
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
@@ -578,6 +591,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, sceneDepthBuffer);
             bloomMaskLightShader.addSampler("Sampler0", sceneDepthBuffer);
             bloomMaskLightShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            bloomMaskLightShader.getUniformOrDefault("u_fog").set(getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableDepthTest();
         }
@@ -596,6 +610,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
             RenderSystem.setShaderTexture(1, sceneDepthBuffer);
             bloomMaskLightShader.addSampler("Sampler1", sceneDepthBuffer);
+            bloomMaskLightShader.getUniformOrDefault("u_fog").set(getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableDepthTest();
         }
@@ -614,6 +629,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
             RenderSystem.setShaderTexture(1, sceneDepthBuffer);
             bloomMaskLightShader.addSampler("Sampler1", sceneDepthBuffer);
+            bloomMaskLightShader.getUniformOrDefault("u_fog").set(getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableDepthTest();
         }

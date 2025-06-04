@@ -23,7 +23,7 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
     }
 
     @Override
-    protected int getValueLength() {
+    protected int getValueLength(JsonArray ignored) {
         return 3;
     }
 

@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
@@ -101,6 +102,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
         playerConfig = PlayerConfig.loadFromFile();
 
+        BaseProviderHandler.setupDynamicProviders();
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;

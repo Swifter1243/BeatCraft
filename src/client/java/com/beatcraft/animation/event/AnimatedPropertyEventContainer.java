@@ -4,11 +4,12 @@ import com.beatcraft.animation.Animation;
 import com.beatcraft.animation.AnimationPropertyContainer;
 import com.beatcraft.animation.pointdefinition.PointDefinition;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
+import com.beatcraft.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class AnimatedPropertyEventContainer extends AnimationPropertyContainer<AnimatedPropertyEvent<Float>, AnimatedPropertyEvent<Vector3f>, AnimatedPropertyEvent<Vector4f>, AnimatedPropertyEvent<Quaternionf>> {
+public class AnimatedPropertyEventContainer extends AnimationPropertyContainer<AnimatedPropertyEvent<Float>, AnimatedPropertyEvent<Vector3f>, AnimatedPropertyEvent<Vector4f>, AnimatedPropertyEvent<Quaternionf>, AnimatedPropertyEvent<Color>> {
     private static <T> AnimatedPropertyEvent<T> propertyToEvent(PointDefinition<T> property, AnimateTrack animateTrack) {
         if (property == null) {
             return null;

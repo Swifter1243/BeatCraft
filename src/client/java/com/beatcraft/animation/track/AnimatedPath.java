@@ -3,13 +3,14 @@ package com.beatcraft.animation.track;
 import com.beatcraft.animation.AnimationPropertyContainer;
 import com.beatcraft.animation.PathState;
 import com.beatcraft.animation.event.*;
+import com.beatcraft.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
 
-public class AnimatedPath extends AnimationPropertyContainer<AnimatedPathEventHandler<Float>, AnimatedPathEventHandler<Vector3f>, AnimatedPathEventHandler<Vector4f>, AnimatedPathEventHandler<Quaternionf>> {
+public class AnimatedPath extends AnimationPropertyContainer<AnimatedPathEventHandler<Float>, AnimatedPathEventHandler<Vector3f>, AnimatedPathEventHandler<Vector4f>, AnimatedPathEventHandler<Quaternionf>, AnimatedPathEventHandler<Color>> {
     private final PathState currentState = new PathState();
 
     public AnimatedPath() {

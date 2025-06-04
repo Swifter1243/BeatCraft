@@ -1,20 +1,20 @@
 package com.beatcraft.render.gl;
 
+import com.beatcraft.data.types.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL31;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GlUtil {
 
-    private static final Map<Identifier, Integer> shaderProgramCache = new HashMap<>();
-
+    private static final Map<String, Integer> shaderProgramCache = new HashMap<>();
 
     public static int createShaderProgram(String vshSource, String fshSource) {
 
@@ -124,10 +124,7 @@ public class GlUtil {
     }
 
     public static int getOrCreateShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
-        var cacheKey = Identifier.of(
-            vertexShaderLoc.getNamespace(),
-            vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath()
-        );
+        var cacheKey = vertexShaderLoc.getNamespace() + ":" + vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath();
 
         return shaderProgramCache.computeIfAbsent(
             cacheKey,
@@ -136,20 +133,21 @@ public class GlUtil {
     }
 
     public static void destroyShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
-        var cacheKey = Identifier.of(
-            vertexShaderLoc.getNamespace(),
-            vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath()
-        );
+        var cacheKey = vertexShaderLoc.getNamespace() + ":" + vertexShaderLoc.getPath() + "_" + fragmentShaderLoc.getPath();
 
         if (shaderProgramCache.containsKey(cacheKey)) {
             var program = shaderProgramCache.remove(cacheKey);
             GL31.glDeleteProgram(program);
+            programUniformsCache.remove(program);
+            if (currentProgram == program) {
+                currentProgram = 0;
+            }
         }
 
     }
 
     public static void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
-        int uniLoc = GL20.glGetUniformLocation(shaderProgram, uni);
+        int uniLoc = GL31.glGetUniformLocation(shaderProgram, uni);
         GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
     }
 
@@ -158,6 +156,75 @@ public class GlUtil {
         var loc = GL31.glGetUniformLocation(program, name);
         GL31.glBindTexture(GL31.GL_TEXTURE_2D, glId);
         GL31.glUniform1i(loc, textureSlot);
+    }
+
+
+    private static final HashMap<Integer, HashMap<String, Object>> programUniformsCache = new HashMap<>();
+    private static int currentProgram;
+
+    public static void useProgram(int program) {
+        currentProgram = program;
+        GL31.glUseProgram(program);
+    }
+
+    public static boolean cacheUni(int program, String name, Object value) {
+        if (!programUniformsCache.containsKey(program)) {
+            programUniformsCache.put(program, new HashMap<>());
+        }
+
+        var uniCache = programUniformsCache.get(program);
+
+        if (uniCache.containsKey(name)) {
+            if (Objects.deepEquals(uniCache.get(name), value)) {
+                return false;
+            }
+        }
+        uniCache.put(name, value);
+        return true;
+    }
+
+    public static void uniformTex(String name, int textureSlot, int glId) {
+        setTex(currentProgram, name, textureSlot, glId);
+    }
+
+    public static void uniform1f(String name, float value) {
+        if (cacheUni(currentProgram, name, value)) {
+            var loc = GL31.glGetUniformLocation(currentProgram, name);
+            GL31.glUniform1f(loc, value);
+        }
+    }
+
+    public static void uniform2f(String name, float f0, float f1) {
+        if (cacheUni(currentProgram, name, new float[]{f0, f1})) {
+            var loc = GL31.glGetUniformLocation(currentProgram, name);
+            GL31.glUniform2f(loc, f0, f1);
+        }
+    }
+
+    public static void uniform3f(String name, float f0, float f1, float f2) {
+        if (cacheUni(currentProgram, name, new float[]{f0, f1, f2})) {
+            var loc = GL31.glGetUniformLocation(currentProgram, name);
+            GL31.glUniform3f(loc, f0, f1, f2);
+        }
+    }
+
+    public static void uniform4f(String name, float f0, float f1, float f2, float f3) {
+        if (cacheUni(currentProgram, name, new float[]{f0, f1, f2, f3})) {
+            var loc = GL31.glGetUniformLocation(currentProgram, name);
+            GL31.glUniform4f(loc, f0, f1, f2, f3);
+        }
+    }
+
+    public static void uniformMat4f(String name, Matrix4f mat4) {
+        if (cacheUni(currentProgram, name, mat4)) {
+            // Matrix4f is complex so put a copy of it instead of a direct reference
+            programUniformsCache.get(currentProgram).put(name, new Matrix4f(mat4));
+            setMat4f(currentProgram, name, mat4);
+        }
+    }
+
+    public static void uniformColor(String name, Color color) {
+        uniform4f(name, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 
 }

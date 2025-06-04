@@ -67,14 +67,31 @@ public abstract class GameplayObject extends BeatmapObject {
 
             if (customData.has("coordinates")) {
                 JsonArray coordinates = customData.getAsJsonArray("coordinates");
-                x = coordinates.get(0).getAsFloat() + 2.0f;
-                y = coordinates.get(1).getAsFloat();
+                //BeatCraft.LOGGER.info("coords: {}", coordinates);
+                if (coordinates.get(0).isJsonPrimitive() && coordinates.get(0).getAsJsonPrimitive().isNumber()) {
+                    x = coordinates.get(0).getAsFloat() + 2.0f;
+                } else {
+                    x = 0;
+                }
+                if (coordinates.get(1).isJsonPrimitive() && coordinates.get(1).getAsJsonPrimitive().isNumber()) {
+                    y = coordinates.get(1).getAsFloat();
+                } else {
+                    y = 0;
+                }
             }
 
             if (customData.has("position")) {
                 JsonArray coordinates = customData.getAsJsonArray("position");
-                x = coordinates.get(0).getAsFloat() + 2.0f;
-                y = coordinates.get(1).getAsFloat();
+                if (coordinates.get(0).isJsonPrimitive() && coordinates.get(0).getAsJsonPrimitive().isNumber()) {
+                    x = coordinates.get(0).getAsFloat() + 2.0f;
+                } else {
+                    x = 0;
+                }
+                if (coordinates.get(1).isJsonPrimitive() && coordinates.get(1).getAsJsonPrimitive().isNumber()) {
+                    y = coordinates.get(1).getAsFloat();
+                } else {
+                    y = 0;
+                }
             }
 
             if (customData.has("track")) {

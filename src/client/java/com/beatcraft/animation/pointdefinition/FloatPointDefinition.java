@@ -17,7 +17,7 @@ public class FloatPointDefinition extends PointDefinition<Float> {
     }
 
     @Override
-    protected int getValueLength() {
+    protected int getValueLength(JsonArray ignored) {
         return 1;
     }
 

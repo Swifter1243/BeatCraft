@@ -20,7 +20,7 @@ public class Vector4PointDefinition extends PointDefinition<Vector4f> {
     }
 
     @Override
-    protected int getValueLength() {
+    protected int getValueLength(JsonArray ignored) {
         return 4;
     }
 

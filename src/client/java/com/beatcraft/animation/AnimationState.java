@@ -2,13 +2,14 @@ package com.beatcraft.animation;
 
 import com.beatcraft.animation.pointdefinition.PointDefinition;
 import com.beatcraft.animation.track.AnimatedProperties;
+import com.beatcraft.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.function.BiFunction;
 
-public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, Vector4f, Quaternionf> {
+public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, Vector4f, Quaternionf, Color> {
 
     public void seekFromProperties(float beat, AnimatedProperties properties) {
         offsetPosition = properties.offsetPosition.seek(beat);
@@ -92,6 +93,9 @@ public class AnimationState extends AnimationPropertyContainer<Float, Vector3f, 
 
     private static float multiply(float a, float b) {
         return a * b;
+    }
+    private static Color multiply(Color a, Color b) {
+        return new Color(a.getRed() * b.getRed(), a.getGreen() * b.getGreen(), a.getBlue() * b.getBlue(), a.getAlpha() * b.getAlpha());
     }
     private static Vector4f multiply(Vector4f a, Vector4f b) {
         return new Vector4f(a).mul(b);

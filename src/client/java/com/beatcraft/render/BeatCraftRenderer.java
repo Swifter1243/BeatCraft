@@ -236,6 +236,7 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }
@@ -276,6 +277,7 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
         RenderSystem.defaultBlendFunc();

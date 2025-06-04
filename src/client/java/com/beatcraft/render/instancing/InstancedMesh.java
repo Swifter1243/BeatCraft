@@ -298,7 +298,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
         shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
-        GL20.glUseProgram(shaderProgram);
+        GlUtil.useProgram(shaderProgram);
 
         RenderSystem.setShaderTexture(0, texture);
 
@@ -306,8 +306,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         var projMat = RenderSystem.getProjectionMatrix();
         var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation);
-        GlUtil.setMat4f(shaderProgram, "u_projection", projMat);
-        GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
+        GlUtil.uniformMat4f("u_projection", projMat);
+        GlUtil.uniformMat4f("u_view", viewMat);
 
         if (arrowBloomProgram != -1) {
             GlUtil.setTex(arrowBloomProgram, "u_depth", 1, depthBuffer);

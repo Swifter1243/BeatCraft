@@ -319,6 +319,7 @@ public class MirrorHandler {
             RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
             Bloomfog.bloomfogPositionColor.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.bloomfogPositionColor.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BeatCraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();

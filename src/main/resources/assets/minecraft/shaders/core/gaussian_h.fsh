@@ -12,10 +12,10 @@ out vec4 fragColor;
 
 void main() {
     vec4 color = vec4(0.0);
-    float offsets[] = float[](
+    float offsets[9] = float[9](
         -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0
     );
-    float weights[] = float[]
+    float weights[9] = float[9]
 //    (
 //        0.00390625, 0.03125, 0.109375, 0.21875, 0.2734375,
 //        0.21875, 0.109375, 0.03125, 0.00390625

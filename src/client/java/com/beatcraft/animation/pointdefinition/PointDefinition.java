@@ -19,12 +19,12 @@ public abstract class PointDefinition<T> {
     public static boolean isSimple(JsonArray json) {
         return !json.get(0).isJsonArray();
     }
-    protected abstract int getValueLength();
-    public int getTimeIndex() {
-        return getValueLength();
+    protected abstract int getValueLength(JsonArray inner);
+    public int getTimeIndex(JsonArray inner) {
+        return getValueLength(inner);
     }
     public boolean hasFlags(JsonArray json) {
-        return json.size() > getTimeIndex() + 1;
+        return json.size() > getTimeIndex(json) + 1;
     }
 
     public Integer getFlagIndex(JsonArray json, String flag) {
@@ -32,7 +32,7 @@ public abstract class PointDefinition<T> {
             return null;
         }
 
-        for (int i = getTimeIndex() + 1; i < json.size(); i++) {
+        for (int i = getTimeIndex(json) + 1; i < json.size(); i++) {
             JsonElement element = json.get(i);
             if (JsonHelper.isString(element) && element.getAsString().contains(flag)) {
                 return i;
@@ -69,7 +69,7 @@ public abstract class PointDefinition<T> {
             JsonArray inner = x.getAsJsonArray();
             Point<T> point = new Point<>();
 
-            float time = inner.get(getTimeIndex()).getAsFloat();
+            float time = inner.get(getTimeIndex(inner)).getAsFloat();
             point.setTime(time);
 
             Integer easingIndex = getEasingIndex(inner);
@@ -92,12 +92,12 @@ public abstract class PointDefinition<T> {
             return null;
         }
 
-        Point<T> lastPoint = points.get(points.size() - 1);
+        Point<T> lastPoint = points.getLast();
         if (lastPoint.getTime() <= time) {
             return lastPoint.getValue();
         }
 
-        Point<T> firstPoint = points.get(0);
+        Point<T> firstPoint = points.getFirst();
         if (firstPoint.getTime() >= time) {
             return firstPoint.getValue();
         }
