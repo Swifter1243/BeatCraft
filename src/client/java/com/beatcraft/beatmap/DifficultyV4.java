@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.object.*;
 import com.beatcraft.lightshow.environment.EnvironmentUtils;
 import com.beatcraft.render.object.*;
@@ -20,6 +21,8 @@ public class DifficultyV4 extends Difficulty {
     }
 
     DifficultyV4 load(JsonObject json) {
+        loadLightshow();
+        BaseProviderHandler.setupStaticProviders(getSetDifficulty().getColorScheme());
         loadChains(json);
         loadNotes(json);
         loadBombs(json);
@@ -29,7 +32,6 @@ public class DifficultyV4 extends Difficulty {
         //loadRotationEvents(json);
         //loadPointDefinitions(json);
         //loadCustomEvents(json);
-        loadLightshow();
         doPostLoad();
         return this;
     }

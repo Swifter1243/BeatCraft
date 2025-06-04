@@ -1,5 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.base_providers.BaseProviderHandler;
+import com.beatcraft.base_providers.Vector4fReader;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
@@ -30,8 +32,13 @@ public class Vector4PointDefinition extends PointDefinition<Vector4f> {
             Vector3f v = JsonUtil.getVector3(json);
             point.setValue(new Vector4f(v.x, v.y, v.z, 1f));
         } else {
-            Vector4f v = JsonUtil.getVector4(json);
-            point.setValue(v);
+            if (isModifier(json)) {
+                var v = BaseProviderHandler.parseFromJson(json, 4);
+                point.setValue(new Vector4fReader(v.getValues()));
+            } else {
+                Vector4f v = JsonUtil.getVector4(json);
+                point.setValue(v);
+            }
         }
     }
 }

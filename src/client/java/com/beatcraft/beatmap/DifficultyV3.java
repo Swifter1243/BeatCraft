@@ -1,5 +1,6 @@
 package com.beatcraft.beatmap;
 
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.beatmap.data.event.AssignTrackParent;
@@ -24,6 +25,8 @@ public class DifficultyV3 extends Difficulty {
     }
 
     DifficultyV3 load(JsonObject json) {
+        loadLightshow(json);
+        BaseProviderHandler.setupStaticProviders(getSetDifficulty().getColorScheme());
         loadChains(json);
         loadNotes(json);
         loadBombs(json);
@@ -33,7 +36,6 @@ public class DifficultyV3 extends Difficulty {
         loadRotationEvents(json);
         loadPointDefinitions(json);
         loadCustomEvents(json);
-        loadLightshow(json);
         doPostLoad();
         return this;
     }

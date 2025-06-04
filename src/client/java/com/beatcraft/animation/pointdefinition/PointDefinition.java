@@ -1,7 +1,9 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.animation.event.AnimatedPathEvent;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
@@ -16,8 +18,42 @@ public abstract class PointDefinition<T> {
 
     abstract protected T interpolatePoints(int a, int b, float time);
 
+    public static boolean isModifier(JsonElement json) {
+        if (!json.isJsonArray()) {
+            if (json.isJsonPrimitive()) {
+                var p = json.getAsJsonPrimitive();
+                return (p.isString());
+            }
+        }
+        for (var v : json.getAsJsonArray()) {
+            if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
+                var s = v.getAsString();
+                if (s.startsWith("base") || s.startsWith("op")) {
+                    return true;
+                }
+            } else if (v.isJsonArray()) {
+                for (var x : v.getAsJsonArray()) {
+                    if (x.isJsonPrimitive() && x.getAsJsonPrimitive().isString()) {
+                        var s = x.getAsString();
+                        if (s.startsWith("base") || s.startsWith("op")) {
+                            return true;
+                        }
+                        if (s.startsWith("ease")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
     public static boolean isSimple(JsonArray json) {
-        return !json.get(0).isJsonArray();
+        if (json.get(0).isJsonArray()) {
+            return false;
+        } else if (json.get(0).isJsonPrimitive() && json.get(0).getAsJsonPrimitive().isString()) {
+            return false;
+        }
+        return true;
     }
     protected abstract int getValueLength(JsonArray inner);
     public int getTimeIndex(JsonArray inner) {
@@ -65,25 +101,31 @@ public abstract class PointDefinition<T> {
     }
 
     private void loadComplex(JsonArray json) {
-        json.forEach(x -> {
-            JsonArray inner = x.getAsJsonArray();
+        if (isModifier(json)) {
             Point<T> point = new Point<>();
-
-            float time = inner.get(getTimeIndex(inner)).getAsFloat();
-            point.setTime(time);
-
-            Integer easingIndex = getEasingIndex(inner);
-            if (easingIndex != null) {
-                String easing = inner.get(easingIndex).getAsString();
-                point.setEasing(Easing.getEasing(easing));
-            }
-
-            Integer splineIndex = getSplineIndex(inner);
-            point.setSpline(splineIndex != null);
-
-            loadValue(inner, point, false);
+            loadValue(json, point, false);
             points.add(point);
-        });
+        } else {
+            json.forEach(x -> {
+                JsonArray inner = x.getAsJsonArray();
+                Point<T> point = new Point<>();
+
+                float time = inner.get(getTimeIndex(inner)).getAsFloat();
+                point.setTime(time);
+
+                Integer easingIndex = getEasingIndex(inner);
+                if (easingIndex != null) {
+                    String easing = inner.get(easingIndex).getAsString();
+                    point.setEasing(Easing.getEasing(easing));
+                }
+
+                Integer splineIndex = getSplineIndex(inner);
+                point.setSpline(splineIndex != null);
+
+                loadValue(inner, point, false);
+                points.add(point);
+            });
+        }
     }
     protected abstract void loadValue(JsonArray json, Point<T> point, boolean isSimple);
 

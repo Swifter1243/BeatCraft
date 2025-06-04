@@ -1,5 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.base_providers.ValueReader;
+
 import java.util.function.Function;
 
 public class Point<T> {
@@ -7,13 +9,23 @@ public class Point<T> {
     private float time = 0;
     private Function<Float, Float> easing;
     private boolean spline;
+    private boolean fromProvider = false;
+    private ValueReader<T> provider;
 
     public T getValue() {
+        if (fromProvider) {
+            return provider.get();
+        }
         return value;
     }
 
     public void setValue(T value) {
         this.value = value;
+    }
+
+    public void setValue(ValueReader<T> reader) {
+        provider = reader;
+        fromProvider = true;
     }
 
     public float getTime() {

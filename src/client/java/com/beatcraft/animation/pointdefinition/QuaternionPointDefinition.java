@@ -1,5 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.base_providers.BaseProviderHandler;
+import com.beatcraft.base_providers.QuaternionReader;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
@@ -24,7 +26,12 @@ public class QuaternionPointDefinition extends PointDefinition<Quaternionf> {
 
     @Override
     protected void loadValue(JsonArray json, Point<Quaternionf> point, boolean isSimple) {
-        Quaternionf quaternion = JsonUtil.getQuaternion(json);
-        point.setValue(quaternion);
+        if (isModifier(json)) {
+            var p = BaseProviderHandler.parseFromJson(json, 4);
+            point.setValue(new QuaternionReader(p.getValues()));
+        } else {
+            Quaternionf quaternion = JsonUtil.getQuaternion(json);
+            point.setValue(quaternion);
+        }
     }
 }

@@ -180,7 +180,7 @@ public class BeatmapPlayer {
         var cs = currentBeatmap.getSetDifficulty().getColorScheme();
         SaberSyncedColor.leftColor = cs.getNoteLeftColor();
         SaberSyncedColor.rightColor = cs.getNoteRightColor();
-        BaseProviderHandler.setupStaticProviders();
+        //BaseProviderHandler.setupStaticProviders();
     }
 
     public static void reset() {

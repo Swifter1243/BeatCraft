@@ -12,6 +12,9 @@ import java.util.function.Consumer;
 
 public interface ValueProvider {
     float[] getValues();
+    default int getSize() {
+        return getValues().length;
+    }
 }
 
 interface RotationProvider {
@@ -221,37 +224,6 @@ class BaseRotationProvider extends UpdatableValue implements RotationProvider {
     }
 }
 
-record ColorReader(float[] values) {
-    public Color getColor(Color dest) {
-        dest.set(values[0], values[1], values[2], values[3]);
-        return dest;
-    }
-}
-
-record Vector2fReader(float[] values) {
-    public Vector2f getVector2f(Vector2f dest) {
-        return dest.set(values);
-    }
-}
-
-record Vector3fReader(float[] values) {
-    public Vector3f getVector3f(Vector3f dest) {
-        return dest.set(values);
-    }
-}
-
-record Vector4fReader(float[] values) {
-    public Vector4f getVector4f(Vector4f dest) {
-        return dest.set(values);
-    }
-}
-
-record FloatReader(float[] values) {
-    public float getFloat() {
-        return values[0];
-    }
-}
-
 class ValueMixer extends UpdatableValue {
 
     private final float[][] sources;
@@ -261,6 +233,7 @@ class ValueMixer extends UpdatableValue {
         this.sources = sources;
         int i = 0;
         for (var src : sources) {
+            if (src == null) continue;
             for (var ignored : src) {
                 i++;
             }
@@ -272,6 +245,7 @@ class ValueMixer extends UpdatableValue {
     public void update() {
         int i = 0;
         for (var src : sources) {
+            if (src == null) continue;
             for (var s : src) {
                 values[i] = s;
                 i++;

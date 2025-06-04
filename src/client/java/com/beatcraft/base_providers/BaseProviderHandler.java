@@ -1,15 +1,17 @@
 package com.beatcraft.base_providers;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.beatmap.data.ColorScheme;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.memory.MemoryPool;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import oshi.util.tuples.Pair;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Map.entry;
 
@@ -28,7 +30,7 @@ public class BaseProviderHandler {
         updatableProviders.clear();
     }
 
-    public ValueProvider getProvider(String provider) {
+    public static ValueProvider getProvider(String provider) {
         var splits = provider.split("\\.");
         ValueProvider base = baseProviders.get(splits[0]);
 
@@ -81,8 +83,50 @@ public class BaseProviderHandler {
         return base;
     }
 
-    public ValueProvider parseFromJson(JsonArray json, int expectedSize) {
 
+    public static ValueProvider parseFromJson(JsonArray json, int expectedSize) {
+        var a = json.get(0);
+        if (a.isJsonPrimitive()) {
+            if (a.getAsJsonPrimitive().isString()) {
+                var s = a.getAsString();
+                return getProvider(s);
+            } else if (a.getAsJsonPrimitive().isNumber()) {
+                float[] vals = new float[expectedSize];
+                for (int i = 0; i < expectedSize; i++) {
+                    var x = json.get(i);
+                    if (x.isJsonPrimitive() && x.getAsJsonPrimitive().isNumber()) {
+                        vals[i] = x.getAsFloat();
+                    } else {
+                        BeatCraft.LOGGER.warn("unhandled non-float value: {}", x);
+                        vals[i] = 1;
+                    }
+                }
+                return new StaticValueProvider(vals);
+            } else {
+                BeatCraft.LOGGER.warn("Using fallback provider of 1s");
+                float[] vals = new float[expectedSize];
+                Arrays.fill(vals, 1);
+                return new StaticValueProvider(vals);
+            }
+        } else if (a.isJsonArray()) {
+            var b = a.getAsJsonArray();
+            float[] vals = new float[expectedSize];
+            for (int i = 0; i < expectedSize; i++) {
+                var x = b.get(i);
+                if (x.isJsonPrimitive() && x.getAsJsonPrimitive().isNumber()) {
+                    vals[i] = x.getAsFloat();
+                } else {
+                    BeatCraft.LOGGER.warn("unhandled non-float value (2): {}", x);
+                    vals[i] = 1;
+                }
+            }
+            return new StaticValueProvider(vals);
+        } else {
+            BeatCraft.LOGGER.warn("using fallback provider of 1s");
+            var f = new float[expectedSize];
+            Arrays.fill(f, 1);
+            return new StaticValueProvider(f);
+        }
     }
 
     ///  these updaters use dynamic values so they will work for any map
@@ -225,11 +269,11 @@ public class BaseProviderHandler {
             entry("baseLeftHandLocalRotation", baseLeftHandLocalRotation),
             entry("baseLeftHandLocalScale", baseLeftHandLocalScale),
 
-            entry("baseRightHandePosition", baseRightHandPosition),
-            entry("baseRightHandeLocalPosition", baseRightHandLocalPosition),
-            entry("baseRightHandeRotation", baseRightHandRotation),
-            entry("baseRightHandeLocalRotation", baseRightHandLocalRotation),
-            entry("baseRightHandeLocalScale", baseRightHandLocalScale),
+            entry("baseRightHandPosition", baseRightHandPosition),
+            entry("baseRightHandLocalPosition", baseRightHandLocalPosition),
+            entry("baseRightHandRotation", baseRightHandRotation),
+            entry("baseRightHandLocalRotation", baseRightHandLocalRotation),
+            entry("baseRightHandLocalScale", baseRightHandLocalScale),
 
             entry("baseCombo", baseCombo),
             entry("baseMultipliedScore", baseMultipliedScore),
@@ -255,8 +299,7 @@ public class BaseProviderHandler {
         });
     }
 
-    public static void setupStaticProviders() {
-        var cs = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme();
+    public static void setupStaticProviders(ColorScheme cs) {
 
         var note0 = cs.getNoteLeftColor();
         var note1 = cs.getNoteRightColor();

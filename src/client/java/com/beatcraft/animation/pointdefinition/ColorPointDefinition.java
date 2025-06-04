@@ -1,6 +1,8 @@
 package com.beatcraft.animation.pointdefinition;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.base_providers.BaseProviderHandler;
+import com.beatcraft.base_providers.ColorReader;
 import com.beatcraft.beatmap.data.SaberSyncedColor;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.JsonUtil;
@@ -37,14 +39,9 @@ public class ColorPointDefinition extends PointDefinition<Color> {
             var v = JsonUtil.getVector3(json);
             point.setValue(new Color(v.x, v.y, v.z, 1f));
         } else {
-            if (json.get(0).isJsonPrimitive() && json.get(0).getAsJsonPrimitive().isString()) {
-                // baseNote0Color or baseNote1Color
-                var col = json.get(0).getAsString();
-                if (col.equals("baseNote0Color")) {
-                    point.setValue(new SaberSyncedColor(0));
-                } else if (col.equals("baseNote1Color")) {
-                    point.setValue(new SaberSyncedColor(1));
-                }
+            if (isModifier(json)) {
+                var v = BaseProviderHandler.parseFromJson(json, 4);
+                point.setValue(new ColorReader(v.getValues()));
             } else {
                 var v = JsonUtil.getVector4(json);
                 point.setValue(new Color(v.x, v.y, v.z, v.w));
