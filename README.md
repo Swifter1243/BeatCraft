@@ -10,6 +10,9 @@ Experience a unique take on virtual reality's most popular rhythm game, all with
 > [!NOTE]
 > This mod is still in active development, please be patient about features that haven't been added yet, and report bugs to the GitHub [here](https://github.com/Swifter1243/BeatCraft/issues) (check that it hasn't already been reported first please)
 
+### Join the discord server!
+https://discord.gg/eQH4pbHptM
+
 ### Download the mod from modrinth!
 BeatCraft can be downloaded from here: [https://modrinth.com/mod/beatcraft](https://modrinth.com/mod/beatcraft)  
 or from releases here on GitHub.  
