@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -12,6 +13,12 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 public class JsonUtil {
+    public static Vector2f getVector2(JsonArray array) {
+        float x = getOrDefault(array, 0, JsonElement::getAsFloat, 0f);
+        float y = getOrDefault(array, 1, JsonElement::getAsFloat, 0f);
+        return new Vector2f(x, y);
+    }
+
     public static Vector3f getVector3(JsonElement element) {
         JsonArray array = element.getAsJsonArray();
         return getVector3(array);

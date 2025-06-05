@@ -16,35 +16,50 @@ Mesh format:
 {
     "credits": ["string or list of strings"],
     "mesh_format": 1,
-    "vertices": [
-        [0.0, 1.0, 2.0] // vertices are in meters instead of 16x16 pixel space
-    ],
-    "named_vertices": {
-        "unique_name": [1.0, 1.0, 2.0] // named vertices makes keeping trak of things easier
-    },
-    "uvs": [...],
-    "named_uvs": {...},
-    "normals": [...],
-    "named_normals": {...},
-    "interpolated_vertices": {
-        // interpolated vertices must be named but are
-        // not required to interpolate from named vertices
-        "vertice_name": {
-            "points": [0, "unique_name"], // key determines interpolation function
-            "function": "linear",
-            "delta": 0.5, // if delta: interpolate this much between points
-            "y": 3.0      // if x/y/z: set given axis to the provided value as a.<axis> + value and then interpolate the other 2 (or other 1 if 2 axes are specified) axes by `function`
-            // note: only one of x/y/z or delta can be set
+    "parts": {
+        "part-name": {
+            "vertices": [
+                [0.0, 1.0, 2.0] // vertices are in meters instead of 16x16 pixel space
+            ],
+            "named_vertices": {
+                "unique_name": [1.0, 1.0, 2.0] // named vertices makes keeping trak of things easier
+            },
+            "uvs": [...],
+            "named_uvs": {...},
+            "normals": [...], // normal vectors will be normalized when loaded
+            "named_normals": {...},
+            "compute_normals": {
+                "name": [vertA, vertB, vertC] // normal faces towards camera when vertices are wound clockwise
+            },
+            "interpolated_vertices": {
+                // interpolated vertices must be named but are
+                // not required to interpolate from named vertices
+                "vertice_name": {
+                    "points": [0, "unique_name"], // key determines interpolation function
+                    "function": "linear",
+                    "delta": 0.5, // if delta: interpolate this much between points
+                    "y": 3.0      // if x/y/z: set given axis to the provided value as a.<axis> + value and then interpolate the other 2 (or other 1 if 2 axes are specified) axes by `function`
+                    // note: only one of x/y/z or delta can be set
+                }
+            },
+            "triangles": [
+                [
+                    [v0, uv0, normal0], // vertex 0
+                    [v1, uv1, normal1], // vertex 1
+                    [v2, uv2, normal2], // vertex 2
+                    "light", {"color": 0} // data index/name, the object afterwards overrides data in the named data attributes
+                ]
+            ]
         }
     },
-    "triangles": [
-        [
-            [v0, uv0, normal0], // vertex 0
-            [v1, uv1, normal1], // vertex 1
-            [v2, uv2, normal2], // vertex 2
-            "light", {"color": 0} // data index/name, the object afterwards overrides data in the named data attributes
-        ]
-    ],
+    "mesh": [
+        {
+            "part": "name",
+            "scale": [1, 1, 1],
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0, 1] // quaternion
+        }
+    ]
     "textures": {
         "0": "beatcraft:path/name" // only 0, 1, and 2 are valid texture slots
     },
@@ -89,7 +104,9 @@ public class LightMesh {
     }
 
     protected record TriangleData(VertexData a, VertexData b, VertexData c, int colorId, int materialId, int textureId) {
-
+        protected TriangleData transform() {
+            return this;
+        }
     }
 
     private final List<Vector3f> vertices;
@@ -117,14 +134,14 @@ public class LightMesh {
 
 
     private static class MeshConstructor {
-        private ArrayList<Vector3f> vertices = new ArrayList<>();
-        private ArrayList<Vector2f> uvs = new ArrayList<>();
-        private ArrayList<Vector3f> normals = new ArrayList<>();
+        private final ArrayList<Vector3f> vertices = new ArrayList<>();
+        private final ArrayList<Vector2f> uvs = new ArrayList<>();
+        private final ArrayList<Vector3f> normals = new ArrayList<>();
 
         // named Lists map to the index into the un-named list instead of to vertices
-        private HashMap<String, Integer> namedVertices = new HashMap<>();
-        private HashMap<String, Integer> namedUvs = new HashMap<>();
-        private HashMap<String, Integer> namedNormals = new HashMap<>();
+        private final HashMap<String, Integer> namedVertices = new HashMap<>();
+        private final HashMap<String, Integer> namedUvs = new HashMap<>();
+        private final HashMap<String, Integer> namedNormals = new HashMap<>();
 
         protected Vector3f getVertex(Object idxOrName) {
             if (idxOrName instanceof Integer i) {
@@ -173,7 +190,40 @@ public class LightMesh {
 
         protected void addNamedVertices(JsonObject vertices) {
             for (var key : vertices.keySet()) {
+                var val = vertices.get(key);
+                var i = this.vertices.size();
+                this.vertices.add(JsonUtil.getVector3(val.getAsJsonArray()));
+                namedVertices.put(key, i);
+            }
+        }
 
+        protected void addUvs(JsonArray uvs) {
+            uvs.forEach(uv -> {
+                this.uvs.add(JsonUtil.getVector2(uv.getAsJsonArray()));
+            });
+        }
+
+        protected void addNamedUvs(JsonObject uvs) {
+            for (var key : uvs.keySet()) {
+                var val = uvs.get(key);
+                var i = this.uvs.size();
+                this.uvs.add(JsonUtil.getVector2(val.getAsJsonArray()));
+                namedUvs.put(key, i);
+            }
+        }
+
+        protected void addNormals(JsonArray normals) {
+            normals.forEach(normal -> {
+                this.normals.add(JsonUtil.getVector3(normal.getAsJsonArray()));
+            });
+        }
+
+        protected void addNamedNormals(JsonObject normals) {
+            for (var key : normals.keySet()) {
+                var val = normals.get(key);
+                var i = this.normals.size();
+                this.normals.add(JsonUtil.getVector3(val.getAsJsonArray()));
+                namedNormals.put(key, i);
             }
         }
 
@@ -192,6 +242,8 @@ public class LightMesh {
         if (format != 1) {
             throw new IOException("Mesh is not a known format");
         }
+
+
 
 
         return null;

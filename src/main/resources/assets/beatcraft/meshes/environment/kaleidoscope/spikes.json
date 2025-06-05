@@ -1,0 +1,150 @@
+{
+    "mesh_format": 1,
+    "credits": ["Beatcraft", "Westbot"],
+    "parts": {
+        "main": {
+            "named_vertices": {
+                "tip": [0, 4, 0],
+                "a": [8, 30, 0],
+                "b": [0, 30, 8],
+                "c": [-8, 30, 0],
+                "d": [0, 30, -8]
+            },
+            "uvs": [
+                [0, 0]
+            ],
+            "named_normals": {
+                "back": [0, 1, 0]
+            },
+            "compute_normals": {
+                "ab": ["tip", "b", "a"],
+                "bc": ["tip", "c", "b"],
+                "cd": ["tip", "d", "c"],
+                "da": ["tip", "a", "d"]
+            },
+            "interpolated_vertices": {
+                "ta1h": { "points": ["tip", "a"], "y": 0.5  },
+                "ta2l": { "points": ["tip", "a"], "y": 3.5  },
+                "ta2h": { "points": ["tip", "a"], "y": 3.75 },
+                "ta3l": { "points": ["tip", "a"], "y": 7.25 },
+                "ta3h": { "points": ["tip", "a"], "y": 7.5  },
+                "ta4l": { "points": ["a", "tip"], "y": 1.25 },
+
+                "tb1h": { "points": ["tip", "b"], "y": 0.5  },
+                "tb2l": { "points": ["tip", "b"], "y": 3.5  },
+                "tb2h": { "points": ["tip", "b"], "y": 3.75 },
+                "tb3l": { "points": ["tip", "b"], "y": 7.25 },
+                "tb3h": { "points": ["tip", "b"], "y": 7.5  },
+                "tb4l": { "points": ["b", "tip"], "y": 1.25 },
+
+                "tc1h": { "points": ["tip", "c"], "y": 0.5  },
+                "tc2l": { "points": ["tip", "c"], "y": 3.5  },
+                "tc2h": { "points": ["tip", "c"], "y": 3.75 },
+                "tc3l": { "points": ["tip", "c"], "y": 7.25 },
+                "tc3h": { "points": ["tip", "c"], "y": 7.5  },
+                "tc4l": { "points": ["c", "tip"], "y": 1.25 },
+
+                "td1h": { "points": ["tip", "d"], "y": 0.5  },
+                "td2l": { "points": ["tip", "d"], "y": 3.5  },
+                "td2h": { "points": ["tip", "d"], "y": 3.75 },
+                "td3l": { "points": ["tip", "d"], "y": 7.25 },
+                "td3h": { "points": ["tip", "d"], "y": 7.5  },
+                "td4l": { "points": ["d", "tip"], "y": 1.25 }
+            },
+            "triangles": [
+                { "uv": 0, "normal": "ab" },
+                [ "tip", "ta1h", "tb1h", "l0" ],
+                [ "ta1h", "ta2l", "tb1h" ],
+                [ "tb1h", "ta2l", "tb2l" ],
+                [ "ta2l", "ta2h", "tb2l", "l1" ],
+                [ "tb2l", "ta2h", "tb2h", "l1" ],
+                [ "ta2h", "ta3l", "tb2h" ],
+                [ "tb2h", "ta3l", "tb3l" ],
+                [ "ta3l", "ta3h", "tb3l", "l2" ],
+                [ "tb3l", "ta3h", "tb3h", "l2" ],
+                [ "ta3h", "ta4l", "tb3h" ],
+                [ "tb3h", "ta4l", "tb3l" ],
+                [ "ta4l", "a", "tb3l", "l3" ],
+                [ "tb3l", "a", "b", "l3" ],
+
+                { "uv": 0, "normal": "bc" },
+                [ "tip", "tb1h", "tc1h", "l0" ],
+                [ "tb1h", "tb2l", "tc1h" ],
+                [ "tc1h", "tb2l", "tc2l" ],
+                [ "tb2l", "tb2h", "tc2l", "l1" ],
+                [ "tc2l", "tb2h", "tc2h", "l1" ],
+                [ "tb2h", "tb3l", "tc2h" ],
+                [ "tc2h", "tb3l", "tc3l" ],
+                [ "tb3l", "tb3h", "tc3l", "l2" ],
+                [ "tc3l", "tb3h", "tc3h", "l2" ],
+                [ "tb3h", "tb4l", "tc3h" ],
+                [ "tc3h", "tb4l", "tc3l" ],
+                [ "tb4l", "b", "tc3l", "l3" ],
+                [ "tc3l", "b", "c", "l3" ],
+
+                { "uv": 0, "normal": "cd" },
+                [ "tip", "tc1h", "td1h", "l0" ],
+                [ "tc1h", "tc2l", "td1h" ],
+                [ "td1h", "tc2l", "td2l" ],
+                [ "tc2l", "tc2h", "td2l", "l1" ],
+                [ "td2l", "tc2h", "td2h", "l1" ],
+                [ "tc2h", "tc3l", "td2h" ],
+                [ "td2h", "tc3l", "td3l" ],
+                [ "tc3l", "tc3h", "td3l", "l2" ],
+                [ "td3l", "tc3h", "td3h", "l2" ],
+                [ "tc3h", "tc4l", "td3h" ],
+                [ "td3h", "tc4l", "td3l" ],
+                [ "tc4l", "c", "td3l", "l3" ],
+                [ "td3l", "c", "d", "l3" ],
+
+                { "uv": 0, "normal": "da" },
+                [ "tip", "td1h", "ta1h", "l0" ],
+                [ "td1h", "td2l", "ta1h" ],
+                [ "ta1h", "td2l", "ta2l" ],
+                [ "td2l", "td2h", "ta2l", "l1" ],
+                [ "ta2l", "td2h", "ta2h", "l1" ],
+                [ "td2h", "td3l", "ta2h" ],
+                [ "ta2h", "td3l", "ta3l" ],
+                [ "td3l", "td3h", "ta3l", "l2" ],
+                [ "ta3l", "td3h", "ta3h", "l2" ],
+                [ "td3h", "td4l", "ta3h" ],
+                [ "ta3h", "td4l", "ta3l" ],
+                [ "td4l", "d", "ta3l", "l3" ],
+                [ "ta3l", "d", "a", "l3" ],
+
+                { "uv": 0, "normal": "back" },
+                [ "a", "d", "b", "l3" ],
+                [ "b", "d", "c", "l3" ]
+            ]
+        }
+    },
+    "mesh": [
+        {
+            "part": "main"
+        },
+        {
+            "part": "main",
+            "scale": [1, -1, 1],
+            "remap_data": {
+                "l0": "l4",
+                "l1": "l5",
+                "l2": "l6",
+                "l3": "l7"
+            }
+        }
+    ],
+    "textures": {
+        "0": "beatcraft:textures/block/black_mirror.png"
+    },
+    "data": {
+        "default": { "material": 0, "texture": 0, "color": 0 },
+        "l0": { "material": 1, "color": 0 },
+        "l1": { "material": 1, "color": 1 },
+        "l2": { "material": 1, "color": 2 },
+        "l3": { "material": 1, "color": 3 },
+        "l4": { "material": 1, "color": 4 },
+        "l5": { "material": 1, "color": 5 },
+        "l6": { "material": 1, "color": 6 },
+        "l7": { "material": 1, "color": 7 }
+    }
+}
