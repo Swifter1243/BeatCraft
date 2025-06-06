@@ -17,12 +17,12 @@
                 "back": [0, 1, 0]
             },
             "compute_normals": {
-                "ab": ["tip", "b", "a"],
-                "bc": ["tip", "c", "b"],
-                "cd": ["tip", "d", "c"],
-                "da": ["tip", "a", "d"]
+                "ab": ["tip", "a", "b"],
+                "bc": ["tip", "b", "c"],
+                "cd": ["tip", "c", "d"],
+                "da": ["tip", "d", "a"]
             },
-            "interpolated_vertices": {
+            "compute_vertices": {
                 "ta1h": { "points": ["tip", "a"], "y": 0.5  },
                 "ta2l": { "points": ["tip", "a"], "y": 3.5  },
                 "ta2h": { "points": ["tip", "a"], "y": 3.75 },
