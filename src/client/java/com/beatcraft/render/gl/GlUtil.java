@@ -1,7 +1,9 @@
 package com.beatcraft.render.gl;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -10,6 +12,7 @@ import org.lwjgl.opengl.GL31;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GlUtil {
@@ -86,7 +89,27 @@ public class GlUtil {
         }
     }
 
+    private static final Pattern qcBlock = Pattern.compile("#QUEST.*?#ENDQUEST", Pattern.DOTALL);
+    private static final Pattern pcBlock = Pattern.compile("#PC.*?#ENDPC", Pattern.DOTALL);
+    private static String reProcess(String shader) {
+        var vendor = GL31.glGetString(GL31.GL_VENDOR);
+
+        if (vendor != null && vendor.contains("QuestCraft")) {
+            var m = pcBlock.matcher(shader);
+            shader = m.replaceAll("").replace("#QUEST", "").replace("#ENDQUEST", "");
+        } else {
+            var m = qcBlock.matcher(shader);
+            shader = m.replaceAll("").replace("#PC", "").replace("#ENDPC", "");
+        }
+
+        BeatCraft.LOGGER.info("processed shader:\n{}\n\n", shader);
+
+        return shader;
+
+    }
+
     public static int compileShader(int type, String source) {
+        source = reProcess(source);
         var shader = GL31.glCreateShader(type);
 
         GL31.glShaderSource(shader, source);
@@ -110,6 +133,8 @@ public class GlUtil {
             .getReader()
             .lines()
             .collect(Collectors.joining("\n"));
+
+        source = reProcess(source);
 
         GL31.glShaderSource(shader, source);
         GL31.glCompileShader(shader);

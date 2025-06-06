@@ -1,10 +1,22 @@
+#PC
 #version 330 core
+#ENDPC
+#QUEST
+#version 300 es
+#ENDQUEST
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec2 in_uv;
 layout(location = 2) in vec3 in_normal;
-
+#PC
 layout(location = 3) in mat4 instance_model;
+#ENDPC
+#QUEST
+layout(location = 3) in vec4 instance_model_0;
+layout(location = 4) in vec4 instance_model_1;
+layout(location = 5) in vec4 instance_model_2;
+layout(location = 6) in vec4 instance_model_3;
+#ENDQUEST
 layout(location = 7) in vec4 instance_color;
 layout(location = 8) in vec2 dissolve_index;
 
@@ -19,7 +31,15 @@ out vec3 v_pos;
 out vec3 screenUV;
 
 void main() {
-    vec4 pos = vec4(u_view * instance_model * vec4(in_position, 1.0));
+#QUEST
+    mat4 instance_model = mat4(
+        instance_model_0,
+        instance_model_1,
+        instance_model_2,
+        instance_model_3
+    );
+#ENDQUEST
+    vec4 pos = u_view * instance_model * vec4(in_position, 1.0);
     gl_Position = u_projection * pos;
     screenUV = vec3(gl_Position.xy, pos.z);
     v_uv = in_uv;
