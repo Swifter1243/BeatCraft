@@ -102,8 +102,6 @@ public class GlUtil {
             shader = m.replaceAll("").replace("#PC", "").replace("#ENDPC", "");
         }
 
-        BeatCraft.LOGGER.info("processed shader:\n{}\n\n", shader);
-
         return shader;
 
     }

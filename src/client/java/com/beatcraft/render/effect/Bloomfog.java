@@ -562,6 +562,7 @@ public class Bloomfog {
         BeatCraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
         bloomInput.beginWrite(true);
 
+        RenderSystem.defaultBlendFunc();
 
         Tessellator tessellator = Tessellator.getInstance();
 
