@@ -96,10 +96,10 @@ public class GlUtil {
 
         if (vendor != null && vendor.contains("QuestCraft")) {
             var m = pcBlock.matcher(shader);
-            shader = m.replaceAll("").replace("#QUEST", "").replace("#ENDQUEST", "");
+            shader = m.replaceAll("").replace("#QUEST", "").replace("#ENDQUEST", "").trim();
         } else {
             var m = qcBlock.matcher(shader);
-            shader = m.replaceAll("").replace("#PC", "").replace("#ENDPC", "");
+            shader = m.replaceAll("").replace("#PC", "").replace("#ENDPC", "").trim();
         }
 
         return shader;
@@ -171,7 +171,7 @@ public class GlUtil {
 
     public static void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
         int uniLoc = GL31.glGetUniformLocation(shaderProgram, uni);
-        GL20.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
+        GL31.glUniformMatrix4fv(uniLoc, false, mat4.get(new float[16]));
     }
 
     public static void setTex(int program, String name, int textureSlot, int glId) {

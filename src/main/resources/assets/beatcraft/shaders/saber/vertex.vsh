@@ -13,9 +13,9 @@ out vec3 screenUV;
 
 void main() {
     vec4 pos = vec4(u_view * vec4(in_position, 1.0));
-    gl_Position = u_projection * pos;
-
-    screenUV = vec3(gl_Position.xy, pos.z);
+    vec4 final = u_projection * pos;
+    gl_Position = final;
+    screenUV = vec3(final.xy, pos.z);
     v_uv = in_uv;
     v_color = in_color;
 }

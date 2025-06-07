@@ -13,6 +13,8 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -65,6 +67,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     private final ArrayList<I> bloomCopyCalls;
     private boolean initialized;
 
+    public static boolean isQuest3 = false;
+
     private Identifier vertexShaderLoc;
     private Identifier fragmentShaderLoc;
 
@@ -108,6 +112,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         if (initialized) {
             return;
         }
+        var vendor = GL31.glGetString(GL31.GL_VENDOR);
+        isQuest3 = (vendor != null && vendor.contains("QuestCraft"));
 
         vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
         fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
@@ -132,6 +138,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         uvVbo = GL15.glGenBuffers();
         FloatBuffer uvBuffer = MemoryUtil.memAllocFloat(vertices.length * 2);
+
         for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
             Vector2f uv = vertex.getB();
             uvBuffer.put(uv.x).put(uv.y);
@@ -265,14 +272,24 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         MemoryUtil.memFree(instanceDataBuffer);
 
 
-        GL31.glDrawElementsInstanced(
-            GL11.GL_TRIANGLES,
-            indices.length,
-            GL11.GL_UNSIGNED_INT,
-            0,
-            instanceCount
-        );
+        if (isQuest3) {
 
+            EXTDrawInstanced.glDrawElementsInstancedEXT(
+                GL11.GL_TRIANGLES,
+                indices.length,
+                GL11.GL_UNSIGNED_INT,
+                0,
+                instanceCount
+            );
+        } else {
+            GL31.glDrawElementsInstanced(
+                GL11.GL_TRIANGLES,
+                indices.length,
+                GL11.GL_UNSIGNED_INT,
+                0,
+                instanceCount
+            );
+        }
 
         first.cleanup();
 

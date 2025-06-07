@@ -3,6 +3,7 @@
 #ENDPC
 #QUEST
 #version 300 es
+precision highp float;
 #ENDQUEST
 
 in vec2 v_uv;
@@ -16,7 +17,6 @@ uniform sampler2D u_texture;
 uniform sampler2D u_depth;
 
 out vec4 fragColor;
-
 
 // Perlin Noise Functions
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
@@ -44,16 +44,16 @@ float cnoise(vec3 P){
     gx0 = fract(gx0);
     vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
     vec4 sz0 = step(gz0, vec4(0.0));
-    gx0 -= sz0 * (step(0.0, gx0) - 0.5);
-    gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+    gx0 = gx0 - (sz0 * (step(0.0, gx0) - 0.5));
+    gy0 = gy0 - (sz0 * (step(0.0, gy0) - 0.5));
 
     vec4 gx1 = ixy1 / 7.0;
     vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
     gx1 = fract(gx1);
     vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
     vec4 sz1 = step(gz1, vec4(0.0));
-    gx1 -= sz1 * (step(0.0, gx1) - 0.5);
-    gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+    gx1 = gx1 - (sz1 * (step(0.0, gx1) - 0.5));
+    gy1 = gy1 - (sz1 * (step(0.0, gy1) - 0.5));
 
     vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
     vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
@@ -65,15 +65,15 @@ float cnoise(vec3 P){
     vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
 
     vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
-    g000 *= norm0.x;
-    g010 *= norm0.y;
-    g100 *= norm0.z;
-    g110 *= norm0.w;
+    g000 = g000 * norm0.x;
+    g010 = g010 * norm0.y;
+    g100 = g100 * norm0.z;
+    g110 = g110 * norm0.w;
     vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
-    g001 *= norm1.x;
-    g011 *= norm1.y;
-    g101 *= norm1.z;
-    g111 *= norm1.w;
+    g001 = g001 * norm1.x;
+    g011 = g011 * norm1.y;
+    g101 = g101 * norm1.z;
+    g111 = g111 * norm1.w;
 
     float n000 = dot(g000, Pf0);
     float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
@@ -91,9 +91,8 @@ float cnoise(vec3 P){
     return 2.2 * n_xyz;
 }
 
-
 void main() {
-    vec2 uv = (screenUV.xy / (-screenUV.z * 2)) + 0.5;
+    vec2 uv = (screenUV.xy / (-screenUV.z * 2.0)) + 0.5;
 
     float sceneDepth = texture(u_depth, uv).r;
 
@@ -107,7 +106,7 @@ void main() {
 
     float EDGE_DIST = 0.05;
 
-    float noise = (cnoise(clamped + vec3(0, v_index, 0)) + 1.0) * 0.5;
+    float noise = (cnoise(clamped + vec3(0.0, v_index, 0.0)) + 1.0) * 0.5;
     vec4 tex = texture(u_texture, v_uv);
 
     c = tex * c;

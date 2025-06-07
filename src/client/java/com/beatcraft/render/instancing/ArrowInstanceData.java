@@ -3,6 +3,7 @@ package com.beatcraft.render.instancing;
 import com.beatcraft.data.types.Color;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBInstancedArrays;
+import org.lwjgl.opengl.EXTDrawInstanced;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 

@@ -309,6 +309,7 @@ public class Bloomfog {
             resize(Math.max(1, width), Math.max(1, height), true);
         }
 
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.beginWrite(true);
@@ -557,7 +558,8 @@ public class Bloomfog {
         bloomInput.setClearColor(0, 0, 0, 0);
         bloomInput.clear(MinecraftClient.IS_SYSTEM_MAC);
         sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
-
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
+        MinecraftClient.getInstance().getFramebuffer().beginRead();
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
         bloomInput.beginWrite(true);
@@ -653,9 +655,7 @@ public class Bloomfog {
         bloomInput.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
-
-        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
-
+        MinecraftClient.getInstance().getFramebuffer().endRead();
 
         var r = radius;
         radius = 3;
