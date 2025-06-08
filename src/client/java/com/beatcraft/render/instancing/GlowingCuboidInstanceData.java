@@ -196,7 +196,7 @@ public class GlowingCuboidInstanceData implements InstancedMesh.InstanceData {
     @Override
     public int[] getLocations() {
         return new int[]{
-            TRANSFORM_LOCATION,
+            TRANSFORM_LOCATION, TRANSFORM_LOCATION + 1, TRANSFORM_LOCATION + 2, TRANSFORM_LOCATION + 3,
             COLOR_LOCATION
         };
     }

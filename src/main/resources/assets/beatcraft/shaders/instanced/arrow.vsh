@@ -11,8 +11,6 @@ layout(location = 1) in vec2 in_uv;
 layout(location = 2) in vec3 in_normal;
 layout(location = 3) in mat4 instance_model;
 
-
-
 layout(location = 7) in vec4 instance_color;
 layout(location = 8) in vec2 dissolve_index;
 

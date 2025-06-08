@@ -112,6 +112,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         var vendor = GL31.glGetString(GL31.GL_VENDOR);
         isQuest3 = (vendor != null && vendor.contains("QuestCraft"));
 
+
         vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
         fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
 
@@ -243,6 +244,10 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         GL30.glBindVertexArray(vao);
 
+        ARBInstancedArrays.glVertexAttribDivisorARB(POSITION_LOCATION, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(TEXCOORD_LOCATION, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(NORMAL_LOCATION, 0);
+
         for (var loc : attrLocations) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
         }
@@ -269,24 +274,14 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         MemoryUtil.memFree(instanceDataBuffer);
 
 
-        if (isQuest3) {
+        GL31.glDrawElementsInstanced(
+            GL11.GL_TRIANGLES,
+            indices.length,
+            GL11.GL_UNSIGNED_INT,
+            0,
+            instanceCount
+        );
 
-            EXTDrawInstanced.glDrawElementsInstancedEXT(
-                GL11.GL_TRIANGLES,
-                indices.length,
-                GL11.GL_UNSIGNED_INT,
-                0,
-                instanceCount
-            );
-        } else {
-            GL31.glDrawElementsInstanced(
-                GL11.GL_TRIANGLES,
-                indices.length,
-                GL11.GL_UNSIGNED_INT,
-                0,
-                instanceCount
-            );
-        }
 
         first.cleanup();
 
