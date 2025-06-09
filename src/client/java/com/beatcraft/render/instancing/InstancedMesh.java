@@ -109,15 +109,14 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         if (initialized) {
             return;
         }
+
         var vendor = GL31.glGetString(GL31.GL_VENDOR);
         isQuest3 = (vendor != null && vendor.contains("QuestCraft"));
-
 
         vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
         fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
 
-
-        vao = GL30.glGenVertexArrays();
+        vao = GL45C.glCreateVertexArrays();
         GL30.glBindVertexArray(vao);
 
         vertexVbo = GL15.glGenBuffers();
@@ -149,7 +148,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL20.glEnableVertexAttribArray(TEXCOORD_LOCATION);
         MemoryUtil.memFree(uvBuffer);
 
-        normalVbo = GL15.glGenBuffers();
+        normalVbo = GL45C.glCreateBuffers();
         FloatBuffer normalBuffer = MemoryUtil.memAllocFloat(vertices.length * 3);
         for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
             Vector3f normal = vertex.getC();
