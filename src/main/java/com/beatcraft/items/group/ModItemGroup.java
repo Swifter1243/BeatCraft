@@ -41,6 +41,7 @@ public class ModItemGroup {
 
             group.add(ModBlocks.REFLECTIVE_MIRROR_BLOCK);
             group.add(ModBlocks.REFLECTIVE_MIRROR_STRIP_BLOCK);
+            group.add(ModBlocks.COLOR_NOTE_DISPLAY_BLOCK);
         });
     }
 

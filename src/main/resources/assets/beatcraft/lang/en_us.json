@@ -44,6 +44,7 @@
   "block.beatcraft.reflective_mirror_block": "Reflective Mirror Block",
   "block.beatcraft.reflective_mirror_strip_block": "Reflective Mirror Strip Block",
   "tooltip.beatcraft.reflective_mirror_block": "Only works when placed at Y = -1",
+  "block.beatcraft.color_note_display_block": "Color Note Display Block",
 
   "block.beatcraft.filled_light_tile": "Full Light Tile",
   "block.beatcraft.edge_light_tile": "Edge Light Tile",

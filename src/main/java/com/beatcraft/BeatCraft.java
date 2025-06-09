@@ -3,6 +3,7 @@ package com.beatcraft;
 import com.beatcraft.blocks.CornerLightTileBlock;
 import com.beatcraft.blocks.EdgeLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
+import com.beatcraft.blocks.entity.ColorNoteDisplayBlockEntity;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.items.ModItems;
@@ -91,6 +92,8 @@ public class BeatCraft implements ModInitializer {
 		BeatCraftNetworking.init();
 
 		StructurePlacer.init();
+
+		ColorNoteDisplayBlockEntity.init();
 
 		registerCommands();
 
