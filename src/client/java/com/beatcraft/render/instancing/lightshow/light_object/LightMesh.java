@@ -68,9 +68,10 @@ Mesh format:
         "light": { "material": 1 } // missing keys fallback to 'default'
     },
     "cull": false, // whether to do backface culling
-    "bloom_pss": true, // defaults to true if absent; set to false to disable the bloom render pass
-    "solid_pass": true, // defaults to true; set to false to disable the regular visible pass
-    "bloomfog_style": 0 // defaults to 0;
+    "bloom_pass": true,  // defaults to true if absent; set to false to disable the bloom render pass
+    "mirror_pass": true, // defaults to true; whether to draw this mesh in the runway mirror
+    "solid_pass": true,  // defaults to true; set to false to disable the regular visible pass
+    "bloomfog_style": 0  // defaults to 0;
     // 0 = anything that renders to bloom will also render to bloomfog
     // 1 = everything renders to bloomfog. note: the pass that draws to bloomfog will supply a blank texture as the mesh's u_bloomfog sampler
     // 2 = don't render to bloomfog
@@ -80,12 +81,15 @@ Mesh format:
  */
 
 import com.beatcraft.animation.Easing;
+import com.beatcraft.data.types.Color;
+import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.util.Identifier;
@@ -93,10 +97,55 @@ import org.joml.*;
 import org.lwjgl.opengl.GL31;
 
 import java.io.IOException;
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class LightMesh {
+
+    private static final class Location {
+        static final int POSITION = 0;
+        static final int UV = 1;
+        static final int NORMAL = 2;
+        static final int LAYERS = 3;
+        static final int TRANSFORM = 4;
+        static int color(int channel) {
+            return 8 + Math.clamp(channel, 0, 7);
+        }
+        static final int[] ALL_INSTANCED = new int[]{
+            LAYERS,
+            TRANSFORM, TRANSFORM + 1, TRANSFORM + 2, TRANSFORM + 3,
+            8, 9, 10, 11,
+            12, 13, 14, 15
+        };
+    }
+
+    private record Draw(Matrix4f transform, LightState[] colors) {
+        private static final Stack<Draw> shared = new Stack<>();
+
+        public static Draw create(Matrix4f transform, LightState[] colors) {
+            if (shared.empty()) {
+                var copyColors = new LightState[colors.length];
+                for (int i = 0; i < colors.length; i++) {
+                    copyColors[i] = colors[i].copy();
+                }
+                return new Draw(new Matrix4f(transform), copyColors);
+            } else {
+                var inst = shared.pop();
+                inst.transform.set(transform);
+                for (int i = 0; i < colors.length; i++) {
+                    inst.colors[i].set(colors[i]);
+                }
+                return inst;
+            }
+        }
+
+        public void free() {
+            shared.push(this);
+        }
+
+    }
 
     private static HashMap<String, LightMesh> meshes;
 
@@ -104,8 +153,6 @@ public class LightMesh {
     private static final HashMap<Identifier, Vector2f> uvMap = new HashMap<>();
     private static boolean initialized = false;
     private static int atlasGlId;
-
-
 
     protected static class AtlasBuilder {
         public final int maxWidth;
@@ -212,7 +259,7 @@ public class LightMesh {
         }
     }
 
-    public static void buildAtlas() {
+    public static void buildMeshes() {
 
         var atlasBuilder = new AtlasBuilder(1024);
         try (var atlas = new NativeImage(1024, 1024, false)) {
@@ -251,6 +298,8 @@ public class LightMesh {
 
             initialized = true;
         }
+
+        meshes.values().forEach(LightMesh::buildMesh);
 
     }
 
@@ -322,10 +371,16 @@ public class LightMesh {
     private final HashMap<Integer, Identifier> meshTextures;
     private boolean doBloom = true;
     private boolean doSolid = true;
+    private boolean doMirroring = true;
     private int bloomfogStyle = 0;
     private boolean cullBackfaces = false;
 
     private boolean loaded = false;
+
+    private final ArrayList<Draw> draws = new ArrayList<>();
+    private final ArrayList<Draw> mirrorDraws = new ArrayList<>();
+    private final ArrayList<Draw> bloomfogDraws = new ArrayList<>();
+    private final ArrayList<Draw> bloomDraws = new ArrayList<>();
 
     protected LightMesh(HashMap<Integer, Identifier> unloadedTextures) {
         this.triangles = new ArrayList<>();
@@ -337,7 +392,38 @@ public class LightMesh {
         triangles.add(tri);
     }
 
+    public void draw(Matrix4f transform, LightState[] colors) {
+        if (doSolid)           draws.add(Draw.create(transform, colors));
+        if (doMirroring)       mirrorDraws.add(Draw.create(transform, colors));
+        if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors));
+        if (doBloom)           bloomDraws.add(Draw.create(transform, colors));
+    }
 
+    private void buildMesh() {
+        if (loaded) return;
+
+        loaded = true;
+    }
+
+    private void render(ArrayList<Draw> drawList) {
+
+        if (!cullBackfaces) RenderSystem.disableCull();
+
+        // PHASE 1: enable instancing attributes
+
+        // PHASE 2: setup buffer data
+
+        // PHASE 3: write buffer data
+
+        // PHASE 4: draw
+
+        // PHASE 5: disable instancing attributes
+
+        if (!cullBackfaces) RenderSystem.enableCull();
+
+        drawList.forEach(Draw::free);
+        drawList.clear();
+    }
 
     private static class MeshConstructor {
 
@@ -628,6 +714,12 @@ public class LightMesh {
         var mesh = new LightMesh(textures);
         meshes.put(name, mesh);
 
+        mesh.cullBackfaces = JsonUtil.getOrDefault(json, "cull", JsonElement::getAsBoolean, mesh.cullBackfaces);
+        mesh.doBloom = JsonUtil.getOrDefault(json, "bloom_pass", JsonElement::getAsBoolean, mesh.doBloom);
+        mesh.doMirroring = JsonUtil.getOrDefault(json, "mirror_pass", JsonElement::getAsBoolean, mesh.doMirroring);
+        mesh.bloomfogStyle = JsonUtil.getOrDefault(json, "bloomfog_style", JsonElement::getAsInt, mesh.bloomfogStyle);
+        mesh.doSolid = JsonUtil.getOrDefault(json, "solid_pass", JsonElement::getAsBoolean, mesh.doSolid);
+
         for (var dat : rawMesh) {
             var transform = dat.getAsJsonObject();
             var partName = transform.get("part").getAsString();
@@ -635,7 +727,7 @@ public class LightMesh {
             part.addToMesh(mesh, transform, data);
         }
 
-        return null;
+        return mesh;
 
     }
 

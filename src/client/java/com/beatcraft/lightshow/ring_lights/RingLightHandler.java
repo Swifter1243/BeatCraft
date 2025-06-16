@@ -144,7 +144,11 @@ public class RingLightHandler extends LightObject {
 
     private final RingHandler headRing;
 
-    public RingLightHandler(Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> ringFactory, BiFunction<Vector3f, Quaternionf, LightObject> lightBuilder, int count, Vector3f position, float ringGap) {
+    public RingLightHandler(
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> ringFactory,
+        BiFunction<Vector3f, Quaternionf, LightObject> lightBuilder,
+        int count, Vector3f position, float ringGap
+    ) {
         ringCount = count;
         this.position = position;
         ringOffset = ringGap;

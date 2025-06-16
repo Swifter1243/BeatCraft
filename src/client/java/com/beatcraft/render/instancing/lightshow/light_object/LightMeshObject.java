@@ -1,6 +1,7 @@
 package com.beatcraft.render.instancing.lightshow.light_object;
 
 import com.beatcraft.data.types.Color;
+import com.beatcraft.lightshow.lights.LightState;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -13,24 +14,24 @@ public class LightMeshObject {
 
     public Matrix4f transform;
 
-    private final Color[] colorChannels = new Color[colorChannelCount];
+    private final LightState[] colorChannels = new LightState[colorChannelCount];
 
     public LightMeshObject(LightMesh mesh) {
         for (int i = 0; i < colorChannelCount; i++) {
-            colorChannels[i] = new Color(0);
+            colorChannels[i] = new LightState(new Color(), 0);
         }
         transform = new Matrix4f().identity();
         this.mesh = mesh;
     }
 
-    public void setColor(int channel, Color color) {
+    public void setColor(int channel, LightState color) {
         if (channel < 0 || channel > 7) {
             throw new IllegalArgumentException("Channel must be between 0-7");
         }
         colorChannels[channel].set(color);
     }
 
-    public Color getColor(int channel) {
+    public LightState getLightState(int channel) {
         if (channel < 0 || channel > 7) {
             throw new IllegalArgumentException("Channel must be between 0-7");
         }
@@ -57,8 +58,8 @@ public class LightMeshObject {
         transform.set(mat);
     }
 
-    public void render() {
-
+    public void draw() {
+        mesh.draw(transform, colorChannels);
     }
 
 }
