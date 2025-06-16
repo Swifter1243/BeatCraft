@@ -3,7 +3,7 @@ package com.beatcraft.render.instancing.lightshow.light_object;
 /*
 This mesh loads from json using a custom format.
 
-the shader uses 8 color channels and 3 configurable texture channels
+the shader uses 8 color channels and a texture atlas
 
 each mesh vertex must have data to determine:
 position, uv, normal, colorId, materialId, textureId
@@ -79,7 +79,6 @@ Mesh format:
 
  */
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
@@ -89,7 +88,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
 import org.joml.*;
 import org.lwjgl.opengl.GL31;
