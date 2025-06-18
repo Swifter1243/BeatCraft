@@ -40,8 +40,26 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
         right = new HashMap<>();
         back = new HashMap<>();
 
+        var mi = 1;
+        var li = 1;
+        var ri = 1;
+        var bi = 1;
+
         for (int i = 1; i < 40; i += 2) {
             var baseLight = (RingSpike) ringLights.lights.get(i);
+            var controllers = baseLight.getControllers();
+
+            // add the missing spike tip lights
+            ringLights.lights.put(i + 1, controllers[0]);
+
+            middle.put(mi++, controllers[1]);
+            middle.put(mi++, controllers[2]);
+
+            left.put(li++, controllers[3]);
+            right.put(ri++, controllers[4]);
+
+            back.put(bi++, controllers[5]);
+            back.put(bi++, controllers[6]);
 
         }
 
@@ -60,6 +78,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
     @Override
     protected LightGroupV2 setupBackLasers() {
+
         return new StaticLightsGroup(back);
     }
 

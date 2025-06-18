@@ -1,17 +1,16 @@
 package com.beatcraft.render.gl;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.data.types.Color;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.lwjgl.opengl.GL20;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL31;
+import oshi.util.tuples.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -55,12 +54,16 @@ public class GlUtil {
     }
 
     public static int createShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc) {
+        return createShaderProgram(vertexShaderLoc, fragmentShaderLoc, GlUtil::reProcess);
+    }
+
+    public static int createShaderProgram(Identifier vertexShaderLoc, Identifier fragmentShaderLoc, Function<String, String> shaderProcessor) {
 
         int program = GL31.glCreateProgram();
 
         try {
-            int vertexShader = compileShader(GL31.GL_VERTEX_SHADER, vertexShaderLoc);
-            int fragmentShader = compileShader(GL31.GL_FRAGMENT_SHADER, fragmentShaderLoc);
+            int vertexShader = compileShader(GL31.GL_VERTEX_SHADER, vertexShaderLoc, shaderProcessor);
+            int fragmentShader = compileShader(GL31.GL_FRAGMENT_SHADER, fragmentShaderLoc, shaderProcessor);
 
             GL31.glAttachShader(program, vertexShader);
             GL31.glAttachShader(program, fragmentShader);
@@ -91,7 +94,7 @@ public class GlUtil {
 
     private static final Pattern qcBlock = Pattern.compile("#QUEST.*?#ENDQUEST", Pattern.DOTALL);
     private static final Pattern pcBlock = Pattern.compile("#PC.*?#ENDPC", Pattern.DOTALL);
-    private static String reProcess(String shader) {
+    public static String reProcess(String shader) {
         var vendor = GL31.glGetString(GL31.GL_VENDOR);
 
         if (vendor != null && vendor.contains("QuestCraft")) {
@@ -123,6 +126,10 @@ public class GlUtil {
     }
 
     public static int compileShader(int type, Identifier shaderLoc) throws IOException {
+        return compileShader(type, shaderLoc, GlUtil::reProcess);
+    }
+
+    public static int compileShader(int type, Identifier shaderLoc, Function<String, String> preProcessor) throws IOException {
         var shader = GL31.glCreateShader(type);
 
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
@@ -132,7 +139,7 @@ public class GlUtil {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        source = reProcess(source);
+        source = preProcessor.apply(source);
 
         GL31.glShaderSource(shader, source);
         GL31.glCompileShader(shader);
@@ -248,6 +255,35 @@ public class GlUtil {
 
     public static void uniformColor(String name, Color color) {
         uniform4f(name, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    }
+
+    public static Pair<float[], int[]> getDedupedVertices(List<Vector3f> vertexSequence) {
+        var vertices = new ArrayList<Vector3f>();
+        var indices = new ArrayList<Integer>();
+
+        for (var vertex : vertexSequence) {
+            if (vertices.contains(vertex)) {
+                indices.add(vertices.indexOf(vertex));
+            } else {
+                indices.add(vertices.size());
+                vertices.add(vertex);
+            }
+        }
+
+        var vertexBuffer = new float[3 * vertices.size()];
+        var indexBuffer = new int[indices.size()];
+
+        for (var i = 0; i < vertices.size(); i++) {
+            var v = vertices.get(i);
+            vertexBuffer[i * 3] = v.x;
+            vertexBuffer[(i * 3) + 1] = v.y;
+            vertexBuffer[(i * 3) + 2] = v.z;
+        }
+        for (var i = 0; i < indices.size(); i++) {
+            indexBuffer[i] = indices.get(i);
+        }
+
+        return new Pair<>(vertexBuffer, indexBuffer);
     }
 
 }

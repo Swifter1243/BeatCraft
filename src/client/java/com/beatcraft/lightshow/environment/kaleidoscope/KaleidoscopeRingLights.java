@@ -9,6 +9,7 @@ import com.beatcraft.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.render.BeatCraftRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -48,6 +49,46 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         innerRing = new RingLightHandler(this::createInner, this::linkInner, 20, new Vector3f(), 0);
         outerRing = new RingLightHandler(this::createOuter, this::linkOuter, 10, new Vector3f(), 5);
 
+        var rpd = MathHelper.RADIANS_PER_DEGREE;
+
+        innerRing.ringRotation = 45 * rpd;
+        innerRing.jumpOffsets = new float[]{
+            -90 * rpd,
+            90 * rpd
+        };
+
+        innerRing.rotationOffsets = new float[]{
+            0,
+            1 * rpd, -1 * rpd,
+            2 * rpd, -2 * rpd,
+            5 * rpd, -5 * rpd,
+            10 * rpd, -10 * rpd,
+            12.5f * rpd, -12.5f * rpd,
+            15 * rpd, -15 * rpd,
+            20 * rpd, -20 * rpd,
+            22.5f * rpd, -22.5f * rpd,
+            25 * rpd, -25 * rpd
+        };
+
+
+        outerRing.jumpOffsets = new float[]{
+            -90 * rpd,
+            90 * rpd
+        };
+
+        outerRing.rotationOffsets = new float[]{
+            0,
+            1 * rpd,
+            2 * rpd,
+            3 * rpd,
+            4 * rpd,
+            5 * rpd,
+            -1 * rpd,
+            -2 * rpd,
+            -3 * rpd,
+            -4 * rpd,
+            -5 * rpd
+        };
 
     }
 

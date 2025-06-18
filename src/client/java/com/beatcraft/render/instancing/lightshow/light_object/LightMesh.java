@@ -80,9 +80,11 @@ Mesh format:
 
  */
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
@@ -374,6 +376,7 @@ public class LightMesh {
     private boolean doMirroring = true;
     private int bloomfogStyle = 0;
     private boolean cullBackfaces = false;
+    private int shaderProgram = 0;
 
     private boolean loaded = false;
 
@@ -399,8 +402,23 @@ public class LightMesh {
         if (doBloom)           bloomDraws.add(Draw.create(transform, colors));
     }
 
+
+    private String processShaderSource(String source) {
+
+        return GlUtil.reProcess(source);
+    }
+
+    private static final Identifier lightObjectVsh = BeatCraft.id("shaders/instanced/light_object.vsh");
+    private static final Identifier lightObjectFsh = BeatCraft.id("shaders/instanced/light_object.fsh");
     private void buildMesh() {
         if (loaded) return;
+
+        shaderProgram = GlUtil.createShaderProgram(lightObjectVsh, lightObjectFsh, this::processShaderSource);
+
+        var vertices = new ArrayList<Vector3f>();
+
+        var indexedVertices = GlUtil.getDedupedVertices(vertices);
+
 
         loaded = true;
     }

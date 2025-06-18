@@ -50,7 +50,7 @@ public class RingSpike extends LightObject {
 
 
     /// This returns controllers for all the additional lights on the ring spike
-    public LightObject[] getControllers(Vector3f pos, Quaternionf orientation) {
+    public LightObject[] getControllers() {
 
         var rightTip = new SubLightController(0);
         var leftRing = new SubLightController(1);

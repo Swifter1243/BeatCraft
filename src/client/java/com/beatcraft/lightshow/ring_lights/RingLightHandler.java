@@ -23,10 +23,10 @@ public class RingLightHandler extends LightObject {
     Random random = Random.create();
 
     private int ringCount;
-    private float ringOffset;
-    private float zoom = 1;
-    private float ringRotation = 0;
-    private float rotationStep = 0;
+    private final float ringOffset;
+    public float zoom = 1;
+    public float ringRotation = 0;
+    public float rotationStep = 0;
 
     /// offset deltas, this is how far the head ring is allowed to jump
     public float[] jumpOffsets = new float[0];
@@ -38,7 +38,7 @@ public class RingLightHandler extends LightObject {
 
 
     protected static class RingHandler {
-        private RingLightHandler controller;
+        private final RingLightHandler controller;
         private float rotation = 0;
         private Float startTime = null;
         private Float zoomStart = null;
@@ -47,7 +47,7 @@ public class RingLightHandler extends LightObject {
         private RingHandler nextRing = null;
         private float prevZoom = 1;
         private final int index;
-        private LightObject ringLight;
+        private final LightObject ringLight;
         private float cachedRingRotation = 0;
         private float cachedRotationStep = 0;
 
