@@ -84,6 +84,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightState;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
@@ -149,11 +150,11 @@ public class LightMesh {
 
     }
 
-    private static HashMap<String, LightMesh> meshes;
+    private static HashMap<String, LightMesh> meshes = new HashMap<>();
 
     private static final ArrayList<Identifier> unloadedTextures = new ArrayList<>();
     private static final HashMap<Identifier, Vector2f> uvMap = new HashMap<>();
-    private static boolean initialized = false;
+    public static boolean initialized = false;
     private static int atlasGlId;
 
     protected static class AtlasBuilder {
@@ -262,6 +263,7 @@ public class LightMesh {
     }
 
     public static void buildMeshes() {
+        if (initialized) return;
 
         var atlasBuilder = new AtlasBuilder(1024);
         try (var atlas = new NativeImage(1024, 1024, false)) {
@@ -396,10 +398,23 @@ public class LightMesh {
     }
 
     public void draw(Matrix4f transform, LightState[] colors) {
-        if (doSolid)           draws.add(Draw.create(transform, colors));
-        if (doMirroring)       mirrorDraws.add(Draw.create(transform, colors));
+        if (doSolid) draws.add(Draw.create(transform, colors));
+        if (doMirroring) {
+            var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+            var renderPos = transform.getTranslation(MemoryPool.newVector3f());
+            var renderRotation = transform.getUnnormalizedRotation(MemoryPool.newQuaternionf());
+            var renderScale = transform.getScale(MemoryPool.newVector3f());
+
+            var flipped = new Matrix4f().scale(1, -1, 1);
+            flipped.translate(0, c.y * 2f, 0);
+            flipped.translate(renderPos);
+            flipped.rotate(renderRotation);
+            flipped.scale(renderScale);
+
+            mirrorDraws.add(Draw.create(transform, colors));
+        }
         if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors));
-        if (doBloom)           bloomDraws.add(Draw.create(transform, colors));
+        if (doBloom) bloomDraws.add(Draw.create(transform, colors));
     }
 
 
@@ -421,6 +436,22 @@ public class LightMesh {
 
 
         loaded = true;
+    }
+
+    public void renderSolid() {
+        render(draws);
+    }
+
+    public void renderMirror() {
+        render(mirrorDraws);
+    }
+
+    public void renderBloom() {
+        render(bloomDraws);
+    }
+
+    public void renderBloomfog() {
+        render(bloomfogDraws);
     }
 
     private void render(ArrayList<Draw> drawList) {
@@ -485,7 +516,7 @@ public class LightMesh {
             } else if (idxOrName instanceof String s) {
                 var idx = namedNormals.get(s);
                 if (idx == null) {
-                    throw new IllegalArgumentException("normal name is not valid");
+                    throw new IllegalArgumentException("normal name '" + s + "' is not valid");
                 }
                 return normals.get(idx);
             }
@@ -597,9 +628,9 @@ public class LightMesh {
             var ra = json.get(0).getAsJsonPrimitive();
             var rb = json.get(1).getAsJsonPrimitive();
             var rc = json.get(2).getAsJsonPrimitive();
-            var a = getNormal(ra.isString() ? ra.getAsString() : ra.getAsInt());
-            var b = getNormal(rb.isString() ? rb.getAsString() : rb.getAsInt());
-            var c = getNormal(rc.isString() ? rc.getAsString() : rc.getAsInt());
+            var a = getVertex(ra.isString() ? ra.getAsString() : ra.getAsInt());
+            var b = getVertex(rb.isString() ? rb.getAsString() : rb.getAsInt());
+            var c = getVertex(rc.isString() ? rc.getAsString() : rc.getAsInt());
 
             var ab = b.sub(a, new Vector3f());
             var ac = c.sub(a, new Vector3f());
@@ -688,16 +719,27 @@ public class LightMesh {
             var triangleDataList = partData.getAsJsonArray("triangles");
 
             var defaultUv = builder.getUv(0);
-            var defaultUvi = 0;
+            Object defaultUvi = 0;
             var defaultNormal = builder.getNormal(0);
-            var defaultNormali = 0;
+            Object defaultNormali = 0;
 
             for (var item : triangleDataList) {
                 if (item.isJsonObject()) {
                     var obj = item.getAsJsonObject();
-                    defaultUvi = JsonUtil.getOrDefault(obj, "uv", JsonElement::getAsInt, defaultUvi);
+                    var uv = obj.get("uv");
+                    if (uv.isJsonPrimitive() && uv.getAsJsonPrimitive().isNumber()) {
+                        defaultUvi = uv.getAsInt();
+                    } else {
+                        defaultUvi = uv.getAsString();
+                    }
                     defaultUv = builder.getUv(defaultUvi);
-                    defaultNormali = JsonUtil.getOrDefault(obj, "normal", JsonElement::getAsInt, defaultNormali);
+
+                    var n = obj.get("normal");
+                    if (n.isJsonPrimitive() && n.getAsJsonPrimitive().isNumber()) {
+                        defaultNormali = n.getAsInt();
+                    } else {
+                        defaultNormali = n.getAsString();
+                    }
                     defaultNormal = builder.getNormal(defaultNormali);
                 } else if (item.isJsonArray()) {
                     var arr = item.getAsJsonArray();
@@ -717,10 +759,12 @@ public class LightMesh {
                         } else {
                             builder.addTriangle(new Triangle(a, b, c, data.get(mat.getAsString()), mat.getAsString()));
                         }
-                    } else {
+                    } else if (arr.size() == 5) {
                         var baseMat = arr.get(3);
                         var modifier = arr.get(4);
                         builder.addTriangle(new Triangle(a, b, c, data.get(baseMat.getAsString()).extend(modifier.getAsJsonObject()), baseMat.getAsString()));
+                    } else {
+                        builder.addTriangle(new Triangle(a, b, c, defaultData, "default"));
                     }
 
                 }

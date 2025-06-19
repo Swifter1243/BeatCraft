@@ -4,14 +4,11 @@ import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.effect.Bloomfog;
-import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
-import com.beatcraft.render.instancing.lightshow.light_object.LightMeshObject;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMeshInstance;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RingSpike extends LightObject {
 
@@ -69,7 +66,7 @@ public class RingSpike extends LightObject {
 
     }
 
-    private LightMeshObject mesh;
+    private LightMeshInstance mesh;
 
     public RingSpike(Vector3f pos, Quaternionf ori) {
         position = pos;

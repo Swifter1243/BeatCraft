@@ -6,7 +6,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class LightMeshObject {
+public class LightMeshInstance {
 
     private final LightMesh mesh;
 
@@ -16,7 +16,7 @@ public class LightMeshObject {
 
     private final LightState[] colorChannels = new LightState[colorChannelCount];
 
-    public LightMeshObject(LightMesh mesh) {
+    public LightMeshInstance(LightMesh mesh) {
         for (int i = 0; i < colorChannelCount; i++) {
             colorChannels[i] = new LightState(new Color(), 0);
         }

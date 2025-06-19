@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.gl.GlUtil;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -196,6 +197,8 @@ public class Bloomfog {
             //pyramidTextures[i] = new BloomfogTex(pyramidBuffers[i]);
             //texManager.registerTexture(pyramidTexIds[i], pyramidTextures[i]);
         }
+
+        LightMesh.buildMeshes();
 
     }
 

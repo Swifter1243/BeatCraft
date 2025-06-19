@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.instancing.*;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.item.SaberItemRenderer;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
@@ -59,6 +60,9 @@ public class MeshLoader {
 
     private static ModelLoaderAccessor modelLoader;
 
+
+    public static LightMesh KALEIDOSCOPE_SPIKE;
+
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
         MeshLoader.modelLoader = modelLoader;
@@ -80,6 +84,14 @@ public class MeshLoader {
 
         SMOKE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/gameplay/smoke.json"), SMOKE_TEXTURE, "instanced/smoke", 6f);
 
+        try {
+            KALEIDOSCOPE_SPIKE = LightMesh.load("kaleidoscope_spike", BeatCraft.id("meshes/environment/kaleidoscope/spikes.json"));
+
+
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected static class UnboundJsonModel {
