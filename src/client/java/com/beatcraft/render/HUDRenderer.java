@@ -106,6 +106,12 @@ public class HUDRenderer {
     public static void render(VertexConsumerProvider immediate) {
         vertexConsumerProvider = immediate;
 
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+
         switch (scene) {
             case InGame -> {
                 renderGameHud(immediate);

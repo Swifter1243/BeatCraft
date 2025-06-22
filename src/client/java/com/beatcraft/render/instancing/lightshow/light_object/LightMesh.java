@@ -6,7 +6,7 @@ This mesh loads from json using a custom format.
 the shader uses 8 color channels and a texture atlas
 
 each mesh vertex must have data to determine:
-position, uv, normal, colorId, materialId, textureId
+position, uv, vec, colorId, materialId, textureId
 
  */
 
@@ -37,10 +37,10 @@ Mesh format:
             },
             "uvs": [...],
             "named_uvs": {...},
-            "normals": [...], // normal vectors will be normalized when loaded
+            "normals": [...], // vec vectors will be normalized when loaded
             "named_normals": {...},
             "compute_normals": {
-                "name": [vertA, vertB, vertC] // normal faces towards camera when vertices are wound clockwise
+                "name": [vertA, vertB, vertC] // vec faces towards camera when vertices are wound clockwise
             },
             "triangles": [
                 [
@@ -85,6 +85,8 @@ import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.memory.MemoryPool;
+import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
@@ -96,11 +98,18 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.joml.*;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.lang.Math;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
@@ -117,7 +126,6 @@ public class LightMesh {
             return 8 + Math.clamp(channel, 0, 7);
         }
         static final int[] ALL_INSTANCED = new int[]{
-            LAYERS,
             TRANSFORM, TRANSFORM + 1, TRANSFORM + 2, TRANSFORM + 3,
             8, 9, 10, 11,
             12, 13, 14, 15
@@ -148,9 +156,24 @@ public class LightMesh {
             shared.push(this);
         }
 
+        public void upload(FloatBuffer buffer, boolean isBloom) {
+
+            buffer.put(transform.m00()).put(transform.m01()).put(transform.m02()).put(transform.m03());
+            buffer.put(transform.m10()).put(transform.m11()).put(transform.m12()).put(transform.m13());
+            buffer.put(transform.m20()).put(transform.m21()).put(transform.m22()).put(transform.m23());
+            buffer.put(transform.m30()).put(transform.m31()).put(transform.m32()).put(transform.m33());
+
+            for (var lightState : colors) {
+                var c = isBloom ? lightState.getBloomColor() : lightState.getEffectiveColor();
+                var color = new Color(c);
+                buffer.put(color.getRed()).put(color.getGreen()).put(color.getBlue()).put(color.getAlpha());
+            }
+
+        }
+
     }
 
-    private static HashMap<String, LightMesh> meshes = new HashMap<>();
+    public static final HashMap<String, LightMesh> meshes = new HashMap<>();
 
     private static final ArrayList<Identifier> unloadedTextures = new ArrayList<>();
     private static final HashMap<Identifier, Vector2f> uvMap = new HashMap<>();
@@ -160,105 +183,23 @@ public class LightMesh {
     protected static class AtlasBuilder {
         public final int maxWidth;
         public final int maxHeight;
-        public final Vector2i[] skyline;
         public int skylineCount = 0;
         private boolean initialized = false;
+        private RectanglePacker packer;
 
         protected AtlasBuilder(int size) {
             this.maxWidth = size;
             this.maxHeight = size;
-            this.skyline = new Vector2i[size];
-            for (int i = 0; i < size; i++) {
-                skyline[i] = new Vector2i();
-            }
+            this.packer = new RectanglePacker(size, size);
         }
 
         protected boolean add(Vector2i size, Vector2i posOut) {
-            int width = size.x;
-            int height = size.y;
-
-            if (width == 0 || height == 0)
-                return false;
-
-            if (!initialized) {
-                if (maxWidth <= 0 || maxHeight <= 0) throw new AssertionError();
-                initialized = true;
-                skylineCount = 1;
-                skyline[0].set(0, 0);
+            var out = packer.pack(size.x, size.y);
+            if (out != null) {
+                posOut.set(out);
+                return true;
             }
-
-            int bestIdx = -1;
-            int bestIdx2 = -1;
-            int bestX = Integer.MAX_VALUE;
-            int bestY = Integer.MAX_VALUE;
-
-            for (int idx = 0; idx < skylineCount; ++idx) {
-                int x = skyline[idx].x;
-                int y = skyline[idx].y;
-
-                if (width > maxWidth - x)
-                    break;
-                if (y >= bestY)
-                    continue;
-
-                int xMax = x + width;
-                int idx2;
-                for (idx2 = idx + 1; idx2 < skylineCount; ++idx2) {
-                    if (xMax <= skyline[idx2].x)
-                        break;
-                    if (y < skyline[idx2].y)
-                        y = skyline[idx2].y;
-                }
-
-                if (y >= bestY)
-                    continue;
-                if (height > maxHeight - y)
-                    continue;
-
-                bestIdx = idx;
-                bestIdx2 = idx2;
-                bestX = x;
-                bestY = y;
-            }
-
-            if (bestIdx == -1)
-                return false;
-
-            if (bestIdx >= bestIdx2 || bestIdx2 <= 0) throw new AssertionError();
-
-            int removedCount = bestIdx2 - bestIdx;
-
-            Vector2i newTL = new Vector2i(bestX, bestY + height);
-            Vector2i newBR = new Vector2i(bestX + width, skyline[bestIdx2 - 1].y);
-
-            boolean insertBR = (bestIdx2 < skylineCount)
-                ? newBR.x < skyline[bestIdx2].x
-                : newBR.x < maxWidth;
-
-            int insertedCount = 1 + (insertBR ? 1 : 0);
-
-            if (skylineCount + insertedCount - removedCount > skyline.length)
-                throw new AssertionError("Skyline array overflow");
-
-            if (insertedCount > removedCount) {
-                for (int i = skylineCount - 1; i >= bestIdx2; --i) {
-                    skyline[i + insertedCount - removedCount].set(skyline[i]);
-                }
-                skylineCount += insertedCount - removedCount;
-            } else if (insertedCount < removedCount) {
-                for (int i = bestIdx2; i < skylineCount; ++i) {
-                    skyline[i - (removedCount - insertedCount)].set(skyline[i]);
-                }
-                skylineCount -= (removedCount - insertedCount);
-            }
-
-            skyline[bestIdx].set(newTL);
-            if (insertBR) {
-                skyline[bestIdx + 1].set(newBR);
-            }
-
-            posOut.set(bestX, bestY);
-            return true;
+            return false;
         }
     }
 
@@ -281,7 +222,7 @@ public class LightMesh {
 
                     if (atlasBuilder.add(new Vector2i(w, h), pos)) {
                         uvMap.put(ident, new Vector2f(pos.x / 1024f, pos.y / 1024f));
-                        atlas.copyRect(tex, 0, 0, pos.x, pos.y, w, h, false, false);
+                        tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, true);
                     } else {
                         throw new RuntimeException("Atlas size exceeded");
                     }
@@ -292,13 +233,26 @@ public class LightMesh {
             }
 
             atlasGlId = GL31.glGenTextures();
+            GL31.glBindTexture(GL31.GL_TEXTURE_2D, atlasGlId);
 
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_LINEAR);
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_S, GL31.GL_CLAMP_TO_EDGE);
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_T, GL31.GL_CLAMP_TO_EDGE);
 
+            GL11.glTexImage2D(
+                GL11.GL_TEXTURE_2D, 0,
+                GL11.GL_RGBA8, 1024, 1024, 0,
+                GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null
+            );
+
+            //try {
+            //    atlas.writeTo(Path.of(MinecraftClient.getInstance().runDirectory.getPath() + "/beatcraft_lightmesh_atlas.png"));
+            //} catch (IOException e) {
+            //    throw new RuntimeException(e);
+            //}
             atlas.upload(0, 0, 0, 0, 0, 1024, 1024, false, true);
+
 
             initialized = true;
         }
@@ -347,8 +301,10 @@ public class LightMesh {
                     }
                 }
 
+                boolean reWind = false;
                 if (transformation.has("scale")) {
                     scale = JsonUtil.getVector3(transformation.getAsJsonArray("scale"));
+                    reWind = scale.x * scale.y * scale.z < 0;
                 }
 
                 if (transformation.has("position")) {
@@ -364,7 +320,11 @@ public class LightMesh {
                 var b = this.b.transform(scale, pos, rotation);
                 var c = this.c.transform(scale, pos, rotation);
 
-                return new Triangle(a, b, c, mat, baseMat);
+                if (reWind) {
+                    return new Triangle(c, b, a, mat, baseMat);
+                } else {
+                    return new Triangle(a, b, c, mat, baseMat);
+                }
             }
             return this;
         }
@@ -378,7 +338,22 @@ public class LightMesh {
     private boolean doMirroring = true;
     private int bloomfogStyle = 0;
     private boolean cullBackfaces = false;
+
     private int shaderProgram = 0;
+
+    // TODO: mirror probably needs a different shader to do correct clipping
+    private int mirrorProgram = 0;
+    private int bloomProgram = 0;
+    private int bloomfogProgram = 0;
+
+    private int vao;
+    private int vertexVbo;
+    private int uvVbo;
+    private int normalVbo;
+    private int materialVbo;
+    private int indicesVbo;
+    private int instanceVbo;
+    private int indicesLength;
 
     private boolean loaded = false;
 
@@ -425,50 +400,306 @@ public class LightMesh {
 
     private static final Identifier lightObjectVsh = BeatCraft.id("shaders/instanced/light_object.vsh");
     private static final Identifier lightObjectFsh = BeatCraft.id("shaders/instanced/light_object.fsh");
+
+    private void putVec3f(FloatBuffer buf, Vector3f vec) {
+        buf.put(vec.x).put(vec.y).put(vec.z);
+    }
+
+    private void putVec3i(IntBuffer buf, int a, int b, int c) {
+        buf.put(a).put(b).put(c);
+    }
+
+    private void uploadFloatBuffer(int vbo, int location, int size, FloatBuffer buffer) {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(location, size, GL15.GL_FLOAT, false, 0, 0);
+        GL20.glEnableVertexAttribArray(location);
+        MemoryUtil.memFree(buffer);
+    }
+
+    private void uploadIntBuffer(int vbo, int location, int size, IntBuffer buffer) {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+        GL30.glVertexAttribIPointer(location, size, GL11.GL_INT, 0, 0);
+        GL20.glEnableVertexAttribArray(location);
+        MemoryUtil.memFree(buffer);
+    }
+
     private void buildMesh() {
         if (loaded) return;
 
         shaderProgram = GlUtil.createShaderProgram(lightObjectVsh, lightObjectFsh, this::processShaderSource);
 
+        vao = GL45C.glCreateVertexArrays();
+        GL30.glBindVertexArray(vao);
+        vertexVbo = GL15.glGenBuffers();
+        indicesVbo = GL15.glGenBuffers();
+        uvVbo = GL15.glGenBuffers();
+        normalVbo = GL15.glGenBuffers();
+        materialVbo = GL15.glGenBuffers();
+
+        var uvBuffer = MemoryUtil.memAllocFloat(triangles.size() * 3 * 2);
+        var normalBuffer = MemoryUtil.memAllocFloat(triangles.size() * 3 * 3);
+        var materialBuffer = MemoryUtil.memAllocInt(triangles.size() * 3 * 3);
+
+
         var vertices = new ArrayList<Vector3f>();
 
-        var indexedVertices = GlUtil.getDedupedVertices(vertices);
+        for (var tri : triangles) {
+            vertices.add(tri.a.vertex);
+            vertices.add(tri.b.vertex);
+            vertices.add(tri.c.vertex);
 
+            var offset = uvMap.get(meshTextures.get(tri.data.textureId));
+
+            uvBuffer.put(tri.a.uv.x + offset.x).put(tri.a.uv.y + offset.y);
+            uvBuffer.put(tri.b.uv.x + offset.x).put(tri.b.uv.y + offset.y);
+            uvBuffer.put(tri.c.uv.x + offset.x).put(tri.c.uv.y + offset.y);
+
+            putVec3f(normalBuffer, tri.a.normal);
+            putVec3f(normalBuffer, tri.b.normal);
+            putVec3f(normalBuffer, tri.c.normal);
+
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
+
+        }
+
+        //var indexedVertices = GlUtil.getDedupedVertices(vertices);
+
+        var vertexBuffer = MemoryUtil.memAllocFloat(vertices.size() * 3);
+        var indexBuffer = MemoryUtil.memAllocInt(vertices.size());
+        indicesLength = vertices.size();
+
+        var verts = new float[vertices.size() * 3];
+        var indices = new int[vertices.size()];
+        var i = 0;
+        for (var vert : vertices) {
+            verts[i * 3] = vert.x;
+            verts[(i * 3) + 1] = vert.y;
+            verts[(i * 3) + 2] = vert.z;
+            indices[i] = i++;
+        }
+
+        vertexBuffer.put(verts);
+        indexBuffer.put(indices);
+
+        vertexBuffer.flip();
+        indexBuffer.flip();
+        uvBuffer.flip();
+        normalBuffer.flip();
+        materialBuffer.flip();
+
+        uploadFloatBuffer(vertexVbo, Location.POSITION, 3, vertexBuffer);
+        uploadFloatBuffer(uvVbo, Location.UV, 2, uvBuffer);
+        uploadFloatBuffer(normalVbo, Location.NORMAL, 3, normalBuffer);
+        uploadIntBuffer(materialVbo, Location.LAYERS, 3, materialBuffer);
+
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
+        MemoryUtil.memFree(indexBuffer);
+
+        setupInstanceBuffer();
+
+        GL30.glBindVertexArray(0);
+        GL30.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
         loaded = true;
     }
 
+    private static final int COLOR_COUNT = 8;
+    private static final int FRAME_SIZE = 16 + (4 * COLOR_COUNT);
+    private static final int STRIDE = FRAME_SIZE * 4;
+    private void setupInstanceBuffer() {
+
+        instanceVbo = GL15.glGenBuffers();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
+
+        for (int i = 0; i < 4; i++) {
+            int location = Location.TRANSFORM + i;
+            GL20.glVertexAttribPointer(
+                location, 4, GL11.GL_FLOAT, false, STRIDE, i * 16
+            );
+            GL20.glEnableVertexAttribArray(location);
+            ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
+        }
+
+        for (int i = 0; i < COLOR_COUNT; i++) {
+            int location = Location.color(i);
+            GL20.glVertexAttribPointer(
+                location, 4, GL11.GL_FLOAT, false, STRIDE, (16 * 4) + (i * 16)
+            );
+            GL20.glEnableVertexAttribArray(location);
+            ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
+        }
+
+    }
+
+    public static void renderAllSolid() {
+        for (var mesh : meshes.values()) {
+            mesh.renderSolid();
+        }
+    }
+
+    public static void renderAllMirror() {
+        for (var mesh : meshes.values()) {
+            mesh.renderMirror();
+        }
+    }
+
+    public static void renderAllBloom(int sceneDepthBuffer) {
+        for (var mesh : meshes.values()) {
+            mesh.renderBloom(sceneDepthBuffer);
+        }
+    }
+
+    public static void renderAllBloomfog() {
+        for (var mesh : meshes.values()) {
+            mesh.renderBloomfog();
+        }
+    }
+
+    public static void cancelMirrorDraws() {
+        for (var mesh : meshes.values()) {
+            mesh.cancelMirrorDraw();
+        }
+    }
+
+    public static void cancelBloomDraws() {
+        for (var mesh : meshes.values()) {
+            mesh.cancelBloomDraw();
+        }
+    }
+
     public void renderSolid() {
-        render(draws);
+        render(draws, false, false, -1);
     }
 
     public void renderMirror() {
-        render(mirrorDraws);
+        render(mirrorDraws, true, false, -1);
     }
 
-    public void renderBloom() {
-        render(bloomDraws);
+    private void cancelMirrorDraw() {
+        mirrorDraws.clear();
+    }
+
+    public void renderBloom(int sceneDepthBuffer) {
+        render(bloomDraws, false, true, sceneDepthBuffer);
+    }
+
+    private void cancelBloomDraw() {
+        bloomDraws.clear();
     }
 
     public void renderBloomfog() {
-        render(bloomfogDraws);
+        render(bloomfogDraws, true, false, -1);
     }
 
-    private void render(ArrayList<Draw> drawList) {
+    private void render(ArrayList<Draw> drawList, boolean preBloomfog, boolean isBloom, int sceneDepthBuffer) {
 
-        if (!cullBackfaces) RenderSystem.disableCull();
+        if (drawList.isEmpty()) return;
+
+        IntBuffer vaoBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL30.GL_VERTEX_ARRAY_BINDING, vaoBuf);
+        int oldVAO = vaoBuf.get(0);
+
+        IntBuffer vboBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL15.GL_ARRAY_BUFFER_BINDING, vboBuf);
+        int oldVBO = vboBuf.get(0);
 
         // PHASE 1: enable instancing attributes
+        GL30.glBindVertexArray(vao);
+
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.POSITION, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.UV, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.NORMAL, 0);
+
+        for (var loc : Location.ALL_INSTANCED) {
+            ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
+        }
+
+        GlUtil.useProgram(shaderProgram);
+        GlUtil.setTex(shaderProgram, "u_texture", 0, atlasGlId);
+        var fog = BeatCraftRenderer.bloomfog;
+        if (preBloomfog) {
+            fog.extraBuffer.setClearColor(0, 0, 0, 1);
+            fog.extraBuffer.clear(false);
+            fog.extraBuffer.beginRead();
+            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorAttachment());
+        } else {
+            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.getBloomfogColorAttachment());
+        }
+        GlUtil.uniform1i("passType", isBloom ? 1 : 0);
+        if (sceneDepthBuffer != -1) {
+            GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
+        }
+
+        var fogHeights = Bloomfog.getFogHeights();
+        GlUtil.uniform2f("u_fog", fogHeights[0], fogHeights[1]);
+
+
+        var q = MemoryPool.newQuaternionf();
+        if (isBloom) {
+            q.set(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation()).conjugate();
+        }
+        var p = MemoryPool.newVector3f();
+        p.set(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()).negate();
+
+        var projMat = RenderSystem.getProjectionMatrix();
+        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(q);
+        MemoryPool.releaseSafe(q);
+        MemoryPool.releaseSafe(p);
+        GlUtil.uniformMat4f("u_projection", projMat);
+        GlUtil.uniformMat4f("u_view", viewMat);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        if (!cullBackfaces) RenderSystem.disableCull();
 
         // PHASE 2: setup buffer data
+        var instanceBuffer = MemoryUtil.memAllocFloat(drawList.size() * FRAME_SIZE);
+
+        var instanceCount = drawList.size();
 
         // PHASE 3: write buffer data
+        for (var draw : drawList) {
+            draw.upload(instanceBuffer, isBloom);
+        }
+        instanceBuffer.flip();
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceBuffer, GL15.GL_DYNAMIC_DRAW);
+        MemoryUtil.memFree(instanceBuffer);
 
         // PHASE 4: draw
-
+        GL31.glDrawElementsInstanced(
+            GL11.GL_TRIANGLES,
+            indicesLength,
+            GL11.GL_UNSIGNED_INT,
+            0,
+            instanceCount
+        );
         // PHASE 5: disable instancing attributes
 
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
         if (!cullBackfaces) RenderSystem.enableCull();
+
+        if (preBloomfog) {
+            fog.extraBuffer.endRead();
+            fog.extraBuffer.setClearColor(0, 0, 0, 0);
+        }
+
+        GL20.glUseProgram(0);
+
+        for (var loc : Location.ALL_INSTANCED) {
+            ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
+        }
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
+        GL30.glBindVertexArray(oldVAO);
+
 
         drawList.forEach(Draw::free);
         drawList.clear();
@@ -516,7 +747,7 @@ public class LightMesh {
             } else if (idxOrName instanceof String s) {
                 var idx = namedNormals.get(s);
                 if (idx == null) {
-                    throw new IllegalArgumentException("normal name '" + s + "' is not valid");
+                    throw new IllegalArgumentException("vec name '" + s + "' is not valid");
                 }
                 return normals.get(idx);
             }
@@ -553,7 +784,7 @@ public class LightMesh {
 
         protected void addUvs(JsonArray uvs) {
             uvs.forEach(uv -> {
-                this.uvs.add(JsonUtil.getVector2(uv.getAsJsonArray()));
+                this.uvs.add(JsonUtil.getVector2(uv.getAsJsonArray()).div(1024));
             });
         }
 
@@ -561,7 +792,7 @@ public class LightMesh {
             for (var key : uvs.keySet()) {
                 var val = uvs.get(key);
                 var i = this.uvs.size();
-                this.uvs.add(JsonUtil.getVector2(val.getAsJsonArray()));
+                this.uvs.add(JsonUtil.getVector2(val.getAsJsonArray()).div(1024));
                 namedUvs.put(key, i);
             }
         }
@@ -599,15 +830,39 @@ public class LightMesh {
             var point = MathUtil.lerpVector3(a, b, f.apply(dt));
 
             if (json.has("x")) {
-                point.x = a.x + (vx * json.get("x").getAsInt());
+                var x = json.get("x").getAsFloat();
+                point.x = a.x + (vx * x);
+                var dx = MathUtil.inverseLerp(0, b.x-a.x, vx * x);
+                if (!json.has("y")) {
+                    point.y = MathHelper.lerp(dx, a.y, b.y);
+                }
+                if (!json.has("z")) {
+                    point.z = MathHelper.lerp(dx, a.z, b.z);
+                }
             }
 
             if (json.has("y")) {
-                point.y = a.y + (vy * json.get("y").getAsInt());
+                var y = json.get("y").getAsFloat();
+                point.y = a.y + (vy * y);
+                var dy = MathUtil.inverseLerp(0, b.y-a.y, vy * y);
+                if (!json.has("x")) {
+                    point.x = MathHelper.lerp(dy, a.x, b.x);
+                }
+                if (!json.has("z")) {
+                    point.z = MathHelper.lerp(dy, a.z, b.z);
+                }
             }
 
             if (json.has("z")) {
-                point.z = a.z + (vz * json.get("z").getAsInt());
+                var z = json.get("z").getAsFloat();
+                point.z = a.z + (vz * z);
+                var dz = MathUtil.inverseLerp(0, b.z-a.z, vz * z);
+                if (!json.has("x")) {
+                    point.x = MathHelper.lerp(dz, a.x, b.x);
+                }
+                if (!json.has("y")) {
+                    point.y = MathHelper.lerp(dz, a.y, b.y);
+                }
             }
 
             return point;

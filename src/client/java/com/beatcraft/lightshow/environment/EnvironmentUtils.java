@@ -18,6 +18,7 @@ public class EnvironmentUtils {
     public static EnvironmentV3 weave = null;
 
     public static Environment setupEnvironment(String environment) {
+        kaleidoscope = null;
         return (switch (environment) {
             case "OriginsEnvironment" -> origins == null ? origins = new OriginsEnvironment() : origins;
             case "TriangleEnvironment" -> triangle == null ? triangle = new TriangleEnvironment() : triangle;

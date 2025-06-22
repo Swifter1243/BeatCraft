@@ -104,12 +104,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.copyDrawToBloom();
-            //if (dissolve == 0) {
-            //    BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-            //        MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
-            //        MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
-            //    });
-            //}
+
         }
     }
 

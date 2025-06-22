@@ -224,6 +224,13 @@ public class GlUtil {
         }
     }
 
+    public static void uniform1i(String name, int value) {
+        if (cacheUni(currentProgram, name, value)) {
+            var loc = GL31.glGetUniformLocation(currentProgram, name);
+            GL31.glUniform1i(loc, value);
+        }
+    }
+
     public static void uniform2f(String name, float f0, float f1) {
         if (cacheUni(currentProgram, name, new float[]{f0, f1})) {
             var loc = GL31.glGetUniformLocation(currentProgram, name);

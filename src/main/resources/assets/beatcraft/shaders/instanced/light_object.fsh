@@ -12,10 +12,10 @@ in vec3 v_pos;
 flat in int v_material; // 0 = solid, 1 = light
 in vec3 screenUV;
 
-uniform int passType; // 0 = normal, 1 = bloom
+uniform int passType; // 0 = normal, 1 = bloom, 2 = bloomfog
+uniform sampler2D u_texture;
 uniform sampler2D u_bloomfog;
 uniform sampler2D u_depth;
-uniform sampler2D u_texture;
 
 uniform vec2 u_fog;
 

@@ -9,7 +9,7 @@ precision mediump float;
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec2 in_uv;
 layout(location = 2) in vec3 in_normal;
-layout(location = 3) in ivec2 in_colorLayer_materialLayer_flags;
+layout(location = 3) in ivec3 in_colorLayer_materialLayer_flags;
 layout(location = 4) in mat4 instance_model;
 layout(location = 8) in vec4 c0;
 layout(location = 9) in vec4 c1;
@@ -31,7 +31,7 @@ out vec3 screenUV;
 
 void main() {
 
-    if (in_colorLayer_materialLayer_flags.y == 0) {
+    if (in_colorLayer_materialLayer_flags.y == 1) {
         vec4 colors[8] = vec4[8](c0, c1, c2, c3, c4, c5, c6, c7);
         v_color = colors[clamp(in_colorLayer_materialLayer_flags.x, 0, 7)];
     } else {

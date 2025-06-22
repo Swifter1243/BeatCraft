@@ -3,6 +3,7 @@ package com.beatcraft.lightshow.environment.kaleidoscope;
 import com.beatcraft.lightshow.environment.EnvironmentV2;
 import com.beatcraft.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.lightshow.environment.lightgroup.RingLightGroup;
+import com.beatcraft.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.lightshow.lights.LightObject;
 
@@ -68,12 +69,13 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
     @Override
     protected LightGroupV2 setupLeftLasers() {
-        return new StaticLightsGroup(left);
+
+        return new RotatingLightsGroup(new HashMap<>(), left);
     }
 
     @Override
     protected LightGroupV2 setupRightLasers() {
-        return new StaticLightsGroup(right);
+        return new RotatingLightsGroup(new HashMap<>(), right);
     }
 
     @Override

@@ -165,12 +165,16 @@ public class RingLightHandler extends LightObject {
 
     }
 
+    public float rotationReset = 0;
+
     public void reset() {
         ringRotation = 0;
-        rotationStep = 0;
+        rotationStep = rotationReset;
         currentOffset = 0;
         zoom = 1;
         headRing.reset();
+        headRing.startTime = 0f;
+        headRing.update(0);
     }
 
     public void update(float songTime) {

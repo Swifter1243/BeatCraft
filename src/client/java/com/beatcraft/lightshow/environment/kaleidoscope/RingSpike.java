@@ -5,6 +5,8 @@ import com.beatcraft.lightshow.lights.LightObject;
 import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.instancing.lightshow.light_object.LightMeshInstance;
+import com.beatcraft.render.mesh.MeshLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Quaternionf;
@@ -43,6 +45,11 @@ public class RingSpike extends LightObject {
         public void setColor(int color) {
             RingSpike.this.states[target].setColor(new Color(color));
         }
+
+        @Override
+        public void setLightState(LightState state) {
+            RingSpike.this.states[target].set(state);
+        }
     }
 
 
@@ -72,6 +79,8 @@ public class RingSpike extends LightObject {
         position = pos;
         orientation = ori;
 
+        mesh = new LightMeshInstance(MeshLoader.KALEIDOSCOPE_SPIKE);
+
         for (int i = 0; i < 7; i++) {
             states[i] = new LightState(new Color(), 0);
         }
@@ -88,10 +97,15 @@ public class RingSpike extends LightObject {
 
     @Override
     public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+        var cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+        mesh.transform.set(mat);
+
         mesh.setColor(0, lightState);
         for (int i = 0; i < 7; i++) {
             mesh.setColor(i+1, states[i]);
         }
+        mesh.draw();
     }
 
     @Override
@@ -104,4 +118,8 @@ public class RingSpike extends LightObject {
         lightState.setColor(new Color(color));
     }
 
+    @Override
+    public void setLightState(LightState state) {
+        lightState.set(state);
+    }
 }

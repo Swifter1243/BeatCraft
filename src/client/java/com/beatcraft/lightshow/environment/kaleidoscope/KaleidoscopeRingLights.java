@@ -31,9 +31,12 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
     protected static HashMap<Integer, LightObject> buildRingLights() {
         var map = new HashMap<Integer, LightObject>();
 
+        var pos = new Vector3f(0, 0, 8);
+
         for (int i = 1; i < 40; i += 2) {
             try {
-                map.put(i, new RingSpike(new Vector3f(), new Quaternionf()));
+                map.put(i, new RingSpike(new Vector3f(pos), new Quaternionf()));
+                pos.add(0, 0, 5);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -46,12 +49,14 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         super(buildRingLights());
 
         //
-        innerRing = new RingLightHandler(this::createInner, this::linkInner, 20, new Vector3f(), 0);
-        outerRing = new RingLightHandler(this::createOuter, this::linkOuter, 10, new Vector3f(), 5);
+        innerRing = new RingLightHandler(this::createInner, this::linkInner, 20, new Vector3f(0, 0, 8), 5);
+        outerRing = new RingLightHandler(this::createOuter, this::linkOuter, 10, new Vector3f(), 0);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 
-        innerRing.ringRotation = 45 * rpd;
+        innerRing.ringRotation = 0;
+        innerRing.rotationStep = 45 * rpd;
+        innerRing.rotationReset = 45 * rpd;
         innerRing.jumpOffsets = new float[]{
             -90 * rpd,
             90 * rpd

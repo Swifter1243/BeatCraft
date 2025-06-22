@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -342,6 +343,9 @@ public class MirrorHandler {
             MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
             MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
             MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
+
+            LightMesh.cancelMirrorDraws();
+
             RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.disableDepthTest();
@@ -380,6 +384,11 @@ public class MirrorHandler {
         renderFloorLights(tessellator, cameraPos);
 
         renderObstacles(tessellator, cameraPos);
+
+        LightMesh.renderAllMirror();
+        //RenderSystem.depthMask(false);
+        //RenderSystem.disableCull();
+
 
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
         BeatCraftRenderer.bloomfog.overrideBuffer = false;

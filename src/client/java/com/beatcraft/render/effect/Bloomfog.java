@@ -73,7 +73,7 @@ public class Bloomfog {
     //};
     //private final BloomfogTex[] pingPongTextures = new BloomfogTex[2];
 
-    private final SimpleFramebuffer extraBuffer;
+    public final SimpleFramebuffer extraBuffer;
     public final SimpleFramebuffer blurredBuffer;
     private final Identifier blurredTexId = Identifier.of(BeatCraft.MOD_ID, "bloomfog/blurred");
     private BloomfogTex blurredTex;
@@ -340,6 +340,9 @@ public class Bloomfog {
             BufferRenderer.drawWithGlobalProgram(buff);
         }
 
+        LightMesh.renderAllBloomfog();
+
+
         framebuffer.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = isMirror;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
@@ -546,6 +549,8 @@ public class Bloomfog {
             MeshLoader.NOTE_DOT_INSTANCED_MESH.cancelBloomCalls();
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.cancelBloomCalls();
 
+            LightMesh.cancelBloomDraws();
+
             bloomOutput.setClearColor(0, 0, 0, 0);
             bloomOutput.clear(MinecraftClient.IS_SYSTEM_MAC);
             MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
@@ -653,7 +658,7 @@ public class Bloomfog {
         MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-
+        LightMesh.renderAllBloom(sceneDepthBuffer);
 
         bloomInput.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
