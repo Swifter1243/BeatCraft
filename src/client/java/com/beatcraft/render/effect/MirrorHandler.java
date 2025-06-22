@@ -407,6 +407,7 @@ public class MirrorHandler {
         if (buff != null) {
             RenderSystem.setShader(() -> mirrorShader);
             RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
             RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());

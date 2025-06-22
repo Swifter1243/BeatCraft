@@ -8,6 +8,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -21,10 +22,11 @@ public class ReflectiveMirrorStripBlock extends BlockWithEntity implements Block
 
     public static final DirectionProperty ROTATION = DirectionProperty.of("rotation", Direction.NORTH, Direction.EAST);
 
+    public static final BooleanProperty FULL_PLATE = BooleanProperty.of("full_plate");
 
     public ReflectiveMirrorStripBlock(Settings settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(ROTATION, Direction.NORTH));
+        setDefaultState(getDefaultState().with(ROTATION, Direction.NORTH).with(FULL_PLATE, false));
     }
 
     public ReflectiveMirrorStripBlock() {
@@ -34,7 +36,7 @@ public class ReflectiveMirrorStripBlock extends BlockWithEntity implements Block
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(ROTATION);
+        builder.add(ROTATION, FULL_PLATE);
     }
 
     @Override
@@ -60,6 +62,12 @@ public class ReflectiveMirrorStripBlock extends BlockWithEntity implements Block
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        if (state.get(FULL_PLATE)) {
+            return VoxelShapes.cuboid(
+                0, 0.875, 0,
+                1, 1, 1
+            );
+        }
         if (state.get(ReflectiveMirrorStripBlock.ROTATION) == Direction.EAST) {
             return VoxelShapes.cuboid(
                 0, 0.875, 2d/16d,

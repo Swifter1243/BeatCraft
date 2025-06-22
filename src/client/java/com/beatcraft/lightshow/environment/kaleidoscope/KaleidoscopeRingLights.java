@@ -49,14 +49,11 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         super(buildRingLights());
 
         //
-        innerRing = new RingLightHandler(this::createInner, this::linkInner, 20, new Vector3f(0, 0, 8), 5);
+        innerRing = new RingLightHandler(this::createInner, this::linkInner, 20, new Vector3f(0, 0, 12), 5);
         outerRing = new RingLightHandler(this::createOuter, this::linkOuter, 10, new Vector3f(), 0);
 
         var rpd = MathHelper.RADIANS_PER_DEGREE;
 
-        innerRing.ringRotation = 0;
-        innerRing.rotationStep = 45 * rpd;
-        innerRing.rotationReset = 45 * rpd;
         innerRing.jumpOffsets = new float[]{
             -90 * rpd,
             90 * rpd
@@ -95,6 +92,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
             -5 * rpd
         };
 
+        innerRing.spinTo(0, 45f/2f * rpd, 0, 0);
     }
 
 

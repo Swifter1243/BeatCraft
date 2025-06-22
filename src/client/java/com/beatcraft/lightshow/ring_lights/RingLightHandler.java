@@ -1,11 +1,9 @@
 package com.beatcraft.lightshow.ring_lights;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -14,7 +12,6 @@ import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -219,6 +216,12 @@ public class RingLightHandler extends LightObject {
 
         headRing.setTarget(BeatmapPlayer.getCurrentSeconds(), ringRotation, rotationStep);
 
+    }
+
+    public void spinTo(float startAngle, float offset, float propagationDuration, float transitionSpeed) {
+        rotationStep = offset;
+        ringRotation = startAngle;
+        headRing.setTarget(0, ringRotation, rotationStep);
     }
 
     public void setZoom(float value) {

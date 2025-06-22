@@ -24,6 +24,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.RenderPass;
@@ -326,8 +327,6 @@ public class Bloomfog {
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
 
-        //SkyFogController.render(buffer, cameraPos, invCameraRotation);
-
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation, false);
             MirrorHandler.recordMirrorLightDraw(call);
@@ -344,6 +343,7 @@ public class Bloomfog {
 
 
         framebuffer.endWrite();
+
         BeatCraftRenderer.bloomfog.overrideBuffer = isMirror;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
@@ -351,6 +351,7 @@ public class Bloomfog {
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+
 
         applyPyramidBlur(isMirror);
 

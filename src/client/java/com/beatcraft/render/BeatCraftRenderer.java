@@ -147,7 +147,6 @@ public class BeatCraftRenderer {
             BufferRenderer.drawWithGlobalProgram(buff);
 
             RenderSystem.disableDepthTest();
-            RenderSystem.disableDepthTest();
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
 

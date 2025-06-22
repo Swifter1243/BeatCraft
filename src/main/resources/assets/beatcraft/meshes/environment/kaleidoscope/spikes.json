@@ -5,10 +5,10 @@
         "main": {
             "named_vertices": {
                 "tip": [0, 4, 0],
-                "a": [8, 30, 0],
-                "b": [0, 30, 8],
-                "c": [-8, 30, 0],
-                "d": [0, 30, -8]
+                "a": [8, 40, 0],
+                "b": [0, 40, 8],
+                "c": [-8, 40, 0],
+                "d": [0, 40, -8]
             },
             "uvs": [
                 [0, 0],
@@ -136,19 +136,19 @@
         }
     ],
     "textures": {
-        "0": "beatcraft:textures/block/black_mirror.png",
-        "1": "beatcraft:textures/gameplay_objects/arrow.png"
+        "1": "beatcraft:textures/block/black_mirror.png",
+        "2": "beatcraft:textures/gameplay_objects/arrow.png"
     },
     "data": {
-        "default": { "material": 0, "texture": 0, "color": 0 },
-        "l0": { "material": 1, "texture": 1, "color": 0 },
-        "l1": { "material": 1, "texture": 1, "color": 1 },
-        "l2": { "material": 1, "texture": 1, "color": 2 },
-        "l3": { "material": 1, "texture": 1, "color": 3 },
-        "l4": { "material": 1, "texture": 1, "color": 4 },
-        "l5": { "material": 1, "texture": 1, "color": 5 },
-        "l6": { "material": 1, "texture": 1, "color": 6 },
-        "l7": { "material": 1, "texture": 1, "color": 7 }
+        "default": { "material": 0, "texture": 1, "color": 0 },
+        "l0": { "material": 1, "texture": 2, "color": 0 },
+        "l1": { "material": 1, "texture": 2, "color": 2 },
+        "l2": { "material": 1, "texture": 2, "color": 4 },
+        "l3": { "material": 1, "texture": 2, "color": 6 },
+        "l4": { "material": 1, "texture": 2, "color": 1 },
+        "l5": { "material": 1, "texture": 2, "color": 3 },
+        "l6": { "material": 1, "texture": 2, "color": 5 },
+        "l7": { "material": 1, "texture": 2, "color": 7 }
     },
-    "cull": true
+    "cull": false
 }

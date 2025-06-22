@@ -9,6 +9,7 @@ precision mediump float;
 in vec2 v_uv;
 in vec4 v_color;
 in vec3 v_pos;
+in vec3 v_normal;
 flat in int v_material; // 0 = solid, 1 = light
 in vec3 screenUV;
 
@@ -28,14 +29,18 @@ float clampF(float t) {
 vec4 lerpColor(vec4 c1, vec4 c2, float t) {
     return c1 + (c2 * clamp(t, 0.0, 1.0));
 }
+
 void main() {
 
     if (passType == 0) {
         vec4 tex = texture(u_texture, v_uv) * v_color;
+        if (v_material == 1) {
+            tex = vec4(tex.rgb, 1.0);
+        }
         vec4 fog = texture(u_bloomfog, (screenUV.xy/(-screenUV.z*4.0))+0.5);
         float fadeHeight = 1 - clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
         fragColor = lerpColor(tex, fog, clampF(abs(screenUV.z)) + fadeHeight);
-    } else {
+    } else if (passType == 1) {
         if (v_material == 0) {
             discard;
         } else {
@@ -47,6 +52,12 @@ void main() {
             vec4 tex = texture(u_texture, v_uv) * v_color;
             float fadeHeight = 1 - clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
             fragColor = lerpColor(tex, vec4(0.0), clampF(abs(screenUV.z)) + fadeHeight);
+        }
+    } else {
+        if (v_material == 0) {
+            discard;
+        } else {
+            fragColor = v_color;
         }
     }
 

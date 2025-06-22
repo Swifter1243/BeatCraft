@@ -32,6 +32,11 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
     HashMap<Integer, LightObject> back;
 
     @Override
+    public String getID() {
+        return "KaleidoscopeEnvironment";
+    }
+
+    @Override
     public void setup() {
 
         ringLights = new KaleidoscopeRingLights();

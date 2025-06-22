@@ -87,6 +87,7 @@ import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.Bloomfog;
+import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.gl.GlUtil;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
@@ -221,8 +222,10 @@ public class LightMesh {
                     var pos = new Vector2i();
 
                     if (atlasBuilder.add(new Vector2i(w, h), pos)) {
-                        uvMap.put(ident, new Vector2f(pos.x / 1024f, pos.y / 1024f));
-                        tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, true);
+                        var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
+                        BeatCraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
+                        uvMap.put(ident, uv);
+                        tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
                     } else {
                         throw new RuntimeException("Atlas size exceeded");
                     }
@@ -622,15 +625,20 @@ public class LightMesh {
         GlUtil.useProgram(shaderProgram);
         GlUtil.setTex(shaderProgram, "u_texture", 0, atlasGlId);
         var fog = BeatCraftRenderer.bloomfog;
+
+        int currentFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+
         if (preBloomfog) {
             fog.extraBuffer.setClearColor(0, 0, 0, 1);
             fog.extraBuffer.clear(false);
             fog.extraBuffer.beginRead();
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorAttachment());
+
         } else {
-            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.getBloomfogColorAttachment());
+            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorAttachment());
         }
-        GlUtil.uniform1i("passType", isBloom ? 1 : 0);
+        var passType = isBloom ? 1 : preBloomfog ? 2 : 0;
+        GlUtil.uniform1i("passType", passType);
         if (sceneDepthBuffer != -1) {
             GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
         }
@@ -642,6 +650,8 @@ public class LightMesh {
         var q = MemoryPool.newQuaternionf();
         if (isBloom) {
             q.set(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation()).conjugate();
+        } else if (preBloomfog) {
+            q.set(MirrorHandler.invCameraRotation);
         }
         var p = MemoryPool.newVector3f();
         p.set(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()).negate();
@@ -655,6 +665,7 @@ public class LightMesh {
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
         if (!cullBackfaces) RenderSystem.disableCull();
 
         // PHASE 2: setup buffer data
@@ -673,6 +684,7 @@ public class LightMesh {
         MemoryUtil.memFree(instanceBuffer);
 
         // PHASE 4: draw
+        GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, currentFbo);
         GL31.glDrawElementsInstanced(
             GL11.GL_TRIANGLES,
             indicesLength,
