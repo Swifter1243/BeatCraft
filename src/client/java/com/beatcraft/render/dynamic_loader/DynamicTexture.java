@@ -79,9 +79,9 @@ public class DynamicTexture {
     }
 
     public static void unloadAllTextures() {
-        for (Identifier id : loadedTextures.keySet()) {
-            MinecraftClient.getInstance().getTextureManager().destroyTexture(id);
-        }
+        //for (Identifier id : loadedTextures.keySet()) {
+        //    MinecraftClient.getInstance().getTextureManager().destroyTexture(id);
+        //}
         loadedTextures.clear();
     }
 

@@ -5,11 +5,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import oshi.util.tuples.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -175,6 +177,28 @@ public class GlUtil {
         }
 
     }
+
+    public static void destroyShaderProgram(int program) {
+        AtomicReference<String> toRemove = new AtomicReference<>();
+
+        shaderProgramCache.forEach((key, val) -> {
+            if (val == program) {
+                toRemove.set(key);
+            }
+        });
+
+        var remove = toRemove.get();
+        if (remove != null) {
+            shaderProgramCache.remove(remove);
+            GL30.glDeleteProgram(program);
+        }
+    }
+
+    public static void clear() {
+        shaderProgramCache.clear();
+        programUniformsCache.clear();
+    }
+
 
     public static void setMat4f(int shaderProgram, String uni, Matrix4f mat4) {
         int uniLoc = GL31.glGetUniformLocation(shaderProgram, uni);

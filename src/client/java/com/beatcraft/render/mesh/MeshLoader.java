@@ -66,32 +66,7 @@ public class MeshLoader {
     public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
 
         MeshLoader.modelLoader = modelLoader;
-        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note_chain_head.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/color_note_chain_link.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
-        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/bomb_note.json"), NOTE_TEXTURE, "instanced/bomb_note", 1f);
-        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/note_arrow.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
-        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
-        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/item/chain_note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
 
-        MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
-        MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();
-        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH = CHAIN_HEAD_NOTE_INSTANCED_MESH.copy();
-        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH = CHAIN_LINK_NOTE_INSTANCED_MESH.copy();
-        MIRROR_NOTE_ARROW_INSTANCED_MESH = NOTE_ARROW_INSTANCED_MESH.copy();
-        MIRROR_NOTE_DOT_INSTANCED_MESH = NOTE_DOT_INSTANCED_MESH.copy();
-        MIRROR_CHAIN_DOT_INSTANCED_MESH = CHAIN_DOT_INSTANCED_MESH.copy();
-
-        SMOKE_INSTANCED_MESH = loadInstancedMesh(BeatCraft.id("models/gameplay/smoke.json"), SMOKE_TEXTURE, "instanced/smoke", 6f);
-
-        try {
-            KALEIDOSCOPE_SPIKE = LightMesh.load("kaleidoscope_spike", BeatCraft.id("meshes/environment/kaleidoscope/spikes.json"));
-
-
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     protected static class UnboundJsonModel {

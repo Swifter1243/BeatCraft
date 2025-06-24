@@ -14,9 +14,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
-import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
@@ -33,6 +31,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
         var pos = new Vector3f(0, 0, 8);
 
+        RingSpike.clearInstances();
         for (int i = 1; i < 40; i += 2) {
             try {
                 map.put(i, new RingSpike(new Vector3f(pos), new Quaternionf()));
@@ -151,4 +150,5 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         innerRing.render(matrices, camera, BeatCraftRenderer.bloomfog);
         outerRing.render(matrices, camera, BeatCraftRenderer.bloomfog);
     }
+
 }

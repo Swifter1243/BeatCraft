@@ -27,6 +27,7 @@ public class BeatmapAudioPlayer {
         mc.options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
     }
 
+    public static String currentFile = null;
     public static void playAudioFromFile(String path) {
         unload();
 
@@ -35,6 +36,7 @@ public class BeatmapAudioPlayer {
                 beatmapAudio.loadAudioFromFile(path);
                 beatmapAudio.seek(0); // seek auto-compensates for the player's latency setting
                 beatmapAudio.play();
+                currentFile = path;
             } catch (IOException e) {
                 throw new RuntimeException("Something FUCKED happened.", e);
             }

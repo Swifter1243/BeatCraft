@@ -334,7 +334,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glDeleteBuffers(instanceVbo);
         GL15.glDeleteBuffers(indicesVbo);
         GL30.glDeleteVertexArrays(vao);
-        GlUtil.destroyShaderProgram(vertexShaderLoc, fragmentShaderLoc);
     }
 
     public static void cleanupAll() {

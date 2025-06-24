@@ -207,6 +207,8 @@ public class LightMesh {
     public static void buildMeshes() {
         if (initialized) return;
 
+        uvMap.clear();
+
         var atlasBuilder = new AtlasBuilder(1024);
         try (var atlas = new NativeImage(1024, 1024, false)) {
 
@@ -914,6 +916,25 @@ public class LightMesh {
             }
         }
 
+    }
+
+    public void cleanup() {
+        GL15.glDeleteBuffers(vertexVbo);
+        GL15.glDeleteBuffers(uvVbo);
+        GL15.glDeleteBuffers(normalVbo);
+        GL15.glDeleteBuffers(materialVbo);
+        GL15.glDeleteBuffers(indicesVbo);
+        GL15.glDeleteBuffers(instanceVbo);
+        GL30.glDeleteVertexArrays(vao);
+        GlUtil.destroyShaderProgram(shaderProgram);
+    }
+
+    public static void cleanupAll() {
+        for (var mesh : meshes.values()) {
+            mesh.cleanup();
+        }
+        meshes.clear();
+        unloadedTextures.clear();
     }
 
     public static LightMesh load(String name, Identifier source) throws IOException {

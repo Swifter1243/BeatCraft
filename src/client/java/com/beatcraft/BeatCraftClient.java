@@ -43,11 +43,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.nbt.*;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.text.*;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
@@ -103,6 +105,8 @@ public class BeatCraftClient implements ClientModInitializer {
 
         BaseProviderHandler.setupDynamicProviders();
 
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new BeatCraftAssetReloadListener());
+
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
         });
@@ -149,21 +153,6 @@ public class BeatCraftClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            Bloomfog.initShaders();
-            BeatmapAudioPlayer.init();
-
-            var window = MinecraftClient.getInstance().getWindow();
-            var w = window.getWidth();
-            var h = window.getHeight();
-
-            if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
-            BeatCraftRenderer.bloomfog.resize(w, h, true);
-
-            songs.loadSongs();
-            ReplayHandler.loadReplays();
-            HUDRenderer.initSongSelectMenuPanel();
-        });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();

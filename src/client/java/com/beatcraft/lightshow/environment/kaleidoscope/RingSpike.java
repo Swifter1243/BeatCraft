@@ -12,6 +12,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+
 public class RingSpike extends LightObject {
 
     // use default light state + 7 extra
@@ -75,7 +77,20 @@ public class RingSpike extends LightObject {
 
     private LightMeshInstance mesh;
 
+    private static ArrayList<RingSpike> spikes = new ArrayList<>();
+
+    public static void clearInstances() {
+        spikes.clear();
+    }
+
+    public static void reload() {
+        for (var spike : spikes) {
+            spike.mesh = new LightMeshInstance(MeshLoader.KALEIDOSCOPE_SPIKE);
+        }
+    }
+
     public RingSpike(Vector3f pos, Quaternionf ori) {
+        spikes.add(this);
         position = pos;
         orientation = ori;
 
