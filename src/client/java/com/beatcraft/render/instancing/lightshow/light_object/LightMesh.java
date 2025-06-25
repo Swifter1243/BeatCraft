@@ -184,9 +184,7 @@ public class LightMesh {
     protected static class AtlasBuilder {
         public final int maxWidth;
         public final int maxHeight;
-        public int skylineCount = 0;
-        private boolean initialized = false;
-        private RectanglePacker packer;
+        private final RectanglePacker packer;
 
         protected AtlasBuilder(int size) {
             this.maxWidth = size;
@@ -656,7 +654,8 @@ public class LightMesh {
             q.set(MirrorHandler.invCameraRotation);
         }
         var p = MemoryPool.newVector3f();
-        p.set(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f()).negate();
+        var cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        p.set(cameraPos).negate();
 
         var projMat = RenderSystem.getProjectionMatrix();
         var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(q);
@@ -664,6 +663,13 @@ public class LightMesh {
         MemoryPool.releaseSafe(p);
         GlUtil.uniformMat4f("u_projection", projMat);
         GlUtil.uniformMat4f("u_view", viewMat);
+
+
+        Matrix4f worldTransform = new Matrix4f();
+        worldTransform.translate(cameraPos);
+        worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
+
+        GlUtil.setMat4f(shaderProgram, "world_transform", worldTransform);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);

@@ -23,6 +23,7 @@ layout(location = 15) in vec4 c7;
 uniform int passType;
 uniform mat4 u_projection;
 uniform mat4 u_view;
+uniform mat4 world_transform;
 
 out vec2 v_uv;
 out vec4 v_color;
@@ -49,6 +50,6 @@ void main() {
 
     v_uv = in_uv;
     screenUV = vec3(final.xy, pos.z);
-    v_pos = pos.xyz;
+    v_pos = vec4(world_transform * pos).xyz;
     v_material = in_colorLayer_materialLayer_flags.y;
 }

@@ -99,7 +99,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
         return ringLights;
     }
 
-    private static final float[] FOG_HEIGHTS = new float[]{-12, -2};
+    private static final float[] FOG_HEIGHTS = new float[]{-28, -8};
     @Override
     public float[] getFogHeights() {
         return FOG_HEIGHTS;

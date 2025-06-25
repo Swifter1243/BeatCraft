@@ -38,8 +38,8 @@ void main() {
             tex = vec4(tex.rgb, 1.0);
         }
         vec4 fog = texture(u_bloomfog, (screenUV.xy/(-screenUV.z*4.0))+0.5);
-        float fadeHeight = 1 - clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
-        fragColor = lerpColor(tex, fog, clampF(abs(screenUV.z)) + fadeHeight);
+        float fadeHeight = clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
+        fragColor = lerpColor(tex * fadeHeight, fog, clampF(abs(screenUV.z)));
     } else if (passType == 1) {
         if (v_material == 0) {
             discard;
@@ -50,8 +50,8 @@ void main() {
                 discard;
             }
             vec4 tex = texture(u_texture, v_uv) * v_color;
-            float fadeHeight = 1 - clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
-            fragColor = lerpColor(tex, vec4(0.0), clampF(abs(screenUV.z)) + fadeHeight);
+            float fadeHeight = clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
+            fragColor = lerpColor(tex * fadeHeight, vec4(0.0), clampF(abs(screenUV.z)));
         }
     } else {
         if (v_material == 0) {

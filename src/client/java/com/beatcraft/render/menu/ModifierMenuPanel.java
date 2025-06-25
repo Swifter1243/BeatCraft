@@ -123,8 +123,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Trail Intensity",
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(10, Stash.getTrailSize()-10)),
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, Stash.getTrailSize()+10)),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(3, Stash.getTrailSize()-1)),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, Stash.getTrailSize()+1)),
                 () -> String.valueOf(BeatCraftClient.playerConfig.getTrailIntensity()),
                 new Vector3f(-100, -71, 0)),
 

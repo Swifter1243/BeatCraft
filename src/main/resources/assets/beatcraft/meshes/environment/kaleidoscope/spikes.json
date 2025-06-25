@@ -150,5 +150,5 @@
         "l6": { "material": 1, "texture": 2, "color": 5 },
         "l7": { "material": 1, "texture": 2, "color": 7 }
     },
-    "cull": false
+    "cull": true
 }
