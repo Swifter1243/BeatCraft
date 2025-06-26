@@ -4,6 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
@@ -24,6 +25,7 @@ import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
@@ -206,14 +208,18 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         ));
 
 
-        downloaderPage.children.add(SettingsMenuPanel.getButton(
-            new TextWidget("Open download screen", new Vector3f(0, -11, 0.01f), 3),
-            () -> {
-                var screen = new SongDownloaderScreen(null);
-                MinecraftClient.getInstance().setScreen(screen);
-            },
-            new Vector3f(0, 0, 0),
-            new Vector2f(350, 50)
+        var q = SongDownloader.queryBuilder;
+        downloaderPage.children.addAll(List.of(
+            new TextWidget("Filters (WIP)", new Vector3f(0, -200, 0.01f), 2.5f),
+
+            get3StateBool("Ascending Order", () -> q.ascending, v -> q.ascending = v, new Vector3f(-200, -150, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Chroma", () -> q.chroma, v -> q.chroma = v, new Vector3f(-200, -100, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Noodle", () -> q.noodle, v -> q.noodle = v, new Vector3f(-200, -50, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Vivify*", () -> q.vivify, v -> q.vivify = v, new Vector3f(-200, 0, 0), new Vector2f(250, 45)),
+            get3StateBool("Curated", () -> q.curated, v -> q.curated = v, new Vector3f(-200, 50, 0), new Vector2f(250, 45)),
+            get3StateBool("Verified", () -> q.verified, v -> q.verified = v, new Vector3f(-200, 100, 0), new Vector2f(250, 45)),
+
+            new TextWidget("*Vivify maps are not fully supported", new Vector3f(0, 140, 0.01f), 1.5f)
         ));
 
         customSaberPage.children.add(new TextWidget("WIP. for now use /custom_sabers", new Vector3f(0, -11, 0.01f), 4));
@@ -221,6 +227,24 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         setupReplayPageStatic();
         //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
+    }
+
+    private Widget get3StateBool(String label, Callable<Boolean> getter, Consumer<Boolean> setter, Vector3f position, Vector2f size) {
+        return SettingsMenuPanel.getButton(
+            new TextWidget(() -> {
+                var v = getter.call();
+                return label + " : " + (v == null ? "--" : v ? "True" : "False");
+            }, new Vector3f(-size.x/2, -11, 0.01f), 2).alignedLeft().withDynamicScaling((int) (size.x/2)),
+            () -> {
+                try {
+                    var v = getter.call();
+                        setter.accept((v == null ? Boolean.TRUE : (v ? Boolean.FALSE : null)));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            },
+           position, size
+        );
     }
 
     private Widget getOptionButton(String label, int column, int row, int count, Runnable onClick, SongSelectPage page) {
