@@ -234,7 +234,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new TextWidget(() -> {
                 var v = getter.call();
                 return label + " : " + (v == null ? "--" : v ? "True" : "False");
-            }, new Vector3f(-size.x/2, -11, 0.01f), 2).alignedLeft().withDynamicScaling((int) (size.x/2)),
+            }, new Vector3f(-(size.x/2) + 5, -11, 0.01f), 2).alignedLeft().withDynamicScaling((int) (size.x/2)),
             () -> {
                 try {
                     var v = getter.call();
