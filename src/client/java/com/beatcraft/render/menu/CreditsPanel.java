@@ -28,6 +28,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
 
 
     private void initLayout() {
+        widgets.clear();
 
         widgets.addAll(List.of(
             new TextWidget("CREDITS", new Vector3f(0, -250, 0), 3),
@@ -39,9 +40,17 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
             SettingsMenuPanel.getButton(
                 new TextWidget("All Contributors", new Vector3f(0, -11, 0.05f), 2),
                 () -> MinecraftClient.getInstance().setScreen(new ContributorsScreen()),
-                new Vector3f(0, 70, 0),
+                new Vector3f(-120, 60, 0),
+                new Vector2f(230, 50)
+            ),
+
+            SettingsMenuPanel.getButton(
+                new TextWidget("Join the Discord", new Vector3f(0, -11, 0.05f), 2),
+                () -> ConfirmLinkScreen.open(null, "https://discord.gg/eQH4pbHptM"),
+                new Vector3f(120, 60, 0),
                 new Vector2f(230, 50)
             )
+
         ));
 
     }
@@ -61,9 +70,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
             new TextWidget(role, new Vector3f(TEXT_OFFSET, ROLE_POS, -0.01f), 2).alignedLeft(),
             SettingsMenuPanel.getButton(
                 new TextureWidget(BeatCraft.id("textures/credits_menu/minecraft_kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
-                () -> {
-                    ConfirmLinkScreen.open(null, kofi);
-                },
+                () -> ConfirmLinkScreen.open(null, kofi),
                 new Vector3f(KOFI_BUTTON_OFFSET, 0, 0), new Vector2f(120, 60)
             )
         );

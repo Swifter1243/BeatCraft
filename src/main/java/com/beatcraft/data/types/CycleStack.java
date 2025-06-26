@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class Stash<T> implements Iterable<T> {
+public class CycleStack<T> implements Iterable<T> {
 
     @Override
     public @NotNull Iterator<T> iterator() {
@@ -19,12 +19,12 @@ public class Stash<T> implements Iterable<T> {
 
     public static class StashIterator<T> implements Iterator<T> {
 
-        private final Stash<T> parent;
+        private final CycleStack<T> parent;
         private int current;
         private int passed;
         private final int size;
 
-        public StashIterator(Stash<T> parent, int pointer, int maxSize) {
+        public StashIterator(CycleStack<T> parent, int pointer, int maxSize) {
             this.parent = parent;
             this.size = maxSize;
             this.current = (pointer == 0) ? maxSize - 1 : pointer - 1; // Start at the most recent element
@@ -54,7 +54,7 @@ public class Stash<T> implements Iterable<T> {
     private int max_size;
     private final boolean isTrail;
 
-    private static int saberTrailSize = 30;
+    private static int saberTrailSize = 10;
 
     public static void updateTrailSize(int size) {
         saberTrailSize = size;
@@ -72,7 +72,7 @@ public class Stash<T> implements Iterable<T> {
         return this.max_size;
     }
 
-    public Stash(int capacity, boolean isTrail) {
+    public CycleStack(int capacity, boolean isTrail) {
         this.isTrail = isTrail;
         max_size = capacity;
         for (int i = 0; i <= capacity; i++) {

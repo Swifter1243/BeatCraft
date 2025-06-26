@@ -9,10 +9,7 @@ import com.google.gson.JsonParser;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -22,11 +19,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -52,6 +50,7 @@ public class SongDownloader {
     }
 
     public enum LeaderBoardSort {
+        None(null),
         All("All"),
         Ranked("Ranked"),
         BeatLeader("BeatLeader"),
@@ -91,11 +90,14 @@ public class SongDownloader {
 
     private static final HttpClient httpClient = HttpClient.newHttpClient();
 
-    private static final String LATEST_URL = "https://api.beatsaver.com/maps/latest";
+    private static final String SEARCH_LATEST_URL = "https://api.beatsaver.com/maps/latest";
+    private static final String SEARCH_USER_URL = "https://api.beatsaver.com/maps/uploader/{userId}/{page}";
+    private static final String SEARCH_ID_URL = "https://id/{mapId}";
     private static final String SEARCH_URL = "https://api.beatsaver.com/search/v1/";
     private static final String MAP_ID_URL = "https://api.beatsaver.com/maps/id/";
+    private static final String ID_FROM_NAME_URL = "https://api.beatsaver.com/users/name/{name}";
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 7;
 
     public static String search = "";
     public static String before = null;
@@ -108,6 +110,151 @@ public class SongDownloader {
     public static Boolean chroma = null;
     public static Boolean verified = null;
     private static CompletableFuture<Void> loadRequest = null;
+
+    public static class SearchQueryBuilder {
+
+        public int page = 0;
+
+        public Boolean ascending = null;
+        public AutomapperOption automapper = AutomapperOption.NO_AI;
+        public ArrayList<String> characteristics = new ArrayList<>();
+        public Boolean chroma = null;
+        public Boolean cinema = null;
+        public ArrayList<String> collaborator = new ArrayList<>();
+        public Boolean curated = null;
+        public ArrayList<String> environments = new ArrayList<>();
+        //public Boolean followed = null;
+        public Instant from = null;
+        public Boolean fullSpread = null;
+        public LeaderBoardSort leaderboard = LeaderBoardSort.None;
+        public Float maxBlStars = null;
+        public Float maxBpm = null;
+        public Integer maxDownVotes = null;
+        public Integer maxDuration = null;
+        public Float maxNps = null;
+        public Float maxRating = null;
+        public Float maxSsStars = null;
+        public Integer maxUpVotes = null;
+        public Integer maxVotes = null;
+        //public Boolean me = null;
+        public Float minBlStars = null;
+        public Float minBpm = null;
+        public Integer minDownVotes = null;
+        public Integer minDuration = null;
+        public Float minNps = null;
+        public Float minRating = null;
+        public Float minSsStars = null;
+        public Integer minUpVotes = null;
+        public Integer minVotes = null;
+        public Boolean noodle = null;
+        public OrderSort order = OrderSort.None;
+        public String q = "";
+        public String tags = null;
+        public Instant to = null;
+        public Boolean verified = null;
+        public Boolean vivify = null;
+
+        public String buildUrl() {
+            StringBuilder url = new StringBuilder("https://api.beatsaver.com/search/text/" + page);
+            ArrayList<String> params = new ArrayList<>();
+
+            addParam(params, "pageSize", String.valueOf(PAGE_SIZE));
+            addParam(params, "q", q);
+            addBool(params, "ascending", ascending);
+            if (automapper != null && automapper != AutomapperOption.NO_AI) {
+                addBool(params, "automapper", automapper.valSearch());
+            }
+            addList(params, "characteristics", characteristics);
+            addBool(params, "chroma", chroma);
+            addBool(params, "cinema", cinema);
+            addList(params, "collaborator", collaborator);
+            addBool(params, "curated", curated);
+            addList(params, "environments", environments);
+            addDate(params, "from", from);
+            addBool(params, "fullSpread", fullSpread);
+            if (leaderboard != null && leaderboard != LeaderBoardSort.None) {
+                addParam(params, "leaderboard", leaderboard.val());
+            }
+            addFloat(params, "maxBlStars", maxBlStars);
+            addFloat(params, "maxBpm", maxBpm);
+            addInt(params, "maxDownVotes", maxDownVotes);
+            addInt(params, "maxDuration", maxDuration);
+            addFloat(params, "maxNps", maxNps);
+            addFloat(params, "maxRating", maxRating);
+            addFloat(params, "maxSsStars", maxSsStars);
+            addInt(params, "maxUpVotes", maxUpVotes);
+            addInt(params, "maxVotes", maxVotes);
+            addFloat(params, "minBlStars", minBlStars);
+            addFloat(params, "minBpm", minBpm);
+            addInt(params, "minDownVotes", minDownVotes);
+            addInt(params, "minDuration", minDuration);
+            addFloat(params, "minNps", minNps);
+            addFloat(params, "minRating", minRating);
+            addFloat(params, "minSsStars", minSsStars);
+            addInt(params, "minUpVotes", minUpVotes);
+            addInt(params, "minVotes", minVotes);
+            addBool(params, "noodle", noodle);
+            if (order != null && order != OrderSort.None) {
+                addParam(params, "order", order.val());
+            }
+            addParam(params, "tags", tags);
+            addDate(params, "to", to);
+            addBool(params, "verified", verified);
+            addBool(params, "vivify", vivify);
+
+            if (!params.isEmpty()) {
+                url.append("?").append(String.join("&", params));
+            }
+
+            return url.toString();
+        }
+
+        private void addParam(ArrayList<String> params, String key, String value) {
+            if (value != null && !value.isEmpty()) {
+                params.add(key + "=" + URLEncoder.encode(value, StandardCharsets.UTF_8));
+            }
+        }
+
+        private void addBool(ArrayList<String> params, String key, Boolean value) {
+            if (value != null) {
+                params.add(key + "=" + value.toString());
+            }
+        }
+
+        private void addInt(ArrayList<String> params, String key, Integer value) {
+            if (value != null) {
+                params.add(key + "=" + value);
+            }
+        }
+
+        private void addFloat(ArrayList<String> params, String key, Float value) {
+            if (value != null) {
+                params.add(key + "=" + value);
+            }
+        }
+
+        private void addDate(ArrayList<String> params, String key, Instant value) {
+            if (value != null) {
+                params.add(key + "=" + URLEncoder.encode(value.toString(), StandardCharsets.UTF_8));
+            }
+        }
+
+        private void addList(ArrayList<String> params, String key, ArrayList<String> list) {
+            if (list != null && !list.isEmpty()) {
+                StringJoiner joiner = new StringJoiner(",");
+                for (String item : list) {
+                    if (item != null && !item.isEmpty()) {
+                        joiner.add(item);
+                    }
+                }
+                if (joiner.length() > 0) {
+                    params.add(key + "=" + URLEncoder.encode(joiner.toString(), StandardCharsets.UTF_8));
+                }
+            }
+        }
+    }
+
+    public static final SearchQueryBuilder queryBuilder = new SearchQueryBuilder();
 
     public static void pageLeft(Runnable after) {
         page = Math.max(page-1, 0);
@@ -279,29 +426,14 @@ public class SongDownloader {
     public static final Lock listModifyLock = new ReentrantLock();
 
     private static void _loadFromSearch() {
-        if (search.isEmpty()) {
+        if (queryBuilder.q.isEmpty()) {
             loadLatest();
             return;
         }
 
         ArrayList<SongPreview> localPreviews = new ArrayList<>();
 
-        String searchQuery = SEARCH_URL + page +
-            "?q=" + URLEncoder.encode(search, StandardCharsets.UTF_8) +
-            "&leaderboard=" + leaderBoardSort.val();
-
-        if (order.val() != null) {
-            searchQuery += "&order=" + order.val();
-        }
-        if (noodle != null) {
-            searchQuery += "&noodle=" + noodle;
-        }
-        if (chroma != null) {
-            searchQuery += "&chroma=" + chroma;
-        }
-        if (verified != null) {
-            searchQuery += "&verified=" + verified;
-        }
+        String searchQuery = queryBuilder.buildUrl();
 
         HttpRequest searchRequest = HttpRequest.newBuilder()
             .uri(URI.create(searchQuery))
@@ -345,7 +477,7 @@ public class SongDownloader {
         songPreviews.clear();
         page = 0;
 
-        String listQuery = LATEST_URL + "?pageSize=" + PAGE_SIZE;
+        String listQuery = SEARCH_LATEST_URL + "?pageSize=" + PAGE_SIZE;
 
         if (before != null) {
             listQuery += "&before=" + before;

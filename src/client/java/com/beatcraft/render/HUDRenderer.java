@@ -9,10 +9,7 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Rank;
 import com.beatcraft.memory.MemoryPool;
-import com.beatcraft.menu.EndScreenData;
-import com.beatcraft.menu.ErrorMessageMenu;
-import com.beatcraft.menu.ModifierMenu;
-import com.beatcraft.menu.SongSelectMenu;
+import com.beatcraft.menu.*;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.menu.*;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
@@ -91,6 +88,20 @@ public class HUDRenderer {
     private static final SettingsMenuPanel settingsMenuPanel = new SettingsMenuPanel();
 
     private static final CreditsPanel creditsPanel = new CreditsPanel();
+
+    public static boolean showKeyboard = false;
+    private static final KeyboardMenu keyboardData = new KeyboardMenu(null);
+    public static final KeyboardPanel keyboard = new KeyboardPanel(keyboardData);
+
+    public static void hookToKeyboard(TextInput input) {
+        keyboardData.input = input;
+        showKeyboard = true;
+        errorMessagePanel.close();
+    }
+
+    public static void hideKeyboard() {
+        showKeyboard = false;
+    }
 
     public static void initSongSelectMenuPanel() {
         songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
@@ -288,6 +299,20 @@ public class HUDRenderer {
 
         settingsMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+
+        pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+        local = null;
+
+        if (pair != null) {
+            spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+
+            local = pair.getRight();
+        }
+
+        errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
 
         if (pair == null) {
@@ -318,19 +343,14 @@ public class HUDRenderer {
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
         var pair = songDownloaderMenuPanel.raycast(saberPos, saberRot);
-
         Vector2f local = null;
-
         if (pair != null) {
             spawnMenuPointerParticle(pair.getLeft(), songDownloaderMenuPanel.getNormal());
-
             local = pair.getRight();
         }
-
         songDownloaderMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
-
         if (pair == null) {
             local = null;
         } else {
@@ -339,18 +359,32 @@ public class HUDRenderer {
         }
 
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
-
         pair = creditsPanel.raycast(saberPos, saberRot);
-
         if (pair == null) {
             local = null;
         } else {
             spawnMenuPointerParticle(pair.getLeft(), creditsPanel.getNormal());
             local = pair.getRight();
         }
-
         creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
+            local = null;
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+                local = pair.getRight();
+            }
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        } else if (showKeyboard) {
+            pair = keyboard.raycast(saberPos, saberRot);
+            local = null;
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), keyboard.getNormal());
+                local = pair.getRight();
+            }
+            keyboard.render((VertexConsumerProvider.Immediate) immediate, local);
+        }
 
     }
 

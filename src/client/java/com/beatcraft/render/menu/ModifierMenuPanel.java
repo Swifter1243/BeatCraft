@@ -4,7 +4,7 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ModifierMenu;
@@ -17,7 +17,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -25,7 +24,6 @@ import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
@@ -55,7 +53,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         position.set(0, 2, 6.4f);
         position.rotateY(angle);
         orientation.set(new Quaternionf().rotateY(angle));
-        size.set(800, 500);
+        size.set(800, 600);
         backgroundColor = 0;
 
         initLayout();
@@ -64,16 +62,22 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
     private void initLayout() {
+        widgets.clear();
+        modifierPage.children.clear();
+        playerOptionsPage.children.clear();
+        settingsPage.children.clear();
+        downloaderPage.children.clear();
+        customSaberPage.children.clear();
 
         // Top buttons: Modifiers | Player Options | Settings | BeatSaver | Replay
-        int BUTTON_COUNT = 6;
+        int BUTTON_COUNT = 3;
         widgets.addAll(List.of(
-            getOptionButton("Modifiers", 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
-            getOptionButton("Player Options", 1, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
-            getOptionButton("Settings", 2, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
-            getOptionButton("BeatSaver", 3, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
-            getOptionButton("Replay", 4, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay),
-            getOptionButton("Custom Sabers", 5, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
+            getOptionButton("Modifiers", 0, 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
+            getOptionButton("Player Options", 1, 0, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
+            getOptionButton("Settings", 2, 0, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
+            getOptionButton("BeatSaver", 0, 1, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
+            getOptionButton("Replay", 1, 1, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay),
+            getOptionButton("Custom Sabers", 2, 1, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
         ));
 
         modifierPage.children.addAll(List.of(
@@ -123,9 +127,12 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Trail Intensity",
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(3, Stash.getTrailSize()-1)),
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, Stash.getTrailSize()+1)),
-                () -> String.valueOf(BeatCraftClient.playerConfig.getTrailIntensity()),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(3, CycleStack.getTrailSize()-1)),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, CycleStack.getTrailSize()+1)),
+                () -> {
+                    var x = BeatCraftClient.playerConfig.getTrailIntensity();
+                    return x <= 3 ? "OFF" : String.valueOf(x);
+                },
                 new Vector3f(-100, -71, 0)),
 
             SettingsMenuPanel.getOptionModifier("Show Arms",
@@ -216,15 +223,15 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     }
 
-    private Widget getOptionButton(String label, int index, int count, Runnable onClick, SongSelectPage page) {
+    private Widget getOptionButton(String label, int column, int row, int count, Runnable onClick, SongSelectPage page) {
         int AVAILABLE_WIDTH = 750;
 
         int widgetWidth = AVAILABLE_WIDTH / count;
 
-        int widgetX = (-(count * widgetWidth) / 2 + index * widgetWidth) + (widgetWidth/2);
+        int widgetX = (-(count * widgetWidth) / 2 + column * widgetWidth) + (widgetWidth/2);
 
         return new ButtonWidget(
-            new Vector3f(widgetX, -225, 0.01f), new Vector2f(widgetWidth, 40),
+            new Vector3f(widgetX, -275 + (40 * row), 0.01f), new Vector2f(widgetWidth, 40),
             onClick,
             new HoverWidget(new Vector3f(), new Vector2f(widgetWidth, 40), List.of(
                 new DynamicGradientWidget(new Vector3f(), new Vector2f(widgetWidth, 40), () -> page == currentPage ? 0x5F444444 : 0x5F222222, () -> page == currentPage ? 0x5F444444 : 0x5F222222, 0)
@@ -297,7 +304,6 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private void setDownloaderPage() {
         currentPage = SongSelectPage.Downloader;
         HUDRenderer.scene = HUDRenderer.MenuScene.Downloader;
-
     }
 
     private void setReplayPage() {
@@ -464,6 +470,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private static final int height = 360;
 
     public void setupReplayPageStatic() {
+        replayPageStatic.children.clear();
 
         replayToggle = getToggleWidget(230, 50, b -> {
             if (b) {

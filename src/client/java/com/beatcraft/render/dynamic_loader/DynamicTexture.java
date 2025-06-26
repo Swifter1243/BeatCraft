@@ -29,7 +29,7 @@ public class DynamicTexture {
 
     public DynamicTexture(String path) throws IOException {
         this.path = path.replaceAll("(?i)\\.jpe?g$", ".png");
-        img = NativeImage.read(new FileInputStream(this.path));
+        img = NativeImage.read(new FileInputStream(this.path.replace("\\", "/")));
         tex = new NativeImageBackedTexture(img);
 
         width = img.getWidth();
@@ -47,7 +47,7 @@ public class DynamicTexture {
     public void reload() {
         MinecraftClient.getInstance().getTextureManager().destroyTexture(textureID);
         try {
-            img = NativeImage.read(new FileInputStream(this.path));
+            img = NativeImage.read(new FileInputStream(this.path.replace("\\", "/")));
             tex = new NativeImageBackedTexture(img);
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to reload texture '{}'", this.path, e);

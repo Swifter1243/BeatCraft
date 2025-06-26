@@ -278,12 +278,14 @@ public abstract class MenuPanel<T extends Menu> {
             context.translate(-position.x, -position.y, -position.z);
 
             // Handle collision
-            if (pointerPosition != null && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
-                if (HUDRenderer.isTriggerPressed()) {
-                    assert MinecraftClient.getInstance().player != null;
-                    MinecraftClient.getInstance().player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 0.2f, 1);
-                    state = !state;
-                    changeHandler.accept(state);
+            if (pointerPosition != null) {
+                if (MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size)) {
+                    if (HUDRenderer.isTriggerPressed()) {
+                        assert MinecraftClient.getInstance().player != null;
+                        MinecraftClient.getInstance().player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 0.2f, 1);
+                        state = !state;
+                        changeHandler.accept(state);
+                    }
                 }
             }
         }
@@ -323,6 +325,8 @@ public abstract class MenuPanel<T extends Menu> {
             // Handle collision
             if (pointerPosition != null) {
                 hovered = MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), this.size);
+            } else {
+                hovered = false;
             }
         }
     }

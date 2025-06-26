@@ -2,7 +2,7 @@ package com.beatcraft.data;
 
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -60,7 +60,7 @@ public class PlayerConfig {
     private float debug_lightshow_lookBehindDistance = 8f;
 
     private String option_saber_name = "Default Saber";
-    private List<String> option_saber_authors = List.of("Westbot");
+    private List<String> option_saber_authors = List.of("BeatCraft");
 
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
@@ -98,7 +98,7 @@ public class PlayerConfig {
         option_saber_authors = JsonUtil.getOrDefault(custom_saber_model, "authors", JsonElement::getAsJsonArray, defaultArray)
             .asList().stream().map(JsonElement::getAsString).toList();
 
-        Stash.updateTrailSize(option_trailIntensity);
+        CycleStack.updateTrailSize(option_trailIntensity);
 
         if (json.has("active_modifiers")) {
             JsonArray rawModifiers = json.getAsJsonArray("active_modifiers");
@@ -293,7 +293,7 @@ public class PlayerConfig {
 
     public void setTrailIntensity(int value) {
         option_trailIntensity = value;
-        Stash.updateTrailSize(value);
+        CycleStack.updateTrailSize(value);
         writeToFile();
     }
 

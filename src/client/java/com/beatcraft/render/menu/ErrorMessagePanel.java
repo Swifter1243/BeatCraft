@@ -3,7 +3,6 @@ package com.beatcraft.render.menu;
 import com.beatcraft.menu.ErrorMessageMenu;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.math.MathHelper;
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -27,6 +26,14 @@ public class ErrorMessagePanel extends MenuPanel<ErrorMessageMenu> {
     }
 
     public static boolean refresh = false;
+
+    public boolean shouldDisplay() {
+        return data.shouldDisplay();
+    }
+
+    public void close() {
+        data.close();
+    }
 
     @Override
     public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {

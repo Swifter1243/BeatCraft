@@ -1,7 +1,7 @@
 package com.beatcraft.mixin;
 
 
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.items.SaberItem;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
@@ -34,24 +34,24 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
     private Item item;
 
     @Unique
-    private HashMap<RenderPass, Stash<Pair<Vector3f, Vector3f>>> stashes = new HashMap<>();
+    private HashMap<RenderPass, CycleStack<Pair<Vector3f, Vector3f>>> stashes = new HashMap<>();
 
     @Unique
     public void initStash() {
         this.stashes = new HashMap<>();
-        stashes.put(RenderPass.LEFT, new Stash<>(Stash.getTrailSize(), true));
-        stashes.put(RenderPass.RIGHT, new Stash<>(Stash.getTrailSize(), true));
-        stashes.put(RenderPass.CENTER, new Stash<>(Stash.getTrailSize(), true));
+        stashes.put(RenderPass.LEFT, new CycleStack<>(CycleStack.getTrailSize(), true));
+        stashes.put(RenderPass.RIGHT, new CycleStack<>(CycleStack.getTrailSize(), true));
+        stashes.put(RenderPass.CENTER, new CycleStack<>(CycleStack.getTrailSize(), true));
     }
 
     @Unique
-    public Stash<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash(RenderPass currentPass) {
+    public CycleStack<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash(RenderPass currentPass) {
         if (!stashes.containsKey(currentPass)) {
-            stashes.put(currentPass, new Stash<>(Stash.getTrailSize(), true));
+            stashes.put(currentPass, new CycleStack<>(CycleStack.getTrailSize(), true));
         }
         var stash = stashes.get(currentPass);
 
-        return stash == null ? new Stash<>(2, false) : stash;
+        return stash == null ? new CycleStack<>(2, false) : stash;
     }
 
 
