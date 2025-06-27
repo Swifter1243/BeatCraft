@@ -119,7 +119,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
             var window = MinecraftClient.getInstance().getWindow();
             var w = window.getWidth();
-            var h = window.getWidth();
+            var h = window.getHeight();
 
             if (w != windowWidth || h != windowHeight) {
                 windowWidth = w;
