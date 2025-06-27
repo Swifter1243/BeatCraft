@@ -648,9 +648,7 @@ public class LightMesh {
 
 
         var q = MemoryPool.newQuaternionf();
-        if (isBloom) {
-            q.set(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation()).conjugate();
-        } else if (preBloomfog) {
+        if (isBloom || preBloomfog) {
             q.set(MirrorHandler.invCameraRotation);
         }
         var p = MemoryPool.newVector3f();
