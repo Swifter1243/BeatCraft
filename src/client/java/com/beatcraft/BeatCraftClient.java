@@ -89,6 +89,9 @@ public class BeatCraftClient implements ClientModInitializer {
     public static final Vec3d playerSaberPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerSaberRotation = new Quaternionf();
 
+    public static int windowWidth = 0;
+    public static int windowHeight = 0;
+
     @Override
     public void onInitializeClient() {
 
@@ -113,6 +116,17 @@ public class BeatCraftClient implements ClientModInitializer {
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+
+            var window = MinecraftClient.getInstance().getWindow();
+            var w = window.getWidth();
+            var h = window.getWidth();
+
+            if (w != windowWidth || h != windowHeight) {
+                windowWidth = w;
+                windowHeight = h;
+                BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+            }
+
             if (settingsKeyBind.wasPressed()) {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
@@ -171,10 +185,6 @@ public class BeatCraftClient implements ClientModInitializer {
             return false;
         });
 
-
-        WindowResizeCallback.EVENT.register((client, window) -> {
-            BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
-        });
 
     }
 
