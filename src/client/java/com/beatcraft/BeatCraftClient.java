@@ -149,7 +149,7 @@ public class BeatCraftClient implements ClientModInitializer {
             if (toggleFPFCKeybind.wasPressed()) {
                 if (client.player != null) {
                     toggleFPFC();
-                    client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+                    client.player.sendMessage(Text.translatable(GameLogicHandler.FPFC ? "event.beatcraft.fpfc_enabled" : "event.beatcraft.fpfc_disabled"));
                     while (toggleFPFCKeybind.wasPressed());
                 }
             }
@@ -157,10 +157,10 @@ public class BeatCraftClient implements ClientModInitializer {
                 if (client.player != null) {
                     if (InputSystem.isMovementLocked()) {
                         InputSystem.unlockMovement();
-                        client.player.sendMessage(Text.of("Player movement UNLOCKED!"));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_unlocked"));
                     } else {
                         InputSystem.lockMovement();
-                        client.player.sendMessage(Text.of(String.format("Player movement LOCKED! (press \"%s\" to unlock)", toggleMovementLock.getBoundKeyLocalizedText().getString())));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_locked", toggleMovementLock.getBoundKeyLocalizedText().getString()));
                     }
                     while (toggleMovementLock.wasPressed()) ;
                 }

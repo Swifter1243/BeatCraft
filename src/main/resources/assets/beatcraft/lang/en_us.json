@@ -14,6 +14,9 @@
   "gui.beatcraft.option.on": "ON",
   "gui.beatcraft.option.off": "OFF",
 
+  "hud.beatcraft.combo": "COMBO",
+  "hud.beatcraft.miss": "MISS",
+
   "setting.beatcraft.player_option.reduced_debris": "Reduced Debris",
 
   "setting.beatcraft.quality.bloomfog": "Bloomfog",
@@ -57,6 +60,42 @@
   "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
   "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set",
 
+  "command.beatcraft.feedback.environment_placed": "Placed environment '%s'",
+  "command.beatcraft.feedback.invalid_environment": "'%s' is not a valid environment",
+  "command.beatcraft.feedback.removed_environment": "Removed environment structure",
+  "command.beatcraft.feedback.no_environment_to_remove": "No environment to remove",
+  "command.beatcraft.feedback.current_environment": "Current environment: '%s'",
+  "command.beatcraft.feedback.no_environment_placed": "No environment is currently placed",
+  "command.beatcraft.feedback.generated_playarea": "Generated play area at world origin",
+
+  "event.beatcraft.first_join_feedback": "§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, §fDoMobSpawning§7, and §fDoTraderSpawning §7 set to §4false§7;",
+  "event.beatcraft.movement_locked": "Player movement LOCKED! (press \"%s\" to unlock)",
+  "event.beatcraft.movement_unlocked": "Player movement UNLOCKED!",
+  "event.beatcraft.fpfc_enabled": "Enabled FPFC",
+  "event.beatcraft.fpfc_disabled": "Disabled FPFC",
+
+  "menu.beatcraft.song_download.page": "PAGE %s",
+  "menu.beatcraft.song_select.report_bugs": "Report bugs",
+  "menu.beatcraft.song_select.play": "PLAY",
+  "menu.beatcraft.song_select.song_download_error": "Map failed to load\nsee console for error",
+  "menu.beatcraft.song_select.delete": "DELETE",
+  "menu.beatcraft.song_download.search": "§7Search...",
+  "menu.beatcraft.song_download.download": "Download",
+  "menu.beatcraft.paused.menu": "MENU",
+  "menu.beatcraft.paused.restart": "RESTART",
+  "menu.beatcraft.paused.continue": "CONTINUE",
+  "menu.beatcraft.replay.record_next": "RECORD NEXT",
+  "menu.beatcraft.error_panel.close": "CLOSE",
+  "menu.beatcraft.failed.level_failed": "LEVEL FAILED",
+  "menu.beatcraft.passed.cleared": "LEVEL CLEARED",
+  "menu.beatcraft.passed.good_cuts": "GOOD CUTS",
+  "menu.beatcraft.passed.score": "SCORE",
+  "menu.beatcraft.passed.rank": "RANK",
+  "menu.beatcraft.passed.max_combo": "MAX COMBO",
+  "menu.beatcraft.delete.confirm": "Are you sure you want to delete this map?",
+  "menu.beatcraft.delete.confirm_replay": "Are you sure you want to delete this replay?",
+  "menu.beatcraft.delete.cancel": "CANCEL",
+
   "generator.beatcraft.beatcraft": "BeatCraft",
 
   "key.beatcraft.settings": "Open BeatCraft settings",
@@ -65,5 +104,12 @@
   "key.beatcraft.toggle_fpfc": "Toggle FPFC",
   "key.beatcraft.lock_movement": "Toggle movement locking",
 
-  "category.beatcraft.keybindings": "BeatCraft"
+  "category.beatcraft.keybindings": "BeatCraft",
+
+  "credits.beatcraft.credits": "CREDITS",
+  "credits.beatcraft.developer": "Developer",
+  "credits.beatcraft.developers": "Developers",
+  "credits.beatcraft.contributor": "Contributor",
+  "credits.beatcraft.contributors": "All Contributors",
+  "credits.beatcraft.discord": "Join the Discord"
 }

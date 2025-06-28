@@ -48,7 +48,7 @@ public class ContributorsScreen extends BaseOwoScreen<FlowLayout> {
                                         Components.label(Text.of("Swifter")).lineHeight(15)
                                     )
                                     .child(
-                                        Components.label(Text.of("Developer"))
+                                        Components.label(Text.translatable("credits.beatcraft.developer"))
                                     )
                             ).alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
                     ).child(Components.spacer(2))
@@ -63,7 +63,7 @@ public class ContributorsScreen extends BaseOwoScreen<FlowLayout> {
                                         Components.label(Text.of("Westbot")).lineHeight(15)
                                     )
                                     .child(
-                                        Components.label(Text.of("Developer"))
+                                        Components.label(Text.translatable("credits.beatcraft.developer"))
                                     )
                             ).alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
                     ).child(Components.spacer(2))
@@ -73,7 +73,7 @@ public class ContributorsScreen extends BaseOwoScreen<FlowLayout> {
                                 Components.label(Text.of("FutureMapper")).lineHeight(12)
                             )
                             .child(
-                                Components.label(Text.of("Contributor"))
+                                Components.label(Text.translatable("credits.beatcraft.contributor"))
                             ).alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
                     ).child(Components.spacer(2))
                     .child(
@@ -82,7 +82,7 @@ public class ContributorsScreen extends BaseOwoScreen<FlowLayout> {
                                 Components.label(Text.of("literallycat")).lineHeight(12)
                             )
                             .child(
-                                Components.label(Text.of("Contributor"))
+                                Components.label(Text.translatable("credits.beatcraft.contributor"))
                             ).alignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER)
                     )
             )

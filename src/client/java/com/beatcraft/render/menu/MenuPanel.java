@@ -128,6 +128,14 @@ public abstract class MenuPanel<T extends Menu> {
             this.position = position;
         }
 
+        protected TextWidget(Text text, Vector3f position) {
+            this(text::getString, position);
+        }
+
+        protected TextWidget(Text text, Vector3f position, float scale) {
+            this(text::getString, position, scale);
+        }
+
         protected TextWidget alignedLeft() {
             alignment = 0;
             return this;

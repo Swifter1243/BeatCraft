@@ -56,7 +56,7 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
             this::makeSongPreviewDisplay,
             true
         );
-        pageDisplay = (LabelComponent) Components.label(Text.literal(String.format("PAGE %s", SongDownloader.page+1))).lineHeight(15).tooltip(Text.translatable("gui.beatcraft.button.page_error"));
+        pageDisplay = (LabelComponent) Components.label(Text.translatable("menu.beatcraft.song_download.page", SongDownloader.page+1)).lineHeight(15).tooltip(Text.translatable("gui.beatcraft.button.page_error"));
         previewComponent = Containers.verticalFlow(Sizing.fill(), Sizing.fill());
         flowLayout.surface(Surface.VANILLA_TRANSLUCENT);
         flowLayout.child(
@@ -238,7 +238,7 @@ public class SongDownloaderScreen extends BaseOwoScreen<FlowLayout> {
                 listComponent.child(this.makeSongPreviewDisplay(preview));
             });
             SongDownloader.listModifyLock.unlock();
-            pageDisplay.text(Text.literal(String.format("PAGE %s", SongDownloader.page+1)));
+            pageDisplay.text(Text.translatable("menu.beatcraft.song_download.page", SongDownloader.page+1));
         });
 
     }

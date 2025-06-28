@@ -57,7 +57,6 @@ public class TriangleStructure implements EnvironmentPlacer {
         generateBackPillars(world, true);
         generateRunway(world, true);
 
-        BeatCraft.LOGGER.info("Placed TheFirst environment!");
     }
 
     @Override

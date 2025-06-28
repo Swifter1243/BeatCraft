@@ -16,6 +16,7 @@ import com.beatcraft.screen.SongDownloaderScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
@@ -443,6 +444,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
 
+    private static final Text PLAY = Text.translatable("menu.beatcraft.song_select.play");
+    private static final Text DELETE = Text.translatable("menu.beatcraft.song_select.delete");
     private Widget getReplayTile(ReplayInfo info, Vector3f position) {
         var SIZE = new Vector2f(660, 80);
 
@@ -459,13 +462,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new TextWidget(info.set(), new Vector3f((-SIZE.x/2f) + 95, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
             new TextWidget(info.diff(), new Vector3f(-50, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
             SettingsMenuPanel.getButton(
-                new TextWidget("PLAY", new Vector3f(0, -11, -0.01f), 3),
+                new TextWidget(PLAY, new Vector3f(0, -11, -0.01f), 3),
                 info::play,
                 new Vector3f((SIZE.x/2f)-190, 0, 0),
                 new Vector2f(100, 50)
             ),
             SettingsMenuPanel.getButton(
-                new TextWidget("DELETE", new Vector3f(0, -11, -0.01f), 3),
+                new TextWidget(DELETE, new Vector3f(0, -11, -0.01f), 3),
                 () -> {
                     HUDRenderer.confirmSongDeleteMenuPanel = new ConfirmSongDeleteMenuPanel(info);
                     HUDRenderer.scene = HUDRenderer.MenuScene.ConfirmSongDelete;
@@ -493,6 +496,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private static final Vector3f basePos = new Vector3f(20, -150, 0);
     private static final int height = 360;
 
+    private static final Text RECORD_NEXT = Text.translatable("menu.beatcraft.replay.record_next");
     public void setupReplayPageStatic() {
         replayPageStatic.children.clear();
 
@@ -527,7 +531,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new ContainerWidget(
                 new Vector3f(0, 220, 0), new Vector2f(230, 50),
                 replayToggle,
-                new TextWidget("RECORD NEXT", new Vector3f(0, -11, -0.01f), 3)
+                new TextWidget(RECORD_NEXT, new Vector3f(0, -11, -0.01f), 3)
             )
         ));
 

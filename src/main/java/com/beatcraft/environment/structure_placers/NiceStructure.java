@@ -63,7 +63,6 @@ public class NiceStructure implements EnvironmentPlacer {
         generateBackPillars(world, true);
         generateRunway(world, true);
 
-        BeatCraft.LOGGER.info("Placed TheFirst environment!");
     }
 
     @Override

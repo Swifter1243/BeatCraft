@@ -233,22 +233,10 @@ public class HUDRenderer {
         var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
-        var pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+        var pair = songSelectMenuPanel.raycast(saberPos, saberRot);
 
         Vector2f local = null;
-
-        if (pair != null) {
-            spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
-
-            local = pair.getRight();
-        }
-
-        errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
-
-
-        pair = songSelectMenuPanel.raycast(saberPos, saberRot);
-
-        local = null;
 
         if (pair != null) {
             spawnMenuPointerParticle(pair.getLeft(), songSelectMenuPanel.getNormal());
@@ -281,6 +269,20 @@ public class HUDRenderer {
 
         creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+            local = null;
+
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+
+                local = pair.getRight();
+            }
+
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        }
+
     }
 
     private static void renderSettings(VertexConsumerProvider immediate) {
@@ -299,19 +301,19 @@ public class HUDRenderer {
 
         settingsMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
 
-        pair = errorMessagePanel.raycast(saberPos, saberRot);
+            local = null;
 
-        local = null;
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
 
-        if (pair != null) {
-            spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+                local = pair.getRight();
+            }
 
-            local = pair.getRight();
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
         }
-
-        errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
-
 
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
 
@@ -485,10 +487,11 @@ public class HUDRenderer {
 
     private static void renderCombo(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
-        int w = textRenderer.getWidth("COMBO");
+        var txt = Text.translatable("hud.beatcraft.combo");
+        int w = textRenderer.getWidth(txt.getString());
 
         textRenderer.draw(
-            Text.literal("COMBO"),
+            txt,
             -w/2f, -28, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
             TEXT_LAYER, 0, TEXT_LIGHT

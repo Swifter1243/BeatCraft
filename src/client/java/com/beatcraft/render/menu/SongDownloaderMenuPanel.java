@@ -71,6 +71,8 @@ public class SongDownloaderMenuPanel extends MenuPanel<SongDownloaderMenu> {
         new Vector2f(300, 500)
     );
 
+    private static final Text SEARCH = Text.translatable("menu.beatcraft.song_download.search");
+
     private void initLayout() {
         widgets.clear();
 
@@ -78,7 +80,7 @@ public class SongDownloaderMenuPanel extends MenuPanel<SongDownloaderMenu> {
             SettingsMenuPanel.getButton(
                 new TextWidget(() -> {
                     var t = searchInput.buffer.toString();
-                    return t.isEmpty() ? "§7Search..." : t;
+                    return t.isEmpty() ? SEARCH.getString() : t;
                 }, new Vector3f(-290, -11, 0.01f), 2).alignedLeft(),
                 () -> HUDRenderer.hookToKeyboard(searchInput),
                 new Vector3f(-200, -225, 0), new Vector2f(600, 50)
@@ -138,6 +140,8 @@ public class SongDownloaderMenuPanel extends MenuPanel<SongDownloaderMenu> {
     );
     private static final int DISPLAY_WIDTH = 300;
 
+    private static final Text DOWNLOAD = Text.translatable("menu.beatcraft.song_download.download");
+
     private void setPreview(SongPreview data) {
         previewContainer.children.clear();
 
@@ -148,7 +152,7 @@ public class SongDownloaderMenuPanel extends MenuPanel<SongDownloaderMenu> {
             new TextWidget(data.getSets(), new Vector3f(0, 50, 0.01f), 1.5f).withDynamicScaling((int) (DISPLAY_WIDTH/1.5f)),
             new TextWidget(data.getDiffs(), new Vector3f(0, 80, 0.01f), 1.5f).withDynamicScaling((int) (DISPLAY_WIDTH/1.5f)),
             SettingsMenuPanel.getButton(
-                new TextWidget("Download", new Vector3f(0, -11, 0.01f), 2),
+                new TextWidget(DOWNLOAD, new Vector3f(0, -11, 0.01f), 2),
                 () -> downloadSong(data),
                 new Vector3f(0, 140, 0), new Vector2f(250, 50)
             )

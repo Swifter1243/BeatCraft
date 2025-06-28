@@ -9,6 +9,7 @@ import com.beatcraft.menu.PauseMenu;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.ReplayHandler;
+import net.minecraft.text.Text;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -16,6 +17,11 @@ import java.io.IOException;
 import java.util.List;
 
 public class PauseScreenPanel extends MenuPanel<PauseMenu> {
+
+    private static final Text MENU = Text.translatable("menu.beatcraft.paused.menu");
+    private static final Text RESTART = Text.translatable("menu.beatcraft.paused.restart");
+    private static final Text CONTINUE = Text.translatable("menu.beatcraft.paused.continue");
+
     public PauseScreenPanel() {
         super(new PauseMenu());
         position.set(0, 1.5f, 6);
@@ -43,7 +49,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("MENU", new Vector3f(0, -11, 0.05f)).withScale(3)
+                new TextWidget(MENU, new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
                 new Vector3f(0, 0, 0.02f), new Vector2f(150, 50),
@@ -58,7 +64,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("RESTART", new Vector3f(0, -11, 0.05f)).withScale(3)
+                new TextWidget(RESTART, new Vector3f(0, -11, 0.05f)).withScale(3)
             ),
             new ButtonWidget(
                 new Vector3f(160, 0, 0.02f), new Vector2f(150, 50),
@@ -68,7 +74,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7FA0A0A0, 0x7FA0A0A0, 0)
                 )),
-                new TextWidget("CONTINUE", new Vector3f(0, -11, 0.05f)).withScale(3)
+                new TextWidget(CONTINUE, new Vector3f(0, -11, 0.05f)).withScale(3)
             )
         ));
 
