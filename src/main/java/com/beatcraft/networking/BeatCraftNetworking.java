@@ -70,6 +70,8 @@ public class BeatCraftNetworking {
         PlayerEntity sending_player = context.player();
         UUID uuid = sending_player.getUuid();
         PlayerLookup.all(context.server()).forEach(player -> {
+
+            if (sending_player.equals(player)) return;
             ServerPlayNetworking.send(player, new SaberSyncS2CPayload(
                 uuid,
                 payload.leftPos(), payload.leftRot(),
@@ -89,21 +91,25 @@ public class BeatCraftNetworking {
             BeatCraft.currentDiff = payload.diff();
             BeatCraft.currentModifiers = payload.modifiers();
             PlayerLookup.all(context.server()).forEach(pl -> {
-                if (pl == player) return;
+                if (pl.equals(player)) return;
                 ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid(), payload.set(), payload.diff(), payload.modifiers()));
             });
         });
     }
 
     private static void handleBeatSyncPayload(BeatSyncC2SPayload payload, ServerPlayNetworking.Context context) {
+        PlayerEntity player = context.player();
         PlayerLookup.all(context.server()).forEach(pl -> {
+            if (pl.equals(player)) return;
             ServerPlayNetworking.send(pl, new BeatSyncS2CPayload(payload.beat()));
         });
     }
 
     private static void handleSpeedSyncPayload(SpeedSyncC2SPayload payload, ServerPlayNetworking.Context context) {
+        PlayerEntity player = context.player();
 
         PlayerLookup.all(context.server()).forEach(pl -> {
+            if (pl.equals(player)) return;
             ServerPlayNetworking.send(pl, new SpeedSyncS2CPayload(payload.speed()));
         });
     }
@@ -123,6 +129,7 @@ public class BeatCraftNetworking {
         }
 
         PlayerLookup.all(context.server()).forEach(pl -> {
+            if (pl.equals(player)) return;
             ServerPlayNetworking.send(pl, new SceneSyncS2CPayload(payload.scene()));
             if (scene == 1) {
                 ServerPlayNetworking.send(pl, new PlayerUntrackS2CPayload(player.getUuid()));
@@ -131,8 +138,10 @@ public class BeatCraftNetworking {
     }
 
     private static void handlePausePayload(SongPauseC2SPayload payload, ServerPlayNetworking.Context context) {
+        PlayerEntity player = context.player();
 
         PlayerLookup.all(context.server()).forEach(pl -> {
+            if (pl.equals(player)) return;
             ServerPlayNetworking.send(pl, new SongPauseS2CPayload(payload.paused()));
         });
 
