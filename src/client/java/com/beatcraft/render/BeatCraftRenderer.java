@@ -7,7 +7,10 @@ import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
+import com.beatcraft.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.render.particle.SmokeParticle;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -15,12 +18,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.random.Random;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,8 +36,6 @@ public class BeatCraftRenderer {
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
     private static final ArrayList<Runnable> renderCalls = new ArrayList<>();
     private static final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
-    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> noteRenderCalls = new ArrayList<>();
-    private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arrowRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserPreRenderCalls = new ArrayList<>();
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
@@ -45,6 +44,7 @@ public class BeatCraftRenderer {
     public static ShaderProgram noteShader;
     public static ShaderProgram arrowShader;
     public static ShaderProgram heartHealthShader;
+    public static ShaderProgram BCPosTexColShader;
 
     public static void init() {
         bloomfog = Bloomfog.create();
@@ -53,6 +53,7 @@ public class BeatCraftRenderer {
             noteShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "note_shader", VertexFormats.POSITION_TEXTURE_COLOR);
             arrowShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "arrow_shader", VertexFormats.POSITION_TEXTURE_COLOR);
             heartHealthShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "health_hearts", VertexFormats.POSITION_TEXTURE_COLOR);
+            BCPosTexColShader = new ShaderProgram(MinecraftClient.getInstance().getResourceManager(), "bc_tex_col", VertexFormats.POSITION_TEXTURE_COLOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -65,14 +66,6 @@ public class BeatCraftRenderer {
 
     public static void onRender(MatrixStack matrices, Camera camera, float tickDelta) {
         BeatmapPlayer.onRender(matrices, camera, tickDelta);
-    }
-
-    public static void recordNoteRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        noteRenderCalls.add(call);
-    }
-
-    public static void recordArrowRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        arrowRenderCalls.add(call);
     }
 
     public static void recordObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
@@ -153,7 +146,6 @@ public class BeatCraftRenderer {
 
             BufferRenderer.drawWithGlobalProgram(buff);
 
-            RenderSystem.disableDepthTest();
             RenderSystem.disableDepthTest();
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
@@ -244,6 +236,7 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }
@@ -284,58 +277,23 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
+        
+        LightMesh.renderAllSolid();
+
         RenderSystem.defaultBlendFunc();
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
-        // notes and debris
-        BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(() -> noteShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
-        for (var renderCall : noteRenderCalls) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                BeatCraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        var triBuff = triBuffer.endNullable();
-        if (triBuff != null) {
-            BufferRenderer.drawWithGlobalProgram(triBuff);
-        }
-
-        triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-
-        RenderSystem.setShader(() -> arrowShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
-        for (var renderCall : arrowRenderCalls) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                BeatCraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        triBuff = triBuffer.endNullable();
-        if (triBuff != null) {
-            BufferRenderer.drawWithGlobalProgram(triBuff);
-        }
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
-        noteRenderCalls.clear();
-        arrowRenderCalls.clear();
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
     }
 
     private static void renderFloorLightsPhase1(Tessellator tessellator, Vector3f cameraPos) {
@@ -443,7 +401,6 @@ public class BeatCraftRenderer {
     }
 
     public static void render() {
-
         Vector3f cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
 
         renderArcs(Tessellator.getInstance(), cameraPos);
@@ -458,6 +415,52 @@ public class BeatCraftRenderer {
         renderCalls.clear();
 
         renderFootPosIndicator();
+
+    }
+
+    private static double lastSmokeSpawn = 0;
+    private static final Random random = Random.create();
+
+    public static void renderSmoke(Vector3f cameraPos) {
+        var t = System.nanoTime() / 1_000_000_000d;
+
+        if ((t - lastSmokeSpawn) > SmokeParticle.SPAWN_INTERVAL) {
+            lastSmokeSpawn = t;
+            BeatcraftParticleRenderer.addParticle(new SmokeParticle(random));
+        }
+        Bloomfog.sceneDepthBuffer = MinecraftClient.getInstance().getFramebuffer().getDepthAttachment();
+
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
+        BeatCraftRenderer.bloomfog.overrideBuffer = true;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = Bloomfog.bloomInput;
+        Bloomfog.bloomInput.clear(MinecraftClient.IS_SYSTEM_MAC);
+        Bloomfog.bloomInput.beginWrite(true);
+
+        MeshLoader.SMOKE_INSTANCED_MESH.render(cameraPos);
+
+        Bloomfog.bloomInput.endWrite();
+        BeatCraftRenderer.bloomfog.overrideBuffer = false;
+        BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
+        MinecraftClient.getInstance().getFramebuffer().beginWrite(true);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        RenderSystem.setShaderTexture(0, Bloomfog.bloomInput.getColorAttachment());
+        RenderSystem.setShader(() -> Bloomfog.blitShader);
+        float z = 0;
+        buffer.vertex(new Vector3f(-1, -1, z)).texture(0, 0).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1, -1, z)).texture(1, 0).color(0xFF020200);
+        buffer.vertex(new Vector3f( 1,  1, z)).texture(1, 1).color(0xFF020200);
+        buffer.vertex(new Vector3f(-1,  1, z)).texture(0, 1).color(0xFF020200);
+
+
+        var old = new Matrix4f(RenderSystem.getModelViewMatrix());
+        RenderSystem.getModelViewMatrix().identity();
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+        RenderSystem.getModelViewMatrix().set(old);
 
     }
 

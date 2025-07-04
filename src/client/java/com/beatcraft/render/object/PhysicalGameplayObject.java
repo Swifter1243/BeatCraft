@@ -1,26 +1,23 @@
 package com.beatcraft.render.object;
 
-import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
 import com.beatcraft.render.SpawnQuaternionPool;
 import com.beatcraft.render.WorldRenderer;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.Debris;
-import com.beatcraft.render.mesh.MeshLoader;
-import com.beatcraft.render.mesh.MeshSlicer;
-import com.beatcraft.render.mesh.QuadMesh;
-import com.beatcraft.render.mesh.TriangleMesh;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
@@ -131,7 +128,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (dissolve == null) {
             return false;
         } else {
-            return dissolve < 0.5;
+            return dissolve == 0;
+        }
+    }
+
+    public float getBaseDissolve() {
+        Float dissolve = animationState.getDissolve();
+        if (dissolve == null) {
+            return 0;
+        } else {
+            return 1-dissolve;
         }
     }
 
@@ -140,7 +146,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (dissolveArrow == null) {
             return false;
         } else {
-            return dissolveArrow < 0.5;
+            return dissolveArrow == 0;
+        }
+    }
+
+    public float getArrowDissolve() {
+        Float dissolve = animationState.getDissolveArrow();
+        if (dissolve == null) {
+            return 0;
+        } else {
+            return 1-dissolve;
         }
     }
 
@@ -423,26 +438,20 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         contactColor = color;
     }
 
-    public QuadMesh getMesh() {
+    public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return null;
     }
 
-    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, NoteType color, Vector3f planeIncident, Vector3f planeNormal) {
-        if (BeatCraftClient.playerConfig.isReducedDebris() || BeatmapPlayer.currentBeatmap == null) return;
-        QuadMesh mesh = getMesh();
-        if (mesh == null) return;
-        Pair<TriangleMesh, TriangleMesh> meshes = MeshSlicer.sliceMesh(planeIncident, planeNormal, mesh);
 
-        if (color == NoteType.RED) {
-            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
-            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
-        } else {
-            meshes.getLeft().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
-            meshes.getRight().color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
-        }
+    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
 
-        meshes.getLeft().texture = MeshLoader.NOTE_TEXTURE;
-        meshes.getRight().texture = MeshLoader.NOTE_TEXTURE;
+        var m = getMesh();
+        if (m == null) return;
+
+        float d = planeNormal.normalize(new Vector3f()).dot(planeIncident);
+
+        var slice = new Vector4f(planeNormal, d);
+        var slice2 = new Vector4f(planeNormal.negate(), d);
 
         float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
 
@@ -451,7 +460,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             new Quaternionf(noteOrientation),
             new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
-            meshes.getLeft()
+            slice, color, m
         );
 
         Debris right = new Debris(
@@ -459,7 +468,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             new Quaternionf(noteOrientation),
             new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
-            meshes.getRight()
+            slice2, color, m
         );
 
         BeatcraftParticleRenderer.addParticle(left);

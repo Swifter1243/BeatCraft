@@ -136,6 +136,7 @@ public class BeatmapAudio {
         try {
             oggAudioStream = new OggAudioStream(inputStream);
         } catch (IOException e) {
+            inputStream.close();
             logErrorAndReset(path);
             throw e;
         }
@@ -149,6 +150,8 @@ public class BeatmapAudio {
         try {
             audioData = oggAudioStream.readAll();
         } catch (IOException e) {
+            inputStream.close();
+            oggAudioStream.close();
             logErrorAndReset(path);
             throw e;
         }
@@ -158,6 +161,8 @@ public class BeatmapAudio {
         songDuration = getDuration(buffer);
 
         if (songDuration == 0) {
+            inputStream.close();
+            oggAudioStream.close();
             logErrorAndReset(path);
             throw new IOException("Song has 0 duration");
         }

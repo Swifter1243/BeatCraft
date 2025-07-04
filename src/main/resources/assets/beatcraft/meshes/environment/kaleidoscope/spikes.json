@@ -1,0 +1,154 @@
+{
+    "mesh_format": 1,
+    "credits": ["Beatcraft", "Westbot"],
+    "parts": {
+        "main": {
+            "named_vertices": {
+                "tip": [0, 4, 0],
+                "a": [8, 40, 0],
+                "b": [0, 40, 8],
+                "c": [-8, 40, 0],
+                "d": [0, 40, -8]
+            },
+            "uvs": [
+                [0, 0],
+                [0, 0.5],
+                [0.5, 0]
+            ],
+            "named_normals": {
+                "back": [0, 1, 0]
+            },
+            "compute_normals": {
+                "ab": ["tip", "a", "b"],
+                "bc": ["tip", "b", "c"],
+                "cd": ["tip", "c", "d"],
+                "da": ["tip", "d", "a"]
+            },
+            "compute_vertices": {
+                "ta1h": { "points": ["tip", "a"], "y": 0.5  },
+                "ta2l": { "points": ["tip", "a"], "y": 3.5  },
+                "ta2h": { "points": ["tip", "a"], "y": 3.75 },
+                "ta3l": { "points": ["tip", "a"], "y": 7.25 },
+                "ta3h": { "points": ["tip", "a"], "y": 7.5  },
+                "ta4l": { "points": ["a", "tip"], "y": 1.25 },
+
+                "tb1h": { "points": ["tip", "b"], "y": 0.5  },
+                "tb2l": { "points": ["tip", "b"], "y": 3.5  },
+                "tb2h": { "points": ["tip", "b"], "y": 3.75 },
+                "tb3l": { "points": ["tip", "b"], "y": 7.25 },
+                "tb3h": { "points": ["tip", "b"], "y": 7.5  },
+                "tb4l": { "points": ["b", "tip"], "y": 1.25 },
+
+                "tc1h": { "points": ["tip", "c"], "y": 0.5  },
+                "tc2l": { "points": ["tip", "c"], "y": 3.5  },
+                "tc2h": { "points": ["tip", "c"], "y": 3.75 },
+                "tc3l": { "points": ["tip", "c"], "y": 7.25 },
+                "tc3h": { "points": ["tip", "c"], "y": 7.5  },
+                "tc4l": { "points": ["c", "tip"], "y": 1.25 },
+
+                "td1h": { "points": ["tip", "d"], "y": 0.5  },
+                "td2l": { "points": ["tip", "d"], "y": 3.5  },
+                "td2h": { "points": ["tip", "d"], "y": 3.75 },
+                "td3l": { "points": ["tip", "d"], "y": 7.25 },
+                "td3h": { "points": ["tip", "d"], "y": 7.5  },
+                "td4l": { "points": ["d", "tip"], "y": 1.25 }
+            },
+            "triangles": [
+                { "uv": 0, "normal": "ab" },
+                [ "tip",  ["ta1h", 1], ["tb1h", 2], "l0" ],
+                [ "ta1h", ["ta2l", 1], ["tb1h", 2] ],
+                [ "tb1h", ["ta2l", 1], ["tb2l", 2] ],
+                [ "ta2l", ["ta2h", 1], ["tb2l", 2], "l1" ],
+                [ "tb2l", ["ta2h", 1], ["tb2h", 2], "l1" ],
+                [ "ta2h", ["ta3l", 1], ["tb2h", 2] ],
+                [ "tb2h", ["ta3l", 1], ["tb3l", 2] ],
+                [ "ta3l", ["ta3h", 1], ["tb3l", 2], "l2" ],
+                [ "tb3l", ["ta3h", 1], ["tb3h", 2], "l2" ],
+                [ "ta3h", ["ta4l", 1], ["tb3h", 2] ],
+                [ "tb3h", ["ta4l", 1], ["tb4l", 2] ],
+                [ "ta4l", ["a", 1],    ["tb4l", 2], "l3" ],
+                [ "tb4l", ["a", 1],    ["b", 2],    "l3" ],
+
+                { "uv": 0, "normal": "bc" },
+                [ "tip",  ["tb1h", 1], ["tc1h", 2], "l0" ],
+                [ "tb1h", ["tb2l", 1], ["tc1h", 2] ],
+                [ "tc1h", ["tb2l", 1], ["tc2l", 2] ],
+                [ "tb2l", ["tb2h", 1], ["tc2l", 2], "l1" ],
+                [ "tc2l", ["tb2h", 1], ["tc2h", 2], "l1" ],
+                [ "tb2h", ["tb3l", 1], ["tc2h", 2] ],
+                [ "tc2h", ["tb3l", 1], ["tc3l", 2] ],
+                [ "tb3l", ["tb3h", 1], ["tc3l", 2], "l2" ],
+                [ "tc3l", ["tb3h", 1], ["tc3h", 2], "l2" ],
+                [ "tb3h", ["tb4l", 1], ["tc3h", 2] ],
+                [ "tc3h", ["tb4l", 1], ["tc4l", 2] ],
+                [ "tb4l", ["b", 1],    ["tc4l", 2], "l3" ],
+                [ "tc4l", ["b", 1],    ["c", 2],    "l3" ],
+
+                { "uv": 0, "normal": "cd" },
+                [ "tip",  ["tc1h", 1], ["td1h", 2], "l0" ],
+                [ "tc1h", ["tc2l", 1], ["td1h", 2] ],
+                [ "td1h", ["tc2l", 1], ["td2l", 2] ],
+                [ "tc2l", ["tc2h", 1], ["td2l", 2], "l1" ],
+                [ "td2l", ["tc2h", 1], ["td2h", 2], "l1" ],
+                [ "tc2h", ["tc3l", 1], ["td2h", 2] ],
+                [ "td2h", ["tc3l", 1], ["td3l", 2] ],
+                [ "tc3l", ["tc3h", 1], ["td3l", 2], "l2" ],
+                [ "td3l", ["tc3h", 1], ["td3h", 2], "l2" ],
+                [ "tc3h", ["tc4l", 1], ["td3h", 2] ],
+                [ "td3h", ["tc4l", 1], ["td4l", 2] ],
+                [ "tc4l", ["c", 1],    ["td4l", 2], "l3" ],
+                [ "td4l", ["c", 1],    ["d", 2],    "l3" ],
+
+                { "uv": 0, "normal": "da" },
+                [ "tip",  ["td1h", 1], ["ta1h", 2], "l0" ],
+                [ "td1h", ["td2l", 1], ["ta1h", 2] ],
+                [ "ta1h", ["td2l", 1], ["ta2l", 2] ],
+                [ "td2l", ["td2h", 1], ["ta2l", 2], "l1" ],
+                [ "ta2l", ["td2h", 1], ["ta2h", 2], "l1" ],
+                [ "td2h", ["td3l", 1], ["ta2h", 2] ],
+                [ "ta2h", ["td3l", 1], ["ta3l", 2] ],
+                [ "td3l", ["td3h", 1], ["ta3l", 2], "l2" ],
+                [ "ta3l", ["td3h", 1], ["ta3h", 2], "l2" ],
+                [ "td3h", ["td4l", 1], ["ta3h", 2] ],
+                [ "ta3h", ["td4l", 1], ["ta4l", 2] ],
+                [ "td4l", ["d", 1],    ["ta4l", 2], "l3" ],
+                [ "ta4l", ["d", 1],    ["a", 2],    "l3" ],
+
+                { "uv": 0, "normal": "back" },
+                [ "a", ["d", 1], ["b", 2], "l3" ],
+                [ "b", ["d", 1], ["c", 2], "l3" ]
+            ]
+        }
+    },
+    "mesh": [
+        {
+            "part": "main"
+        },
+        {
+            "part": "main",
+            "scale": [1, -1, 1],
+            "remap_data": {
+                "l0": "l4",
+                "l1": "l5",
+                "l2": "l6",
+                "l3": "l7"
+            }
+        }
+    ],
+    "textures": {
+        "1": "beatcraft:textures/block/black_mirror.png",
+        "2": "beatcraft:textures/gameplay_objects/arrow.png"
+    },
+    "data": {
+        "default": { "material": 0, "texture": 1, "color": 0 },
+        "l0": { "material": 1, "texture": 2, "color": 0 },
+        "l1": { "material": 1, "texture": 2, "color": 2 },
+        "l2": { "material": 1, "texture": 2, "color": 4 },
+        "l3": { "material": 1, "texture": 2, "color": 6 },
+        "l4": { "material": 1, "texture": 2, "color": 1 },
+        "l5": { "material": 1, "texture": 2, "color": 3 },
+        "l6": { "material": 1, "texture": 2, "color": 5 },
+        "l7": { "material": 1, "texture": 2, "color": 7 }
+    },
+    "cull": true
+}

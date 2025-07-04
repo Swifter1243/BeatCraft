@@ -3,9 +3,12 @@ package com.beatcraft.render.object;
 import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.object.BombNote;
+import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.BombNoteInstanceData;
 import com.beatcraft.render.mesh.MeshLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
@@ -13,6 +16,8 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.joml.Math;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -38,16 +43,21 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-        BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
-            MeshLoader.BOMB_RENDER_MESH.color = data.getColor().toARGB();
-            MeshLoader.BOMB_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-        });
-        MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
-            MeshLoader.BOMB_RENDER_MESH.color = data.getColor().toARGB();
-            MeshLoader.BOMB_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-        });
+        var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+        var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var flipped = new Matrix4f().scale(1, -1, 1);
+        flipped.translate(0, c.y * 2f, 0);
+        flipped.translate(renderPos);
+        flipped.rotate(renderRotation);
+        flipped.scale(0.5f);
+
+        renderPos.add(c);
+
+        var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
 
     }
 

@@ -24,25 +24,9 @@ repositories {
         }
     }
 
-	maven {
-		name = 'GeckoLib'
-		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-		content {
-			includeGroup("software.bernie.geckolib")
-		}
-	}
-
 	maven { url 'https://maven.wispforest.io/releases/' }
 
-	maven {
-		name = "TarsosDSP repository"
-		url = "https://mvn.0110.be/releases"
-	}
 
-//	maven {
-//		name "createmod maven"
-//		url "https://maven.createmod.net/"
-//	}
 }
 
 fabricApi {
@@ -83,9 +67,6 @@ dependencies {
 	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-windows"))
 	include(implementation("com.illposed.osc:javaosc-core:0.9"))
 
-	// Geckolib
-	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
-
 	// BeatSaver
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	include "io.wispforest:owo-sentinel:${project.owo_version}"
@@ -101,18 +82,14 @@ processResources {
 	inputs.property "minecraft_version", project.minecraft_version
 	inputs.property "loader_version", project.loader_version
 	inputs.property "vivecraft_version", project.vivecraft_version
-	inputs.property "geckolib_version", project.geckolib_version
 	inputs.property "owo_version", project.owo_version
-//	inputs.property "flywheel_version", project.flywheel_version
 	filteringCharset "UTF-8"
 
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version,
 				"minecraft_version": project.minecraft_version,
 				"loader_version": project.loader_version,
-				"vivecraft_version": project.vivecraft_version,
-		  		"geckolib_version": project.geckolib_version
-//				"flywheel_version": project.flywheel_version
+				"vivecraft_version": project.vivecraft_version
 	}
 
 

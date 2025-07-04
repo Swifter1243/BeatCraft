@@ -26,22 +26,36 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
         initLayout();
     }
 
+    private static final Text CREDITS = Text.translatable("credits.beatcraft.credits");
+    private static final Text DEVS = Text.translatable("credits.beatcraft.developers");
+    private static final Text DEV = Text.translatable("credits.beatcraft.developer");
+    private static final Text CONTRIBUTORS = Text.translatable("credits.beatcraft.contributors");
+    private static final Text DISCORD = Text.translatable("credits.beatcraft.discord");
 
     private void initLayout() {
+        widgets.clear();
 
         widgets.addAll(List.of(
-            new TextWidget("CREDITS", new Vector3f(0, -250, 0), 3),
+            new TextWidget(CREDITS, new Vector3f(0, -250, 0), 3),
 
-            new TextWidget("Developers", new Vector3f(0, -200, 0), 3),
-            getDeveloperWidget("textures/credits_menu/westbot.png", "Westbot", "Developer", "https://ko-fi.com/westbot", new Vector3f(0, -115, 0)),
-            getDeveloperWidget("textures/credits_menu/swifter.png", "Swifter", "Developer", "https://ko-fi.com/swifter", new Vector3f(0, -25, 0)),
+            new TextWidget(DEVS, new Vector3f(0, -200, 0), 3),
+            getDeveloperWidget("textures/credits_menu/westbot.png", "Westbot", DEV, "https://ko-fi.com/westbot", new Vector3f(0, -115, 0)),
+            getDeveloperWidget("textures/credits_menu/swifter.png", "Swifter", DEV, "https://ko-fi.com/swifter", new Vector3f(0, -25, 0)),
 
             SettingsMenuPanel.getButton(
-                new TextWidget("All Contributors", new Vector3f(0, -11, 0.05f), 2),
+                new TextWidget(CONTRIBUTORS, new Vector3f(0, -11, 0.05f), 2),
                 () -> MinecraftClient.getInstance().setScreen(new ContributorsScreen()),
-                new Vector3f(0, 70, 0),
+                new Vector3f(-120, 60, 0),
+                new Vector2f(230, 50)
+            ),
+
+            SettingsMenuPanel.getButton(
+                new TextWidget(DISCORD, new Vector3f(0, -11, 0.05f), 2),
+                () -> ConfirmLinkScreen.open(null, "https://discord.gg/eQH4pbHptM"),
+                new Vector3f(120, 60, 0),
                 new Vector2f(230, 50)
             )
+
         ));
 
     }
@@ -53,7 +67,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
     private static final int ROLE_POS = 10;
 
 
-    private Widget getDeveloperWidget(String iconName, String name, String role, String kofi, Vector3f position) {
+    private Widget getDeveloperWidget(String iconName, String name, Text role, String kofi, Vector3f position) {
 
         return new ContainerWidget(position, new Vector2f(),
             new TextureWidget(BeatCraft.id(iconName), new Vector3f(ICON_OFFSET, 0, 0), new Vector2f(80, 80)),
@@ -61,9 +75,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
             new TextWidget(role, new Vector3f(TEXT_OFFSET, ROLE_POS, -0.01f), 2).alignedLeft(),
             SettingsMenuPanel.getButton(
                 new TextureWidget(BeatCraft.id("textures/credits_menu/minecraft_kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
-                () -> {
-                    ConfirmLinkScreen.open(null, kofi);
-                },
+                () -> ConfirmLinkScreen.open(null, kofi),
                 new Vector3f(KOFI_BUTTON_OFFSET, 0, 0), new Vector2f(120, 60)
             )
         );

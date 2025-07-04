@@ -26,5 +26,5 @@ void main() {
     s += texture(Sampler0, texCoord0 + d.wy) * 2.0;
     s += texture(Sampler0, texCoord0 + d.xy);
 
-    fragColor = s / 16.0;
+    fragColor = s / 8.0;
 }

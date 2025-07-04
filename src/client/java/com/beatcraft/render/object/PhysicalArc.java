@@ -124,9 +124,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         var localPos = matrices.peek().getPositionMatrix().getTranslation(MemoryPool.newVector3f());
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
-        //localPos.x = 0;
-        //localPos.y = 0;
-        //localPos.add(0, 0, camPos.z + 0.25f);
+
         localPos.add(0.2f, 0.3f, 0.25f);
 
         render(basePath, localPos, data.getColor().toARGB());
@@ -241,13 +239,13 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
             buffer.vertex(q3[2]).color(col);
             buffer.vertex(q3[3]).color(col);
 
-            MemoryPool.release(h1);
-            MemoryPool.release(h2);
+            MemoryPool.releaseSafe(h1);
+            MemoryPool.releaseSafe(h2);
 
         }
 
-        MemoryPool.release(origin);
-        MemoryPool.release(cameraRotation);
+        MemoryPool.releaseSafe(origin);
+        MemoryPool.releaseSafe(cameraRotation);
 
     }
 

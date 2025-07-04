@@ -3,6 +3,7 @@ package com.beatcraft;
 import com.beatcraft.blocks.CornerLightTileBlock;
 import com.beatcraft.blocks.EdgeLightTileBlock;
 import com.beatcraft.blocks.ModBlocks;
+import com.beatcraft.blocks.entity.ColorNoteDisplayBlockEntity;
 import com.beatcraft.data.components.ModComponents;
 import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.items.ModItems;
@@ -92,6 +93,8 @@ public class BeatCraft implements ModInitializer {
 
 		StructurePlacer.init();
 
+		ColorNoteDisplayBlockEntity.init();
+
 		registerCommands();
 
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
@@ -138,7 +141,7 @@ public class BeatCraft implements ModInitializer {
 
 				initGameRules(server, world);
 
-				player.sendMessage(Text.of("§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, §fDoMobSpawning§7, and §fDoTraderSpawning §7 set to §4false§7;"));
+				player.sendMessage(Text.translatable("event.beatcraft.first_join_feedback"));
 
 			}
 
@@ -209,7 +212,7 @@ public class BeatCraft implements ModInitializer {
 
 		placePlayArea(world);
 
-		context.getSource().sendFeedback(() -> Text.of("Generated play area at world origin"), true);
+		context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.generated_playarea"), true);
 
 		return 1;
 	}
@@ -253,9 +256,9 @@ public class BeatCraft implements ModInitializer {
 
 	private static int outputCurrentEnvironment(CommandContext<ServerCommandSource> context) {
 		if (StructurePlacer.currentStructure.isEmpty()) {
-			context.getSource().sendFeedback(() -> Text.of("No environment is currently placed"), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.no_environment_placed"), false);
 		} else {
-			context.getSource().sendFeedback(() -> Text.of(String.format("Current environment: %s", StructurePlacer.currentStructure)), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.current_environment", StructurePlacer.currentStructure), false);
 		}
 		return 1;
 	}
@@ -263,9 +266,9 @@ public class BeatCraft implements ModInitializer {
 	private static int removeEnvironment(CommandContext<ServerCommandSource> context) {
 
 		if (StructurePlacer.removeStructure(context.getSource().getWorld())) {
-			context.getSource().sendFeedback(() -> Text.of("Removed environment structure"), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.removed_environment"), false);
 		} else {
-			context.getSource().sendFeedback(() -> Text.of("No environment to remove"), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.no_environment_to_remove"), false);
 		}
 
 		return 1;
@@ -276,9 +279,9 @@ public class BeatCraft implements ModInitializer {
 		String environment = StringArgumentType.getString(context, "environment");
 
 		if (StructurePlacer.placeStructureForced(environment, context.getSource().getWorld())) {
-			context.getSource().sendFeedback(() -> Text.of(String.format("Placed environment '%s'", environment)), true);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.environment_placed", environment), true);
 		} else {
-			context.getSource().sendFeedback(() -> Text.of(String.format("'%s' is not a valid environment", environment)), true);
+			context.getSource().sendFeedback(() -> Text.translatable("command.beatcraft.feedback.invalid_environment", environment), true);
 		}
 
 		return 1;

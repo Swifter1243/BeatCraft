@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -126,6 +127,8 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
         }
     }
 
+    private static final Text REPORT_BUGS = Text.translatable("menu.beatcraft.song_select.report_bugs");
+
     public void initLayout() {
         widgets.clear();
         songDisplay.children.clear();
@@ -140,7 +143,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 new TextureWidget(Identifier.of(BeatCraft.MOD_ID, "textures/gui/song_selector/down_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
             ),
             SettingsMenuPanel.getButton(
-                new TextWidget("Report bugs", new Vector3f(0, -11, 0.05f), 3).withColor(0xFFBB2222),
+                new TextWidget(REPORT_BUGS, new Vector3f(0, -11, 0.05f), 3).withColor(0xFFBB2222),
                 () -> {
                     ConfirmLinkScreen.open(null, "https://github.com/Swifter1243/BeatCraft/issues");
                 },
@@ -272,6 +275,8 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
     }
 
+    private static final Text PLAY = Text.translatable("menu.beatcraft.song_select.play");
+
     private void openDiff(String diff, String set, SongData data) {
         var info = data.getBeatMapInfo(set, diff);
 
@@ -296,18 +301,20 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                         new GradientWidget(new Vector3f(0, 0, 0.005f), new Vector2f(130, 50), 0x7F4270E0, 0x224270C0, 0)
                     )
                 ),
-                new TextWidget("PLAY", new Vector3f(0, -11, 0.05f)).withScale(3)
+                new TextWidget(PLAY, new Vector3f(0, -11, 0.05f)).withScale(3)
             )
         );
 
     }
 
+    private static final Text MAP_DOWNLOAD_ERROR = Text.translatable("menu.beatcraft.song_select.song_download_error");
+
     public void tryPlayMap(SongData data, SongData.BeatmapInfo info, String set, String diff) {
         try {
             if (song_play_request != null) song_play_request.cancel(true);
+            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
             currentDisplay = null;
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
-            BeatmapPlayer.setupDifficultyFromFile(info.getBeatmapLocation().toString());
             // send structure place method so it can happen while the song loads client-side
             if (BeatCraftClient.playerConfig.doEnvironmentPlacing() && BeatmapPlayer.currentBeatmap.lightShowEnvironment != null) {
                 String env = BeatmapPlayer.currentBeatmap.lightShowEnvironment.getID();
@@ -326,10 +333,16 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 ReplayHandler.setup(data.getId(), set, diff);
             }
 
-        } catch (IOException e) {
-            BeatCraft.LOGGER.error("There was a tragic failure whilst loading a beatmap", e);
+        } catch (Exception e) {
+            HUDRenderer.errorMessagePanel.setContent(MAP_DOWNLOAD_ERROR.getLiteralString());
+            HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+            BeatmapPlayer.currentBeatmap = null;
+            BeatmapPlayer.currentInfo = null;
+            BeatCraft.LOGGER.error("Map failed to load", e);
         }
     }
+
+    private static final Text DELETE = Text.translatable("menu.beatcraft.song_select.delete");
 
     private CompletableFuture<Void> song_play_request = null;
     private void setPreview(SongData data) {
@@ -418,7 +431,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
                 ), List.of(
                     new GradientWidget(new Vector3f(0, 0, 0), new Vector2f(60, 25), 0x7FCC2222, 0x7FAA2222, 0)
                 )),
-                new TextWidget("DELETE", new Vector3f(0, -6, 0.05f)).withScale(1.5f)
+                new TextWidget(DELETE, new Vector3f(0, -6, 0.05f)).withScale(1.5f)
             )
         ));
 

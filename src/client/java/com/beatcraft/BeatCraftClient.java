@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
@@ -17,7 +18,9 @@ import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.block.BlockRenderSettings;
 import com.beatcraft.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.render.effect.Bloomfog;
-import com.beatcraft.render.item.GeckolibRenderInit;
+import com.beatcraft.render.instancing.InstancedMesh;
+import com.beatcraft.render.item.ItemRenderSettings;
+import com.beatcraft.render.item.SaberItemRenderer;
 import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.ReplayHandler;
@@ -40,10 +43,14 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
+import net.minecraft.command.argument.NbtCompoundArgumentType;
+import net.minecraft.nbt.*;
+import net.minecraft.resource.ResourceType;
+import net.minecraft.text.*;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
@@ -82,6 +89,9 @@ public class BeatCraftClient implements ClientModInitializer {
     public static final Vec3d playerSaberPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerSaberRotation = new Quaternionf();
 
+    public static int windowWidth = 0;
+    public static int windowHeight = 0;
+
     @Override
     public void onInitializeClient() {
 
@@ -90,12 +100,15 @@ public class BeatCraftClient implements ClientModInitializer {
         registerCommands();
 
         BlockRenderSettings.init();
-        GeckolibRenderInit.init();
+        ItemRenderSettings.init();
 
         BeatCraftClientNetworking.init();
 
         playerConfig = PlayerConfig.loadFromFile();
 
+        BaseProviderHandler.setupDynamicProviders();
+
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new BeatCraftAssetReloadListener());
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
@@ -103,6 +116,17 @@ public class BeatCraftClient implements ClientModInitializer {
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+
+            var window = MinecraftClient.getInstance().getWindow();
+            var w = Math.max(1, window.getWidth());
+            var h = Math.max(1, window.getHeight());
+
+            if (w != windowWidth || h != windowHeight) {
+                windowWidth = w;
+                windowHeight = h;
+                BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+            }
+
             if (settingsKeyBind.wasPressed()) {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
@@ -125,7 +149,7 @@ public class BeatCraftClient implements ClientModInitializer {
             if (toggleFPFCKeybind.wasPressed()) {
                 if (client.player != null) {
                     toggleFPFC();
-                    client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+                    client.player.sendMessage(Text.translatable(GameLogicHandler.FPFC ? "event.beatcraft.fpfc_enabled" : "event.beatcraft.fpfc_disabled"));
                     while (toggleFPFCKeybind.wasPressed());
                 }
             }
@@ -133,34 +157,20 @@ public class BeatCraftClient implements ClientModInitializer {
                 if (client.player != null) {
                     if (InputSystem.isMovementLocked()) {
                         InputSystem.unlockMovement();
-                        client.player.sendMessage(Text.of("Player movement UNLOCKED!"));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_unlocked"));
                     } else {
                         InputSystem.lockMovement();
-                        client.player.sendMessage(Text.of(String.format("Player movement LOCKED! (press \"%s\" to unlock)", toggleMovementLock.getBoundKeyLocalizedText().getString())));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_locked", toggleMovementLock.getBoundKeyLocalizedText().getString()));
                     }
                     while (toggleMovementLock.wasPressed()) ;
                 }
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            Bloomfog.initShaders();
-            BeatmapAudioPlayer.init();
-
-            var window = MinecraftClient.getInstance().getWindow();
-            var w = window.getWidth();
-            var h = window.getHeight();
-
-            if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
-            BeatCraftRenderer.bloomfog.resize(w, h, true);
-
-            songs.loadSongs();
-            ReplayHandler.loadReplays();
-            HUDRenderer.initSongSelectMenuPanel();
-        });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
+            InstancedMesh.cleanupAll();
             BeatCraftRenderer.bloomfog.unload();
             BeatmapAudioPlayer.unmuteVanillaMusic();
             playerConfig.writeToFile();
@@ -176,19 +186,16 @@ public class BeatCraftClient implements ClientModInitializer {
         });
 
 
-        WindowResizeCallback.EVENT.register((client, window) -> {
-            BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
-        });
-
     }
 
     private void setupFiles() {
         String runDirectory = MinecraftClient.getInstance().runDirectory.getAbsolutePath();
         List<String> makeFolders = List.of(
-            runDirectory + "/beatmaps/",          // for beatmaps
-            runDirectory + "/beatcraft/",         // root directory for other data
-            runDirectory + "/beatcraft/replay/",  // replay files
-            runDirectory + "/beatcraft/temp/"     // for stuff like temporary images for song covers and audio previews
+            runDirectory + "/beatmaps/",               // for beatmaps
+            runDirectory + "/beatcraft/",              // root directory for other data
+            runDirectory + "/beatcraft/replay/",       // replay files
+            runDirectory + "/beatcraft/temp/",         // for stuff like temporary images for song covers and audio previews
+            runDirectory + "/beatcraft/custom_sabers/" // for custom sabers
         );
 
         for (String folderPath : makeFolders) {
@@ -228,6 +235,7 @@ public class BeatCraftClient implements ClientModInitializer {
 
     private int songSpeedReset(CommandContext<FabricClientCommandSource> context) {
         BeatmapPlayer.setPlaybackSpeed(1);
+        GameLogicHandler.mapSpeed = 1;
         context.getSource().sendFeedback(Text.literal("Song speed reset! (1.0)"));
         return 1;
     }
@@ -235,6 +243,7 @@ public class BeatCraftClient implements ClientModInitializer {
     private int songSpeedScalar(CommandContext<FabricClientCommandSource> context) {
         float speed = FloatArgumentType.getFloat(context, "scalar");
         BeatmapPlayer.setPlaybackSpeed(speed);
+        GameLogicHandler.mapSpeed = speed;
         context.getSource().sendFeedback(Text.literal("Song speed set to " + speed + "!"));
         return 1;
     }
@@ -681,6 +690,55 @@ public class BeatCraftClient implements ClientModInitializer {
         return 1;
     }
 
+    private int selectSaber(CommandContext<FabricClientCommandSource> context) {
+        var selector = NbtCompoundArgumentType.getNbtCompound(context, "data");
+
+        var name = selector.getString("name");
+        var auths = selector.getList("authors", NbtElement.STRING_TYPE);
+        var authors = auths.stream().map(NbtElement::asString).toList();
+
+        var found = SaberItemRenderer.selectModel(name, authors);
+
+        if (!found) {
+            context.getSource().sendFeedback(Text.literal("failed to load model"));
+        }
+
+        return 1;
+    }
+
+    private int listSabers(CommandContext<FabricClientCommandSource> context) {
+
+        for (var model : SaberItemRenderer.models) {
+
+            var auths = String.join("§f, §d", model.authors);
+
+            MutableText message = Text.literal("§a" + model.modelName + "§f [§d" + auths + "§f]");
+
+            var nbt = new NbtCompound();
+            nbt.putString("name", model.modelName);
+            var ls = new NbtList();
+            for (var auth : model.authors) {
+                ls.add(NbtString.of(auth));
+            }
+            nbt.put("authors", ls);
+
+             message.fillStyle(message.getStyle()
+                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, nbt.asString()))
+                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy selection data to clipboard")))
+             );
+
+             context.getSource().sendFeedback(message);
+        }
+
+        return 1;
+    }
+
+    private int reloadSaberModels(CommandContext<FabricClientCommandSource> context) {
+        SaberItemRenderer.init();
+        context.getSource().sendFeedback(Text.literal("Reloaded saber models"));
+        return 1;
+    }
+
 
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) -> {
@@ -807,6 +865,19 @@ public class BeatCraftClient implements ClientModInitializer {
                     .then(argument("size", IntegerArgumentType.integer(0))
                         .executes(this::setEventVisualizerSpacing)
                     )
+                )
+            );
+            dispatcher.register(literal("custom_sabers")
+                .then(literal("select")
+                    .then(argument("data", NbtCompoundArgumentType.nbtCompound())
+                        .executes(this::selectSaber)
+                    )
+                )
+                .then(literal("list")
+                    .executes(this::listSabers)
+                )
+                .then(literal("refresh")
+                    .executes(this::reloadSaberModels)
                 )
             );
         }));

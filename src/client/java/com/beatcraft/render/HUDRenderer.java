@@ -9,10 +9,7 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Rank;
 import com.beatcraft.memory.MemoryPool;
-import com.beatcraft.menu.EndScreenData;
-import com.beatcraft.menu.ErrorMessageMenu;
-import com.beatcraft.menu.ModifierMenu;
-import com.beatcraft.menu.SongSelectMenu;
+import com.beatcraft.menu.*;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.menu.*;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
@@ -43,7 +40,8 @@ public class HUDRenderer {
         Downloader,
         EndScreen,
         ConfirmSongDelete,
-        Paused
+        Paused,
+        SaberPreview,
     }
 
     public static MenuScene scene = MenuScene.SongSelect;
@@ -91,6 +89,20 @@ public class HUDRenderer {
 
     private static final CreditsPanel creditsPanel = new CreditsPanel();
 
+    public static boolean showKeyboard = false;
+    private static final KeyboardMenu keyboardData = new KeyboardMenu(null);
+    public static final KeyboardPanel keyboard = new KeyboardPanel(keyboardData);
+
+    public static void hookToKeyboard(TextInput input) {
+        keyboardData.input = input;
+        showKeyboard = true;
+        errorMessagePanel.close();
+    }
+
+    public static void hideKeyboard() {
+        showKeyboard = false;
+    }
+
     public static void initSongSelectMenuPanel() {
         songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
     }
@@ -104,6 +116,12 @@ public class HUDRenderer {
 
     public static void render(VertexConsumerProvider immediate) {
         vertexConsumerProvider = immediate;
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
 
         switch (scene) {
             case InGame -> {
@@ -128,6 +146,9 @@ public class HUDRenderer {
             }
             case Paused -> {
                 renderPauseScreen(immediate);
+            }
+            case SaberPreview -> {
+                renderSaberPreviewScreen(immediate);
             }
         }
 
@@ -212,22 +233,10 @@ public class HUDRenderer {
         var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
-        var pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+        var pair = songSelectMenuPanel.raycast(saberPos, saberRot);
 
         Vector2f local = null;
-
-        if (pair != null) {
-            spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
-
-            local = pair.getRight();
-        }
-
-        errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
-
-
-        pair = songSelectMenuPanel.raycast(saberPos, saberRot);
-
-        local = null;
 
         if (pair != null) {
             spawnMenuPointerParticle(pair.getLeft(), songSelectMenuPanel.getNormal());
@@ -260,6 +269,20 @@ public class HUDRenderer {
 
         creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+            local = null;
+
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+
+                local = pair.getRight();
+            }
+
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        }
+
     }
 
     private static void renderSettings(VertexConsumerProvider immediate) {
@@ -277,6 +300,20 @@ public class HUDRenderer {
         }
 
         settingsMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
+
+            local = null;
+
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+
+                local = pair.getRight();
+            }
+
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        }
 
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
 
@@ -308,19 +345,14 @@ public class HUDRenderer {
         var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
 
         var pair = songDownloaderMenuPanel.raycast(saberPos, saberRot);
-
         Vector2f local = null;
-
         if (pair != null) {
             spawnMenuPointerParticle(pair.getLeft(), songDownloaderMenuPanel.getNormal());
-
             local = pair.getRight();
         }
-
         songDownloaderMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
         pair = modifierMenuPanel.raycast(saberPos, saberRot);
-
         if (pair == null) {
             local = null;
         } else {
@@ -329,18 +361,32 @@ public class HUDRenderer {
         }
 
         modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
-
         pair = creditsPanel.raycast(saberPos, saberRot);
-
         if (pair == null) {
             local = null;
         } else {
             spawnMenuPointerParticle(pair.getLeft(), creditsPanel.getNormal());
             local = pair.getRight();
         }
-
         creditsPanel.render((VertexConsumerProvider.Immediate) immediate, local);
 
+        if (errorMessagePanel.shouldDisplay()) {
+            pair = errorMessagePanel.raycast(saberPos, saberRot);
+            local = null;
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), errorMessagePanel.getNormal());
+                local = pair.getRight();
+            }
+            errorMessagePanel.render((VertexConsumerProvider.Immediate) immediate, local);
+        } else if (showKeyboard) {
+            pair = keyboard.raycast(saberPos, saberRot);
+            local = null;
+            if (pair != null) {
+                spawnMenuPointerParticle(pair.getLeft(), keyboard.getNormal());
+                local = pair.getRight();
+            }
+            keyboard.render((VertexConsumerProvider.Immediate) immediate, local);
+        }
 
     }
 
@@ -394,6 +440,27 @@ public class HUDRenderer {
         pauseScreenPanel.render((VertexConsumerProvider.Immediate) immediate, local);
     }
 
+    private static void renderSaberPreviewScreen(VertexConsumerProvider immediate) {
+        var saberPos = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberPos : GameLogicHandler.leftSaberPos;
+        var saberRot = pointerSaber == NoteType.BLUE ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation;
+
+        var pair = modifierMenuPanel.raycast(saberPos, saberRot);
+
+        Vector2f local;
+
+        if (pair == null) {
+            local = null;
+        } else {
+            spawnMenuPointerParticle(pair.getLeft(), modifierMenuPanel.getNormal());
+            local = pair.getRight();
+        }
+
+        modifierMenuPanel.render((VertexConsumerProvider.Immediate) immediate, local);
+
+
+
+    }
+
     private static void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
         BeatcraftParticleRenderer.addParticle(new MenuPointerParticle(position.add(normal.mul(0.01f, new Vector3f()), new Vector3f()), normal));
     }
@@ -420,10 +487,11 @@ public class HUDRenderer {
 
     private static void renderCombo(MatrixStack matrices, TextRenderer textRenderer, BufferBuilder buffer, Vector3f cameraPos, VertexConsumerProvider immediate) {
 
-        int w = textRenderer.getWidth("COMBO");
+        var txt = Text.translatable("hud.beatcraft.combo");
+        int w = textRenderer.getWidth(txt.getString());
 
         textRenderer.draw(
-            Text.literal("COMBO"),
+            txt,
             -w/2f, -28, TEXT_COLOR, false,
             matrices.peek().getPositionMatrix(), immediate,
             TEXT_LAYER, 0, TEXT_LIGHT

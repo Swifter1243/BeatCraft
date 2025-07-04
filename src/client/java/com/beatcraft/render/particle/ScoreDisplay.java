@@ -31,6 +31,8 @@ public class ScoreDisplay implements Particle {
 
     private static final Function<Float, Float> easing = Easing.getEasing("easeOutExpo");
 
+    private static final Text MISS = Text.translatable("hud.beatcraft.miss");
+
     @Override
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
 
@@ -48,7 +50,7 @@ public class ScoreDisplay implements Particle {
         if (HUDRenderer.vertexConsumerProvider != null) {
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-            String display = String.valueOf(this.score == 0 ? "x" : this.score == -1 ? "MISS" : this.score);
+            String display = String.valueOf(this.score == 0 ? "x" : this.score == -1 ? MISS.getString() : this.score);
 
             int color = this.score > 100 ? 0xFFFFFFFF : 0xFF909090;
 

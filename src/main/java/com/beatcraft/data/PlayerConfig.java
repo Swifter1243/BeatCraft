@@ -2,7 +2,7 @@ package com.beatcraft.data;
 
 
 import com.beatcraft.BeatCraft;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -59,6 +59,9 @@ public class PlayerConfig {
     private float debug_lightshow_lookAheadDistance = 16f;
     private float debug_lightshow_lookBehindDistance = 8f;
 
+    private String option_saber_name = "Default Saber";
+    private List<String> option_saber_authors = List.of("BeatCraft");
+
     public PlayerConfig(JsonObject json) {
         this(); // set everything to default values
 
@@ -85,7 +88,17 @@ public class PlayerConfig {
         debug_lightshow_lookBehindDistance = JsonUtil.getOrDefault(json, "debug.lightshow.look_behind", JsonElement::getAsFloat, debug_lightshow_lookBehindDistance);
         debug_lightshow_beatSpacing = JsonUtil.getOrDefault(json, "debug.lightshow.beat_spacing", JsonElement::getAsFloat, debug_lightshow_beatSpacing);
 
-        Stash.updateTrailSize(option_trailIntensity);
+        var custom_saber_model = JsonUtil.getOrDefault(json, "option.selected_saber_model", JsonElement::getAsJsonObject, new JsonObject());
+
+        option_saber_name = JsonUtil.getOrDefault(custom_saber_model, "name", JsonElement::getAsString, option_saber_name);
+        var defaultArray = new JsonArray();
+        for (var auth : option_saber_authors) {
+            defaultArray.add(auth);
+        }
+        option_saber_authors = JsonUtil.getOrDefault(custom_saber_model, "authors", JsonElement::getAsJsonArray, defaultArray)
+            .asList().stream().map(JsonElement::getAsString).toList();
+
+        CycleStack.updateTrailSize(option_trailIntensity);
 
         if (json.has("active_modifiers")) {
             JsonArray rawModifiers = json.getAsJsonArray("active_modifiers");
@@ -136,10 +149,19 @@ public class PlayerConfig {
         json.addProperty("debug.lightshow.look_behind", debug_lightshow_lookBehindDistance);
         json.addProperty("debug.lightshow.beat_spacing", debug_lightshow_beatSpacing);
 
-
         json.addProperty("controller.selectedProfile.index", controller_selectedProfile_index);
 
         json.addProperty("setting.placeEnvironmentStructures", setting_placeEnvironmentStructures);
+
+        var auths = new JsonArray();
+        for (var auth : option_saber_authors) {
+            auths.add(auth);
+        }
+        var selected_model = new JsonObject();
+        selected_model.addProperty("name", option_saber_name);
+        selected_model.add("authors", auths);
+
+        json.add("option.selected_saber_model", selected_model);
 
         JsonArray array = new JsonArray();
 
@@ -179,6 +201,7 @@ public class PlayerConfig {
         } else if (!active) {
             activeModifiers.remove(modifier);
         }
+        writeToFile();
     }
 
     public List<String> getActiveModifiers() {
@@ -191,6 +214,7 @@ public class PlayerConfig {
 
     public void setVolume(float volume) {
         this.audio_volume = volume;
+        writeToFile();
     }
 
     public float getVolume() {
@@ -210,6 +234,7 @@ public class PlayerConfig {
 
     public void setOverrideLatency(boolean enabled) {
         audio_overrideLatency = enabled;
+        writeToFile();
     }
 
     public boolean getOverrideLatency() {
@@ -218,10 +243,12 @@ public class PlayerConfig {
 
     public void setLatency(long nanos) {
         audio_latency = (int) (nanos * 1_000_000);
+        writeToFile();
     }
 
     public void setSmokeRendering(boolean value) {
         quality_smokeGraphics = value;
+        writeToFile();
     }
 
     public boolean shouldRenderSmoke() {
@@ -230,6 +257,7 @@ public class PlayerConfig {
 
     public void setBurnMarkRendering(boolean value) {
         quality_burnMarkTrails = value;
+        writeToFile();
     }
 
     public boolean shouldRenderBurnMarkTrails() {
@@ -238,6 +266,7 @@ public class PlayerConfig {
 
     public void setReducedDebris(boolean value) {
         option_reducedDebris = value;
+        writeToFile();
     }
 
     public boolean isReducedDebris() {
@@ -246,6 +275,7 @@ public class PlayerConfig {
 
     public void setSparkParticles(boolean value) {
         quality_sparkParticles = value;
+        writeToFile();
     }
 
     public boolean doSparkParticles() {
@@ -258,11 +288,13 @@ public class PlayerConfig {
 
     public void setEnvironmentPlacing(boolean value) {
         setting_placeEnvironmentStructures = value;
+        writeToFile();
     }
 
     public void setTrailIntensity(int value) {
         option_trailIntensity = value;
-        Stash.updateTrailSize(value);
+        CycleStack.updateTrailSize(value);
+        writeToFile();
     }
 
     public int getTrailIntensity() {
@@ -271,6 +303,7 @@ public class PlayerConfig {
 
     public void setBloomfogEnabled(boolean value) {
         quality_doBloomfog = value;
+        writeToFile();
     }
 
     public boolean doBloomfog() {
@@ -279,6 +312,7 @@ public class PlayerConfig {
 
     public void setBloomEnabled(boolean value) {
         quality_doBloom = value;
+        writeToFile();
     }
 
     public boolean doBloom() {
@@ -287,6 +321,7 @@ public class PlayerConfig {
 
     public void setMirrorEnabled(boolean value) {
         quality_doMirror = value;
+        writeToFile();
     }
 
     public boolean doMirror() {
@@ -295,6 +330,7 @@ public class PlayerConfig {
 
     public void setSkyFogEnabled(boolean value) {
         quality_skyFog = value;
+        writeToFile();
     }
 
     public boolean doSkyFog() {
@@ -307,14 +343,17 @@ public class PlayerConfig {
 
     public void setHealthStyle(HealthStyle style) {
         option_healthStyle = style;
+        writeToFile();
     }
 
     public void setHealthStyle(int style) {
         option_healthStyle = HealthStyle.values()[Math.clamp(style, 0, HealthStyle.values().length-1)];
+        writeToFile();
     }
 
     public void setLightshowEventRendering(boolean state) {
         debug_lightshow_doEventRendering = state;
+        writeToFile();
     }
 
     public boolean doLightshowEventRendering() {
@@ -327,6 +366,7 @@ public class PlayerConfig {
 
     public void setDebugLightshowLookAhead(float value) {
         debug_lightshow_lookAheadDistance = Math.max(1, value);
+        writeToFile();
     }
 
     public float getDebugLightshowLookBehind() {
@@ -335,6 +375,7 @@ public class PlayerConfig {
 
     public void setDebugLightshowLookBehind(float value) {
         debug_lightshow_lookBehindDistance = Math.max(1, value);
+        writeToFile();
     }
 
     public float getDebugLightshowBeatSpacing() {
@@ -343,8 +384,26 @@ public class PlayerConfig {
 
     public void setDebugLightshowBeatSpacing(float value) {
         debug_lightshow_beatSpacing = Math.max(1, value);
+        writeToFile();
     }
 
+    public String getSelectedSaberModelName() {
+        return option_saber_name;
+    }
+
+    public List<String> getSelectedSaberModelAuthors() {
+        return option_saber_authors;
+    }
+
+    public void setSelectedSaberModelName(String name) {
+        option_saber_name = name;
+        writeToFile();
+    }
+
+    public void setSelectedSaberModelAuthors(List<String> authors) {
+        option_saber_authors = authors;
+        writeToFile();
+    }
 
     // Controller profiles
     public ControllerProfile getActiveControllerProfile() {

@@ -2,6 +2,7 @@ package com.beatcraft.beatmap;
 
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.animation.event.AnimatedPathEventContainer;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.event.*;
 import com.beatcraft.beatmap.data.object.BeatmapObject;
 import com.beatcraft.beatmap.data.object.GameplayObject;
@@ -198,6 +199,7 @@ public abstract class Difficulty {
     public void update(float beat, double deltaTime) {
         trackLibrary.update(beat);
         parentHandler.update(beat);
+        BaseProviderHandler.update();
         if (lightShowEnvironment != null) {
             lightShowEnvironment.update(beat, deltaTime);
             EventVisualizer.update(beat);

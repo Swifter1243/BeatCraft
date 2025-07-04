@@ -4,7 +4,8 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.menu.SongDownloader;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.InputSystem;
 import com.beatcraft.menu.ModifierMenu;
@@ -15,9 +16,9 @@ import com.beatcraft.screen.SongDownloaderScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -35,7 +36,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         PlayerOptions,
         Settings,
         Downloader,
-        Replay
+        Replay,
+        Sabers
     }
 
     private SongSelectPage currentPage = SongSelectPage.Modifiers;
@@ -46,6 +48,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private final ContainerWidget downloaderPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget replayPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget replayPageStatic = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
+    private final ContainerWidget customSaberPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
 
     public ModifierMenuPanel(ModifierMenu data) {
         super(data);
@@ -53,7 +56,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         position.set(0, 2, 6.4f);
         position.rotateY(angle);
         orientation.set(new Quaternionf().rotateY(angle));
-        size.set(800, 500);
+        size.set(800, 600);
         backgroundColor = 0;
 
         initLayout();
@@ -62,15 +65,22 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
     private void initLayout() {
+        widgets.clear();
+        modifierPage.children.clear();
+        playerOptionsPage.children.clear();
+        settingsPage.children.clear();
+        downloaderPage.children.clear();
+        customSaberPage.children.clear();
 
         // Top buttons: Modifiers | Player Options | Settings | BeatSaver | Replay
-        int BUTTON_COUNT = 5;
+        int BUTTON_COUNT = 3;
         widgets.addAll(List.of(
-            getOptionButton("Modifiers", 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
-            getOptionButton("Player Options", 1, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
-            getOptionButton("Settings", 2, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
-            getOptionButton("BeatSaver", 3, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
-            getOptionButton("Replay", 4, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay)
+            getOptionButton("Modifiers", 0, 0, BUTTON_COUNT, this::setModifierPage, SongSelectPage.Modifiers),
+            getOptionButton("Player Options", 1, 0, BUTTON_COUNT, this::setPlayerOptionsPage, SongSelectPage.PlayerOptions),
+            getOptionButton("Settings", 2, 0, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
+            getOptionButton("BeatSaver", 0, 1, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
+            getOptionButton("Replay", 1, 1, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay),
+            getOptionButton("Custom Sabers", 2, 1, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
         ));
 
         modifierPage.children.addAll(List.of(
@@ -120,9 +130,12 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Trail Intensity",
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(10, Stash.getTrailSize()-10)),
-                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, Stash.getTrailSize()+10)),
-                () -> String.valueOf(BeatCraftClient.playerConfig.getTrailIntensity()),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.max(3, CycleStack.getTrailSize()-1)),
+                () -> BeatCraftClient.playerConfig.setTrailIntensity(Math.min(200, CycleStack.getTrailSize()+1)),
+                () -> {
+                    var x = BeatCraftClient.playerConfig.getTrailIntensity();
+                    return x <= 3 ? "OFF" : String.valueOf(x);
+                },
                 new Vector3f(-100, -71, 0)),
 
             SettingsMenuPanel.getOptionModifier("Show Arms",
@@ -196,30 +209,54 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         ));
 
 
-        downloaderPage.children.add(SettingsMenuPanel.getButton(
-            new TextWidget("Open download screen", new Vector3f(0, -11, 0.01f), 3),
-            () -> {
-                var screen = new SongDownloaderScreen(null);
-                MinecraftClient.getInstance().setScreen(screen);
-            },
-            new Vector3f(0, 0, 0),
-            new Vector2f(350, 50)
+        var q = SongDownloader.queryBuilder;
+        downloaderPage.children.addAll(List.of(
+            new TextWidget("Filters (WIP)", new Vector3f(0, -200, 0.01f), 2.5f),
+
+            get3StateBool("Ascending Order", () -> q.ascending, v -> q.ascending = v, new Vector3f(-200, -150, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Chroma", () -> q.chroma, v -> q.chroma = v, new Vector3f(-200, -100, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Noodle", () -> q.noodle, v -> q.noodle = v, new Vector3f(-200, -50, 0), new Vector2f(250, 45)),
+            get3StateBool("Mod: Vivify*", () -> q.vivify, v -> q.vivify = v, new Vector3f(-200, 0, 0), new Vector2f(250, 45)),
+            get3StateBool("Curated", () -> q.curated, v -> q.curated = v, new Vector3f(-200, 50, 0), new Vector2f(250, 45)),
+            get3StateBool("Verified", () -> q.verified, v -> q.verified = v, new Vector3f(-200, 100, 0), new Vector2f(250, 45)),
+
+            new TextWidget("*Vivify maps are not fully supported", new Vector3f(0, 140, 0.01f), 1.5f)
         ));
+
+        customSaberPage.children.add(new TextWidget("WIP. for now use /custom_sabers", new Vector3f(0, -11, 0.01f), 4));
 
         setupReplayPageStatic();
         //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
 
     }
 
-    private Widget getOptionButton(String label, int index, int count, Runnable onClick, SongSelectPage page) {
+    private Widget get3StateBool(String label, Callable<Boolean> getter, Consumer<Boolean> setter, Vector3f position, Vector2f size) {
+        return SettingsMenuPanel.getButton(
+            new TextWidget(() -> {
+                var v = getter.call();
+                return label + " : " + (v == null ? "--" : v ? "True" : "False");
+            }, new Vector3f(-(size.x/2) + 5, -11, 0.01f), 2).alignedLeft().withDynamicScaling((int) (size.x/2)),
+            () -> {
+                try {
+                    var v = getter.call();
+                        setter.accept((v == null ? Boolean.TRUE : (v ? Boolean.FALSE : null)));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            },
+           position, size
+        );
+    }
+
+    private Widget getOptionButton(String label, int column, int row, int count, Runnable onClick, SongSelectPage page) {
         int AVAILABLE_WIDTH = 750;
 
         int widgetWidth = AVAILABLE_WIDTH / count;
 
-        int widgetX = (-(count * widgetWidth) / 2 + index * widgetWidth) + (widgetWidth/2);
+        int widgetX = (-(count * widgetWidth) / 2 + column * widgetWidth) + (widgetWidth/2);
 
         return new ButtonWidget(
-            new Vector3f(widgetX, -225, 0.01f), new Vector2f(widgetWidth, 40),
+            new Vector3f(widgetX, -275 + (40 * row), 0.01f), new Vector2f(widgetWidth, 40),
             onClick,
             new HoverWidget(new Vector3f(), new Vector2f(widgetWidth, 40), List.of(
                 new DynamicGradientWidget(new Vector3f(), new Vector2f(widgetWidth, 40), () -> page == currentPage ? 0x5F444444 : 0x5F222222, () -> page == currentPage ? 0x5F444444 : 0x5F222222, 0)
@@ -292,12 +329,16 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private void setDownloaderPage() {
         currentPage = SongSelectPage.Downloader;
         HUDRenderer.scene = HUDRenderer.MenuScene.Downloader;
-
     }
 
     private void setReplayPage() {
         currentPage = SongSelectPage.Replay;
         HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
+    }
+
+    private void setSabersPage() {
+        currentPage = SongSelectPage.Sabers;
+        HUDRenderer.scene = HUDRenderer.MenuScene.SaberPreview;
     }
 
     // Modifier Toggles
@@ -377,14 +418,17 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
     private void toggleSlowerSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 0.85f : 1);
+        GameLogicHandler.mapSpeed = state ? 0.85f : 1f;
     }
 
     private void toggleFasterSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 1.2f : 1);
+        GameLogicHandler.mapSpeed = state ? 1.2f : 1f;
     }
 
     private void toggleSuperFastSong(boolean state) {
         BeatmapPlayer.setPlaybackSpeed(state ? 1.5f : 1);
+        GameLogicHandler.mapSpeed = state ? 1.5f : 1f;
     }
 
     // ^ Modifier Toggles
@@ -400,6 +444,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
 
+    private static final Text PLAY = Text.translatable("menu.beatcraft.song_select.play");
+    private static final Text DELETE = Text.translatable("menu.beatcraft.song_select.delete");
     private Widget getReplayTile(ReplayInfo info, Vector3f position) {
         var SIZE = new Vector2f(660, 80);
 
@@ -416,13 +462,13 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new TextWidget(info.set(), new Vector3f((-SIZE.x/2f) + 95, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
             new TextWidget(info.diff(), new Vector3f(-50, 2, -0.01f), 2.5f).alignedLeft().withDynamicScaling(100),
             SettingsMenuPanel.getButton(
-                new TextWidget("PLAY", new Vector3f(0, -11, -0.01f), 3),
+                new TextWidget(PLAY, new Vector3f(0, -11, -0.01f), 3),
                 info::play,
                 new Vector3f((SIZE.x/2f)-190, 0, 0),
                 new Vector2f(100, 50)
             ),
             SettingsMenuPanel.getButton(
-                new TextWidget("DELETE", new Vector3f(0, -11, -0.01f), 3),
+                new TextWidget(DELETE, new Vector3f(0, -11, -0.01f), 3),
                 () -> {
                     HUDRenderer.confirmSongDeleteMenuPanel = new ConfirmSongDeleteMenuPanel(info);
                     HUDRenderer.scene = HUDRenderer.MenuScene.ConfirmSongDelete;
@@ -450,7 +496,9 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private static final Vector3f basePos = new Vector3f(20, -150, 0);
     private static final int height = 360;
 
+    private static final Text RECORD_NEXT = Text.translatable("menu.beatcraft.replay.record_next");
     public void setupReplayPageStatic() {
+        replayPageStatic.children.clear();
 
         replayToggle = getToggleWidget(230, 50, b -> {
             if (b) {
@@ -483,7 +531,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new ContainerWidget(
                 new Vector3f(0, 220, 0), new Vector2f(230, 50),
                 replayToggle,
-                new TextWidget("RECORD NEXT", new Vector3f(0, -11, -0.01f), 3)
+                new TextWidget(RECORD_NEXT, new Vector3f(0, -11, -0.01f), 3)
             )
         ));
 
@@ -563,6 +611,9 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             case Replay -> {
                 replayPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
                 replayPageStatic.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
+            }
+            case Sabers -> {
+                customSaberPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()));
             }
         }
 

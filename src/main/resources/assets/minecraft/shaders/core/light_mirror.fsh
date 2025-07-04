@@ -97,13 +97,13 @@ void main() {
     float timeFactor = GameTime * 0.5;
     vec3 noiseInput = WorldPos + vec3(timeFactor);
     vec2 distortion = vec2(
-    cnoise(noiseInput + vec3(23.1, 0.0, 0.0) + screenUV.xyz),
-    cnoise(noiseInput + vec3(0.0, 23.1, 0.0) + screenUV.yxw)
+        cnoise(noiseInput + vec3(23.1, 0.0, 0.0) + screenUV.xyz),
+        cnoise(noiseInput + vec3(0.0, 23.1, 0.0) + screenUV.yxw)
     ) * distortionStrength;
 
     vec2 distortedUV = uv + distortion;
 
-    vec4 color = texture(Sampler0, distortedUV);
+    vec4 color = texture(Sampler0, distortedUV) / 2.5;
     float depthBuffer = texture(Sampler1, distortedUV).r;
 
 

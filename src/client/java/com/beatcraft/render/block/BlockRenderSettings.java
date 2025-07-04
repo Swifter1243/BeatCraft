@@ -1,6 +1,7 @@
 package com.beatcraft.render.block;
 
 import com.beatcraft.blocks.ModBlocks;
+import com.beatcraft.blocks.entity.ColorNoteDisplayBlockEntity;
 import com.beatcraft.render.block.entity.*;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 
@@ -29,6 +30,7 @@ public class BlockRenderSettings {
         BlockEntityRendererFactories.register(ModBlocks.END_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new EndLightTileBlockEntityRenderer());
         BlockEntityRendererFactories.register(ModBlocks.FILLED_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new FilledLightTileBlockEntityRenderer());
         BlockEntityRendererFactories.register(ModBlocks.COLUMN_LIGHT_BLOCK_ENTITY_TYPE, ctx -> new ColumnLightTileBlockEntityRenderer());
+        BlockEntityRendererFactories.register(ModBlocks.COLOR_NOTE_DISPLAY_BLOCK_ENTITY_TYPE, ctx -> new ColorNoteDisplayBlockEntityRenderer());
 
     }
 

@@ -30,7 +30,14 @@ public class GlowingCuboid extends LightObject {
     }
 
     public GlowingCuboid cloneOffset(Vector3f offset) {
-        return new GlowingCuboid(new Hitbox(new Vector3f(dimensions.min), new Vector3f(dimensions.max)), position.add(offset, new Vector3f()), new Quaternionf(orientation));
+        return new GlowingCuboid(
+            new Hitbox(
+                new Vector3f(dimensions.min),
+                new Vector3f(dimensions.max)
+            ),
+            position.add(offset, new Vector3f()),
+            new Quaternionf(orientation)
+        );
     }
 
     public void setDimensions(Hitbox dimensions) {

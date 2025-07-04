@@ -25,6 +25,8 @@ public class ModBlocks {
     public static final ColumnLightTileBlock COLUMN_LIGHT_TILE_BLOCK = (ColumnLightTileBlock) register(new ColumnLightTileBlock(), "column_light_tile");
     public static final EndLightTileBlock END_LIGHT_TILE_BLOCK = (EndLightTileBlock) register(new EndLightTileBlock(), "end_light_tile");
 
+    public static final ColorNoteDisplayBlock COLOR_NOTE_DISPLAY_BLOCK = (ColorNoteDisplayBlock) register(new ColorNoteDisplayBlock(), "color_note_display_block");
+
 
     // block entities
     public static final BlockEntityType<BlackMirrorBlockEntity> BLACK_MIRROR_BLOCK_ENTITY = registerBlockEntity(
@@ -57,6 +59,10 @@ public class ModBlocks {
 
     public static final BlockEntityType<ColumnLightTileBlockEntity> COLUMN_LIGHT_BLOCK_ENTITY_TYPE = registerBlockEntity(
         COLUMN_LIGHT_TILE_BLOCK, ColumnLightTileBlockEntity::new, "column_light_block_entity"
+    );
+
+    public static final BlockEntityType<ColorNoteDisplayBlockEntity> COLOR_NOTE_DISPLAY_BLOCK_ENTITY_TYPE = registerBlockEntity(
+        COLOR_NOTE_DISPLAY_BLOCK, ColorNoteDisplayBlockEntity::new, "color_note_display_block_entity"
     );
 
     private static<T extends BlockEntity> BlockEntityType<T> registerBlockEntity(Block parent, BlockEntityType.BlockEntityFactory<T> factory, String id) {

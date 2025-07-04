@@ -33,6 +33,18 @@ public class ReflectiveMirrorStripBlockEntityRenderer implements BlockEntityRend
         new Vector3f( (6f/16f), 0.5f, -0.5f),
     };
 
+    private static final Vector3f[] localFullVertices = new Vector3f[]{
+        new Vector3f(-0.5f, 0.375f, -0.5f),
+        new Vector3f(-0.5f, 0.375f,  0.5f),
+        new Vector3f( 0.5f, 0.375f,  0.5f),
+        new Vector3f( 0.5f, 0.375f, -0.5f),
+
+        new Vector3f(-0.5f, 0.5f, -0.5f),
+        new Vector3f(-0.5f, 0.5f,  0.5f),
+        new Vector3f( 0.5f, 0.5f,  0.5f),
+        new Vector3f( 0.5f, 0.5f, -0.5f),
+    };
+
     private static final int[][] faces = new int[][]{
         {1, 0, 3, 2},
         {0, 1, 5, 4},
@@ -45,25 +57,25 @@ public class ReflectiveMirrorStripBlockEntityRenderer implements BlockEntityRend
     private static final int[] topFace = new int[]{4, 5, 6, 7};
 
 
-    private void drawQuad(int[] face, BlockPos pos, Vector3f cameraPos, boolean facingEast) {
+    private void drawQuad(int[] face, BlockPos pos, Vector3f cameraPos, boolean facingEast, Vector3f[] vertices) {
 
         Vector3f center = pos.toCenterPos().toVector3f();
 
         var q = MemoryPool.newQuaternionf().rotationY(facingEast ? 90 * MathHelper.RADIANS_PER_DEGREE : 0);
 
-        var f0 = MemoryPool.newVector3f(localVertices[face[0]]).rotate(q);
-        var f1 = MemoryPool.newVector3f(localVertices[face[1]]).rotate(q);
-        var f2 = MemoryPool.newVector3f(localVertices[face[2]]).rotate(q);
-        var f3 = MemoryPool.newVector3f(localVertices[face[3]]).rotate(q);
+        var f0 = MemoryPool.newVector3f(vertices[face[0]]).rotate(q);
+        var f1 = MemoryPool.newVector3f(vertices[face[1]]).rotate(q);
+        var f2 = MemoryPool.newVector3f(vertices[face[2]]).rotate(q);
+        var f3 = MemoryPool.newVector3f(vertices[face[3]]).rotate(q);
 
-        MemoryPool.release(q);
+        MemoryPool.releaseSafe(q);
 
         var v0 = center.add(f0, MemoryPool.newVector3f()).sub(cameraPos);
         var v1 = center.add(f1, MemoryPool.newVector3f()).sub(cameraPos);
         var v2 = center.add(f2, MemoryPool.newVector3f()).sub(cameraPos);
         var v3 = center.add(f3, MemoryPool.newVector3f()).sub(cameraPos);
 
-        MemoryPool.release(f0, f1, f2, f3);
+        MemoryPool.releaseSafe(f0, f1, f2, f3);
 
         MirrorHandler.recordPlainCall((b, _c) -> _drawQuad(v0, v1, v2, v3, b));
 
@@ -88,16 +100,20 @@ public class ReflectiveMirrorStripBlockEntityRenderer implements BlockEntityRend
         BlockState state = world.getBlockState(entity.getPos());
         if (!state.isOf(ModBlocks.REFLECTIVE_MIRROR_STRIP_BLOCK)) return;
 
+        boolean isFull = state.get(ReflectiveMirrorStripBlock.FULL_PLATE);
+
         boolean facesEast = state.get(ReflectiveMirrorStripBlock.ROTATION) == Direction.EAST;
 
+        var vertices = isFull ? localFullVertices : localVertices;
+
         for (var face : faces) {
-            drawQuad(face, pos, cameraPos, facesEast);
+            drawQuad(face, pos, cameraPos, facesEast, vertices);
         }
 
         if (pos.getY() == -1) {
-            MirrorHandler.recordCall((b, v, q) -> drawMirror(b, v, pos.toCenterPos().toVector3f(), q, facesEast));
+            MirrorHandler.recordCall((b, v, q) -> drawMirror(b, v, pos.toCenterPos().toVector3f(), facesEast, vertices));
         } else {
-            drawQuad(topFace, pos, cameraPos, facesEast);
+            drawQuad(topFace, pos, cameraPos, facesEast, vertices);
         }
 
 
@@ -109,16 +125,14 @@ public class ReflectiveMirrorStripBlockEntityRenderer implements BlockEntityRend
         return true;
     }
 
-    private void drawMirror(BufferBuilder buffer, Vector3f cameraPos, Vector3f center, Quaternionf invCameraRotation, boolean facingEast) {
-
-
+    private void drawMirror(BufferBuilder buffer, Vector3f cameraPos, Vector3f center, boolean facingEast, Vector3f[] vertices) {
 
         var q = MemoryPool.newQuaternionf().rotationY(facingEast ? 90 * MathHelper.RADIANS_PER_DEGREE : 0);
 
-        var f0 = MemoryPool.newVector3f(localVertices[topFace[0]]).rotate(q);
-        var f1 = MemoryPool.newVector3f(localVertices[topFace[1]]).rotate(q);
-        var f2 = MemoryPool.newVector3f(localVertices[topFace[2]]).rotate(q);
-        var f3 = MemoryPool.newVector3f(localVertices[topFace[3]]).rotate(q);
+        var f0 = MemoryPool.newVector3f(vertices[topFace[0]]).rotate(q);
+        var f1 = MemoryPool.newVector3f(vertices[topFace[1]]).rotate(q);
+        var f2 = MemoryPool.newVector3f(vertices[topFace[2]]).rotate(q);
+        var f3 = MemoryPool.newVector3f(vertices[topFace[3]]).rotate(q);
 
         MemoryPool.release(q);
 

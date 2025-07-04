@@ -5,10 +5,16 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ChainNoteLink;
 import com.beatcraft.beatmap.data.object.ScorableObject;
+import com.beatcraft.data.types.Color;
+import com.beatcraft.debug.BeatCraftDebug;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.logic.Hitbox;
+import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.effect.MirrorHandler;
+import com.beatcraft.render.instancing.ArrowInstanceData;
+import com.beatcraft.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.render.instancing.InstancedMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.mesh.QuadMesh;
 import com.beatcraft.utils.NoteMath;
@@ -20,6 +26,7 @@ import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Math;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -69,45 +76,35 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         return a;
     }
 
+    private static final Color WHITE = new Color(0xFFFFFFFF);
     @Override
     protected void objectRender(MatrixStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
         var localPos = matrices.peek();
 
-        BakedModel arrowModel = mc.getBakedModelManager().getModel(chainDotModelID);
+        var renderPos = localPos.getPositionMatrix().getTranslation(MemoryPool.newVector3f());
+        var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
+        var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+
+        var flipped = new Matrix4f().scale(1, -1, 1);
+        flipped.translate(0, c.y * 2f, 0);
+        flipped.translate(renderPos);
+        flipped.rotate(renderRotation);
+        flipped.scale(0.5f);
+
+        renderPos.add(c);
 
         if (!isBaseDissolved()) {
-            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatCraftRenderer.recordNoteRenderCall((tri, cam) -> {
-                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-            });
-            MirrorHandler.recordMirrorNoteDraw((tri, cam) -> {
-                MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-            });
-            //BeatCraftRenderer.bloomfog.recordNoteBloomCall((b, v, q) -> {
-            //    MeshLoader.CHAIN_LINK_RENDER_MESH.color = data.getColor().toARGB();
-            //    MeshLoader.CHAIN_LINK_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
-            //});
+            var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
+            MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
         }
 
-
         if (!isArrowDissolved()) {
-            var renderPos = localPos.getPositionMatrix().getTranslation(new Vector3f()).add(MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f());
-            var renderRotation = localPos.getPositionMatrix().getUnnormalizedRotation(new Quaternionf());
-            BeatCraftRenderer.recordArrowRenderCall((tri, cam) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(tri, renderPos, renderRotation, cam);
-            });
-            MirrorHandler.recordMirrorArrowDraw((tri, cam) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = 0xFFFFFFFF;
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBufferMirrored(tri, renderPos, renderRotation, cam);
-            });
-            BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-                MeshLoader.CHAIN_DOT_RENDER_MESH.color = data.getColor().toARGB();
-                MeshLoader.CHAIN_DOT_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), q.mul(renderRotation, new Quaternionf()), v);
-            });
+            var dissolve = Math.max(GameLogicHandler.globalDissolve, getArrowDissolve());
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
+            MeshLoader.CHAIN_DOT_INSTANCED_MESH.copyDrawToBloom();
+
         }
     }
 
@@ -194,7 +191,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
     }
 
     @Override
-    public QuadMesh getMesh() {
-        return MeshLoader.CHAIN_LINK_MESH;
+    public InstancedMesh<ColorNoteInstanceData> getMesh() {
+        return MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH;
     }
 }

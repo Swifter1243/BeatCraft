@@ -2,6 +2,7 @@
 
 uniform sampler2D Sampler0;
 uniform sampler2D Bloomfog;
+uniform vec2 u_fog;
 
 uniform float FogStart;
 uniform float FogEnd;
@@ -26,7 +27,7 @@ void main() {
     vec4 color = texture(Sampler0, texCoord0) * vertexColor;
     vec4 bloomfog_color = texture(Bloomfog, (screenUV.xy/(screenUV.z*4))+0.5);
 
-    float fadeHeight = 1 - min(max(0, (worldPos.y + 50) / 20), 1);
+    float fadeHeight = 1 - clamp((worldPos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
 
     color = lerpColor(color, bloomfog_color, clampF(abs(screenUV.z)) + fadeHeight);
     fragColor = vec4(vec3(fadeHeight), 1);//color;

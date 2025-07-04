@@ -85,8 +85,13 @@ public class ChainNoteLink extends GameplayObject implements ScorableObject {
     }
 
     @Override
+    public Color score$getColor() {
+        return color;
+    }
+
+    @Override
     public NoteType score$getNoteType() {
-        return getNoteType();
+        return noteType;
     }
 
     @Override

@@ -35,6 +35,7 @@ wall dimensions and positioning
 
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.beatmap.data.CutDirection;
@@ -42,10 +43,8 @@ import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.GameplayObject;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.EndScreenData;
-import com.beatcraft.render.BeatCraftRenderer;
 import com.beatcraft.render.DebugRenderer;
 import com.beatcraft.render.HUDRenderer;
-import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.object.*;
@@ -81,6 +80,11 @@ public class GameLogicHandler {
     private static int score = 0;
     private static boolean failed = false;
     public static boolean noFail = false;
+
+    private static boolean failAnim = false;
+    public static float globalDissolve = 0;
+    private static double failTime = 0;
+    private static final double DISSOLVE_TIME = 2.5;
 
     // health values:
     // start: 50
@@ -120,6 +124,8 @@ public class GameLogicHandler {
 
     private static final SwingState leftSwingState = new SwingState(NoteType.RED);
     private static final SwingState rightSwingState = new SwingState(NoteType.BLUE);
+
+    public static float mapSpeed = 1f;
 
 
     public static void trackPlayer(UUID uuid) {
@@ -175,6 +181,8 @@ public class GameLogicHandler {
     }
 
     public static void update(double deltaTime, float tickDelta) {
+
+        // only update on first render pass per-frame
         if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
         var player = getTrackedPlayer();
         assert player != null;
@@ -213,6 +221,25 @@ public class GameLogicHandler {
             processDamage(WALL_HP * (float) deltaTime);
             checkFail();
             breakCombo();
+        }
+
+        if (failAnim) {
+            var t = System.nanoTime() / 1_000_000_000d;
+            var normalized = MathUtil.inverseLerp(failTime, failTime+DISSOLVE_TIME, t);
+
+            var n = (float) Math.clamp(normalized, 0, 1);
+
+            BeatmapPlayer.setPlaybackSpeed((0.1f * mapSpeed) + ((mapSpeed-n) * (0.9f * mapSpeed)));
+
+            if (normalized <= 1.0) {
+                globalDissolve = (float) normalized;
+            } else if (normalized >= 1.1) {
+                failAnim = false;
+                failTime = 0;
+                resetToMenu();
+                BeatmapPlayer.setPlaybackSpeed(1);
+            }
+
         }
 
     }
@@ -340,6 +367,10 @@ public class GameLogicHandler {
             }
         }
 
+        assert MinecraftClient.getInstance().player != null;
+
+        if (failAnim) return;
+
         if (note instanceof PhysicalScorableObject scorable) {
             if (scorable.score$getData().score$getNoteType() == saberColor) {
                 if (goodCutHitbox.checkCollision(local_hand, endpoint)) {
@@ -362,7 +393,7 @@ public class GameLogicHandler {
                         float distance = distanceToOrigin(local_hand, planeNormal);
                         int points = (int) Math.clamp(15 * (1-MathUtil.inverseLerp(0, 0.25f, distance)), 0, 15);
                         scorable.score$setCutResult(CutResult.goodCut(scorable, points, (int) (saberColor == NoteType.BLUE ? rightSwingState.getSwingAngle() : leftSwingState.getSwingAngle()), notePos));
-                        note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
+                        note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getColor(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
                         scorable.score$cutNote();
                     }
                 }
@@ -375,7 +406,7 @@ public class GameLogicHandler {
                     scorable.score$setCutResult(CutResult.badCut(scorable, notePos));
                     scorable.score$getCutResult().finalizeScore();
                     Vector3f planeNormal = getPlaneNormal(local_hand, endpoint, diff);
-                    note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getNoteType(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
+                    note.spawnDebris(notePos.add(new Vector3f(-0.25f, -0.25f, -0.25f).rotate(note.getWorldRot())), note.getWorldRot(), scorable.score$getData().score$getColor(), local_hand.add(0.25f, 0.25f, 0.25f, new Vector3f()), planeNormal);
                 }
             } else {
                 hitBomb();
@@ -567,23 +598,27 @@ public class GameLogicHandler {
     }
 
     private static void checkFail() {
-        if (health <= 0) {
+        if (health <= 0 && !failed) {
             health = 0;
             failed = true;
             if (!noFail) {
-                // trigger fail animation
-                HUDRenderer.endScreenPanel.setFailed();
-                HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
-
-                try {
-                    PlayRecorder.save();
-                } catch (IOException e) {
-                    BeatCraft.LOGGER.error("Error saving recording", e);
-                }
-
-                unloadAll();
+                failAnim = true;
+                failTime = System.nanoTime() / 1_000_000_000d;
             }
         }
+    }
+
+    private static void resetToMenu() {
+        HUDRenderer.endScreenPanel.setFailed();
+        HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
+
+        try {
+            PlayRecorder.save();
+        } catch (IOException e) {
+            BeatCraft.LOGGER.error("Error saving recording", e);
+        }
+
+        unloadAll();
     }
 
     public static void incrementCombo() {
@@ -654,6 +689,9 @@ public class GameLogicHandler {
         failed = false;
         health = maxHealth == 100 ? 50 : maxHealth == 4 ? 4 : 1;
         inWall = false;
+        failTime = 0;
+        failAnim = false;
+        globalDissolve = 0;
         MemoryPool.clear();
     }
 

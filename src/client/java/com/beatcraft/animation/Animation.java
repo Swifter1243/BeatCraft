@@ -8,6 +8,7 @@ import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.beatmap.data.IBeatmapData;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
+import com.beatcraft.data.types.Color;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,7 +16,7 @@ import net.minecraft.util.JsonHelper;
 
 import java.util.function.Function;
 
-public class Animation extends AnimationPropertyContainer<FloatPointDefinition, Vector3PointDefinition, Vector4PointDefinition, QuaternionPointDefinition> implements IBeatmapData<Animation> {
+public class Animation extends AnimationPropertyContainer<FloatPointDefinition, Vector3PointDefinition, Vector4PointDefinition, QuaternionPointDefinition, ColorPointDefinition> implements IBeatmapData<Animation> {
 
     @Override
     public Animation loadV2(JsonObject json, Difficulty difficulty) {
@@ -31,7 +32,7 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
         dissolveArrow = getPointDefinition(json, "_dissolveArrow", difficulty, FloatPointDefinition::new);
         interactable = getPointDefinition(json, "_interactable", difficulty, FloatPointDefinition::new);
         time = getPointDefinition(json, "_time", difficulty, FloatPointDefinition::new);
-        color = getPointDefinition(json, "_color", difficulty, Vector4PointDefinition::new);
+        color = getPointDefinition(json, "_color", difficulty, ColorPointDefinition::new);
 
         return this;
     }
@@ -50,7 +51,7 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
         dissolveArrow = getPointDefinition(json, "dissolveArrow", difficulty, FloatPointDefinition::new);
         interactable = getPointDefinition(json, "interactable", difficulty, FloatPointDefinition::new);
         time = getPointDefinition(json, "time", difficulty, FloatPointDefinition::new);
-        color = getPointDefinition(json, "color", difficulty, Vector4PointDefinition::new);
+        color = getPointDefinition(json, "color", difficulty, ColorPointDefinition::new);
 
         return this;
     }

@@ -1,11 +1,9 @@
 package com.beatcraft.lightshow.ring_lights;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.data.types.Color;
 import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.lightshow.lights.LightState;
 import com.beatcraft.render.effect.Bloomfog;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -14,7 +12,6 @@ import net.minecraft.util.math.random.Random;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -23,10 +20,10 @@ public class RingLightHandler extends LightObject {
     Random random = Random.create();
 
     private int ringCount;
-    private float ringOffset;
-    private float zoom = 1;
-    private float ringRotation = 0;
-    private float rotationStep = 0;
+    private final float ringOffset;
+    public float zoom = 1;
+    public float ringRotation = 0;
+    public float rotationStep = 0;
 
     /// offset deltas, this is how far the head ring is allowed to jump
     public float[] jumpOffsets = new float[0];
@@ -38,7 +35,7 @@ public class RingLightHandler extends LightObject {
 
 
     protected static class RingHandler {
-        private RingLightHandler controller;
+        private final RingLightHandler controller;
         private float rotation = 0;
         private Float startTime = null;
         private Float zoomStart = null;
@@ -47,7 +44,7 @@ public class RingLightHandler extends LightObject {
         private RingHandler nextRing = null;
         private float prevZoom = 1;
         private final int index;
-        private LightObject ringLight;
+        private final LightObject ringLight;
         private float cachedRingRotation = 0;
         private float cachedRotationStep = 0;
 
@@ -144,7 +141,11 @@ public class RingLightHandler extends LightObject {
 
     private final RingHandler headRing;
 
-    public RingLightHandler(Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> ringFactory, BiFunction<Vector3f, Quaternionf, LightObject> lightBuilder, int count, Vector3f position, float ringGap) {
+    public RingLightHandler(
+        Function<BiFunction<Vector3f, Quaternionf, LightObject>, LightObject> ringFactory,
+        BiFunction<Vector3f, Quaternionf, LightObject> lightBuilder,
+        int count, Vector3f position, float ringGap
+    ) {
         ringCount = count;
         this.position = position;
         ringOffset = ringGap;
@@ -161,12 +162,16 @@ public class RingLightHandler extends LightObject {
 
     }
 
+    public float rotationReset = 0;
+
     public void reset() {
         ringRotation = 0;
-        rotationStep = 0;
+        rotationStep = rotationReset;
         currentOffset = 0;
         zoom = 1;
         headRing.reset();
+        headRing.startTime = 0f;
+        headRing.update(0);
     }
 
     public void update(float songTime) {
@@ -211,6 +216,12 @@ public class RingLightHandler extends LightObject {
 
         headRing.setTarget(BeatmapPlayer.getCurrentSeconds(), ringRotation, rotationStep);
 
+    }
+
+    public void spinTo(float startAngle, float offset, float propagationDuration, float transitionSpeed) {
+        rotationStep = offset;
+        ringRotation = startAngle;
+        headRing.setTarget(0, ringRotation, rotationStep);
     }
 
     public void setZoom(float value) {

@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public class LightState {
 
-    private Color color;
+    public Color color;
     private float brightness;
     private int effectiveColor = 0;
 

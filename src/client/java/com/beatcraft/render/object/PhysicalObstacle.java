@@ -54,9 +54,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         var rotation = matrices.peek().getPositionMatrix().getUnnormalizedRotation(MemoryPool.newQuaternionf());
         var scale = matrices.peek().getPositionMatrix().getScale(MemoryPool.newVector3f());
 
-
         updateBounds(scale);
-
 
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getCamera().getPos());
         localPos.add(camPos);
@@ -65,8 +63,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
 
         render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
         renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
-
-
 
         ObstacleGlowRenderer.render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, data.getColor());
         ObstacleGlowRenderer.renderMirrored(localPos, rotation, bounds, data.getColor());

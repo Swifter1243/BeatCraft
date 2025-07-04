@@ -34,6 +34,8 @@ public class ObstacleGlowRenderer {
     public static void grabScreen() {
         var scene = MinecraftClient.getInstance().getFramebuffer();
 
+        scene.endWrite();
+        scene.beginRead();
         framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
         framebuffer.beginWrite(true);
@@ -55,6 +57,7 @@ public class ObstacleGlowRenderer {
 
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
+        scene.endRead();
         framebuffer.endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;

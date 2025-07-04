@@ -40,4 +40,10 @@ public abstract class Environment {
     }
 
     public abstract void loadLightshow(Difficulty difficulty, JsonObject json);
+
+    private static final float[] DEFAULT_FOG_HEIGHTS = new float[]{-50, -30};
+    public float[] getFogHeights() {
+        return DEFAULT_FOG_HEIGHTS;
+    }
+
 }

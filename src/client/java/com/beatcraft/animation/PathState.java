@@ -2,13 +2,14 @@ package com.beatcraft.animation;
 
 import com.beatcraft.animation.event.Path;
 import com.beatcraft.animation.track.AnimatedPath;
+import com.beatcraft.data.types.Color;
 import com.beatcraft.utils.MathUtil;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class PathState extends AnimationPropertyContainer<Path<Float>, Path<Vector3f>, Path<Vector4f>, Path<Quaternionf>> {
+public class PathState extends AnimationPropertyContainer<Path<Float>, Path<Vector3f>, Path<Vector4f>, Path<Quaternionf>, Path<Color>> {
     public void seekFromPath(float beat, AnimatedPath path) {
         offsetPosition = path.offsetPosition.seek(beat);
         offsetWorldRotation = path.offsetWorldRotation.seek(beat);
@@ -56,7 +57,7 @@ public class PathState extends AnimationPropertyContainer<Path<Float>, Path<Vect
         state.dissolveArrow = interpolatePath(dissolveArrow, t, Math::lerp);
         state.interactable = interpolatePath(interactable, t, Math::lerp);
         state.time = interpolatePath(time, t, Math::lerp);
-        state.color = interpolatePath(color, t, MathUtil::lerpVector4);
+        state.color = interpolatePath(color, t, MathUtil::lerpColor);
 
         return state;
     }

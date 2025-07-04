@@ -1,0 +1,32 @@
+#version 330 core
+
+in vec2 v_uv;
+in vec4 v_color;
+in vec3 screenUV;
+
+uniform sampler2D u_texture;
+uniform sampler2D u_depth;
+
+out vec4 fragColor;
+
+void main() {
+    vec2 uv = (screenUV.xy / (-screenUV.z * 2)) + 0.5;
+
+    float sceneDepth = texture(u_depth, uv).r;
+
+    if (sceneDepth < gl_FragCoord.z-0.000001) {
+        discard;
+    }
+    fragColor = vec4(1.0);
+
+    vec2 centered = v_uv * 2.0 - 1.0;
+    float dist = length(centered);
+
+    /* REMOVELINE
+    if (dist <= ${r}) {
+        fragColor = v_color;
+    } else {
+        discard;
+    }
+    */ // REMOVELINE
+}

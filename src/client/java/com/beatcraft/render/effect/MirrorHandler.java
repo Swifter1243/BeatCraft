@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -17,6 +18,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -151,6 +153,26 @@ public class MirrorHandler {
     }
 
     private static void renderNotes(Tessellator tessellator, Vector3f cameraPos) {
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        var q = MemoryPool.newQuaternionf();
+        MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
+        MemoryPool.releaseSafe(q);
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+    }
+
+    private static void renderNotes0(Tessellator tessellator, Vector3f cameraPos) {
         // notes and debris
         BufferBuilder triBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
 
@@ -298,6 +320,7 @@ public class MirrorHandler {
             RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
             Bloomfog.bloomfogPositionColor.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.bloomfogPositionColor.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BeatCraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();
@@ -313,6 +336,16 @@ public class MirrorHandler {
             mirrorArrows.clear();
             mirrorWallGlows.clear();
             obstacleRenderCalls.clear();
+            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
+            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
+
+            LightMesh.cancelMirrorDraws();
+
             RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.disableDepthTest();
@@ -321,6 +354,7 @@ public class MirrorHandler {
         };
 
 
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.beginWrite(true);
@@ -351,6 +385,11 @@ public class MirrorHandler {
 
         renderObstacles(tessellator, cameraPos);
 
+        LightMesh.renderAllMirror();
+        //RenderSystem.depthMask(false);
+        //RenderSystem.disableCull();
+
+
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
         mirrorFramebuffer.endWrite();
@@ -368,6 +407,7 @@ public class MirrorHandler {
         if (buff != null) {
             RenderSystem.setShader(() -> mirrorShader);
             RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
             RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());

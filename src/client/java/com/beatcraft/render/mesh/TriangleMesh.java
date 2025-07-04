@@ -26,6 +26,16 @@ public class TriangleMesh implements Mesh {
         this.tris = new ArrayList<>(tris);
     }
 
+    /// will append vertices directly and offset new tris by the initial vertices length
+    public void addGeometry(List<Vector3f> vertices, List<Triangle> tris) {
+        var offset = this.vertices.size();
+        this.vertices.addAll(vertices);
+        for (var tri : tris) {
+            tri.offsetTri(offset);
+            this.tris.add(tri);
+        }
+    }
+
     @Override
     public void drawToBuffer(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
         tris.forEach(tri -> {

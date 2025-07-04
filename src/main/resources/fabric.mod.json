@@ -43,8 +43,7 @@
 		"fabric": "*",
 		"java": ">=21",
 		"fabric-api": "*",
-		"vivecraft": ">=${vivecraft_version}",
-		"geckolib": ">=${geckolib_version}"
+		"vivecraft": ">=${vivecraft_version}"
 	},
 	"suggests": {
 		"another-mod": "*"

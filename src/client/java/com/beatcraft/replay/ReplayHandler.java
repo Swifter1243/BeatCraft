@@ -69,7 +69,7 @@ public class ReplayHandler {
         replayData.clear();
 
         for (File replay : replayFiles) {
-            BeatCraft.LOGGER.info("Found potential replay file: '{}'", replay.getAbsolutePath());
+            //BeatCraft.LOGGER.info("Found potential replay file: '{}'", replay.getAbsolutePath());
             var fullPath = replay.getAbsolutePath();
 
             if (!fullPath.endsWith(".replay")) continue;

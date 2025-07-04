@@ -5,13 +5,14 @@ import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.animation.event.AnimatedPropertyEventHandler;
+import com.beatcraft.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
 
-public class AnimatedProperties extends AnimationPropertyContainer<AnimatedPropertyEventHandler<Float>, AnimatedPropertyEventHandler<Vector3f>, AnimatedPropertyEventHandler<Vector4f>, AnimatedPropertyEventHandler<Quaternionf>> {
+public class AnimatedProperties extends AnimationPropertyContainer<AnimatedPropertyEventHandler<Float>, AnimatedPropertyEventHandler<Vector3f>, AnimatedPropertyEventHandler<Vector4f>, AnimatedPropertyEventHandler<Quaternionf>, AnimatedPropertyEventHandler<Color>> {
     private final AnimationState currentState = new AnimationState();
 
     public AnimatedProperties() {

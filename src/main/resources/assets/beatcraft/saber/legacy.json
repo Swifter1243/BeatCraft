@@ -1,0 +1,67 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "beatcraft:item/saber"
+	},
+	"elements": [
+		{
+			"name": "//",
+			"from": [7, 0, 7],
+			"to": [9, 8, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [3.5, 0.5, 4, 2.5], "texture": "#1"},
+				"east": {"uv": [3, 0.5, 3.5, 2.5], "texture": "#1"},
+				"south": {"uv": [4.5, 0.5, 5, 2.5], "texture": "#1"},
+				"west": {"uv": [4, 0.5, 4.5, 2.5], "texture": "#1"},
+				"up": {"uv": [4, 0.5, 3.5, 0], "texture": "#1"},
+				"down": {"uv": [4.5, 0, 4, 0.5], "texture": "#1"}
+			}
+		},
+		{
+			"name": "//",
+			"from": [6.975, 0.975, 6.975],
+			"to": [9.025, 7.025, 9.025],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [5.5, 0.5, 6, 2], "texture": "#1"},
+				"east": {"uv": [5, 0.5, 5.5, 2], "texture": "#1"},
+				"south": {"uv": [6.5, 0.5, 7, 2], "texture": "#1"},
+				"west": {"uv": [6, 0.5, 6.5, 2], "texture": "#1"},
+				"up": {"uv": [6, 0.5, 5.5, 0], "texture": "#1"},
+				"down": {"uv": [6.5, 0, 6, 0.5], "texture": "#1"}
+			}
+		},
+		{
+			"name": "//",
+			"from": [7.2, 8, 7.2],
+			"to": [8.8, 50, 8.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [2.25, 0.25, 2.5, 10.5], "texture": "#1"},
+				"east": {"uv": [2, 0.25, 2.25, 10.5], "texture": "#1"},
+				"south": {"uv": [2.75, 0.25, 3, 10.5], "texture": "#1"},
+				"west": {"uv": [2.5, 0.25, 2.75, 10.5], "texture": "#1"},
+				"up": {"uv": [2.5, 0.25, 2.25, 0], "texture": "#1"},
+				"down": {"uv": [2.75, 0, 2.5, 0.25], "texture": "#1"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "static",
+			"origin": [8, 4, 8],
+			"color": 0,
+			"children": [0]
+		},
+		{
+			"name": "colored",
+			"origin": [8, 4, 8],
+			"color": 1,
+			"children": [1, 2]
+		}
+	],
+	"display_name": "Legacy BeatCraft Saber",
+	"authors": ["BeatCraft"]
+}
