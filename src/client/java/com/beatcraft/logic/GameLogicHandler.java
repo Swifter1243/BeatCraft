@@ -736,7 +736,7 @@ public class GameLogicHandler {
     }
 
     public static void unpauseMap() {
-        unpauseMap(false);
+        unpauseMap(true);
     }
 
     public static void unpauseMap(boolean sendPackets) {

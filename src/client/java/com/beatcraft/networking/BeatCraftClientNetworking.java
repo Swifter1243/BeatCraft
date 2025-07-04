@@ -92,8 +92,9 @@ public class BeatCraftClientNetworking {
     private static void handleBeatSyncPayload(BeatSyncS2CPayload payload, ClientPlayNetworking.Context context) {
         if (GameLogicHandler.isTrackingClient()) return; // give time for song to download if map sync only just happened
         float beat = payload.beat();
-        BeatCraft.LOGGER.info("Received beat sync! {}", beat);
-        BeatmapPlayer.play(beat, true);
+        if (Math.abs(BeatmapPlayer.getCurrentBeat() - beat) > 0.01) {
+            BeatmapPlayer.play(beat, true);
+        }
     }
 
     private static void handlePlayerDisconnectPayload(PlayerDisconnectS2CPayload payload, ClientPlayNetworking.Context context) {
@@ -116,7 +117,7 @@ public class BeatCraftClientNetworking {
             } else {
                 BeatmapPlayer.play();
                 HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
-                GameLogicHandler.unpauseMap();
+                GameLogicHandler.unpauseMap(false);
             }
         });
     }
