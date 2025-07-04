@@ -8,6 +8,7 @@ import com.beatcraft.data.menu.SongData;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.s2c.*;
+import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
 import com.beatcraft.replay.PlayFrame;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -80,6 +81,7 @@ public class BeatCraftClientNetworking {
             BeatmapAudioPlayer.playAudioFromFile(BeatmapPlayer.currentInfo.getSongFilename());
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
+            HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to play song", e);
         }
