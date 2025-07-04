@@ -138,6 +138,7 @@ public class BeatCraftClient implements ClientModInitializer {
                 while (songSearchKeybind.wasPressed());
             }
             if (pauseLevelKeybind.wasPressed()) {
+                if (!GameLogicHandler.isTrackingClient()) return;
 
                 if (GameLogicHandler.isPaused()) {
                     GameLogicHandler.unpauseMap();

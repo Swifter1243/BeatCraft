@@ -127,7 +127,7 @@ public class BeatCraftClientNetworking {
         context.client().execute(() -> {
             var scene = HUDRenderer.MenuScene.values()[payload.scene()];
             HUDRenderer.scene = scene;
-            if (scene == HUDRenderer.MenuScene.SongSelect) {
+            if (scene == HUDRenderer.MenuScene.SongSelect || scene == HUDRenderer.MenuScene.EndScreen) {
                 BeatmapPlayer.reset();
             }
         });

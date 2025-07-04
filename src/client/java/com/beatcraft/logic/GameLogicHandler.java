@@ -611,6 +611,7 @@ public class GameLogicHandler {
     private static void resetToMenu() {
         HUDRenderer.endScreenPanel.setFailed();
         HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
+        HUDRenderer.sendSceneSync();
 
         try {
             PlayRecorder.save();
