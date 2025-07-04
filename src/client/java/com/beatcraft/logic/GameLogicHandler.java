@@ -736,6 +736,10 @@ public class GameLogicHandler {
     }
 
     public static void unpauseMap() {
+        unpauseMap(false);
+    }
+
+    public static void unpauseMap(boolean sendPackets) {
         InputSystem.lockHotbar();
         CompletableFuture.runAsync(() -> {
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
@@ -744,17 +748,17 @@ public class GameLogicHandler {
             while ((System.nanoTime() / 1_000_000_000d) - start < 1) {
                 double dt = 1-(System.nanoTime() / 1_000_000_000d);
                 if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
-                    HUDRenderer.sendSceneSync();
+                    if (sendPackets) HUDRenderer.sendSceneSync();
                     return;
                 }
             }
 
             if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
-                HUDRenderer.sendSceneSync();
+                if (sendPackets) HUDRenderer.sendSceneSync();
                 return;
             }
             BeatmapPlayer.play();
-            HUDRenderer.sendSceneSync();
+            if (sendPackets) HUDRenderer.sendSceneSync();
 
         });
     }

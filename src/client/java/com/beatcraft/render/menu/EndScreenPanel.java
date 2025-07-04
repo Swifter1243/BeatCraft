@@ -40,6 +40,7 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                         HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                         BeatmapAudioPlayer.unmuteVanillaMusic();
                         InputSystem.unlockHotbar();
+                        HUDRenderer.sendSceneSync();
                     },
                     new HoverWidget(
                             new Vector3f(),
@@ -75,6 +76,7 @@ public class EndScreenPanel extends MenuPanel<EndScreenData> {
                             HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                             BeatmapAudioPlayer.unmuteVanillaMusic();
                             InputSystem.unlockHotbar();
+                            HUDRenderer.sendSceneSync();
                         },
                         new HoverWidget(
                                 new Vector3f(),
