@@ -89,7 +89,7 @@ public class BeatCraftNetworking {
             BeatCraft.currentDiff = payload.diff();
             PlayerLookup.all(context.server()).forEach(pl -> {
                 if (pl == player) return;
-                ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid(), payload.set(), payload.diff()));
+                ServerPlayNetworking.send(pl, new MapSyncS2CPayload(uuid, payload.uid(), payload.set(), payload.diff(), payload.modifiers()));
             });
         });
     }

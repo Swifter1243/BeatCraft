@@ -16,6 +16,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class BeatCraftClientNetworking {
@@ -47,12 +48,25 @@ public class BeatCraftClientNetworking {
         });
     }
 
+    private static ArrayList<String> cachedModifiers = new ArrayList<>();
+
     private static void handleMapSyncPayload(MapSyncS2CPayload payload, ClientPlayNetworking.Context context) {
         context.client().execute(() -> {
             UUID uuid = payload.player();
             String song_id = payload.uid();
             String set = payload.set();
             String diff = payload.diff();
+
+            var mods = payload.modifiers();
+            cachedModifiers.clear();
+            cachedModifiers.addAll(BeatCraftClient.playerConfig.getActiveModifiers());
+            for (var mod : cachedModifiers) {
+                BeatCraftClient.playerConfig.setModifier(mod, false);
+            }
+            for (var mod : mods) {
+                BeatCraftClient.playerConfig.setModifier(mod, true);
+            }
+            HUDRenderer.modifierMenuPanel.toggleModifiers(mods);
 
             ClientWorld world = MinecraftClient.getInstance().world;
             if (world == null) return;
@@ -129,6 +143,15 @@ public class BeatCraftClientNetworking {
             HUDRenderer.scene = scene;
             if (scene == HUDRenderer.MenuScene.SongSelect || scene == HUDRenderer.MenuScene.EndScreen) {
                 BeatmapPlayer.reset();
+
+                var mods = BeatCraftClient.playerConfig.getActiveModifiers();
+                for (var mod : mods) {
+                    BeatCraftClient.playerConfig.setModifier(mod, false);
+                }
+                for (var mod : cachedModifiers) {
+                    BeatCraftClient.playerConfig.setModifier(mod, true);
+                }
+
             }
         });
     }

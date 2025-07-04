@@ -463,7 +463,7 @@ public class BeatCraftClient implements ClientModInitializer {
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
             if (song.getId() != null) {
-                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff));
+                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff, BeatCraftClient.playerConfig.getActiveModifiers()));
             }
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
             return 1;

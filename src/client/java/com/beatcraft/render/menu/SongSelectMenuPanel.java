@@ -325,7 +325,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             GameLogicHandler.reset();
             BeatmapAudioPlayer.muteVanillaMusic();
             if (data.getId() != null) {
-                ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff));
+                ClientPlayNetworking.send(new MapSyncC2SPayload(data.getId(), set, diff, BeatCraftClient.playerConfig.getActiveModifiers()));
             }
             InputSystem.lockHotbar();
 
