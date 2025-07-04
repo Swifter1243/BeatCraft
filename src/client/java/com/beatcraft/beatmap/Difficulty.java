@@ -1,6 +1,7 @@
 package com.beatcraft.beatmap;
 
 import com.beatcraft.BeatCraftClient;
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.event.*;
@@ -11,12 +12,15 @@ import com.beatcraft.animation.track.TrackLibrary;
 import com.beatcraft.beatmap.data.*;
 import com.beatcraft.event.EventHandler;
 import com.beatcraft.lightshow.environment.Environment;
+import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.networking.c2s.BeatSyncC2SPayload;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.lightshow_event_visualizer.EventVisualizer;
 import com.beatcraft.render.object.*;
 import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.google.gson.JsonArray;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Math;
@@ -197,6 +201,9 @@ public abstract class Difficulty {
     }
 
     public void update(float beat, double deltaTime) {
+        if (GameLogicHandler.isTrackingClient() && BeatmapPlayer.isPlaying()) {
+            ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
+        }
         trackLibrary.update(beat);
         parentHandler.update(beat);
         BaseProviderHandler.update();

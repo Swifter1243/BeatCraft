@@ -124,13 +124,10 @@ public class SaberRenderer {
             matrixStack, vertexConsumerProvider, null, 0
         );
 
-
         matrices.pop();
 
         ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation, GameLogicHandler.headPos, GameLogicHandler.headRot));
-        if (GameLogicHandler.isTrackingClient() && BeatmapPlayer.isPlaying()) {
-            ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
-        }
+
     }
 
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
