@@ -125,7 +125,6 @@ public class BeatCraftNetworking {
         PlayerLookup.all(context.server()).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SceneSyncS2CPayload(payload.scene()));
             if (scene == 1) {
-                BeatCraft.LOGGER.info("send untrack packet");
                 ServerPlayNetworking.send(pl, new PlayerUntrackS2CPayload(player.getUuid()));
             }
         });
