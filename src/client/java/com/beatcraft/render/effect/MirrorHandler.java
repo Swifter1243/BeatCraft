@@ -309,7 +309,7 @@ public class MirrorHandler {
             }
             drawCalls.clear();
         }
-        MemoryPool.release(q);
+        MemoryPool.releaseSafe(q);
 
 
         var buff = buffer.endNullable();

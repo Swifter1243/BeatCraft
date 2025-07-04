@@ -344,6 +344,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     // Modifier Toggles
 
     public void toggleModifiers(List<String> modifiers) {
+        disableAll();
         modifiers.forEach(this::_toggleModifier);
     }
 
@@ -352,6 +353,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             case "No Fail" -> this::toggleNoFail;
             case "1 Life" -> this::toggle1Life;
             case "4 Lives" -> this::toggle4Lives;
+
+            case "No Bombs" -> this::toggleNoBombs;
+            case "No Walls" -> this::toggleNoObstacles;
+
+            case "Zen Mode" -> this::toggleZenMode;
 
             case "Slower Song" -> this::toggleSlowerSong;
             case "Faster Song" -> this::toggleFasterSong;
@@ -364,6 +370,12 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
 
         a.accept(true);
 
+    }
+
+    public void disableAll() {
+        for (var toggle : toggles.values()) {
+            toggle.setState(false);
+        }
     }
 
     private void toggleNoFail(boolean state) {

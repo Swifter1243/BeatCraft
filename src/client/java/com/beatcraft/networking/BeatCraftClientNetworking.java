@@ -151,6 +151,7 @@ public class BeatCraftClientNetworking {
                 for (var mod : cachedModifiers) {
                     BeatCraftClient.playerConfig.setModifier(mod, true);
                 }
+                HUDRenderer.modifierMenuPanel.toggleModifiers(mods);
 
             }
         });
