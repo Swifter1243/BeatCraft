@@ -140,7 +140,7 @@ public class GameLogicHandler {
     }
 
     public static boolean isTrackingClient() {
-        return trackedPlayerUuid == null;
+        return trackedPlayerUuid == null || MinecraftClient.getInstance().player.getUuid().equals(trackedPlayerUuid);
     }
 
     public static boolean isTracking(UUID uuid) {

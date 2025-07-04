@@ -18,13 +18,13 @@ import java.util.List;
 
 public class BeatmapAudio {
     private int buffer;
-    private final int source;
+    private int source;
     private boolean isPlaying = false;
     private boolean isLoaded = false;
     private float songDuration = 0;
 
     public BeatmapAudio() {
-        source = AL10.alGenSources();
+        //source = AL10.alGenSources();
     }
 
     public boolean isLoaded() {
@@ -142,6 +142,8 @@ public class BeatmapAudio {
         }
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
+        source = AL10.alGenSources();
+
 
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
@@ -180,8 +182,10 @@ public class BeatmapAudio {
     public void closeBuffer() {
         if (isLoaded) {
             stop();
+            AL10.alSourcei(source, AL10.AL_BUFFER, 0);
             AL10.alDeleteBuffers(buffer);
-            isLoaded = false;
+            AL10.alDeleteSources(source);
         }
+        isLoaded = false;
     }
 }

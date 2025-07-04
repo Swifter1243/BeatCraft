@@ -1,5 +1,6 @@
 package com.beatcraft.audio;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
@@ -31,8 +32,10 @@ public class BeatmapAudioPlayer {
     public static void playAudioFromFile(String path) {
         unload();
         beatmapAudio.closeBuffer();
+        currentFile = null;
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
+                BeatCraft.LOGGER.info("Loading from path '{}'", path);
                 beatmapAudio.loadAudioFromFile(path);
                 beatmapAudio.seek(0); // seek auto-compensates for the player's latency setting
                 beatmapAudio.play();
@@ -83,7 +86,7 @@ public class BeatmapAudioPlayer {
         if (loadRequest == null) return false;
 
         // load request is done and worked
-        return loadRequest.isDone() && !loadRequest.isCompletedExceptionally();
+        return loadRequest.isDone() && !loadRequest.isCompletedExceptionally() && currentFile != null;
     }
 
     public static void unload() {
