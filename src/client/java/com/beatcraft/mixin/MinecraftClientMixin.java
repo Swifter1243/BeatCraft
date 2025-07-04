@@ -32,10 +32,10 @@ public class MinecraftClientMixin {
     private void mapPauseInject(MinecraftClient instance, Screen screen, Operation<Void> original) {
         boolean inVr = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
 
-        if (inVr && HUDRenderer.scene == HUDRenderer.MenuScene.InGame) {
+        if (inVr && HUDRenderer.scene == HUDRenderer.MenuScene.InGame && GameLogicHandler.isTrackingClient()) {
             InputSystem.unlockHotbar();
             GameLogicHandler.pauseMap();
-        } else if (inVr && HUDRenderer.scene == HUDRenderer.MenuScene.Paused) {
+        } else if (inVr && HUDRenderer.scene == HUDRenderer.MenuScene.Paused && GameLogicHandler.isTrackingClient()) {
             GameLogicHandler.unpauseMap();
         } else {
             original.call(instance, screen);
