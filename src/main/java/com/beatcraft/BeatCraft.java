@@ -10,15 +10,12 @@ import com.beatcraft.items.ModItems;
 import com.beatcraft.items.group.ModItemGroup;
 import com.beatcraft.networking.BeatCraftNetworking;
 import com.beatcraft.networking.s2c.MapSyncS2CPayload;
-import com.beatcraft.networking.s2c.PlayerDisconnectS2CPayload;
+import com.beatcraft.networking.s2c.PlayerUntrackS2CPayload;
 import com.beatcraft.world.FirstJoinState;
 import com.beatcraft.world.PlacedEnvironmentState;
 import com.beatcraft.world.gen.BeatCraftWorldGeneration;
-import com.mojang.brigadier.LiteralMessage;
-import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.context.SuggestionContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.api.ModInitializer;
@@ -41,11 +38,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -106,7 +101,7 @@ public class BeatCraft implements ModInitializer {
 			}
 			PlayerLookup.all(server).forEach(p -> {
 				if (p != handler.player) {
-					ServerPlayNetworking.send(p, new PlayerDisconnectS2CPayload(handler.player.getUuid()));
+					ServerPlayNetworking.send(p, new PlayerUntrackS2CPayload(handler.player.getUuid()));
 				}
 			});
 		});

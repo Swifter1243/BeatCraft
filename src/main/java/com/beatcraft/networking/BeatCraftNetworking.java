@@ -39,7 +39,7 @@ public class BeatCraftNetworking {
         PayloadTypeRegistry.playS2C().register(SaberSyncS2CPayload.ID, SaberSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(MapSyncS2CPayload.ID, MapSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BeatSyncS2CPayload.ID, BeatSyncS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(PlayerDisconnectS2CPayload.ID, PlayerDisconnectS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PlayerUntrackS2CPayload.ID, PlayerUntrackS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(SpeedSyncS2CPayload.ID, SpeedSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(SongPauseS2CPayload.ID, SongPauseS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(SceneSyncS2CPayload.ID, SceneSyncS2CPayload.CODEC);
@@ -94,12 +94,6 @@ public class BeatCraftNetworking {
 
     private static void handleBeatSyncPayload(BeatSyncC2SPayload payload, ServerPlayNetworking.Context context) {
         PlayerEntity player = context.player();
-        //if (player.getUuid() == BeatCraft.currentTrackedPlayer) {
-        //    BeatCraft.currentTrackedPlayer = null;
-        //    BeatCraft.currentTrackId = null;
-        //    BeatCraft.currentSet = null;
-        //    BeatCraft.currentDiff = null;
-        //}
         PlayerLookup.tracking(player).forEach(pl -> {
             ServerPlayNetworking.send(pl, new BeatSyncS2CPayload(payload.beat()));
         });
@@ -117,8 +111,22 @@ public class BeatCraftNetworking {
     private static void handleSceneSync(SceneSyncC2SPayload payload, ServerPlayNetworking.Context context) {
         PlayerEntity player = context.player();
 
+        var scene = payload.scene();
+
+        if (scene == 1) { // SongSelect
+            if (player.getUuid() == BeatCraft.currentTrackedPlayer) {
+                BeatCraft.currentTrackedPlayer = null;
+                BeatCraft.currentTrackId = null;
+                BeatCraft.currentSet = null;
+                BeatCraft.currentDiff = null;
+            }
+        }
+
         PlayerLookup.tracking(player).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SceneSyncS2CPayload(payload.scene()));
+            if (scene == 1) {
+                ServerPlayNetworking.send(pl, new PlayerUntrackS2CPayload(player.getUuid()));
+            }
         });
     }
 
