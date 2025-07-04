@@ -41,6 +41,7 @@ import net.minecraft.world.PersistentState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,6 +55,7 @@ public class BeatCraft implements ModInitializer {
 	public static String currentTrackId = null;
 	public static String currentSet = null;
 	public static String currentDiff = null;
+	public static List<String> currentModifiers = List.of();
 	public static boolean isFlatWorld = false;
 
 	private static final PersistentState.Type<FirstJoinState> joinStateType = new PersistentState.Type<>(
@@ -141,7 +143,7 @@ public class BeatCraft implements ModInitializer {
 			}
 
 			if (currentTrackedPlayer != null) {
-				packetSender.sendPacket(new MapSyncS2CPayload(currentTrackedPlayer, currentTrackId, currentSet, currentDiff));
+				packetSender.sendPacket(new MapSyncS2CPayload(currentTrackedPlayer, currentTrackId, currentSet, currentDiff, currentModifiers));
 			}
 		});
 
