@@ -43,6 +43,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                     HUDRenderer.scene = HUDRenderer.MenuScene.SongSelect;
                     BeatmapAudioPlayer.unmuteVanillaMusic();
                     InputSystem.unlockHotbar();
+                    HUDRenderer.sendSceneSync();
                 },
                 new HoverWidget(new Vector3f(), new Vector2f(150, 50), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7F7F7F7F, 0x7F7F7F7F, 0)

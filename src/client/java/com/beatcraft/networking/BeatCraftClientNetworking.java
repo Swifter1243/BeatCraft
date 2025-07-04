@@ -7,6 +7,7 @@ import com.beatcraft.audio.BeatmapAudioPlayer;
 import com.beatcraft.data.menu.SongData;
 import com.beatcraft.data.menu.SongDownloader;
 import com.beatcraft.logic.GameLogicHandler;
+import com.beatcraft.logic.InputSystem;
 import com.beatcraft.networking.s2c.*;
 import com.beatcraft.render.HUDRenderer;
 import com.beatcraft.render.effect.SaberRenderer;
@@ -30,6 +31,7 @@ public class BeatCraftClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(PlayerDisconnectS2CPayload.ID, BeatCraftClientNetworking::handlePlayerDisconnectPayload);
         ClientPlayNetworking.registerGlobalReceiver(SpeedSyncS2CPayload.ID, BeatCraftClientNetworking::handleSpeedSyncPayload);
         ClientPlayNetworking.registerGlobalReceiver(SongPauseS2CPayload.ID, BeatCraftClientNetworking::handlePausePayload);
+        ClientPlayNetworking.registerGlobalReceiver(SceneSyncS2CPayload.ID, BeatCraftClientNetworking::handleSceneSync);
     }
 
 
@@ -111,7 +113,19 @@ public class BeatCraftClientNetworking {
 
     private static void handlePausePayload(SongPauseS2CPayload payload, ClientPlayNetworking.Context context) {
         context.client().execute(() -> {
-            BeatmapPlayer.pause(true);
+            if (payload.paused()) {
+                BeatmapPlayer.pause(true);
+                HUDRenderer.scene = HUDRenderer.MenuScene.Paused;
+            } else {
+                BeatmapPlayer.play();
+                HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
+            }
+        });
+    }
+
+    private static void handleSceneSync(SceneSyncS2CPayload payload, ClientPlayNetworking.Context context) {
+        context.client().execute(() -> {
+            HUDRenderer.scene = HUDRenderer.MenuScene.values()[payload.scene()];
         });
     }
 

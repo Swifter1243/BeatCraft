@@ -111,10 +111,18 @@ public class BeatmapPlayer {
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
     }
+
     public static void play(float beat) {
+        play(beat, false);
+    }
+
+    public static void play(float beat, boolean skipPacketSend) {
         setCurrentBeat(beat);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SongPauseC2SPayload(false));
+        }
     }
 
     public static void pause() {
@@ -124,7 +132,7 @@ public class BeatmapPlayer {
     public static void pause(boolean skipPacketSend) {
         isPlaying = false;
         if (!skipPacketSend) {
-            ClientPlayNetworking.send(new SongPauseC2SPayload());
+            ClientPlayNetworking.send(new SongPauseC2SPayload(true));
         }
     }
 

@@ -11,6 +11,8 @@ import com.beatcraft.logic.Rank;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.menu.*;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.beatcraft.networking.c2s.SceneSyncC2SPayload;
+import com.beatcraft.networking.s2c.SceneSyncS2CPayload;
 import com.beatcraft.render.menu.*;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.MenuPointerParticle;
@@ -18,6 +20,7 @@ import com.beatcraft.render.particle.ScoreDisplay;
 import com.beatcraft.utils.MathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.*;
@@ -92,6 +95,11 @@ public class HUDRenderer {
     public static boolean showKeyboard = false;
     private static final KeyboardMenu keyboardData = new KeyboardMenu(null);
     public static final KeyboardPanel keyboard = new KeyboardPanel(keyboardData);
+
+    public static void sendSceneSync() {
+        var s = (byte) scene.ordinal();
+        ClientPlayNetworking.send(new SceneSyncC2SPayload(s));
+    }
 
     public static void hookToKeyboard(TextInput input) {
         keyboardData.input = input;

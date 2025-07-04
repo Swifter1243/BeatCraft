@@ -744,14 +744,17 @@ public class GameLogicHandler {
             while ((System.nanoTime() / 1_000_000_000d) - start < 1) {
                 double dt = 1-(System.nanoTime() / 1_000_000_000d);
                 if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                    HUDRenderer.sendSceneSync();
                     return;
                 }
             }
 
             if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                HUDRenderer.sendSceneSync();
                 return;
             }
             BeatmapPlayer.play();
+            HUDRenderer.sendSceneSync();
 
         });
     }
