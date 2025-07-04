@@ -69,7 +69,7 @@ public class BeatCraftNetworking {
     private static void handleSaberSyncPayload(SaberSyncC2SPayload payload, ServerPlayNetworking.Context context) {
         PlayerEntity sending_player = context.player();
         UUID uuid = sending_player.getUuid();
-        PlayerLookup.tracking(sending_player).forEach(player -> {
+        PlayerLookup.all(context.server()).forEach(player -> {
             ServerPlayNetworking.send(player, new SaberSyncS2CPayload(
                 uuid,
                 payload.leftPos(), payload.leftRot(),
@@ -96,17 +96,14 @@ public class BeatCraftNetworking {
     }
 
     private static void handleBeatSyncPayload(BeatSyncC2SPayload payload, ServerPlayNetworking.Context context) {
-        PlayerEntity player = context.player();
-        PlayerLookup.tracking(player).forEach(pl -> {
+        PlayerLookup.all(context.server()).forEach(pl -> {
             ServerPlayNetworking.send(pl, new BeatSyncS2CPayload(payload.beat()));
         });
     }
 
     private static void handleSpeedSyncPayload(SpeedSyncC2SPayload payload, ServerPlayNetworking.Context context) {
 
-        PlayerEntity player = context.player();
-
-        PlayerLookup.tracking(player).forEach(pl -> {
+        PlayerLookup.all(context.server()).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SpeedSyncS2CPayload(payload.speed()));
         });
     }
@@ -125,7 +122,7 @@ public class BeatCraftNetworking {
             }
         }
 
-        PlayerLookup.tracking(player).forEach(pl -> {
+        PlayerLookup.all(context.server()).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SceneSyncS2CPayload(payload.scene()));
             if (scene == 1) {
                 BeatCraft.LOGGER.info("send untrack packet");
@@ -136,9 +133,7 @@ public class BeatCraftNetworking {
 
     private static void handlePausePayload(SongPauseC2SPayload payload, ServerPlayNetworking.Context context) {
 
-        PlayerEntity player = context.player();
-
-        PlayerLookup.tracking(player).forEach(pl -> {
+        PlayerLookup.all(context.server()).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SongPauseS2CPayload(payload.paused()));
         });
 
