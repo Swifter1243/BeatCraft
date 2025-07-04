@@ -61,6 +61,7 @@ import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -133,18 +134,18 @@ public class GameLogicHandler {
     }
 
     public static void untrack(UUID uuid) {
-        if (trackedPlayerUuid.equals(uuid)) {
+        if (Objects.equals(trackedPlayerUuid, uuid)) {
             trackedPlayerUuid = null;
             unloadAll();
         }
     }
 
     public static boolean isTrackingClient() {
-        return trackedPlayerUuid == null || MinecraftClient.getInstance().player.getUuid().equals(trackedPlayerUuid);
+        return trackedPlayerUuid == null || (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.getUuid().equals(trackedPlayerUuid));
     }
 
     public static boolean isTracking(UUID uuid) {
-        return trackedPlayerUuid.equals(uuid);
+        return Objects.equals(uuid, trackedPlayerUuid);
     }
 
     public static PlayerEntity getTrackedPlayer() {
