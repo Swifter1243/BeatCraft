@@ -92,9 +92,8 @@ public class BeatCraftClientNetworking {
     private static void handleBeatSyncPayload(BeatSyncS2CPayload payload, ClientPlayNetworking.Context context) {
         if (GameLogicHandler.isTrackingClient()) return; // give time for song to download if map sync only just happened
         float beat = payload.beat();
-        if (Math.abs(BeatmapPlayer.getCurrentBeat() - beat) > 0.1) {
-            BeatmapPlayer.play(beat, true);
-        }
+        BeatCraft.LOGGER.info("Received beat sync! {}", beat);
+        BeatmapPlayer.play(beat, true);
     }
 
     private static void handlePlayerDisconnectPayload(PlayerDisconnectS2CPayload payload, ClientPlayNetworking.Context context) {
