@@ -4,9 +4,11 @@ import com.beatcraft.BeatCraft;
 import com.beatcraft.environment.StructurePlacer;
 import com.beatcraft.networking.c2s.*;
 import com.beatcraft.networking.s2c.*;
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -114,7 +116,7 @@ public class BeatCraftNetworking {
         var scene = payload.scene();
 
         if (scene == 1) { // SongSelect
-            if (player.getUuid() == BeatCraft.currentTrackedPlayer) {
+            if (BeatCraft.currentTrackedPlayer.equals(player.getUuid())) {
                 BeatCraft.currentTrackedPlayer = null;
                 BeatCraft.currentTrackId = null;
                 BeatCraft.currentSet = null;
@@ -125,6 +127,7 @@ public class BeatCraftNetworking {
         PlayerLookup.tracking(player).forEach(pl -> {
             ServerPlayNetworking.send(pl, new SceneSyncS2CPayload(payload.scene()));
             if (scene == 1) {
+                BeatCraft.LOGGER.info("send untrack packet");
                 ServerPlayNetworking.send(pl, new PlayerUntrackS2CPayload(player.getUuid()));
             }
         });

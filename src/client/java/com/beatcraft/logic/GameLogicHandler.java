@@ -133,7 +133,7 @@ public class GameLogicHandler {
     }
 
     public static void untrack(UUID uuid) {
-        if (trackedPlayerUuid == uuid) {
+        if (trackedPlayerUuid.equals(uuid)) {
             trackedPlayerUuid = null;
             unloadAll();
         }
@@ -144,7 +144,7 @@ public class GameLogicHandler {
     }
 
     public static boolean isTracking(UUID uuid) {
-        return trackedPlayerUuid == uuid;
+        return trackedPlayerUuid.equals(uuid);
     }
 
     public static PlayerEntity getTrackedPlayer() {

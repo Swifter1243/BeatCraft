@@ -62,8 +62,10 @@ public class BeatCraftClientNetworking {
             GameLogicHandler.trackPlayer(uuid);
 
             if (BeatCraftClient.songs.getById(song_id) == null) {
+                BeatmapAudioPlayer.beatmapAudio.closeBuffer();
                 SongDownloader.downloadFromId(song_id, MinecraftClient.getInstance().runDirectory.getAbsolutePath(), () -> loadNewSong(song_id, set, diff));
             } else {
+                BeatmapAudioPlayer.beatmapAudio.closeBuffer();
                 loadNewSong(song_id, set, diff);
             }
 
@@ -91,7 +93,7 @@ public class BeatCraftClientNetworking {
     private static void handleBeatSyncPayload(BeatSyncS2CPayload payload, ClientPlayNetworking.Context context) {
         if (GameLogicHandler.isTrackingClient()) return; // give time for song to download if map sync only just happened
         float beat = payload.beat();
-        if (Math.abs(BeatmapPlayer.getCurrentBeat() - beat) > 0.01) {
+        if (Math.abs(BeatmapPlayer.getCurrentBeat() - beat) > 0.1) {
             BeatmapPlayer.play(beat, true);
         }
     }

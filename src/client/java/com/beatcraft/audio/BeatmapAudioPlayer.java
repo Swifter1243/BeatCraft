@@ -30,7 +30,7 @@ public class BeatmapAudioPlayer {
     public static String currentFile = null;
     public static void playAudioFromFile(String path) {
         unload();
-
+        beatmapAudio.closeBuffer();
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
                 beatmapAudio.loadAudioFromFile(path);
