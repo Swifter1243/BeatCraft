@@ -1,7 +1,7 @@
 package com.beatcraft.audio;
 
-import com.beatcraft.BeatCraft;
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.logic.GameLogicHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 
@@ -51,6 +51,7 @@ public class BeatmapAudioPlayer {
         }
     }
 
+    private static boolean wasInWall = false;
     public static void onFrame() {
         if (!beatmapAudio.isLoaded()) {
             return;
@@ -63,6 +64,14 @@ public class BeatmapAudioPlayer {
                 syncTimeWithBeatmap();
                 beatmapAudio.play();
             }
+            var isInWall = GameLogicHandler.isInWall();
+            if (!wasInWall && isInWall) {
+                beatmapAudio.applyFx();
+            }
+            else if (wasInWall && !isInWall) {
+                beatmapAudio.clearFx();
+            }
+            wasInWall = isInWall;
         }
     }
 
