@@ -1,6 +1,6 @@
 package com.beatcraft.animation;
 
-public abstract class AnimationPropertyContainer<FloatType, Vector3Type, Vector4Type, QuaternionType> {
+public abstract class AnimationPropertyContainer<FloatType, Vector3Type, Vector4Type, QuaternionType, ColorType> {
     protected Vector3Type offsetPosition;
     protected QuaternionType offsetWorldRotation;
     protected QuaternionType localRotation;
@@ -13,7 +13,7 @@ public abstract class AnimationPropertyContainer<FloatType, Vector3Type, Vector4
     protected FloatType dissolveArrow;
     protected FloatType interactable;
     protected FloatType time;
-    protected Vector4Type color;
+    protected ColorType color;
 
     public Vector3Type getOffsetPosition() {
         return offsetPosition;
@@ -63,7 +63,7 @@ public abstract class AnimationPropertyContainer<FloatType, Vector3Type, Vector4
         return time;
     }
 
-    public Vector4Type getColor() {
+    public ColorType getColor() {
         return color;
     }
 }

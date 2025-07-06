@@ -3,6 +3,7 @@ package com.beatcraft.render.instancing;
 import com.beatcraft.data.types.Color;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBInstancedArrays;
+import org.lwjgl.opengl.EXTDrawInstanced;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
@@ -64,7 +65,7 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
     @Override
     public int[] getLocations() {
         return new int[]{
-            TRANSFORM_LOCATION,
+            TRANSFORM_LOCATION, TRANSFORM_LOCATION + 1, TRANSFORM_LOCATION + 2, TRANSFORM_LOCATION + 3,
             COLOR_LOCATION,
             DISSOLVE_INDEX_LOCATION
         };

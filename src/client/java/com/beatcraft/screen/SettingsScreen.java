@@ -2,7 +2,7 @@ package com.beatcraft.screen;
 
 import com.beatcraft.BeatCraftClient;
 import com.beatcraft.audio.BeatmapAudioPlayer;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.render.DebugRenderer;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
@@ -82,7 +82,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     private void setGeneralPage() {
 
-        var trailIntensitySlider = Components.discreteSlider(Sizing.fill(50), 1, 20).value((Stash.getTrailSize()-10)/190f).message(str -> Text.of(str + "0"));
+        var trailIntensitySlider = Components.discreteSlider(Sizing.fill(50), 1, 20).value((CycleStack.getTrailSize()-10)/190f).message(str -> Text.of(str + "0"));
         trailIntensitySlider.onChanged().subscribe(this::updateTrailIntensity);
 
         var reducedDebrisToggle = Components.checkbox(Text.translatable("setting.beatcraft.player_option.reduced_debris"));
@@ -246,7 +246,7 @@ public class SettingsScreen extends BaseOwoScreen<FlowLayout> {
 
     private void updateTrailIntensity(double value) {
         int size = (int) (value * 10);
-        Stash.updateTrailSize(size);
+        CycleStack.updateTrailSize(size);
     }
 
     private void updateVolume(double value) {

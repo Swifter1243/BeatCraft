@@ -1,6 +1,7 @@
 package com.beatcraft.audio;
 
 import com.beatcraft.BeatmapPlayer;
+import com.beatcraft.logic.GameLogicHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 
@@ -27,16 +28,19 @@ public class BeatmapAudioPlayer {
         mc.options.getSoundVolumeOption(SoundCategory.MUSIC).setValue(currentMusicVolume);
     }
 
+    public static String currentFile = null;
     public static void playAudioFromFile(String path) {
         unload();
-
+        beatmapAudio.closeBuffer();
+        currentFile = null;
         loadRequest = CompletableFuture.runAsync(() -> {
             try {
                 beatmapAudio.loadAudioFromFile(path);
                 beatmapAudio.seek(0); // seek auto-compensates for the player's latency setting
                 beatmapAudio.play();
+                currentFile = path;
             } catch (IOException e) {
-                throw new RuntimeException("Something FUCKED happened.", e);
+                throw new RuntimeException("Critical error while loading audio.", e);
             }
         });
     }
@@ -47,6 +51,7 @@ public class BeatmapAudioPlayer {
         }
     }
 
+    private static boolean wasInWall = false;
     public static void onFrame() {
         if (!beatmapAudio.isLoaded()) {
             return;
@@ -59,6 +64,14 @@ public class BeatmapAudioPlayer {
                 syncTimeWithBeatmap();
                 beatmapAudio.play();
             }
+            var isInWall = GameLogicHandler.isInWall();
+            if (!wasInWall && isInWall) {
+                beatmapAudio.applyFx();
+            }
+            else if (wasInWall && !isInWall) {
+                beatmapAudio.clearFx();
+            }
+            wasInWall = isInWall;
         }
     }
 
@@ -81,7 +94,7 @@ public class BeatmapAudioPlayer {
         if (loadRequest == null) return false;
 
         // load request is done and worked
-        return loadRequest.isDone() && !loadRequest.isCompletedExceptionally();
+        return loadRequest.isDone() && !loadRequest.isCompletedExceptionally() && currentFile != null;
     }
 
     public static void unload() {

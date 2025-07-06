@@ -16,7 +16,6 @@ import oshi.util.tuples.Triplet;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.beatcraft.render.gl.GlUtil.getOrCreateShaderProgram;
 
@@ -65,6 +64,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     private final ArrayList<I> bloomCopyCalls;
     private boolean initialized;
 
+    public static boolean isQuest3 = false;
+
     private Identifier vertexShaderLoc;
     private Identifier fragmentShaderLoc;
 
@@ -109,11 +110,13 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             return;
         }
 
+        var vendor = GL31.glGetString(GL31.GL_VENDOR);
+        isQuest3 = (vendor != null && vendor.contains("QuestCraft"));
+
         vertexShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".vsh");
         fragmentShaderLoc = Identifier.of(shaderName.getNamespace(), "shaders/" + shaderName.getPath() + ".fsh");
 
-
-        vao = GL30.glGenVertexArrays();
+        vao = GL45C.glCreateVertexArrays();
         GL30.glBindVertexArray(vao);
 
         vertexVbo = GL15.glGenBuffers();
@@ -132,6 +135,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         uvVbo = GL15.glGenBuffers();
         FloatBuffer uvBuffer = MemoryUtil.memAllocFloat(vertices.length * 2);
+
         for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
             Vector2f uv = vertex.getB();
             uvBuffer.put(uv.x).put(uv.y);
@@ -144,7 +148,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL20.glEnableVertexAttribArray(TEXCOORD_LOCATION);
         MemoryUtil.memFree(uvBuffer);
 
-        normalVbo = GL15.glGenBuffers();
+        normalVbo = GL45C.glCreateBuffers();
         FloatBuffer normalBuffer = MemoryUtil.memAllocFloat(vertices.length * 3);
         for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
             Vector3f normal = vertex.getC();
@@ -239,6 +243,10 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         GL30.glBindVertexArray(vao);
 
+        ARBInstancedArrays.glVertexAttribDivisorARB(POSITION_LOCATION, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(TEXCOORD_LOCATION, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(NORMAL_LOCATION, 0);
+
         for (var loc : attrLocations) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
         }
@@ -298,7 +306,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         shaderProgram = getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
         shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
-        GL20.glUseProgram(shaderProgram);
+        GlUtil.useProgram(shaderProgram);
 
         RenderSystem.setShaderTexture(0, texture);
 
@@ -306,8 +314,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
 
         var projMat = RenderSystem.getProjectionMatrix();
         var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation);
-        GlUtil.setMat4f(shaderProgram, "u_projection", projMat);
-        GlUtil.setMat4f(shaderProgram, "u_view", viewMat);
+        GlUtil.uniformMat4f("u_projection", projMat);
+        GlUtil.uniformMat4f("u_view", viewMat);
 
         if (arrowBloomProgram != -1) {
             GlUtil.setTex(arrowBloomProgram, "u_depth", 1, depthBuffer);
@@ -326,7 +334,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         GL15.glDeleteBuffers(instanceVbo);
         GL15.glDeleteBuffers(indicesVbo);
         GL30.glDeleteVertexArrays(vao);
-        GlUtil.destroyShaderProgram(vertexShaderLoc, fragmentShaderLoc);
     }
 
     public static void cleanupAll() {

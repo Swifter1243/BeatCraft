@@ -1,5 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.base_providers.BaseProviderHandler;
+import com.beatcraft.base_providers.Vector3fReader;
 import com.beatcraft.utils.JsonUtil;
 import com.beatcraft.utils.MathUtil;
 import com.google.gson.JsonArray;
@@ -23,14 +25,24 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
     }
 
     @Override
-    protected int getValueLength() {
+    protected int getValueLength(JsonArray ignored) {
         return 3;
     }
 
     @Override
     protected void loadValue(JsonArray json, Point<Vector3f> point, boolean isSimple) {
-        Vector3f vector = JsonUtil.getVector3(json);
-        point.setValue(vector);
+        if (isSimple) {
+            Vector3f vector = JsonUtil.getVector3(json);
+            point.setValue(vector);
+        } else {
+            if (isModifier(json)) {
+                var v = BaseProviderHandler.parseFromJson(json, 3);
+                point.setValue(new Vector3fReader(v.getValues()));
+            } else {
+                var v = JsonUtil.getVector3(json);
+                point.setValue(v);
+            }
+        }
     }
 
     protected Vector3f splineInterpolation(int a, int b, float time) {

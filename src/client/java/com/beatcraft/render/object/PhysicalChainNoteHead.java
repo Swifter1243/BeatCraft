@@ -83,12 +83,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom();
-            //if (dissolve == 0) {
-            //    BeatCraftRenderer.bloomfog.recordArrowBloomCall((b, v, q) -> {
-            //        MeshLoader.NOTE_ARROW_RENDER_MESH.color = data.getColor().toARGB();
-            //        MeshLoader.NOTE_ARROW_RENDER_MESH.drawToBuffer(b, worldToCameraSpace(renderPos, v, q), MemoryPool.newQuaternionf(q).mul(renderRotation), v);
-            //    });
-            //}
+
         }
     }
 

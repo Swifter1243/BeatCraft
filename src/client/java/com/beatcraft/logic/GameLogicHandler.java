@@ -52,6 +52,7 @@ import com.beatcraft.replay.PlayRecorder;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.utils.MathUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
@@ -60,6 +61,7 @@ import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -132,18 +134,29 @@ public class GameLogicHandler {
     }
 
     public static void untrack(UUID uuid) {
-        if (trackedPlayerUuid == uuid) {
+        if (Objects.equals(trackedPlayerUuid, uuid)) {
             trackedPlayerUuid = null;
             unloadAll();
         }
     }
 
     public static boolean isTrackingClient() {
-        return trackedPlayerUuid == null;
+        return trackedPlayerUuid == null || (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.getUuid().equals(trackedPlayerUuid));
     }
 
     public static boolean isTracking(UUID uuid) {
-        return trackedPlayerUuid == uuid;
+        return Objects.equals(uuid, trackedPlayerUuid);
+    }
+
+    public static PlayerEntity getTrackedPlayer() {
+        if (trackedPlayerUuid != null) {
+            assert MinecraftClient.getInstance().world != null;
+            var p = MinecraftClient.getInstance().world.getPlayerByUuid(trackedPlayerUuid);
+
+            if (p != null) return p;
+        }
+
+        return MinecraftClient.getInstance().player;
     }
 
     public static void updateLeftSaber(Vector3f position, Quaternionf rotation) {
@@ -172,15 +185,15 @@ public class GameLogicHandler {
 
         // only update on first render pass per-frame
         if (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive() && !ClientDataHolderVR.getInstance().isFirstPass) return;
-
-        assert MinecraftClient.getInstance().player != null;
-        headPos = MinecraftClient.getInstance().player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (MinecraftClient.getInstance().player.getEyeY() - MinecraftClient.getInstance().player.getPos().y), 0);
+        var player = getTrackedPlayer();
+        assert player != null;
+        headPos = player.getLerpedPos(tickDelta).toVector3f().add(0, (float) (player.getEyeY() - player.getPos().y), 0);
         headRot.set(MirrorHandler.invCameraRotation).conjugate();
         if (FPFC) {
             Quaternionf rot = new Quaternionf()
-                    .rotateY(-MinecraftClient.getInstance().player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
+                    .rotateY(-player.getYaw(tickDelta) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize()
-                    .rotateX((90 + MinecraftClient.getInstance().player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
+                    .rotateX((90 + player.getPitch(tickDelta)) * MathHelper.RADIANS_PER_DEGREE)
                     .normalize();
             //Quaternionf rotation = new Quaternionf().rotateX(90 * MathHelper.RADIANS_PER_DEGREE).normalize().add(rot);
             rightSaberPos = new Vector3f(headPos);
@@ -599,6 +612,7 @@ public class GameLogicHandler {
     private static void resetToMenu() {
         HUDRenderer.endScreenPanel.setFailed();
         HUDRenderer.scene = HUDRenderer.MenuScene.EndScreen;
+        HUDRenderer.sendSceneSync();
 
         try {
             PlayRecorder.save();
@@ -724,6 +738,10 @@ public class GameLogicHandler {
     }
 
     public static void unpauseMap() {
+        unpauseMap(true);
+    }
+
+    public static void unpauseMap(boolean sendPackets) {
         InputSystem.lockHotbar();
         CompletableFuture.runAsync(() -> {
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
@@ -732,14 +750,17 @@ public class GameLogicHandler {
             while ((System.nanoTime() / 1_000_000_000d) - start < 1) {
                 double dt = 1-(System.nanoTime() / 1_000_000_000d);
                 if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                    if (sendPackets) HUDRenderer.sendSceneSync();
                     return;
                 }
             }
 
             if (!(HUDRenderer.scene == HUDRenderer.MenuScene.InGame)) {
+                if (sendPackets) HUDRenderer.sendSceneSync();
                 return;
             }
             BeatmapPlayer.play();
+            if (sendPackets) HUDRenderer.sendSceneSync();
 
         });
     }

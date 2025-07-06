@@ -1,7 +1,9 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.BeatCraft;
 import com.beatcraft.animation.Easing;
 import com.beatcraft.animation.event.AnimatedPathEvent;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.event.AnimateTrack;
 import com.beatcraft.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.beatmap.data.event.AssignPathAnimation;
@@ -16,15 +18,49 @@ public abstract class PointDefinition<T> {
 
     abstract protected T interpolatePoints(int a, int b, float time);
 
-    public static boolean isSimple(JsonArray json) {
-        return !json.get(0).isJsonArray();
+    public static boolean isModifier(JsonElement json) {
+        if (!json.isJsonArray()) {
+            if (json.isJsonPrimitive()) {
+                var p = json.getAsJsonPrimitive();
+                return (p.isString());
+            }
+        }
+        for (var v : json.getAsJsonArray()) {
+            if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
+                var s = v.getAsString();
+                if (s.startsWith("base") || s.startsWith("op")) {
+                    return true;
+                }
+            } else if (v.isJsonArray()) {
+                for (var x : v.getAsJsonArray()) {
+                    if (x.isJsonPrimitive() && x.getAsJsonPrimitive().isString()) {
+                        var s = x.getAsString();
+                        if (s.startsWith("base") || s.startsWith("op")) {
+                            return true;
+                        }
+                        if (s.startsWith("ease")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
-    protected abstract int getValueLength();
-    public int getTimeIndex() {
-        return getValueLength();
+    public static boolean isSimple(JsonArray json) {
+        if (json.get(0).isJsonArray()) {
+            return false;
+        } else if (json.get(0).isJsonPrimitive() && json.get(0).getAsJsonPrimitive().isString()) {
+            return false;
+        }
+        return true;
+    }
+    protected abstract int getValueLength(JsonArray inner);
+    public int getTimeIndex(JsonArray inner) {
+        return getValueLength(inner);
     }
     public boolean hasFlags(JsonArray json) {
-        return json.size() > getTimeIndex() + 1;
+        return json.size() > getTimeIndex(json) + 1;
     }
 
     public Integer getFlagIndex(JsonArray json, String flag) {
@@ -32,7 +68,7 @@ public abstract class PointDefinition<T> {
             return null;
         }
 
-        for (int i = getTimeIndex() + 1; i < json.size(); i++) {
+        for (int i = getTimeIndex(json) + 1; i < json.size(); i++) {
             JsonElement element = json.get(i);
             if (JsonHelper.isString(element) && element.getAsString().contains(flag)) {
                 return i;
@@ -65,25 +101,31 @@ public abstract class PointDefinition<T> {
     }
 
     private void loadComplex(JsonArray json) {
-        json.forEach(x -> {
-            JsonArray inner = x.getAsJsonArray();
+        if (isModifier(json)) {
             Point<T> point = new Point<>();
-
-            float time = inner.get(getTimeIndex()).getAsFloat();
-            point.setTime(time);
-
-            Integer easingIndex = getEasingIndex(inner);
-            if (easingIndex != null) {
-                String easing = inner.get(easingIndex).getAsString();
-                point.setEasing(Easing.getEasing(easing));
-            }
-
-            Integer splineIndex = getSplineIndex(inner);
-            point.setSpline(splineIndex != null);
-
-            loadValue(inner, point, false);
+            loadValue(json, point, false);
             points.add(point);
-        });
+        } else {
+            json.forEach(x -> {
+                JsonArray inner = x.getAsJsonArray();
+                Point<T> point = new Point<>();
+
+                float time = inner.get(getTimeIndex(inner)).getAsFloat();
+                point.setTime(time);
+
+                Integer easingIndex = getEasingIndex(inner);
+                if (easingIndex != null) {
+                    String easing = inner.get(easingIndex).getAsString();
+                    point.setEasing(Easing.getEasing(easing));
+                }
+
+                Integer splineIndex = getSplineIndex(inner);
+                point.setSpline(splineIndex != null);
+
+                loadValue(inner, point, false);
+                points.add(point);
+            });
+        }
     }
     protected abstract void loadValue(JsonArray json, Point<T> point, boolean isSimple);
 
@@ -92,12 +134,12 @@ public abstract class PointDefinition<T> {
             return null;
         }
 
-        Point<T> lastPoint = points.get(points.size() - 1);
+        Point<T> lastPoint = points.getLast();
         if (lastPoint.getTime() <= time) {
             return lastPoint.getValue();
         }
 
-        Point<T> firstPoint = points.get(0);
+        Point<T> firstPoint = points.getFirst();
         if (firstPoint.getTime() >= time) {
             return firstPoint.getValue();
         }

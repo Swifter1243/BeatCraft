@@ -7,6 +7,7 @@ import com.beatcraft.render.HUDRenderer;
 import net.minecraft.client.sound.OggAudioStream;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.EXTEfx;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
@@ -14,17 +15,22 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 public class BeatmapAudio {
     private int buffer;
-    private final int source;
+    private int source;
     private boolean isPlaying = false;
     private boolean isLoaded = false;
     private float songDuration = 0;
+    private final int filter;
 
     public BeatmapAudio() {
-        source = AL10.alGenSources();
+        filter = EXTEfx.alGenFilters();
+
+        EXTEfx.alFilteri(filter, EXTEfx.AL_FILTER_TYPE, EXTEfx.AL_FILTER_LOWPASS);
+        EXTEfx.alFilterf(filter, EXTEfx.AL_LOWPASS_GAIN, 1.0f);
+        EXTEfx.alFilterf(filter, EXTEfx.AL_LOWPASS_GAINHF, 0.1f);
+
     }
 
     public boolean isLoaded() {
@@ -73,6 +79,14 @@ public class BeatmapAudio {
 
     public void setPlaybackSpeed(float speed) {
         AL10.alSourcef(source, AL10.AL_PITCH, speed);
+    }
+
+    public void applyFx() {
+        AL10.alSourcei(source, EXTEfx.AL_DIRECT_FILTER, filter);
+    }
+
+    public void clearFx() {
+        AL10.alSourcei(source, EXTEfx.AL_DIRECT_FILTER, 0);
     }
 
     private int getFormatID(AudioFormat format) {
@@ -142,6 +156,8 @@ public class BeatmapAudio {
         }
         AudioFormat format = oggAudioStream.getFormat();
         buffer = AL10.alGenBuffers();
+        source = AL10.alGenSources();
+
 
         int formatID = getFormatID(format);
         int sampleRate = (int) format.getSampleRate();
@@ -180,8 +196,10 @@ public class BeatmapAudio {
     public void closeBuffer() {
         if (isLoaded) {
             stop();
+            AL10.alSourcei(source, AL10.AL_BUFFER, 0);
             AL10.alDeleteBuffers(buffer);
-            isLoaded = false;
+            AL10.alDeleteSources(source);
         }
+        isLoaded = false;
     }
 }

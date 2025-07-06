@@ -7,6 +7,7 @@ import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.effect.Bloomfog;
 import com.beatcraft.render.effect.MirrorHandler;
 import com.beatcraft.render.effect.ObstacleGlowRenderer;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.SmokeParticle;
@@ -146,7 +147,6 @@ public class BeatCraftRenderer {
             BufferRenderer.drawWithGlobalProgram(buff);
 
             RenderSystem.disableDepthTest();
-            RenderSystem.disableDepthTest();
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
 
@@ -236,6 +236,7 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
     }
@@ -276,8 +277,12 @@ public class BeatCraftRenderer {
             Bloomfog.backlightsPositionColorShader.addSampler("Sampler0", Bloomfog.lightDepth.getDepthAttachment());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthAttachment());
             Bloomfog.backlightsPositionColorShader.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BufferRenderer.drawWithGlobalProgram(buff);
         }
+        
+        LightMesh.renderAllSolid();
+
         RenderSystem.defaultBlendFunc();
     }
 

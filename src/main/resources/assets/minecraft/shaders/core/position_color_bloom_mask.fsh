@@ -1,6 +1,7 @@
 #version 150
 
 uniform sampler2D Sampler0;
+uniform vec2 u_fog;
 
 in vec4 vertexColor;
 in vec3 screenUV;
@@ -22,7 +23,7 @@ void main() {
         discard;
     }
 
-    float fadeHeight = min(max(0, (worldPos.y + 50) / 35), 1);
+    float fadeHeight = clamp((worldPos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
 
     color *= fadeHeight;
 

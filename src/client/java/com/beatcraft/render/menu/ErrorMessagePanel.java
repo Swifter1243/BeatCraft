@@ -2,8 +2,8 @@ package com.beatcraft.render.menu;
 
 import com.beatcraft.menu.ErrorMessageMenu;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -28,6 +28,14 @@ public class ErrorMessagePanel extends MenuPanel<ErrorMessageMenu> {
 
     public static boolean refresh = false;
 
+    public boolean shouldDisplay() {
+        return data.shouldDisplay();
+    }
+
+    public void close() {
+        data.close();
+    }
+
     @Override
     public void render(VertexConsumerProvider.Immediate immediate, Vector2f pointerPosition) {
         super.render(immediate, pointerPosition);
@@ -38,12 +46,13 @@ public class ErrorMessagePanel extends MenuPanel<ErrorMessageMenu> {
     }
 
     private static final int ERR_COLOR = 0xFF8F2000;
+    private static final Text CLOSE = Text.translatable("menu.beatcraft.error_panel.close");
     private void initLayout() {
         widgets.clear();
         if (data.shouldDisplay()) {
             widgets.addAll(List.of(
                 SettingsMenuPanel.getButton(
-                    new TextWidget("CLOSE", new Vector3f(0, -11, 0), 3),
+                    new TextWidget(CLOSE, new Vector3f(0, -11, 0), 3),
                     () -> {
                         data.close();
                         refresh = true;

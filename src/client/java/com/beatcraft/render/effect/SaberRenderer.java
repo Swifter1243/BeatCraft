@@ -4,7 +4,7 @@ import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.data.ControllerProfile;
 import com.beatcraft.data.components.ModComponents;
-import com.beatcraft.data.types.Stash;
+import com.beatcraft.data.types.CycleStack;
 import com.beatcraft.items.ModItems;
 import com.beatcraft.items.data.ItemStackWithSaberTrailStash;
 import com.beatcraft.logic.GameLogicHandler;
@@ -124,19 +124,16 @@ public class SaberRenderer {
             matrixStack, vertexConsumerProvider, null, 0
         );
 
-
         matrices.pop();
 
         ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation, GameLogicHandler.headPos, GameLogicHandler.headRot));
-        if (GameLogicHandler.isTrackingClient() && BeatmapPlayer.isPlaying()) {
-            ClientPlayNetworking.send(new BeatSyncC2SPayload(BeatmapPlayer.getCurrentBeat()));
-        }
+
     }
 
     public static void renderReplayTrail(ItemStack stack, Vector3f basePos, Quaternionf rotation) {
         Vector3f hiltPos = new Vector3f(0, (7/8f)*0.2f, 0).rotate(rotation).add(basePos);
         Vector3f tipPos = new Vector3f(0, (41/8f)*0.2f, 0).rotate(rotation).add(basePos);
-        Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
+        CycleStack<Pair<Vector3f, Vector3f>> cycleStack = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
         int color;
 
         int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -148,7 +145,7 @@ public class SaberRenderer {
         } else {
             color = BeatmapPlayer.currentBeatmap.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
-        queueRender(hiltPos, tipPos, stash, color);
+        queueRender(hiltPos, tipPos, cycleStack, color);
     }
 
     public static void renderTrail(boolean doCollisionCheck, MatrixStack matrix, boolean mainHand, AbstractClientPlayerEntity player, float tickDelta, ItemStack stack) {
@@ -213,7 +210,7 @@ public class SaberRenderer {
                 }
                 blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
                 blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
-                Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
+                CycleStack<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
                 int color;
 
                 int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -263,7 +260,7 @@ public class SaberRenderer {
             Vec3d pos = entity.getLerpedPos(tickDelta);
             blade_base = blade_base.add((float) pos.x, (float) pos.y, (float) pos.z);
             blade_tip = blade_tip.add((float) pos.x, (float) pos.y, (float) pos.z);
-            Stash<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
+            CycleStack<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStash) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
             int color;
 
             int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR, -1);
@@ -282,9 +279,9 @@ public class SaberRenderer {
         }
     }
 
-    public static void queueRender(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col) {
+    public static void queueRender(Vector3f blade_base, Vector3f blade_tip, CycleStack<Pair<Vector3f, Vector3f>> cycleStack, int col) {
         Function<BufferBuilder, Void> callable = (trail_buffer) -> {
-            SaberRenderer.render(blade_base, blade_tip, stash, col, trail_buffer);
+            SaberRenderer.render(blade_base, blade_tip, cycleStack, col, trail_buffer);
             return null;
         };
         render_calls.add(callable);
@@ -330,16 +327,16 @@ public class SaberRenderer {
 
     }
 
-    public static void render(Vector3f blade_base, Vector3f blade_tip, Stash<Pair<Vector3f, Vector3f>> stash, int col, BufferBuilder trail_buffer) {
-
+    public static void render(Vector3f blade_base, Vector3f blade_tip, CycleStack<Pair<Vector3f, Vector3f>> cycleStack, int col, BufferBuilder trail_buffer) {
+        if (cycleStack.getSize() <= 3) return;
         Vector3f current_base = blade_base;
         Vector3f current_tip = blade_tip;
         Vec3d cam = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
 
-        if (!stash.isEmpty()) {
+        if (!cycleStack.isEmpty()) {
             int opacity = 0;
-            float step = 0x7F / (float) stash.getSize();
-            for (Pair<Vector3f, Vector3f> ab : stash) {
+            float step = 0x7F / (float) cycleStack.getSize();
+            for (Pair<Vector3f, Vector3f> ab : cycleStack) {
                 Vector3f a = ab.getLeft();
                 Vector3f b = ab.getRight();
 
@@ -361,7 +358,7 @@ public class SaberRenderer {
 
         }
 
-        stash.push(new Pair<>(blade_base, blade_tip));
+        cycleStack.push(new Pair<>(blade_base, blade_tip));
 
     }
 

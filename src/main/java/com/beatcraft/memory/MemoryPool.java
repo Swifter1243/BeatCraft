@@ -11,13 +11,13 @@ import java.util.Stack;
 public class MemoryPool {
 
     private static final Stack<Vector3f> sharedVector3fs = new Stack<>();
-    private static int sharedVector3fBalance = 0;
+    private static long sharedVector3fBalance = 0;
 
     private static final Stack<Vector2f> sharedVector2fs = new Stack<>();
-    private static int sharedVector2fBalance = 0;
+    private static long sharedVector2fBalance = 0;
 
     private static final Stack<Quaternionf> sharedQuaternionfs = new Stack<>();
-    private static int sharedQuaternionfBalance = 0;
+    private static long sharedQuaternionfBalance = 0;
 
     public static Vector3f newVector3f(Vector3f copyFrom) {
         return newVector3f(copyFrom.x, copyFrom.y, copyFrom.z);

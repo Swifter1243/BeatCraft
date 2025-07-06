@@ -1,5 +1,7 @@
 package com.beatcraft.animation.pointdefinition;
 
+import com.beatcraft.base_providers.BaseProviderHandler;
+import com.beatcraft.base_providers.FloatReader;
 import com.google.gson.JsonArray;
 import org.joml.Math;
 
@@ -17,13 +19,18 @@ public class FloatPointDefinition extends PointDefinition<Float> {
     }
 
     @Override
-    protected int getValueLength() {
+    protected int getValueLength(JsonArray ignored) {
         return 1;
     }
 
     @Override
     protected void loadValue(JsonArray json, Point<Float> point, boolean isSimple) {
-        float value = json.get(0).getAsFloat();
-        point.setValue(value);
+        if (isModifier(json)) {
+            var p = BaseProviderHandler.parseFromJson(json, 1);
+            point.setValue(new FloatReader(p.getValues()));
+        } else {
+            float value = json.get(0).getAsFloat();
+            point.setValue(value);
+        }
     }
 }

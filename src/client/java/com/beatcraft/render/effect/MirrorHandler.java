@@ -6,6 +6,7 @@ import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.render.BeatCraftRenderer;
+import com.beatcraft.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
@@ -308,7 +309,7 @@ public class MirrorHandler {
             }
             drawCalls.clear();
         }
-        MemoryPool.release(q);
+        MemoryPool.releaseSafe(q);
 
 
         var buff = buffer.endNullable();
@@ -319,6 +320,7 @@ public class MirrorHandler {
             RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
             Bloomfog.bloomfogPositionColor.getUniformOrDefault("WorldTransform").set(worldTransform);
+            Bloomfog.bloomfogPositionColor.getUniformOrDefault("u_fog").set(Bloomfog.getFogHeights());
             BeatCraftRenderer.bloomfog.loadTex();
             BufferRenderer.drawWithGlobalProgram(buff);
             RenderSystem.enableCull();
@@ -341,6 +343,9 @@ public class MirrorHandler {
             MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
             MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
             MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
+
+            LightMesh.cancelMirrorDraws();
+
             RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.disableDepthTest();
@@ -349,6 +354,7 @@ public class MirrorHandler {
         };
 
 
+        MinecraftClient.getInstance().getFramebuffer().endWrite();
         BeatCraftRenderer.bloomfog.overrideBuffer = true;
         BeatCraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.beginWrite(true);
@@ -379,6 +385,11 @@ public class MirrorHandler {
 
         renderObstacles(tessellator, cameraPos);
 
+        LightMesh.renderAllMirror();
+        //RenderSystem.depthMask(false);
+        //RenderSystem.disableCull();
+
+
         BeatCraftRenderer.bloomfog.overrideFramebuffer = null;
         BeatCraftRenderer.bloomfog.overrideBuffer = false;
         mirrorFramebuffer.endWrite();
@@ -396,6 +407,7 @@ public class MirrorHandler {
         if (buff != null) {
             RenderSystem.setShader(() -> mirrorShader);
             RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
             RenderSystem.setShaderTexture(0, mirrorFramebuffer.getColorAttachment());
             mirrorShader.addSampler("Sampler0", mirrorFramebuffer.getColorAttachment());
             RenderSystem.setShaderTexture(1, mirrorFramebuffer.getDepthAttachment());

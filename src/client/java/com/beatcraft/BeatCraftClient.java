@@ -2,6 +2,7 @@ package com.beatcraft;
 
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.data.PlayerConfig;
 import com.beatcraft.data.menu.SongData;
@@ -43,11 +44,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.nbt.*;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.text.*;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
@@ -87,6 +90,9 @@ public class BeatCraftClient implements ClientModInitializer {
     public static final Vec3d playerSaberPosition = new Vec3d(0, 0, 0);
     public static final Quaternionf playerSaberRotation = new Quaternionf();
 
+    public static int windowWidth = 0;
+    public static int windowHeight = 0;
+
     @Override
     public void onInitializeClient() {
 
@@ -101,6 +107,9 @@ public class BeatCraftClient implements ClientModInitializer {
 
         playerConfig = PlayerConfig.loadFromFile();
 
+        BaseProviderHandler.setupDynamicProviders();
+
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new BeatCraftAssetReloadListener());
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             HUDRenderer.triggerPressed = false;
@@ -108,6 +117,17 @@ public class BeatCraftClient implements ClientModInitializer {
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+
+            var window = MinecraftClient.getInstance().getWindow();
+            var w = Math.max(1, window.getWidth());
+            var h = Math.max(1, window.getHeight());
+
+            if (w != windowWidth || h != windowHeight) {
+                windowWidth = w;
+                windowHeight = h;
+                BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+            }
+
             if (settingsKeyBind.wasPressed()) {
                 var screen = new SettingsScreen(null);
                 client.setScreen(screen);
@@ -119,6 +139,7 @@ public class BeatCraftClient implements ClientModInitializer {
                 while (songSearchKeybind.wasPressed());
             }
             if (pauseLevelKeybind.wasPressed()) {
+                if (!GameLogicHandler.isTrackingClient()) return;
 
                 if (GameLogicHandler.isPaused()) {
                     GameLogicHandler.unpauseMap();
@@ -130,7 +151,7 @@ public class BeatCraftClient implements ClientModInitializer {
             if (toggleFPFCKeybind.wasPressed()) {
                 if (client.player != null) {
                     toggleFPFC();
-                    client.player.sendMessage(Text.of(GameLogicHandler.FPFC ? "Enabled FPFC" : "Disabled FPFC"));
+                    client.player.sendMessage(Text.translatable(GameLogicHandler.FPFC ? "event.beatcraft.fpfc_enabled" : "event.beatcraft.fpfc_disabled"));
                     while (toggleFPFCKeybind.wasPressed());
                 }
             }
@@ -138,31 +159,16 @@ public class BeatCraftClient implements ClientModInitializer {
                 if (client.player != null) {
                     if (InputSystem.isMovementLocked()) {
                         InputSystem.unlockMovement();
-                        client.player.sendMessage(Text.of("Player movement UNLOCKED!"));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_unlocked"));
                     } else {
                         InputSystem.lockMovement();
-                        client.player.sendMessage(Text.of(String.format("Player movement LOCKED! (press \"%s\" to unlock)", toggleMovementLock.getBoundKeyLocalizedText().getString())));
+                        client.player.sendMessage(Text.translatable("event.beatcraft.movement_locked", toggleMovementLock.getBoundKeyLocalizedText().getString()));
                     }
                     while (toggleMovementLock.wasPressed()) ;
                 }
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            Bloomfog.initShaders();
-            BeatmapAudioPlayer.init();
-
-            var window = MinecraftClient.getInstance().getWindow();
-            var w = window.getWidth();
-            var h = window.getHeight();
-
-            if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
-            BeatCraftRenderer.bloomfog.resize(w, h, true);
-
-            songs.loadSongs();
-            ReplayHandler.loadReplays();
-            HUDRenderer.initSongSelectMenuPanel();
-        });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> {
             DynamicTexture.unloadAllTextures();
@@ -181,10 +187,6 @@ public class BeatCraftClient implements ClientModInitializer {
             return false;
         });
 
-
-        WindowResizeCallback.EVENT.register((client, window) -> {
-            BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
-        });
 
     }
 
@@ -462,7 +464,7 @@ public class BeatCraftClient implements ClientModInitializer {
             BeatmapPlayer.restart();
             GameLogicHandler.reset();
             if (song.getId() != null) {
-                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff));
+                ClientPlayNetworking.send(new MapSyncC2SPayload(song.getId(), diffSet, diff, BeatCraftClient.playerConfig.getActiveModifiers()));
             }
             HUDRenderer.scene = HUDRenderer.MenuScene.InGame;
             return 1;

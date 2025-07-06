@@ -1,9 +1,12 @@
 package com.beatcraft;
 
 import com.beatcraft.audio.BeatmapAudioPlayer;
+import com.beatcraft.base_providers.BaseProviderHandler;
 import com.beatcraft.beatmap.BeatmapLoader;
 import com.beatcraft.beatmap.Difficulty;
 import com.beatcraft.beatmap.Info;
+import com.beatcraft.beatmap.data.ColorScheme;
+import com.beatcraft.beatmap.data.SaberSyncedColor;
 import com.beatcraft.logic.GameLogicHandler;
 import com.beatcraft.networking.c2s.SongPauseC2SPayload;
 import com.beatcraft.networking.c2s.SpeedSyncC2SPayload;
@@ -108,10 +111,18 @@ public class BeatmapPlayer {
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
     }
+
     public static void play(float beat) {
+        play(beat, false);
+    }
+
+    public static void play(float beat, boolean skipPacketSend) {
         setCurrentBeat(beat);
         BeatmapAudioPlayer.syncTimeWithBeatmap();
         isPlaying = true;
+        if (!skipPacketSend) {
+            ClientPlayNetworking.send(new SongPauseC2SPayload(false));
+        }
     }
 
     public static void pause() {
@@ -121,7 +132,7 @@ public class BeatmapPlayer {
     public static void pause(boolean skipPacketSend) {
         isPlaying = false;
         if (!skipPacketSend) {
-            ClientPlayNetworking.send(new SongPauseC2SPayload());
+            ClientPlayNetworking.send(new SongPauseC2SPayload(true));
         }
     }
 
@@ -165,7 +176,7 @@ public class BeatmapPlayer {
     public static void setupDifficultyFromFile(String path) throws IOException {
         Path p = Paths.get(path);
         String infoPath = p.getParent().toString() + "/Info.dat";
-        Info info = null;
+        Info info;
         try {
             info = BeatmapLoader.getInfoFromFile(infoPath);
         } catch (NoSuchFileException e) {
@@ -174,6 +185,10 @@ public class BeatmapPlayer {
         }
         currentBeatmap = BeatmapLoader.getDifficultyFromFile(path, info);
         currentInfo = info;
+        var cs = currentBeatmap.getSetDifficulty().getColorScheme();
+        SaberSyncedColor.leftColor = cs.getNoteLeftColor();
+        SaberSyncedColor.rightColor = cs.getNoteRightColor();
+        //BaseProviderHandler.setupStaticProviders();
     }
 
     public static void reset() {
@@ -182,6 +197,8 @@ public class BeatmapPlayer {
         isPlaying = false;
         elapsedNanoTime = 0;
         lastNanoTime = 0;
+        SaberSyncedColor.leftColor = ColorScheme.getDefaultEnvironment().getNoteLeftColor();
+        SaberSyncedColor.rightColor = ColorScheme.getDefaultEnvironment().getNoteRightColor();
     }
 
 }

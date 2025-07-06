@@ -58,8 +58,6 @@ public class TheFirstStructure implements EnvironmentPlacer {
         generateWavePillars(world, true);
         generateBackPillars(world, true);
         generateRunway(world, true);
-
-        BeatCraft.LOGGER.info("Placed TheFirst environment!");
     }
 
     @Override
