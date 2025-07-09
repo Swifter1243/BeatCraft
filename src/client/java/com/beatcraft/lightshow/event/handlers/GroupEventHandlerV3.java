@@ -67,6 +67,24 @@ public class GroupEventHandlerV3 {
         }
     }
 
+    public void seek(float beat) {
+        lightHandlers.forEach((id, handler) -> {
+            handler.seek(beat);
+        });
+
+        rotationHandlers.forEach((id, axisHandlers) -> {
+            axisHandlers.forEach((axis, handler) -> {
+                handler.seek(beat);
+            });
+        });
+
+        translationHandlers.forEach((id, axisHandlers) -> {
+            axisHandlers.forEach((axis, handler) -> {
+                handler.seek(beat);
+            });
+        });
+    }
+
     public void update(float beat) {
         lightHandlers.forEach((id, handler) -> {
             var state = handler.update(beat);

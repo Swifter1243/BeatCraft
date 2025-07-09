@@ -18,6 +18,12 @@ public class LightGroupEventHandlerV2 {
         });
     }
 
+    public void seek(float beat) {
+        handlers.forEach((id, handler) -> {
+            handler.seek(beat);
+        });
+    }
+
     public void update(float beat) {
         handlers.forEach((id, handler) -> {
             var state = handler.update(beat);

@@ -509,6 +509,12 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
     }
 
+    @Override
+    public void seek(float beat) {
+        eventGroups.forEach((k, v) -> {
+            v.getRight().seek(beat);
+        });
+    }
 
     @Override
     public void update(float beat, double deltaTime) {

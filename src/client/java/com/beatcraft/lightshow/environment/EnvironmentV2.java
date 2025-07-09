@@ -309,6 +309,23 @@ public abstract class EnvironmentV2 extends Environment {
         colorBoostEventHandler = new ColorBoostEventHandler(boostEvents);
     }
 
+    @Override
+    public void seek(float beat) {
+
+        if (leftRotatingLaserLightHandler == null) return;
+
+        leftRotatingLaserLightHandler.seek(beat);
+        rightRotatingLaserLightHandler.seek(beat);
+        leftRotatingLaserValueHandler.seek(beat);
+        rightRotatingLaserValueHandler.seek(beat);
+        backLaserLightHandler.seek(beat);
+        centerLaserLightHandler.seek(beat);
+        ringLightHandler.seek(beat);
+        ringSpinHandler.seek(beat);
+        ringZoomHandler.seek(beat);
+
+        colorBoostEventHandler.seek(beat);
+    }
 
     @Override
     public void update(float beat, double deltaTime) {

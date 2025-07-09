@@ -785,6 +785,9 @@ public abstract class EnvironmentV3 extends Environment {
     }
 
     @Override
+    public abstract void seek(float beat);
+
+    @Override
     public Environment reset() {
         boostEventHandler = null;
 
