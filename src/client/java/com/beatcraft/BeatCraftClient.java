@@ -27,6 +27,7 @@ import com.beatcraft.replay.ReplayHandler;
 import com.beatcraft.replay.Replayer;
 import com.beatcraft.screen.SettingsScreen;
 import com.beatcraft.screen.SongDownloaderScreen;
+import com.beatcraft.vivify.VivifyController;
 import com.beatcraft.vivify.assetbundle.files.BundleFile;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -108,6 +109,8 @@ public class BeatCraftClient implements ClientModInitializer {
         playerConfig = PlayerConfig.loadFromFile();
 
         BaseProviderHandler.setupDynamicProviders();
+
+        VivifyController.init();
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new BeatCraftAssetReloadListener());
 
