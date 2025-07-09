@@ -449,7 +449,7 @@ public class MeshLoader {
 
             for (var idx : indices) {
                 groupAttrs.put(idx, groupAttr + ";");
-                origins.put(idx, origin.add(0, 0.5f, 0));
+                origins.put(idx, origin);
             }
 
         });
@@ -477,8 +477,12 @@ public class MeshLoader {
             var idx = i.getAndIncrement();
 
             var attrs = groupAttrs.getOrDefault(idx, "") + JsonUtil.getOrDefault(obj, "name", JsonElement::getAsString, "");
+            var rawRotation = obj.getAsJsonObject("rotation");
+            var rotationOrigin = JsonUtil.getVector3(rawRotation.getAsJsonArray("origin")).div(16f);
 
-            var swivel = origins.computeIfAbsent(idx, x -> new Vector3f());
+            var swivel = new Vector3f(origins.computeIfAbsent(idx, x -> new Vector3f()));
+
+            swivel = new Vector3f(rotationOrigin).add(0, 0.5f, 0);
 
             var min = JsonUtil.getVector3(obj.getAsJsonArray("from")).div(16f).add(0, 0.5f, 0);
             var max = JsonUtil.getVector3(obj.getAsJsonArray("to")).div(16f).add(0, 0.5f, 0);
@@ -498,10 +502,8 @@ public class MeshLoader {
             if (include.isEmpty()) return;
 
 
-            var rawRotation = obj.getAsJsonObject("rotation");
             var angleDegrees = rawRotation.get("angle").getAsFloat();
             var rotationAxis = rawRotation.get("axis").getAsString();
-            var rotationOrigin = JsonUtil.getVector3(rawRotation.getAsJsonArray("origin")).div(16f);
 
             var rotQt = new Quaternionf().rotationAxis(
                 angleDegrees * MathHelper.RADIANS_PER_DEGREE,

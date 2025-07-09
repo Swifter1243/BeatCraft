@@ -363,8 +363,12 @@ public class SaberItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
                 if (projectedToModel.lengthSquared() >= 1e-6f) {
                     orientation.identity();
-
-                    Vector3f forwardWorld = new Vector3f(0, 0, -1).rotate(currentOri);
+                    Vector3f forwardWorld;
+                    if (swivelAxis.x == 0 && swivelAxis.y == 0 && swivelAxis.z != 0) {
+                        forwardWorld = new Vector3f(0, 1, 0).rotate(currentOri);
+                    } else {
+                        forwardWorld = new Vector3f(0, 0, -1).rotate(currentOri);
+                    }
 
                     Vector3f projectedForward = new Vector3f(forwardWorld)
                         .sub(new Vector3f(axisWorld).mul(forwardWorld.dot(axisWorld)))
