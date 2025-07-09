@@ -1,5 +1,6 @@
 package com.beatcraft.render.object;
 
+import com.beatcraft.BeatCraftClient;
 import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.animation.Easing;
@@ -444,6 +445,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
+
+        if (BeatCraftClient.playerConfig.isReducedDebris()) return;
 
         var m = getMesh();
         if (m == null) return;
