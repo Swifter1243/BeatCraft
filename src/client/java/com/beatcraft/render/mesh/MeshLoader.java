@@ -401,7 +401,16 @@ public class MeshLoader {
             var json = JsonParser.parseString(rawJson).getAsJsonObject();
 
             var textures = json.getAsJsonObject("textures");
-            var parts = textures.get("1").getAsString().split("[/:]");
+            String[] parts = null;
+            for (int i = 0; i < 5; i++) {
+                if (textures.has(String.valueOf(i))) {
+                    parts = textures.get(String.valueOf(i)).getAsString().split("[/:]");
+                }
+            }
+            if (parts == null) {
+                BeatCraft.LOGGER.error("Failed to load model json! (texture must be named '0' - '4')");
+                return null;
+            }
             var name = parts[parts.length-1];
 
             var f = textureLookup.get(name);
@@ -415,7 +424,7 @@ public class MeshLoader {
             return loadSectionedMesh(json, p.getFileName().toString(), tex.id());
         } catch (IOException e) {
             BeatCraft.LOGGER.error("Failed to load model json!", e);
-            throw new RuntimeException(e);
+            return null;
         }
     }
 
@@ -467,7 +476,7 @@ public class MeshLoader {
             var obj = e.getAsJsonObject();
             var idx = i.getAndIncrement();
 
-            var attrs = groupAttrs.getOrDefault(idx, "") + obj.get("name").getAsString();
+            var attrs = groupAttrs.getOrDefault(idx, "") + JsonUtil.getOrDefault(obj, "name", JsonElement::getAsString, "");
 
             var swivel = origins.computeIfAbsent(idx, x -> new Vector3f());
 
