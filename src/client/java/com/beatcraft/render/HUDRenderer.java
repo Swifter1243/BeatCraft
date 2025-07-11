@@ -18,6 +18,7 @@ import com.beatcraft.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.render.particle.MenuPointerParticle;
 import com.beatcraft.render.particle.ScoreDisplay;
 import com.beatcraft.utils.MathUtil;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -128,8 +129,8 @@ public class HUDRenderer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(true);
 
         switch (scene) {
             case InGame -> {
@@ -159,6 +160,13 @@ public class HUDRenderer {
                 renderSaberPreviewScreen(immediate);
             }
         }
+
+
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
 
     }
 

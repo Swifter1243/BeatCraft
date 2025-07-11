@@ -13,6 +13,7 @@ import com.beatcraft.render.effect.SaberRenderer;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
@@ -62,12 +63,23 @@ public abstract class WorldRendererMixin {
         method = "render",
         at = @At(
             value = "INVOKE",
+            target = "Lnet/minecraft/client/render/WorldRenderer;checkEmpty(Lnet/minecraft/client/util/math/MatrixStack;)V",
+            ordinal = 1
+        )
+    )
+    public void hudRenderInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
+        MirrorHandler.drawMirror();
+        HUDRenderer.render(immediate);
+    }
+
+    @Inject(
+        method = "render",
+        at = @At(
+            value = "INVOKE",
             target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/render/Camera;)V"
         )
     )
     public void endFrameInject(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci, @Local VertexConsumerProvider.Immediate immediate) {
-        MirrorHandler.drawMirror();
-        HUDRenderer.render(immediate);
         BeatCraftRenderer.earlyRender(immediate);
         DebugRenderer.render();
         BeatcraftParticleRenderer.renderParticles();
