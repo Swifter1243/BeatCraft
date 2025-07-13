@@ -41,7 +41,7 @@ public class ChainNoteLink extends GameplayObject implements ScorableObject {
 
         this.noteType = color;
         offset = difficulty.getSetDifficulty().getOffset();
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         applyColorScheme(difficulty.getSetDifficulty());
 

@@ -49,6 +49,7 @@ public abstract class Difficulty {
     public final ArrayList<AssignTrackParent> assignTrackParents = new ArrayList<>();
     public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
+    public float firstBeat = Float.MAX_VALUE;
 
     public Environment lightShowEnvironment;
 
@@ -94,6 +95,10 @@ public abstract class Difficulty {
         rotationEvents.sort(Difficulty::compareObjects);
         animateTracks.sort(Difficulty::compareObjects);
         assignPathAnimations.sort(Difficulty::compareObjects);
+
+        if (!colorNotes.isEmpty()) firstBeat = Math.min(firstBeat, colorNotes.getFirst().getData().getBeat());
+        if (!chainHeadNotes.isEmpty()) firstBeat = Math.min(firstBeat, chainHeadNotes.getFirst().getData().getBeat());
+        if (!chainLinkNotes.isEmpty()) firstBeat = Math.min(firstBeat, chainLinkNotes.getFirst().getData().getBeat());
     }
 
     private void applyRotationEvents() {

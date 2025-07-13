@@ -97,7 +97,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
     }
 
     protected void updateCurve() {
-        float beatSpacing = data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
+        float beatSpacing = data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm(data.getBeat()));
 
         buildBasePath(new Vector3f(1, 1, -beatSpacing));
     }
@@ -148,7 +148,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
     @Override
     public float getJumpOutPosition() {
-        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
+        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm(data.getBeat()));
         return -(length * (data.getTailBeat() - data.getBeat()));
     }
 

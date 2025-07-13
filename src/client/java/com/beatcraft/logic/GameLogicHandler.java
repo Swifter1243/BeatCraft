@@ -84,6 +84,9 @@ public class GameLogicHandler {
 
     private static boolean failAnim = false;
     public static float globalDissolve = 0;
+    public static float globalArrowDissolve = 0;
+    public static float ghostNoteDissolve = 0;
+
     private static double failTime = 0;
     private static final double DISSOLVE_TIME = 2.5;
 
@@ -224,6 +227,8 @@ public class GameLogicHandler {
             breakCombo();
         }
 
+
+
         if (failAnim) {
             var t = System.nanoTime() / 1_000_000_000d;
             var normalized = MathUtil.inverseLerp(failTime, failTime+DISSOLVE_TIME, t);
@@ -233,7 +238,8 @@ public class GameLogicHandler {
             BeatmapPlayer.setPlaybackSpeed((0.1f * mapSpeed) + ((mapSpeed-n) * (0.9f * mapSpeed)));
 
             if (normalized <= 1.0) {
-                globalDissolve = (float) normalized;
+                globalDissolve = Math.max(globalDissolve, (float) normalized);
+                globalArrowDissolve = Math.max(globalArrowDissolve, (float) normalized);
             } else if (normalized >= 1.1) {
                 failAnim = false;
                 failTime = 0;
@@ -694,6 +700,7 @@ public class GameLogicHandler {
         failTime = 0;
         failAnim = false;
         globalDissolve = 0;
+        globalArrowDissolve = 0;
         MemoryPool.clear();
     }
 

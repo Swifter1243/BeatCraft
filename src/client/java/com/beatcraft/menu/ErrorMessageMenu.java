@@ -8,7 +8,11 @@ public class ErrorMessageMenu extends Menu {
     public ArrayList<String> lines = new ArrayList<>();
 
     public void setContent(String message) {
-        lines = new ArrayList<>(Arrays.stream(message.split("\n")).toList());
+        if (message == null) {
+            lines = new ArrayList<>(List.of("Unknown Error"));
+        } else {
+            lines = new ArrayList<>(Arrays.stream(message.split("\n")).toList());
+        }
     }
 
     public String getLine(int l) {

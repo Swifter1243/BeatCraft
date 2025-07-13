@@ -89,11 +89,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 getModifierToggle("4 Lives", 0, 2, this::toggle4Lives, "No Fail", "1 Life", "Zen Mode"),
 
                 getModifierToggle("No Bombs", 1, 0, this::toggleNoBombs, "Zen Mode"),
-                getModifierToggle("No Walls", 1, 1, this::toggleNoObstacles, "Zen Mode")
+                getModifierToggle("No Walls", 1, 1, this::toggleNoObstacles, "Zen Mode"),
         //        getModifierToggle("No Arrows", 1, 2, this::toggleNoArrows, "Zen Mode"),
 
-        //        getModifierToggle("Ghost Notes", 2, 0, this::toggleGhostNotes, "Disappearing Arrows", "Zen Mode"),
-        //        getModifierToggle("Disappearing Arrows", 2, 1, this::toggleDisappearingArrows, "Ghost Notes", "Zen Mode"),
+                getModifierToggle("Ghost Notes", 2, 0, this::toggleGhostNotes, "Disappearing Arrows", "Zen Mode"),
+                getModifierToggle("Disappearing Arrows", 2, 1, this::toggleDisappearingArrows, "Ghost Notes", "Zen Mode")
         //        getModifierToggle("Small Notes", 2, 2, this::toggleSmallNotes, "Zen Mode")
         ));
         modifierPage.children.addAll(List.of(
@@ -357,6 +357,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             case "No Bombs" -> this::toggleNoBombs;
             case "No Walls" -> this::toggleNoObstacles;
 
+            case "Ghost Notes" -> this::toggleGhostNotes;
+            case "Disappearing Arrows" -> this::toggleDisappearingArrows;
             case "Zen Mode" -> this::toggleZenMode;
 
             case "Slower Song" -> this::toggleSlowerSong;
@@ -461,7 +463,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private Widget getReplayTile(ReplayInfo info, Vector3f position) {
         var SIZE = new Vector2f(660, 80);
 
-        var tile = new ContainerWidget(
+        return new ContainerWidget(
             position,
             SIZE,
             new GradientWidget(
@@ -489,9 +491,6 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 new Vector2f(120, 50)
             )
         );
-
-
-        return tile;
     }
 
     public boolean refreshReplays = false;

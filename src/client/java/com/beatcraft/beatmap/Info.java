@@ -50,8 +50,12 @@ public class Info {
         }
     }
 
-    public float getBpm() {
-        return bpm;
+    public float getBpm(float beat) {
+        if (audioInfo == null) {
+            return bpm;
+        } else {
+            return audioInfo.getBpm(beat);
+        }
     }
 
     public String getEnvironmentName() {
@@ -110,19 +114,24 @@ public class Info {
             info.bpm = json.get("_beatsPerMinute").getAsFloat();
             info.environmentName = json.get("_environmentName").getAsString();
             info.songFilename = info.attachPathToMapDirectory(json.get("_songFilename").getAsString());
-
+            var audioInfoPath = Path.of(info.mapDirectory + "/BPMInfo.dat");
+            if (Files.exists(audioInfoPath)) {
+                String audioDataRaw = Files.readString(audioInfoPath);
+                JsonObject audioJson = JsonParser.parseString(audioDataRaw).getAsJsonObject();
+                info.audioInfo = AudioInfo.loadV2(audioJson);
+            }
         }
         return info;
     }
 
-    public static class SetDifficulty {
+    public class SetDifficulty {
         private float njs;
         private float offset;
         private ColorScheme colorScheme;
         private String lightshowFile;
 
         public static SetDifficulty from(JsonObject json, Info info) {
-            SetDifficulty setDifficulty = new SetDifficulty();
+            SetDifficulty setDifficulty = info.new SetDifficulty();
 
             if (json.has("noteJumpMovementSpeed")) {
                 setDifficulty.njs = json.get("noteJumpMovementSpeed").getAsFloat();
@@ -174,8 +183,8 @@ public class Info {
             return setDifficulty;
         }
 
-        public float getNjs() {
-            return njs;
+        public float getNjs(float beat) {
+            return njs * (Info.this.getBpm(beat) / Info.this.bpm);
         }
 
         public float getOffset() {

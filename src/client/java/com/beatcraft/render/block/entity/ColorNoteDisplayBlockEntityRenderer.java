@@ -49,10 +49,10 @@ public class ColorNoteDisplayBlockEntityRenderer implements BlockEntityRenderer<
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(mat, color, 0, n));
         if (cutAngle == 8) {
             MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(mat, new Color(-1), 0, n));
-            MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom();
+            MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom(color);
         } else {
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(mat, new Color(-1), 0, n));
-            MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom();
+            MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(color);
         }
 
         matrices.pop();

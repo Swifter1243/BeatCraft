@@ -75,9 +75,9 @@ public class BeatmapPlayer {
         updateLastNanoTime();
 
         // Prevent lag spikes that are too big.
-        if (nanoDeltaTime > 1_000_000_000) {
-            return 0;
-        }
+        //if (nanoDeltaTime > 1_000_000_000) {
+        //    return 0;
+        //}
 
         return nanoDeltaTime;
     }

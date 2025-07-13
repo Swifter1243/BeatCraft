@@ -110,7 +110,7 @@ public class Obstacle extends GameplayObject {
         this.beat = json.get("_time").getAsFloat();
 
         offset = difficulty.getSetDifficulty().getOffset();
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         this.duration = json.get("_duration").getAsFloat();
         this.x = json.get("_lineIndex").getAsFloat();
@@ -148,7 +148,7 @@ public class Obstacle extends GameplayObject {
         this.beat = JsonUtil.getOrDefault(json, "b", JsonElement::getAsFloat, 0f);
 
         offset = difficulty.getSetDifficulty().getOffset();
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         this.duration = JsonUtil.getOrDefault(json, "d", JsonElement::getAsFloat, 0f);
         this.x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
@@ -172,7 +172,7 @@ public class Obstacle extends GameplayObject {
         this.beat = JsonUtil.getOrDefault(json, "b", JsonElement::getAsFloat, 0f);
 
         offset = difficulty.getSetDifficulty().getOffset();
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         int i = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
         JsonObject data = obstaclesData.get(i).getAsJsonObject();

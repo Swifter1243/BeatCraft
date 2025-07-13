@@ -118,8 +118,8 @@ public abstract class GameplayObject extends BeatmapObject {
 
         x = json.get("_lineIndex").getAsFloat();
         y = json.get("_lineLayer").getAsFloat();
-        offset =  difficulty.getSetDifficulty().getOffset();
-        njs =  difficulty.getSetDifficulty().getNjs();
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         loadCustomDataV2(json, difficulty);
 
@@ -134,8 +134,8 @@ public abstract class GameplayObject extends BeatmapObject {
 
         x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
         y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
-        offset =  difficulty.getSetDifficulty().getOffset();
-        njs =  difficulty.getSetDifficulty().getNjs();
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         loadCustomDataV3(json, difficulty);
 
@@ -149,8 +149,8 @@ public abstract class GameplayObject extends BeatmapObject {
 
         int index = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
 
-        offset =  difficulty.getSetDifficulty().getOffset();
-        njs =  difficulty.getSetDifficulty().getNjs();
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
 
         // TODO: read customData
 
@@ -168,7 +168,7 @@ public abstract class GameplayObject extends BeatmapObject {
     }
 
     protected void loadJumps(Info info) {
-        this.jumps = NoteMath.getJumps(njs, offset, info.getBpm());
+        this.jumps = NoteMath.getJumps(njs, offset, info.getBpm(beat));
     }
 
     public float getNjs() {

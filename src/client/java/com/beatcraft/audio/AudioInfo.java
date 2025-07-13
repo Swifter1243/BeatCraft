@@ -21,6 +21,33 @@ public class AudioInfo {
         return songDuration;
     }
 
+    public float getBpm(float beat) {
+
+        for (var region : regions) {
+            if (region.containsBeat(beat)) {
+                return region.bpm;
+            }
+        }
+        return 120; // this is theoretically impossible to reach but better be safe I guess?
+    }
+
+    public static AudioInfo loadV2(JsonObject json) {
+        int sampleCount = json.get("_songSampleCount").getAsInt();
+        int frequency = json.get("_songFrequency").getAsInt();
+
+        AudioInfo info = new AudioInfo(sampleCount, frequency);
+
+        JsonArray regions = json.getAsJsonArray("_regions");
+
+        regions.forEach(o -> {
+            JsonObject obj = o.getAsJsonObject();
+            BpmRegion bpmRegion = BpmRegion.loadV2(obj, info);
+            info.regions.add(bpmRegion);
+        });
+
+        return info;
+    }
+
     public static AudioInfo loadV4(JsonObject json) {
         int sampleCount = json.get("songSampleCount").getAsInt();
         int frequency = json.get("songFrequency").getAsInt();
@@ -63,6 +90,7 @@ public class AudioInfo {
         private final int endIndex;
         private final float startBeat;
         private final float endBeat;
+        public final float bpm;
         private final AudioInfo info;
 
         private BpmRegion(AudioInfo parent, int startIndex, int endIndex, float startBeat, float endBeat) {
@@ -71,6 +99,11 @@ public class AudioInfo {
             this.startBeat = startBeat;
             this.endBeat = endBeat;
             info = parent;
+
+            var beats = endBeat - startBeat;
+            var samples = endIndex - startIndex;
+            var dt = samples / info.frequency;
+            bpm = (beats / dt) * 60f;
 
         }
 
@@ -95,14 +128,20 @@ public class AudioInfo {
             return t * speedModifier;
         }
 
+        public boolean containsBeat(float currentBeat) {
+            return startBeat <= currentBeat && currentBeat < endBeat;
+        }
+
         public static BpmRegion loadV2(JsonObject json, AudioInfo parent) {
-            return new BpmRegion(
+            var region = new BpmRegion(
                 parent,
                 json.get("_startSampleIndex").getAsInt(),
                 json.get("_endSampleIndex").getAsInt(),
                 json.get("_startBeat").getAsFloat(),
                 json.get("_endBeat").getAsFloat()
             );
+            BeatCraft.LOGGER.info("BPM Region made V2: {}, {}, {}, {}", region.startIndex, region.endIndex, region.startBeat, region.endBeat);
+            return region;
         }
 
         public static BpmRegion loadV4(JsonObject json, AudioInfo parent) {
@@ -113,7 +152,7 @@ public class AudioInfo {
                 json.get("sb").getAsFloat(),
                 json.get("eb").getAsFloat()
             );
-            BeatCraft.LOGGER.info("BPM Region made: {}, {}, {}, {}", region.startIndex, region.endIndex, region.startBeat, region.endBeat);
+            BeatCraft.LOGGER.info("BPM Region made V4: {}, {}, {}, {}", region.startIndex, region.endIndex, region.startBeat, region.endBeat);
             return region;
         }
 

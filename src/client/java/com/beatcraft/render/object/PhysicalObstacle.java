@@ -147,14 +147,14 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         bounds.min.x = -(((data.getWidth()) * scale.x * 1.2f) - 0.3f);
         bounds.max.y = (data.getHeight() * scale.y * 1.2f);
 
-        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
+        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm(data.getBeat()));
 
         bounds.max.z = data.getLength(length);
     }
 
     @Override
     public float getJumpOutPosition() {
-        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm());
+        float length = this.data.getNjs() * (60f / BeatmapPlayer.currentBeatmap.getInfo().getBpm(data.getBeat()));
         return -(data.getLength(length));
     }
 

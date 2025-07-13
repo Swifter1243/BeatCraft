@@ -667,7 +667,7 @@ public class Bloomfog {
         MinecraftClient.getInstance().getFramebuffer().endRead();
 
         var r = radius;
-        radius = 3;
+        radius = 3.25f;
 
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);

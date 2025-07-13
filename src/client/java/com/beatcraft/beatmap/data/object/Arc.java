@@ -67,7 +67,7 @@ public class Arc extends GameplayObject {
         beat = json.get("_headTime").getAsFloat();
         tailBeat = json.get("_tailTime").getAsFloat();
 
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
         offset = difficulty.getSetDifficulty().getOffset();
 
         x = json.get("_headLineIndex").getAsFloat();
@@ -98,7 +98,7 @@ public class Arc extends GameplayObject {
         beat = JsonUtil.getOrDefault(json, "b", JsonElement::getAsFloat, 0f);
         tailBeat = JsonUtil.getOrDefault(json, "tb", JsonElement::getAsFloat, 0f);
 
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
         offset = difficulty.getSetDifficulty().getOffset();
 
         x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
@@ -127,7 +127,7 @@ public class Arc extends GameplayObject {
         beat = JsonUtil.getOrDefault(json, "hb", JsonElement::getAsFloat, 0f);
         tailBeat = JsonUtil.getOrDefault(json, "tb", JsonElement::getAsFloat, 0f);
 
-        njs = difficulty.getSetDifficulty().getNjs();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
         offset = difficulty.getSetDifficulty().getOffset();
 
         int arcDataIndex = JsonUtil.getOrDefault(json, "ai", JsonElement::getAsInt, 0);

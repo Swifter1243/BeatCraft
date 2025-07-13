@@ -53,6 +53,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return getData().getBeat() - data.getJumps().halfDuration();
     }
 
+    public float getJumpInBeat() {
+        return getData().getBeat() - data.getJumps().halfDuration() * 0.5f;
+    }
+
+    public float getDisappearBeat() {
+        return getData().getBeat() - data.getJumps().halfDuration() * 0.4f;
+    }
+
     public float getJumpOutBeat() {
         return getData().getBeat() + data.getJumps().halfDuration() * 0.5f;
     }
@@ -115,8 +123,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public boolean hasAppeared() {
         if (BeatmapPlayer.currentBeatmap == null) return false;
-        //float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm());
-        float margin = BeatmapPlayer.currentInfo.getBeat(JUMP_SECONDS, 1f);
+        float margin = MathUtil.secondsToBeats(JUMP_SECONDS, BeatmapPlayer.currentInfo.getBpm(data.getBeat()));
+        //float margin = BeatmapPlayer.currentInfo.getBeat(JUMP_SECONDS, 1f);
         return BeatmapPlayer.getCurrentBeat() >= getSpawnBeat() - margin;
     }
 
@@ -456,7 +464,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         var slice = new Vector4f(planeNormal, d);
         var slice2 = new Vector4f(planeNormal.negate(), d);
 
-        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs();
+        float velocity = -BeatmapPlayer.currentBeatmap.getSetDifficulty().getNjs(BeatmapPlayer.getCurrentBeat());
 
         Debris left = new Debris(
             new Vector3f(notePos),

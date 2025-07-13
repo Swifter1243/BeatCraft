@@ -1,5 +1,6 @@
 package com.beatcraft.render.instancing;
 
+import com.beatcraft.data.types.Color;
 import com.beatcraft.memory.MemoryPool;
 import com.beatcraft.render.gl.GlUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -184,8 +185,12 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         instanceDataList.add(data);
     }
 
-    public void copyDrawToBloom() {
-        bloomCopyCalls.add((I) instanceDataList.getLast().copy());
+    public void copyDrawToBloom(Color color) {
+        var draw = (I) instanceDataList.getLast().copy();
+        if (draw instanceof ArrowInstanceData arrowDraw) {
+            arrowDraw.setColor(color);
+        }
+        bloomCopyCalls.add(draw);
     }
 
     public void cancelDraws() {

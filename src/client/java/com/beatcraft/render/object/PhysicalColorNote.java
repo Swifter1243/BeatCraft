@@ -1,6 +1,8 @@
 package com.beatcraft.render.object;
 
 import com.beatcraft.BeatCraft;
+import com.beatcraft.BeatCraftClient;
+import com.beatcraft.BeatmapPlayer;
 import com.beatcraft.animation.AnimationState;
 import com.beatcraft.beatmap.data.NoteType;
 import com.beatcraft.beatmap.data.object.ColorNote;
@@ -133,24 +135,44 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
         renderPos.add(c);
 
+        var localDissolve = getBaseDissolve();
+        if (BeatCraftClient.playerConfig.isModifierActive("Ghost Notes")) {
+            if (BeatmapPlayer.currentBeatmap.firstBeat < this.data.getBeat()) {
+                localDissolve = 1;
+            } else {
+                var s = this.getSpawnBeat();
+                var e = this.getDisappearBeat();
+                var t = BeatmapPlayer.getCurrentBeat();
+                localDissolve = Math.clamp(MathUtil.inverseLerp(s, e, t), 0, 1);
+            }
+        }
+
+        var localArrowDissolve = getArrowDissolve();
+        if (BeatCraftClient.playerConfig.isModifierActive("Disappearing Arrows")) {
+            var s = this.getSpawnBeat();
+            var e = this.getDisappearBeat();
+            var t = BeatmapPlayer.getCurrentBeat();
+            localArrowDissolve = Math.clamp(MathUtil.inverseLerp(s, e, t), 0, 1);
+        }
+
         if (!isBaseDissolved()) {
-            var dissolve = Math.max(GameLogicHandler.globalDissolve, getBaseDissolve());
+            var dissolve = Math.max(GameLogicHandler.globalDissolve, localDissolve);
             MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.getPositionMatrix(), data.getColor(), dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
 
         }
 
         if (!isArrowDissolved()) {
-            var dissolve = Math.max(GameLogicHandler.globalDissolve, getArrowDissolve());
+            var dissolve = Math.max(GameLogicHandler.globalArrowDissolve, localArrowDissolve);
             if (getData().getCutDirection() == CutDirection.DOT) {
                 MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
                 MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom();
+                MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom(data.getColor());
 
             } else {
                 MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.getPositionMatrix(), WHITE, dissolve, data.getMapIndex()));
                 MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom();
+                MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(data.getColor());
 
             }
         }

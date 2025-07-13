@@ -42,6 +42,10 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
         }
     }
 
+    public void setColor(Color color) {
+        this.color.set(color);
+    }
+
     @Override
     public ArrowInstanceData copy() {
         return ArrowInstanceData.create(transform, color, dissolve, index);
