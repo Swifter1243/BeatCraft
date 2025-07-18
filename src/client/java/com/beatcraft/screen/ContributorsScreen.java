@@ -32,7 +32,9 @@ public class ContributorsScreen extends BaseOwoScreen<FlowLayout> {
         var swifter_pfp = Components.texture(BeatCraft.id("textures/credits_menu/swifter_25x25.png"), 0, 0, SIZE, SIZE, SIZE, SIZE);
         var westbot_pfp = Components.texture(BeatCraft.id("textures/credits_menu/westbot_25x25.png"), 0, 0, SIZE, SIZE, SIZE, SIZE);
 
-        flowLayout.surface(Surface.blur(5, 10));
+        //flowLayout.surface(Surface.blur(5, 10));
+
+        flowLayout.surface(Surface.flat(0xFF020202));
 
         flowLayout.child(
             Containers.verticalScroll(Sizing.fill(), Sizing.fill(90),
