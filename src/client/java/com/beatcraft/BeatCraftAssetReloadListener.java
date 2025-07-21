@@ -49,8 +49,8 @@ public class BeatCraftAssetReloadListener implements SimpleSynchronousResourceRe
         BeatmapAudioPlayer.init();
 
         var window = MinecraftClient.getInstance().getWindow();
-        var w = window.getWidth();
-        var h = window.getHeight();
+        var w = Math.max(1, window.getWidth());
+        var h = Math.max(1, window.getHeight());
 
         if (BeatCraftRenderer.bloomfog == null) BeatCraftRenderer.init();
         BeatCraftRenderer.bloomfog.resize(w, h, true);

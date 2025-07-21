@@ -124,7 +124,7 @@ public class BeatCraftClient implements ClientModInitializer {
             if (w != windowWidth || h != windowHeight) {
                 windowWidth = w;
                 windowHeight = h;
-                BeatCraftRenderer.updateBloomfogSize(window.getWidth(), window.getHeight());
+                BeatCraftRenderer.updateBloomfogSize(windowWidth, windowHeight);
             }
 
             if (settingsKeyBind.wasPressed()) {
