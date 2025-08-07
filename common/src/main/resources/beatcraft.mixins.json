@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "package": "com.beatcraft.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "minVersion": "0.8",
+    "client": [
+        "LevelRendererMixin"
+    ],
+    "mixins": [
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

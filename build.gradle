@@ -1,137 +1,89 @@
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
-	id 'maven-publish'
+    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
-version = project.mod_version
-group = project.maven_group
-
-base {
-	archivesName = project.archives_base_name
+architectury {
+    minecraft = project.minecraft_version
 }
 
-repositories {
+allprojects {
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
 
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
+    group = rootProject.maven_group
+    version = rootProject.mod_version
+
+    repositories {
+        // Add repositories to retrieve artifacts from in here.
+        // You should only use this when depending on other mods because
+        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+        // for more information about repositories.
     }
 
-	maven { url 'https://maven.wispforest.io/releases/' }
-
-
 }
 
-fabricApi {
-	configureDataGeneration()
+subprojects {
+    apply plugin: 'dev.architectury.loom'
 
-}
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$rootProject.archives_name-$project.name"
+    }
 
-loom {
-	splitEnvironmentSourceSets()
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.layered() {
+            // The following line declares the mojmap mappings, you may use other mappings as well
+            officialMojangMappings()
+            // The following line declares the yarn mappings you may select this one as well.
+            // "net.fabricmc:yarn:1.18.2+build.4:v2"
+            // parchment mappings as backup
+//            parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:${rootProject.parchment_version}@zip")
+        }
 
-	accessWidenerPath = file("src/main/resources/beatcraft.accesswidener")
+        include(implementation('com.electronwill.night-config:toml:3.6.6'))
+        include(implementation('com.electronwill.night-config:core:3.6.6'))
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}") { transitive = false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-linux") { transitive = false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-macos") { transitive = false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-windows") { transitive = false }
 
-	mods {
-		"beatcraft" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
-	}
+        // for OSC tracker support
+        implementation("com.illposed.osc:javaosc-core:0.9")
+    }
 
-}
+    java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
-	// Vivecraft
-	modImplementation "maven.modrinth:vivecraft:${project.vivecraft_version}-fabric"
-	include(implementation('com.electronwill.night-config:toml:3.6.6'))
-	include(implementation('com.electronwill.night-config:core:3.6.6'))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-linux"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-macos"))
-	include(implementation("org.lwjgl:lwjgl-openvr:3.3.3:natives-windows"))
-	include(implementation("com.illposed.osc:javaosc-core:0.9"))
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 21
+    }
 
-	// BeatSaver
-	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
-	include "io.wispforest:owo-sentinel:${project.owo_version}"
+    // Configure Maven publishing.
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
 
-	// Spectrograms
-	include(implementation('org.apache.commons:commons-math3:3.6.1'))
-
-}
-
-
-processResources {
-	inputs.property "version", project.version
-	inputs.property "minecraft_version", project.minecraft_version
-	inputs.property "loader_version", project.loader_version
-	inputs.property "vivecraft_version", project.vivecraft_version
-	inputs.property "owo_version", project.owo_version
-	filteringCharset "UTF-8"
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version,
-				"minecraft_version": project.minecraft_version,
-				"loader_version": project.loader_version,
-				"vivecraft_version": project.vivecraft_version
-	}
-
-
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
-
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-
-
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
 }
