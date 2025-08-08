@@ -1,7 +1,6 @@
 package com.beatcraft;
 
-import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,10 +9,11 @@ public final class Beatcraft {
 
     public static Logger LOGGER = LoggerFactory.getLogger("Beatcraft");
 
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.tryBuild(MOD_ID, path);
+    }
+
     public static void init() {
 
-        if (Platform.getEnv() == EnvType.CLIENT) {
-            BeatcraftPlatformClient.initClient();
-        }
     }
 }

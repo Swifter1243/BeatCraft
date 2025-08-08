@@ -1,0 +1,57 @@
+package com.beatcraft.client.render.mesh;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class TriangleMesh implements Mesh {
+
+    public ArrayList<Vector3f> vertices;
+    public ArrayList<Triangle> tris;
+    public int color;
+    public ResourceLocation texture;
+
+    public TriangleMesh() {
+        vertices = new ArrayList<>();
+        tris = new ArrayList<>();
+    }
+
+    public TriangleMesh(List<Vector3f> vertices, List<Triangle> tris) {
+        this.vertices = new ArrayList<>(vertices);
+        this.tris = new ArrayList<>(tris);
+    }
+
+    /// will append vertices directly and offset new tris by the initial vertices length
+    public void addGeometry(List<Vector3f> vertices, List<Triangle> tris) {
+        var offset = this.vertices.size();
+        this.vertices.addAll(vertices);
+        for (var tri : tris) {
+            tri.offsetTri(offset);
+            this.tris.add(tri);
+        }
+    }
+
+    @Override
+    public void drawToBuffer(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
+        tris.forEach(tri -> {
+            tri.draw(buffer, color, this, position, orientation, cameraPos);
+        });
+    }
+
+    public void drawToBufferMirrored(BufferBuilder buffer, Vector3f position, Quaternionf orientation, Vector3f cameraPos) {
+        Vector3f flippedPosition = position.mul(1, -1, 1, new Vector3f());
+        Quaternionf flippedOrientation = new Quaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        tris.forEach(tri -> {
+            tri.drawMirrored(buffer, color, this, flippedPosition, flippedOrientation, cameraPos);
+        });
+    }
+
+    public void addTris(Triangle[] tris) {
+        this.tris.addAll(Arrays.asList(tris));
+    }
+}

@@ -1,0 +1,78 @@
+package com.beatcraft.client.render.particle;
+
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.common.data.types.Color;
+import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.InstancedMesh;
+import com.beatcraft.common.utils.MathUtil;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.minecraft.util.RandomSource;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
+public class Debris implements Particle {
+
+    private final BeatmapPlayer mapController;
+
+    private final Vector3f position;
+    private final Quaternionf orientation;
+    private final Vector3f velocity;
+    private final Vector3f decay;
+    private final Quaternionf spin;
+    public Vector4f slice;
+    private final int randomIndex;
+    private final Color color;
+    private final double spawnTime;
+    private final InstancedMesh<ColorNoteInstanceData> mesh;
+
+    private static final float DISSOLVE_TIME = 2f;
+
+    public boolean persistent = false;
+
+    public Debris(BeatmapPlayer beatmap, Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color, InstancedMesh<ColorNoteInstanceData> mesh) {
+        mapController = beatmap;
+        this.position = position;
+        this.velocity = velocity;
+        this.orientation = orientation;
+        this.spin = spin;
+        this.slice = slice;
+        this.color = color;
+        this.decay = new Vector3f(0.99f, 0.99f, 0.99f);
+        this.spawnTime = System.nanoTime() / 1_000_000_000d;
+        this.mesh = mesh;
+        this.randomIndex = RandomSource.create().nextInt(0, 200);
+    }
+
+    @Override
+    public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
+        if (!(persistent || !mapController.isPlaying())) {
+            orientation.mul(spin.mul(deltaTime, new Quaternionf())).normalize();
+            position.add(velocity.mul(deltaTime, new Vector3f()));
+            velocity.add(new Vector3f(0, -9.81f, 0).mul(deltaTime));
+            velocity.mul(decay);
+        }
+
+        var pos = new Matrix4f().identity();
+        pos.translate(position);
+        pos.translate(new Vector3f(cameraPos).negate());
+        pos.rotate(orientation);
+
+        pos.scale(0.5f);
+
+        var t = MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d);
+
+        mesh.draw(ColorNoteInstanceData.create(
+            pos, color,
+            (float) t,
+            randomIndex, slice
+        ));
+
+    }
+
+    @Override
+    public boolean shouldRemove() {
+        return (!persistent) && MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d) >= 1;
+    }
+}

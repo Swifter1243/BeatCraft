@@ -1,5 +1,208 @@
 package com.beatcraft.client.beatmap.object.data;
 
-public class GameplayObject {
+import com.beatcraft.client.animation.Animation;
+import com.beatcraft.client.animation.track.ObjectTrackContainer;
+import com.beatcraft.client.beatmap.data.Difficulty;
+import com.beatcraft.client.beatmap.data.Info;
+import com.beatcraft.client.beatmap.data.Jumps;
+import com.beatcraft.common.utils.JsonUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.util.GsonHelper;
+import org.joml.Quaternionf;
 
+public abstract class GameplayObject extends BeatmapObject {
+    protected float njs;
+    protected float offset;
+    protected float x;
+    protected float y;
+    protected int mapIndex;
+    private Quaternionf localRotation;
+    private Quaternionf worldRotation;
+    private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
+    private final Animation pathAnimation = new Animation();
+    private Jumps jumps;
+
+    public void loadCustomDataV2(JsonObject json, Difficulty difficulty) {
+        if (json.has("_customData")) {
+            JsonObject customData = json.getAsJsonObject("_customData");
+
+            offset = GsonHelper.getAsFloat(customData, "_noteJumpStartBeatOffset", offset);
+            njs = GsonHelper.getAsFloat(customData, "_noteJumpMovementSpeed", njs);
+            worldRotation = JsonUtil.getQuaternion(customData, "_rotation", null);
+            localRotation = JsonUtil.getQuaternion(customData, "_localRotation", null);
+
+            if (customData.has("_coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("_coordinates");
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("_position")) {
+                JsonArray coordinates = customData.getAsJsonArray("_position");
+                x = coordinates.get(0).getAsFloat() + 2.0f;
+                y = coordinates.get(1).getAsFloat();
+            }
+
+            if (customData.has("_track")) {
+                trackContainer.loadTracks(customData.get("_track"), difficulty.getTrackLibrary());
+            }
+
+            if (customData.has("_animation")) {
+                pathAnimation.loadV2(customData.get("_animation").getAsJsonObject(), difficulty);
+            }
+        }
+    }
+
+    public void loadCustomDataV3(JsonObject json, Difficulty difficulty) {
+        if (json.has("customData")) {
+            JsonObject customData = json.getAsJsonObject("customData");
+
+            offset = GsonHelper.getAsFloat(customData, "noteJumpStartBeatOffset", offset);
+            njs = GsonHelper.getAsFloat(customData, "noteJumpMovementSpeed", njs);
+            worldRotation = JsonUtil.getQuaternion(customData, "worldRotation", null);
+            localRotation = JsonUtil.getQuaternion(customData, "localRotation", null);
+
+            if (customData.has("coordinates")) {
+                JsonArray coordinates = customData.getAsJsonArray("coordinates");
+                //BeatCraft.LOGGER.info("coords: {}", coordinates);
+                if (coordinates.get(0).isJsonPrimitive() && coordinates.get(0).getAsJsonPrimitive().isNumber()) {
+                    x = coordinates.get(0).getAsFloat() + 2.0f;
+                } else {
+                    x = 0;
+                }
+                if (coordinates.get(1).isJsonPrimitive() && coordinates.get(1).getAsJsonPrimitive().isNumber()) {
+                    y = coordinates.get(1).getAsFloat();
+                } else {
+                    y = 0;
+                }
+            }
+
+            if (customData.has("position")) {
+                JsonArray coordinates = customData.getAsJsonArray("position");
+                if (coordinates.get(0).isJsonPrimitive() && coordinates.get(0).getAsJsonPrimitive().isNumber()) {
+                    x = coordinates.get(0).getAsFloat() + 2.0f;
+                } else {
+                    x = 0;
+                }
+                if (coordinates.get(1).isJsonPrimitive() && coordinates.get(1).getAsJsonPrimitive().isNumber()) {
+                    y = coordinates.get(1).getAsFloat();
+                } else {
+                    y = 0;
+                }
+            }
+
+            if (customData.has("track")) {
+                trackContainer.loadTracks(customData.get("track"), difficulty.getTrackLibrary());
+            }
+
+            if (customData.has("animation")) {
+                pathAnimation.loadV3(customData.get("animation").getAsJsonObject(), difficulty);
+            }
+        }
+    }
+
+    public void setIndex(int index) {
+        mapIndex = index;
+    }
+
+    public int getMapIndex() {
+        return mapIndex;
+    }
+
+    @Override
+    public GameplayObject loadV2(JsonObject json, Difficulty difficulty) {
+        super.loadV2(json, difficulty);
+
+        x = json.get("_lineIndex").getAsFloat();
+        y = json.get("_lineLayer").getAsFloat();
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
+
+        loadCustomDataV2(json, difficulty);
+
+        loadJumps(difficulty.getInfo());
+
+        return this;
+    }
+
+    @Override
+    public GameplayObject loadV3(JsonObject json, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        x = JsonUtil.getOrDefault(json, "x", JsonElement::getAsFloat, 0f);
+        y = JsonUtil.getOrDefault(json, "y", JsonElement::getAsFloat, 0f);
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
+
+        loadCustomDataV3(json, difficulty);
+
+        loadJumps(difficulty.getInfo());
+
+        return this;
+    }
+
+    public GameplayObject loadV4(JsonObject json, JsonArray colorNoteData, Difficulty difficulty) {
+        super.loadV3(json, difficulty);
+
+        int index = JsonUtil.getOrDefault(json, "i", JsonElement::getAsInt, 0);
+
+        offset = difficulty.getSetDifficulty().getOffset();
+        njs = difficulty.getSetDifficulty().getNjs(beat);
+
+        // TODO: read customData
+
+        loadJumps(difficulty.getInfo());
+
+        if (index >= colorNoteData.size()) {
+            return this;
+        }
+
+        JsonObject noteData = colorNoteData.get(index).getAsJsonObject();
+        x = JsonUtil.getOrDefault(noteData, "x", JsonElement::getAsFloat, 0f);
+        y = JsonUtil.getOrDefault(noteData, "y", JsonElement::getAsFloat, 0f);
+
+        return this;
+    }
+
+    protected void loadJumps(Info info) {
+        this.jumps = Jumps.getJumps(njs, offset, info.getBpm(beat));
+    }
+
+    public float getNjs() {
+        return njs;
+    }
+
+    public float getOffset() {
+        return offset;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public Quaternionf getLocalRotation() {
+        return localRotation;
+    }
+
+    public Quaternionf getWorldRotation() {
+        return worldRotation;
+    }
+
+    public ObjectTrackContainer getTrackContainer() {
+        return trackContainer;
+    }
+
+    public Animation getPathAnimation() {
+        return pathAnimation;
+    }
+
+    public Jumps getJumps() {
+        return jumps;
+    }
 }

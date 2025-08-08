@@ -1,0 +1,8 @@
+{
+    "required": true,
+    "package": "com.beatcraft.fabric.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+    ],
+    "minVersion": "0.8.4"
+}

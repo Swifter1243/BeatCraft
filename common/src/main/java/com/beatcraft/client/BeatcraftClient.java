@@ -1,12 +1,17 @@
 package com.beatcraft.client;
 
-import com.beatcraft.client.resources.ResourceReloadListener;
-import dev.architectury.registry.ReloadListenerRegistry;
-import net.minecraft.server.packs.PackType;
+import com.beatcraft.common.data.PlayerConfig;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
+@Environment(EnvType.CLIENT)
 public class BeatcraftClient {
+
+    public static PlayerConfig playerConfig;
+
     public static void init() {
-        ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new ResourceReloadListener());
+        playerConfig = PlayerConfig.loadFromFile();
     }
+
 
 }

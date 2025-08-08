@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.data;
 
-public record Jumps(float njs, float hjd, float jd) {
+public record Jumps(float njs, float halfDuration, float jumpDistance) {
     public static Jumps getJumps(float njs, float offset, float bpm) {
 
         var diff = 60f / bpm;

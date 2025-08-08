@@ -1,32 +1,21 @@
 package com.beatcraft.client.resources;
 
 import com.beatcraft.Beatcraft;
-import dev.architectury.platform.Platform;
+import com.beatcraft.client.render.instancing.InstancedMesh;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
 @Environment(EnvType.CLIENT)
-public class ResourceReloadListener implements PreparableReloadListener {
+public class ResourceReloadListener implements ResourceManagerReloadListener {
 
     @Override
-    public @NotNull CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller profilerFiller, ProfilerFiller profilerFiller2, Executor executor, Executor executor2) {
+    public void onResourceManagerReload(ResourceManager resourceManager) {
+        Beatcraft.LOGGER.info("Reloading client resources");
 
-        return CompletableFuture.runAsync(() -> {
+        InstancedMesh.cleanupAll();
 
-            Minecraft.getInstance().execute(() -> {
 
-                Beatcraft.LOGGER.info("Loading client resources for {}", Platform.isFabric() ? "Fabric" : "Neoforge");
-
-            });
-
-        });
     }
 }

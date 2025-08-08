@@ -10,7 +10,7 @@ public class ScoreState {
     }
 
     public static ScoreState unChecked() {
-        return new ScoreState(0);
+        return new ScoreState(-1);
     }
 
     public static ScoreState badCut() {
@@ -23,9 +23,13 @@ public class ScoreState {
         return s;
     }
 
+    public static ScoreState missed() {
+        return new ScoreState(0);
+    }
+
     public void setUnchecked() {
         this.score = 0;
-        this.type = 0;
+        this.type = -1;
     }
 
     public void setBadCut() {
@@ -36,6 +40,11 @@ public class ScoreState {
     public void setGoodCut(int score) {
         this.score = score;
         this.type = 2;
+    }
+
+    public void setMissed() {
+        this.score = 0;
+        this.type = 0;
     }
 
 }
