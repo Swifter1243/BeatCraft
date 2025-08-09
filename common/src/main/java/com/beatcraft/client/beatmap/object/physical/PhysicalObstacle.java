@@ -83,7 +83,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         var flippedPos = pos.mul(1, -1, 1);
         var flippedRot = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
         MemoryPool.release(orientation);
-        MirrorHandler.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
+        mapController.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
     }
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, int _color, Vector3f pos, Quaternionf orientation, boolean mirrored) {

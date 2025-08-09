@@ -45,6 +45,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         var f = new File(difficulty.getInfo().getSongFilename());
 
         leftSpectrogramTowers = new SpectrogramTowers(
+            mapController,
             new Vector3f(13.5f, -5f, -80.5f),
             new Quaternionf(),
             new Vector3f(0, 0, 2),

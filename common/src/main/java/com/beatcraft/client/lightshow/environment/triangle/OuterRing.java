@@ -1,13 +1,14 @@
 package com.beatcraft.client.lightshow.environment.triangle;
 
-import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.lightshow.lights.LightState;
-import com.beatcraft.render.BeatCraftRenderer;
-import com.beatcraft.render.effect.Bloomfog;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.MathHelper;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.lightshow.lights.LightState;
+import com.beatcraft.client.render.effect.Bloomfog;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
+import net.minecraft.util.Mth;
+import org.apache.commons.lang3.function.TriFunction;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -26,19 +27,20 @@ public class OuterRing extends LightObject {
     private static final float lightOffset = 0.001f;
     protected boolean lightsOnly = false;
 
-    public static OuterRing getLightsOnly(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
-        var a = new OuterRing(lightFactory);
+    public static OuterRing getLightsOnly(BeatmapPlayer map, TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> lightFactory) {
+        var a = new OuterRing(map, lightFactory);
         a.lightsOnly = true;
         return a;
     }
 
-    public OuterRing(BiFunction<Vector3f, Quaternionf, LightObject> lightFactory) {
-        orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
+    public OuterRing(BeatmapPlayer map, TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> lightFactory) {
+        super(map);
+        orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
         lights = List.of(
-            lightFactory.apply(new Vector3f( 0                           ,  ringRadius-(lightSize+0.01f), lightSize+lightOffset), new Quaternionf()),
-            lightFactory.apply(new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)),
-            lightFactory.apply(new Vector3f( 0                           , -ringRadius+(lightSize+0.01f), lightSize+lightOffset), new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)),
-            lightFactory.apply(new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE))
+            lightFactory.apply(map, new Vector3f( 0                           ,  ringRadius-(lightSize+0.01f), lightSize+lightOffset), new Quaternionf()),
+            lightFactory.apply(map, new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)),
+            lightFactory.apply(map, new Vector3f( 0                           , -ringRadius+(lightSize+0.01f), lightSize+lightOffset), new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)),
+            lightFactory.apply(map, new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD))
         );
     }
 
@@ -48,7 +50,7 @@ public class OuterRing extends LightObject {
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
 
         var pos = new Vector3f(position);
         var off = new Vector3f(offset);
@@ -56,7 +58,7 @@ public class OuterRing extends LightObject {
         var rot = new Quaternionf(rotation);
 
         if (!lightsOnly) {
-            BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
+            mapController.recordBloomfogPosColCall((b, c) ->
                 _render(b, c, pos, off, ori, rot, bloomfog)
             );
         }
@@ -115,7 +117,7 @@ public class OuterRing extends LightObject {
 
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
-                buffer.vertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos)).color(color);
+                buffer.addVertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos)).setColor(color);
             }
         }
 

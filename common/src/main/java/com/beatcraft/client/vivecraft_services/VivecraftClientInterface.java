@@ -17,4 +17,8 @@ public class VivecraftClientInterface {
         return inner.getVRModelView();
     }
 
+    public static boolean isVRActive() {
+        return inner.isVRActive();
+    }
+
 }

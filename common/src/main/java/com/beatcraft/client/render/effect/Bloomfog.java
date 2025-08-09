@@ -7,7 +7,6 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
-import com.beatcraft.client.vivecraft_services.IVivecraftClientInterface;
 import com.beatcraft.client.vivecraft_services.VivecraftClientInterface;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -59,7 +58,7 @@ public class Bloomfog {
     }
 
     public boolean overrideBuffer = false;
-    public RenderTarget overrideRenderTarget = null;
+    public RenderTarget overrideFramebuffer = null;
 
     public TextureTarget framebuffer;
     private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>(); // Line renders
@@ -284,15 +283,6 @@ public class Bloomfog {
         }
 
         if (!BeatcraftClient.playerConfig.doBloomfog()) {
-            if (width != lastSize[0] || height != lastSize[1]) {
-                lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
-                MirrorHandler.resize();
-            }
-            renderCalls.forEach(MirrorHandler::recordMirrorLightDraw);
-            renderCalls.clear();
-            MirrorHandler.invCameraRotation = invCameraRotation;
-            blurredBuffer.setClearColor(0, 0, 0, 0);
-            blurredBuffer.clear(Minecraft.ON_OSX);
             return;
         }
 
@@ -307,7 +297,7 @@ public class Bloomfog {
 
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = framebuffer;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.bindWrite(true);
 
 
@@ -321,7 +311,7 @@ public class Bloomfog {
 
         for (var call : renderCalls) {
             call.accept(buffer, cameraPos, invCameraRotation, false);
-            MirrorHandler.recordMirrorLightDraw(call);
+            //MirrorHandler.recordMirrorLightDraw(call);
         }
         renderCalls.clear();
         var buff = buffer.build();
@@ -337,7 +327,7 @@ public class Bloomfog {
         framebuffer.unbindWrite();
 
         BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = isMirror ? overrideRenderTarget : null;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
         MirrorHandler.invCameraRotation = invCameraRotation;
 
@@ -442,7 +432,7 @@ public class Bloomfog {
         out.clear(Minecraft.ON_OSX);
         out.bindWrite(true);
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = out;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -499,7 +489,7 @@ public class Bloomfog {
         out.unbindWrite();
 
         BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = isMirror ? overrideRenderTarget : null;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
     }
 
@@ -562,7 +552,7 @@ public class Bloomfog {
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
         Minecraft.getInstance().getMainRenderTarget().bindRead();
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = bloomInput;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
         bloomInput.bindWrite(true);
 
         RenderSystem.defaultBlendFunc();
@@ -655,7 +645,7 @@ public class Bloomfog {
 
         bloomInput.unbindWrite();
         BeatcraftRenderer.bloomfog.overrideBuffer = false;
-        BeatcraftRenderer.bloomfog.overrideRenderTarget = null;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
         Minecraft.getInstance().getMainRenderTarget().unbindRead();
 
         var r = radius;

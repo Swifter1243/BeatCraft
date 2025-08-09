@@ -1,12 +1,12 @@
 package com.beatcraft.client.lightshow.environment.triangle;
 
-import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.render.BeatCraftRenderer;
-import com.beatcraft.render.effect.Bloomfog;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.MathHelper;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.render.effect.Bloomfog;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
+import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -15,16 +15,9 @@ import java.util.function.BiFunction;
 public class InnerRing extends LightObject {
 
 
-    private InnerRing() {
-        orientation = new Quaternionf().rotationZ(45 * MathHelper.RADIANS_PER_DEGREE);
-    }
-
-    private static InnerRing INSTANCE;
-    public static InnerRing getInstance(BiFunction<Vector3f, Quaternionf, LightObject> ignored) {
-        if (INSTANCE == null) {
-            INSTANCE = new InnerRing();
-        }
-        return INSTANCE;
+    public InnerRing(BeatmapPlayer map) {
+        super(map);
+        orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
     }
 
     @Override
@@ -33,7 +26,7 @@ public class InnerRing extends LightObject {
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
         resetVertices();
 
         var pos = new Vector3f(position);
@@ -41,7 +34,7 @@ public class InnerRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        BeatCraftRenderer.recordBloomfogPosColCall((b, c) ->
+        mapController.recordBloomfogPosColCall((b, c) ->
             _render(b, c, pos, off, ori, rot, bloomfog)
         );
     }
@@ -58,7 +51,7 @@ public class InnerRing extends LightObject {
     private static final float ringDepth = 0.1f;
     private static final int color = 0xFF000000;
 
-    private static final float rotationOffsetRad = 105f * MathHelper.RADIANS_PER_DEGREE;
+    private static final float rotationOffsetRad = 105f * Mth.DEG_TO_RAD;
 
     private static Vector3f dir(float angleRad) {
         return new Vector3f(
@@ -75,12 +68,12 @@ public class InnerRing extends LightObject {
             dir.x * dist,
             dir.y * dist,
             z
-        ).rotateZ(45 * MathHelper.RADIANS_PER_DEGREE).add(
+        ).rotateZ(45 * Mth.DEG_TO_RAD).add(
             new Vector3f(
-                (float) (Math.cos(105 * MathHelper.RADIANS_PER_DEGREE) * ringRadius),
-                (float) -(Math.sin(-15 * MathHelper.RADIANS_PER_DEGREE) * ringRadius),
+                (float) (Math.cos(105 * Mth.DEG_TO_RAD) * ringRadius),
+                (float) -(Math.sin(-15 * Mth.DEG_TO_RAD) * ringRadius),
                 0
-            ).rotateZ(-45 * MathHelper.RADIANS_PER_DEGREE)
+            ).rotateZ(-45 * Mth.DEG_TO_RAD)
         );
     }
 
@@ -133,7 +126,7 @@ public class InnerRing extends LightObject {
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         for (var vertex : quads) {
-            buffer.vertex(processVertex(vertices[vertex], position, offset, orientation, rotation, cameraPos)).color(color);
+            buffer.addVertex(processVertex(vertices[vertex], position, offset, orientation, rotation, cameraPos)).setColor(color);
         }
 
 

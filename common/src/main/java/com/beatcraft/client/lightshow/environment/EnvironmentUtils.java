@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.environment;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.kaleidoscope.KaleidoscopeEnvironment;
 import com.beatcraft.client.lightshow.environment.nice.NiceEnvironment;
@@ -10,28 +11,21 @@ import com.beatcraft.client.lightshow.environment.weave.WeaveEnvironment;
 import com.google.gson.JsonObject;
 
 public class EnvironmentUtils {
-    public static EnvironmentV2 theFirst = null;
-    public static EnvironmentV2 origins = null;
-    public static EnvironmentV2 triangle = null;
-    public static EnvironmentV2 nice = null;
-    public static EnvironmentV2 kaleidoscope = null;
-    public static EnvironmentV3 weave = null;
 
-    public static Environment setupEnvironment(String environment) {
-        kaleidoscope = null;
+    public static Environment setupEnvironment(String environment, BeatmapPlayer map) {
         return (switch (environment) {
-            case "OriginsEnvironment" -> origins == null ? origins = new OriginsEnvironment() : origins;
-            case "TriangleEnvironment" -> triangle == null ? triangle = new TriangleEnvironment() : triangle;
-            case "NiceEnvironment" -> nice == null ? nice = new NiceEnvironment() : nice;
-            case "KaleidoscopeEnvironment" -> kaleidoscope == null ? kaleidoscope = new KaleidoscopeEnvironment() : kaleidoscope;
-            case "WeaveEnvironment" -> weave == null ? weave = new WeaveEnvironment() : weave;
-            default -> theFirst == null ? theFirst = new TheFirstEnvironment() : theFirst;
+            case "OriginsEnvironment" -> new OriginsEnvironment(map);
+            case "TriangleEnvironment" -> new TriangleEnvironment(map);
+            case "NiceEnvironment" -> new NiceEnvironment(map);
+            case "KaleidoscopeEnvironment" -> new KaleidoscopeEnvironment(map);
+            case "WeaveEnvironment" -> new WeaveEnvironment(map);
+            default -> new TheFirstEnvironment(map);
         }).reset();
     }
 
-    public static Environment load(Difficulty difficulty, JsonObject json) {
-        Environment env = setupEnvironment(difficulty.getInfo().getEnvironmentName());
-        env.loadLightshow(difficulty, json);
+    public static Environment load(BeatmapPlayer map, JsonObject json) {
+        Environment env = setupEnvironment(map.difficulty.getInfo().getEnvironmentName(), map);
+        env.loadLightshow(map.difficulty, json);
         return env;
     }
 

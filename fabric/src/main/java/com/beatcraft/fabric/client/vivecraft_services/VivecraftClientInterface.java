@@ -15,4 +15,9 @@ public class VivecraftClientInterface implements IVivecraftClientInterface {
     public Matrix4f getVRModelView() {
         return RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
     }
+
+    @Override
+    public boolean isVRActive() {
+        return ClientDataHolderVR.getInstance().vr.isActive();
+    }
 }

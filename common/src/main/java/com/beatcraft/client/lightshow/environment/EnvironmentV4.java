@@ -1,11 +1,16 @@
 package com.beatcraft.client.lightshow.environment;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 
 public abstract class EnvironmentV4 extends EnvironmentV3 {
+
+    public EnvironmentV4(BeatmapPlayer map) {
+        super(map);
+    }
 
     @Override
     public float getVersion() {

@@ -95,8 +95,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
@@ -173,8 +176,8 @@ public class LightMesh {
 
     public static final HashMap<String, LightMesh> meshes = new HashMap<>();
 
-    private static final ArrayList<Identifier> unloadedTextures = new ArrayList<>();
-    private static final HashMap<Identifier, Vector2f> uvMap = new HashMap<>();
+    private static final ArrayList<ResourceLocation> unloadedTextures = new ArrayList<>();
+    private static final HashMap<ResourceLocation, Vector2f> uvMap = new HashMap<>();
     public static boolean initialized = false;
     private static int atlasGlId;
 
@@ -207,11 +210,11 @@ public class LightMesh {
         var atlasBuilder = new AtlasBuilder(1024);
         try (var atlas = new NativeImage(1024, 1024, false)) {
 
-            var manager = MinecraftClient.getInstance().getResourceManager();
+            var manager = Minecraft.getInstance().getResourceManager();
 
             for (var ident : unloadedTextures) {
                 var in = manager.getResource(ident).orElseThrow(() -> new RuntimeException("File '" + ident + "' could not be loaded"));
-                try (var input = in.getInputStream()) {
+                try (var input = in.open()) {
                     var tex = NativeImage.read(NativeImage.Format.RGBA, input);
                     var w = tex.getWidth();
                     var h = tex.getHeight();
@@ -220,7 +223,7 @@ public class LightMesh {
 
                     if (atlasBuilder.add(new Vector2i(w, h), pos)) {
                         var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
-                        BeatCraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
+                        Beatcraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
                         uvMap.put(ident, uv);
                         tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
                     } else {
@@ -332,7 +335,7 @@ public class LightMesh {
     }
 
     private final ArrayList<Triangle> triangles;
-    private final HashMap<Integer, Identifier> meshTextures;
+    private final HashMap<Integer, ResourceLocation> meshTextures;
     private boolean doBloom = true;
     private boolean doSolid = true;
     private boolean doMirroring = true;
@@ -362,7 +365,7 @@ public class LightMesh {
     private final ArrayList<Draw> bloomfogDraws = new ArrayList<>();
     private final ArrayList<Draw> bloomDraws = new ArrayList<>();
 
-    protected LightMesh(HashMap<Integer, Identifier> unloadedTextures) {
+    protected LightMesh(HashMap<Integer, ResourceLocation> unloadedTextures) {
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
         LightMesh.unloadedTextures.addAll(unloadedTextures.values());
@@ -375,7 +378,7 @@ public class LightMesh {
     public void draw(Matrix4f transform, LightState[] colors) {
         if (doSolid) draws.add(Draw.create(transform, colors));
         if (doMirroring) {
-            var c = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+            var c = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
             var renderPos = transform.getTranslation(MemoryPool.newVector3f());
             var renderRotation = transform.getUnnormalizedRotation(MemoryPool.newQuaternionf());
             var renderScale = transform.getScale(MemoryPool.newVector3f());
@@ -398,8 +401,8 @@ public class LightMesh {
         return GlUtil.reProcess(source);
     }
 
-    private static final Identifier lightObjectVsh = BeatCraft.id("shaders/instanced/light_object.vsh");
-    private static final Identifier lightObjectFsh = BeatCraft.id("shaders/instanced/light_object.fsh");
+    private static final ResourceLocation lightObjectVsh = Beatcraft.id("shaders/instanced/light_object.vsh");
+    private static final ResourceLocation lightObjectFsh = Beatcraft.id("shaders/instanced/light_object.fsh");
 
     private void putVec3f(FloatBuffer buf, Vector3f vec) {
         buf.put(vec.x).put(vec.y).put(vec.z);
@@ -621,18 +624,18 @@ public class LightMesh {
 
         GlUtil.useProgram(shaderProgram);
         GlUtil.setTex(shaderProgram, "u_texture", 0, atlasGlId);
-        var fog = BeatCraftRenderer.bloomfog;
+        var fog = BeatcraftRenderer.bloomfog;
 
         int currentFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
 
         if (preBloomfog) {
             fog.extraBuffer.setClearColor(0, 0, 0, 1);
             fog.extraBuffer.clear(false);
-            fog.extraBuffer.beginRead();
-            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorAttachment());
+            fog.extraBuffer.bindRead();
+            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorTextureId());
 
         } else {
-            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorAttachment());
+            GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorTextureId());
         }
         var passType = isBloom ? 1 : preBloomfog ? 2 : 0;
         GlUtil.uniform1i("passType", passType);
@@ -649,7 +652,7 @@ public class LightMesh {
             q.set(MirrorHandler.invCameraRotation);
         }
         var p = MemoryPool.newVector3f();
-        var cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().toVector3f();
+        var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         p.set(cameraPos).negate();
 
         var projMat = RenderSystem.getProjectionMatrix();
@@ -702,7 +705,7 @@ public class LightMesh {
         if (!cullBackfaces) RenderSystem.enableCull();
 
         if (preBloomfog) {
-            fog.extraBuffer.endRead();
+            fog.extraBuffer.unbindRead();
             fog.extraBuffer.setClearColor(0, 0, 0, 0);
         }
 
@@ -849,10 +852,10 @@ public class LightMesh {
                 point.x = a.x + (vx * x);
                 var dx = MathUtil.inverseLerp(0, b.x-a.x, vx * x);
                 if (!json.has("y")) {
-                    point.y = MathHelper.lerp(dx, a.y, b.y);
+                    point.y = Mth.lerp(dx, a.y, b.y);
                 }
                 if (!json.has("z")) {
-                    point.z = MathHelper.lerp(dx, a.z, b.z);
+                    point.z = Mth.lerp(dx, a.z, b.z);
                 }
             }
 
@@ -861,10 +864,10 @@ public class LightMesh {
                 point.y = a.y + (vy * y);
                 var dy = MathUtil.inverseLerp(0, b.y-a.y, vy * y);
                 if (!json.has("x")) {
-                    point.x = MathHelper.lerp(dy, a.x, b.x);
+                    point.x = Mth.lerp(dy, a.x, b.x);
                 }
                 if (!json.has("z")) {
-                    point.z = MathHelper.lerp(dy, a.z, b.z);
+                    point.z = Mth.lerp(dy, a.z, b.z);
                 }
             }
 
@@ -873,10 +876,10 @@ public class LightMesh {
                 point.z = a.z + (vz * z);
                 var dz = MathUtil.inverseLerp(0, b.z-a.z, vz * z);
                 if (!json.has("x")) {
-                    point.x = MathHelper.lerp(dz, a.x, b.x);
+                    point.x = Mth.lerp(dz, a.x, b.x);
                 }
                 if (!json.has("y")) {
-                    point.y = MathHelper.lerp(dz, a.y, b.y);
+                    point.y = Mth.lerp(dz, a.y, b.y);
                 }
             }
 
@@ -938,9 +941,9 @@ public class LightMesh {
         unloadedTextures.clear();
     }
 
-    public static LightMesh load(String name, Identifier source) throws IOException {
+    public static LightMesh load(String name, ResourceLocation source) throws IOException {
 
-        var reader = MinecraftClient.getInstance().getResourceManager().getResource(source).orElseThrow().getReader();
+        var reader = Minecraft.getInstance().getResourceManager().getResource(source).orElseThrow().openAsReader();
         var rawJson = String.join("\n", reader.lines().toList());
         var json = JsonParser.parseString(rawJson).getAsJsonObject();
 
@@ -951,7 +954,7 @@ public class LightMesh {
         }
 
         var parts = new HashMap<String, MeshConstructor>();
-        var textures = new HashMap<Integer, Identifier>();
+        var textures = new HashMap<Integer, ResourceLocation>();
         var data = new HashMap<String, TriangleData>();
 
         var rawData = json.get("data").getAsJsonObject();
@@ -967,7 +970,7 @@ public class LightMesh {
         var rawTextures = json.get("textures").getAsJsonObject();
         for (int i = 0; i < 3; i++) {
             if (rawTextures.has(String.valueOf(i))) {
-                textures.put(i, Identifier.tryParse(rawTextures.get(String.valueOf(i)).getAsString()));
+                textures.put(i, ResourceLocation.tryParse(rawTextures.get(String.valueOf(i)).getAsString()));
             }
         }
 

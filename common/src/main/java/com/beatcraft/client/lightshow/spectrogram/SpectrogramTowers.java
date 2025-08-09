@@ -1,11 +1,12 @@
 package com.beatcraft.client.lightshow.spectrogram;
 
-import com.beatcraft.animation.Easing;
-import com.beatcraft.audio.SpectrogramAnalyzer;
-import com.beatcraft.memory.MemoryPool;
-import com.beatcraft.render.BeatCraftRenderer;
-import com.beatcraft.render.effect.MirrorHandler;
-import net.minecraft.client.render.BufferBuilder;
+import com.beatcraft.client.animation.Easing;
+import com.beatcraft.client.audio.SpectrogramAnalyzer;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.common.memory.MemoryPool;
+import com.beatcraft.client.render.BeatcraftRenderer;
+import com.beatcraft.client.render.effect.MirrorHandler;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -17,6 +18,8 @@ public class SpectrogramTowers {
     public enum TowerStyle {
         Cuboid
     }
+
+    private BeatmapPlayer mapController;
 
     private SpectrogramAnalyzer spectrogram;
     private Vector3f position;
@@ -35,7 +38,8 @@ public class SpectrogramTowers {
 
     private Vector3f upVec = new Vector3f();
 
-    public SpectrogramTowers(Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, File soundFile, TowerStyle towerStyle, boolean splitHalfway) {
+    public SpectrogramTowers(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, File soundFile, TowerStyle towerStyle, boolean splitHalfway) {
+        this.mapController = map;
         this.position = position;
         this.orientation = orientation;
         this.towerOffset = towerOffset;
@@ -49,7 +53,8 @@ public class SpectrogramTowers {
 
     }
 
-    private SpectrogramTowers(Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, TowerStyle towerStyle, boolean splitHalfway) {
+    private SpectrogramTowers(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, TowerStyle towerStyle, boolean splitHalfway) {
+        this.mapController = map;
         this.position = position;
         this.orientation = orientation;
         this.towerOffset = towerOffset;
@@ -62,7 +67,7 @@ public class SpectrogramTowers {
     }
 
     public SpectrogramTowers copyTo(Vector3f position, Quaternionf orientation) {
-        var other = new SpectrogramTowers(position, orientation, towerOffset, towerCount, towerStyle, splitHalfway);
+        var other = new SpectrogramTowers(mapController, position, orientation, towerOffset, towerCount, towerStyle, splitHalfway);
         other.spectrogram = spectrogram;
         return other;
     }
@@ -70,7 +75,7 @@ public class SpectrogramTowers {
     public void render(float songTime) {
         var pos = MemoryPool.newVector3f(position);
         var ori = MemoryPool.newQuaternionf(orientation);
-        MirrorHandler.recordPlainCall((b, c) -> _render(b, pos, ori, songTime, c));
+        mapController.recordPlainMirrorCall((b, c) -> _render(b, pos, ori, songTime, c));
     }
 
     private void _render(BufferBuilder buffer, Vector3f position, Quaternionf orientation, float songTime, Vector3f cameraPos) {
@@ -110,17 +115,17 @@ public class SpectrogramTowers {
             var v2t = MemoryPool.newVector3f( 0.5f, baseHeight + y,  0.5f).rotate(orientation).add(pos).sub(cameraPos);
             var v3t = MemoryPool.newVector3f( 0.5f, baseHeight + y, -0.5f).rotate(orientation).add(pos).sub(cameraPos);
 
-            var faces = BeatCraftRenderer.getCubeFaces(
+            var faces = BeatcraftRenderer.getCubeFaces(
                 v0, v1, v2, v3,
                 v0t, v1t, v2t, v3t,
                 false
             );
 
             for (var face : faces) {
-                buffer.vertex(face[0]).color(0xFF000000);
-                buffer.vertex(face[1]).color(0xFF000000);
-                buffer.vertex(face[2]).color(0xFF000000);
-                buffer.vertex(face[3]).color(0xFF000000);
+                buffer.addVertex(face[0]).setColor(0xFF000000);
+                buffer.addVertex(face[1]).setColor(0xFF000000);
+                buffer.addVertex(face[2]).setColor(0xFF000000);
+                buffer.addVertex(face[3]).setColor(0xFF000000);
             }
 
             MemoryPool.release(v0, v1, v2, v3, v0t, v1t, v2t, v3t);

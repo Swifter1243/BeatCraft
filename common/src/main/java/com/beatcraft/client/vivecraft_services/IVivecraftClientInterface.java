@@ -6,6 +6,6 @@ public interface IVivecraftClientInterface {
 
     boolean isVRNonNull();
     Matrix4f getVRModelView();
-
+    boolean isVRActive();
 
 }

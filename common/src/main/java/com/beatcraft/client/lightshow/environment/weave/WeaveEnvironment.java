@@ -1,22 +1,23 @@
 package com.beatcraft.client.lightshow.environment.weave;
 
-import com.beatcraft.lightshow.environment.EnvironmentV3;
-import com.beatcraft.lightshow.environment.lightgroup.LightGroupV3;
-import com.beatcraft.lightshow.environment.lightgroup.OrientableLightGroup;
-import com.beatcraft.lightshow.event.events.LightEventV3;
-import com.beatcraft.lightshow.event.events.RotationEventV3;
-import com.beatcraft.lightshow.event.events.TranslationEvent;
-import com.beatcraft.lightshow.event.handlers.GroupEventHandlerV3;
-import com.beatcraft.lightshow.lights.CompoundTransformState;
-import com.beatcraft.lightshow.lights.LightObject;
-import com.beatcraft.lightshow.lights.TransformState;
-import com.beatcraft.render.lights.FloodLight;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.MathHelper;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.lightshow.environment.EnvironmentV3;
+import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV3;
+import com.beatcraft.client.lightshow.environment.lightgroup.OrientableLightGroup;
+import com.beatcraft.client.lightshow.event.events.LightEventV3;
+import com.beatcraft.client.lightshow.event.events.RotationEventV3;
+import com.beatcraft.client.lightshow.event.events.TranslationEvent;
+import com.beatcraft.client.lightshow.event.handlers.GroupEventHandlerV3;
+import com.beatcraft.client.lightshow.lights.CompoundTransformState;
+import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.lightshow.lights.TransformState;
+import com.beatcraft.client.render.lights.FloodLight;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
+import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,6 +80,10 @@ public class WeaveEnvironment extends EnvironmentV3 {
         return eventGroups;
     }
 
+    public WeaveEnvironment(BeatmapPlayer map) {
+        super(map);
+    }
+
     @Override
     public String getID() {
         return "WeaveEnvironment";
@@ -108,12 +113,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         var lights = new HashMap<Integer, LightObject>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PNP
@@ -122,7 +128,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var outerBL = new OrientableLightGroup(lights);
+        var outerBL = new OrientableLightGroup(mapController, lights);
         var outerBLHandler = new GroupEventHandlerV3(outerBL);
         eventGroups.put(0, new Pair<>(outerBL, outerBLHandler));
 
@@ -130,12 +136,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPN
@@ -144,7 +151,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var outerBR = new OrientableLightGroup(lights);
+        var outerBR = new OrientableLightGroup(mapController, lights);
         var outerBRHandler = new GroupEventHandlerV3(outerBR);
         eventGroups.put(1, new Pair<>(outerBR, outerBRHandler));
 
@@ -152,12 +159,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PPN
@@ -166,7 +174,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var outerTL = new OrientableLightGroup(lights);
+        var outerTL = new OrientableLightGroup(mapController, lights);
         var outerTLHandler = new GroupEventHandlerV3(outerTL);
         eventGroups.put(2, new Pair<>(outerTL, outerTLHandler));
 
@@ -174,12 +182,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
@@ -188,7 +197,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var outerTR = new OrientableLightGroup(lights);
+        var outerTR = new OrientableLightGroup(mapController, lights);
         var outerTRHandler = new GroupEventHandlerV3(outerTR);
         eventGroups.put(3, new Pair<>(outerTR, outerTRHandler));
 
@@ -199,12 +208,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         var lights = new HashMap<Integer, LightObject>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf()//.rotationY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PNP
@@ -213,7 +223,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var innerBL = new OrientableLightGroup(lights);
+        var innerBL = new OrientableLightGroup(mapController, lights);
         var innerBLHandler = new GroupEventHandlerV3(innerBL);
         eventGroups.put(4, new Pair<>(innerBL, innerBLHandler));
 
@@ -221,12 +231,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf()//.rotationY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPN
@@ -235,7 +246,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var innerBR = new OrientableLightGroup(lights);
+        var innerBR = new OrientableLightGroup(mapController, lights);
         var innerBRHandler = new GroupEventHandlerV3(innerBR);
         eventGroups.put(5, new Pair<>(innerBR, innerBRHandler));
 
@@ -243,12 +254,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.PPN
@@ -257,7 +269,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var innerTL = new OrientableLightGroup(lights);
+        var innerTL = new OrientableLightGroup(mapController, lights);
         var innerTLHandler = new GroupEventHandlerV3(innerTL);
         eventGroups.put(6, new Pair<>(innerTL, innerTLHandler));
 
@@ -265,12 +277,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(180 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
@@ -279,7 +292,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var innerTR = new OrientableLightGroup(lights);
+        var innerTR = new OrientableLightGroup(mapController, lights);
         var innerTRHandler = new GroupEventHandlerV3(innerTR);
         eventGroups.put(7, new Pair<>(innerTR, innerTRHandler));
     }
@@ -289,12 +302,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         var lights = new HashMap<Integer, LightObject>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPP
@@ -303,7 +317,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var sideBL = new OrientableLightGroup(lights);
+        var sideBL = new OrientableLightGroup(mapController, lights);
         var sideBLHandler = new GroupEventHandlerV3(sideBL);
         eventGroups.put(8, new Pair<>(sideBL, sideBLHandler));
 
@@ -311,12 +325,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
@@ -325,7 +340,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var sideBR = new OrientableLightGroup(lights);
+        var sideBR = new OrientableLightGroup(mapController, lights);
         var sideBRHandler = new GroupEventHandlerV3(sideBR);
         eventGroups.put(9, new Pair<>(sideBR, sideBRHandler));
 
@@ -333,12 +348,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
@@ -347,7 +363,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var sideTL = new OrientableLightGroup(lights);
+        var sideTL = new OrientableLightGroup(mapController, lights);
         var sideTLHandler = new GroupEventHandlerV3(sideTL);
         eventGroups.put(10, new Pair<>(sideTL, sideTLHandler));
 
@@ -355,12 +371,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationZ(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NPP
@@ -369,7 +386,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var sideTR = new OrientableLightGroup(lights);
+        var sideTR = new OrientableLightGroup(mapController, lights);
         var sideTRHandler = new GroupEventHandlerV3(sideTR);
         eventGroups.put(11, new Pair<>(sideTR, sideTRHandler));
     }
@@ -379,6 +396,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         var lights = new HashMap<Integer, LightObject>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(
@@ -388,7 +406,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 ),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)//.rotateY(180 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * Mth.DEG_TO_RAD)//.rotateY(180 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.XYZ,
                 CompoundTransformState.Polarity.NNP
@@ -397,7 +415,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var distantT = new OrientableLightGroup(lights);
+        var distantT = new OrientableLightGroup(mapController, lights);
         var distantTHandler = new GroupEventHandlerV3(distantT);
         eventGroups.put(12, new Pair<>(distantT, distantTHandler));
 
@@ -405,12 +423,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(-DISTANT_W, (CENTER_Y-DISTANT_H)-(DISTANT_H*2/9f), DISTANT_Z),
                 new Quaternionf()
             ).withRotation(
-                new Quaternionf().rotationX(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotationX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.XYZ,
                 CompoundTransformState.Polarity.PNP
@@ -419,7 +438,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var distantD = new OrientableLightGroup(lights);
+        var distantD = new OrientableLightGroup(mapController, lights);
         var distantDHandler = new GroupEventHandlerV3(distantD);
         eventGroups.put(13, new Pair<>(distantD, distantDHandler));
 
@@ -427,12 +446,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(DISTANT_W+(DISTANT_W*2/11f), CENTER_Y-DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotateY(90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotation(
-                new Quaternionf().rotateX(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
@@ -441,7 +461,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var distantL = new OrientableLightGroup(lights);
+        var distantL = new OrientableLightGroup(mapController, lights);
         var distantLHandler = new GroupEventHandlerV3(distantL);
         eventGroups.put(14, new Pair<>(distantL, distantLHandler));
 
@@ -449,12 +469,13 @@ public class WeaveEnvironment extends EnvironmentV3 {
         lights = new HashMap<>();
         for (var light : stackLights(
             new FloodLight(
+                mapController,
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotateY(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotation(
-                new Quaternionf().rotateX(-90 * MathHelper.RADIANS_PER_DEGREE)
+                new Quaternionf().rotateX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
@@ -463,7 +484,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         ) {
             lights.put(lightID++, light);
         }
-        var distantR = new OrientableLightGroup(lights);
+        var distantR = new OrientableLightGroup(mapController, lights);
         var distantRHandler = new GroupEventHandlerV3(distantR);
         eventGroups.put(15, new Pair<>(distantR, distantRHandler));
 
@@ -473,9 +494,9 @@ public class WeaveEnvironment extends EnvironmentV3 {
     public WeaveEnvironment reset() {
         super.reset();
         eventGroups.forEach((k, v) -> {
-            v.getRight().reset();
-            v.getRight().clear();
-            v.getLeft().reset();
+            v.getB().reset();
+            v.getB().clear();
+            v.getA().reset();
         });
 
         return this;
@@ -503,8 +524,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
     ) {
 
         if (eventGroups.containsKey(group)) {
-            eventGroups.get(group).getRight().linkLightEvents(lightEvents);
-            eventGroups.get(group).getRight().linkRotationEvents(lightID, rotationEvents);
+            eventGroups.get(group).getB().linkLightEvents(lightEvents);
+            eventGroups.get(group).getB().linkRotationEvents(lightID, rotationEvents);
         }
 
     }
@@ -512,7 +533,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     @Override
     public void seek(float beat) {
         eventGroups.forEach((k, v) -> {
-            v.getRight().seek(beat);
+            v.getB().seek(beat);
         });
     }
 
@@ -520,17 +541,17 @@ public class WeaveEnvironment extends EnvironmentV3 {
     public void update(float beat, double deltaTime) {
         super.update(beat, deltaTime);
         eventGroups.forEach((k, v) -> {
-            v.getRight().update(beat);
+            v.getB().update(beat);
         });
 
     }
 
     @Override
-    public void render(MatrixStack matrices, Camera camera) {
+    public void render(PoseStack matrices, Camera camera) {
         super.render(matrices, camera);
 
         eventGroups.forEach((k, v) -> {
-            v.getLeft().render(matrices, camera);
+            v.getA().render(matrices, camera);
         });
 
     }

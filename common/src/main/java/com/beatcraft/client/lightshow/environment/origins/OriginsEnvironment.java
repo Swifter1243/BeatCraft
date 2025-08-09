@@ -48,6 +48,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
         var f = new File(difficulty.getInfo().getSongFilename());
 
         leftSpectrogramTowers = new SpectrogramTowers(
+            mapController,
             new Vector3f(114f, -71f, -80.5f),
             new Quaternionf().rotateZ(45 * Mth.DEG_TO_RAD).rotateLocalY(-12.5f * Mth.DEG_TO_RAD),
             new Vector3f(0, 0, 2),

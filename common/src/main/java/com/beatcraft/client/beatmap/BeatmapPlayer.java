@@ -46,6 +46,10 @@ public class BeatmapPlayer {
         obstacleRenderCalls.add(call);
     }
 
+    public void recordMirroredObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
+        //obstacleRenderCalls.add(call);
+    }
+
     public void recordRenderCall(Runnable call) {
         renderCalls.add(call);
     }
@@ -68,6 +72,10 @@ public class BeatmapPlayer {
 
     public void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
         bloomfogPosColCalls.add(call);
+    }
+
+    public void recordPlainMirrorCall(BiConsumer<BufferBuilder, Vector3f> call) {
+
     }
 
     public BeatmapPlayer() {
