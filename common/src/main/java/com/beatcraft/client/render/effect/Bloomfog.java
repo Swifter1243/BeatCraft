@@ -7,7 +7,7 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
-import com.beatcraft.client.vivecraft_services.VivecraftClientInterface;
+import com.beatcraft.client.services.VivecraftClientInterface;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;

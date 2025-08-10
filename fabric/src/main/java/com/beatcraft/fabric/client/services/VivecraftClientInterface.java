@@ -1,6 +1,6 @@
-package com.beatcraft.neoforge.client.vivecraft_services;
+package com.beatcraft.fabric.client.services;
 
-import com.beatcraft.client.vivecraft_services.IVivecraftClientInterface;
+import com.beatcraft.client.services.IVivecraftClientInterface;
 import org.joml.Matrix4f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;

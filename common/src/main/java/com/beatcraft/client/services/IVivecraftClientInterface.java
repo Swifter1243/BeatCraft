@@ -1,4 +1,4 @@
-package com.beatcraft.client.vivecraft_services;
+package com.beatcraft.client.services;
 
 import org.joml.Matrix4f;
 

@@ -3,10 +3,9 @@ package com.beatcraft.client.render.item;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
 //import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.vivecraft_services.VivecraftClientInterface;
+import com.beatcraft.client.services.VivecraftClientInterface;
 import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -645,12 +644,12 @@ public class SaberItemRenderer {
 
         int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR.get(), -1);
 
-        if (sync == -1 || BeatmapManager.hasNearbyBeatmap()) {
+        if (sync == -1 || BeatmapManager.hasNearbyBeatmapToPlayer()) {
             color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT.get(), 0) + 0xFF000000;
         } else if (sync == 0) {
-            color = BeatmapManager.nearestBeatmap().difficulty.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+            color = BeatmapManager.nearestBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
         } else {
-            color = BeatmapManager.nearestBeatmap().difficulty.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+            color = BeatmapManager.nearestBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
 
         active.render(matrices.last().pose(), color, cameraPos, mode == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || mode == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || mode == ItemDisplayContext.GUI);

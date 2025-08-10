@@ -16,11 +16,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class BeatmapPlayer {
     public BlockPos worldPosition;
     public float worldAngle;
 
+    public final UUID mapId;
 
     public float currentBeat;
     public float currentSeconds;
@@ -41,6 +43,9 @@ public class BeatmapPlayer {
     private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
     private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
 
+    public Vector3f getRenderOrigin() {
+        return worldPosition.getCenter().toVector3f().add(0f, 0.5f, 0f);
+    }
 
     public void recordObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
         obstacleRenderCalls.add(call);
@@ -79,7 +84,7 @@ public class BeatmapPlayer {
     }
 
     public BeatmapPlayer() {
-
+        mapId = UUID.randomUUID();
     }
 
     public float getBpm(float beat) {
@@ -116,6 +121,13 @@ public class BeatmapPlayer {
 
     public void renderMirroredObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
 
+    }
+
+
+    public String getDisplayInfo() {
+        return "Info for map " + mapId +
+            ":\n  Position: " + worldPosition +
+            "\n  Rotation: " + worldAngle;
     }
 
 }
