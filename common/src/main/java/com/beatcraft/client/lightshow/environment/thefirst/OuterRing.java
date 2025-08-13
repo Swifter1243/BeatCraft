@@ -49,7 +49,7 @@ public class OuterRing extends LightObject {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
 
         var pos = new Vector3f(position);
         var off = new Vector3f(offset);
@@ -65,7 +65,7 @@ public class OuterRing extends LightObject {
         for (var light : lights) {
             light.setWorldRotation(new Quaternionf(orientation).mul(rotation));
             light.setOffset(new Vector3f(position).rotate(rotation).add(offset).rotate(worldRotation));
-            light.render(matrices, camera, bloomfog);
+            light.render(matrices, camera, alpha, bloomfog);
         }
 
     }

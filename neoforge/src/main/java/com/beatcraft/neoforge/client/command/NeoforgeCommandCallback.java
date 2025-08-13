@@ -1,4 +1,4 @@
-package com.beatcraft.fabric.client.command;
+package com.beatcraft.neoforge.client.command;
 
 import com.beatcraft.client.commands.CommandCallback;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -6,27 +6,25 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 
-public record FabricCommandCallback(CommandContext<FabricClientCommandSource> ctx) implements CommandCallback {
-
+public record NeoforgeCommandCallback(CommandContext<CommandSourceStack> ctx) implements CommandCallback {
     @Override
     public void sendFeedback(Component fb) {
-        ctx.getSource().sendFeedback(fb);
+        ctx.getSource().sendSystemMessage(fb);
     }
 
+    @Override
     public String getStringArg(String name) {
         return StringArgumentType.getString(ctx, name);
     }
 
+    @Override
     public int getIntArg(String name) {
         return IntegerArgumentType.getInteger(ctx, name);
     }
@@ -43,14 +41,11 @@ public record FabricCommandCallback(CommandContext<FabricClientCommandSource> ct
 
     @Override
     public Vector3f getVec3fArg(String name) {
-        var p = ctx.getSource().getPosition();
-        var c = new CommandSourceStack(null, p, ctx.getSource().getRotation(), null, 0, null, null, null, ctx.getSource().getEntity());
-
-        return (ctx.getArgument(name, Coordinates.class)).getPosition(c).toVector3f();
+        return Vec3Argument.getVec3(ctx, name).toVector3f();
     }
 
     @Override
     public Level getLevel() {
-        return ctx.getSource().getWorld();
+        return ctx.getSource().getLevel();
     }
 }

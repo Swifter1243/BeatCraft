@@ -3,6 +3,7 @@ package com.beatcraft.client.render;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;

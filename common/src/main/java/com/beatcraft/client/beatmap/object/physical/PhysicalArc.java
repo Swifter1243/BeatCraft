@@ -116,7 +116,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
     }
 
     @Override
-    protected void objectRender(PoseStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
+    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
 
         updateCurve();
 
@@ -129,7 +129,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
             var offset = MemoryPool.newVector3f(localPos).add(camPos);
-            DebugRenderer.renderPath(basePath, offset, segments, data.getColor().toARGB());
+            DebugRenderer.renderPath(basePath, offset, segments, data.getColor().copy().withAlpha(alpha).toARGB());
             MemoryPool.release(offset);
         }
         MemoryPool.release(localPos, camPos);

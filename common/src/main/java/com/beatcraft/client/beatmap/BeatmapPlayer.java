@@ -9,7 +9,11 @@ import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Quaternionf;
@@ -19,8 +23,12 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class BeatmapPlayer {
-    public BlockPos worldPosition;
+
+
+
+    public Vector3f worldPosition;
     public float worldAngle;
+    private Level level;
 
     public final UUID mapId;
 
@@ -35,56 +43,56 @@ public class BeatmapPlayer {
 
     private final ArrayList<String> activeModifiers = new ArrayList<>();
 
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
-    private final ArrayList<Runnable> renderCalls = new ArrayList<>();
-    private final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserPreRenderCalls = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
+    public final BeatmapRenderer renderer;
+
+    private final Quaternionf ori = new Quaternionf();
 
     public Vector3f getRenderOrigin() {
-        return worldPosition.getCenter().toVector3f().add(0f, 0.5f, 0f);
+        return worldPosition;
     }
 
     public void recordObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
-        obstacleRenderCalls.add(call);
+        renderer.recordObstacleRenderCall(call);
     }
 
     public void recordMirroredObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
-        //obstacleRenderCalls.add(call);
+        renderer.recordMirroredObstacleRenderCall(call);
     }
 
     public void recordRenderCall(Runnable call) {
-        renderCalls.add(call);
+        renderer.recordRenderCall(call);
     }
 
     public void recordArcRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        arcRenderCalls.add(call);
+        renderer.recordArcRenderCall(call);
     }
 
     public void recordLaserRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        laserRenderCalls.add(call);
+        renderer.recordLaserRenderCall(call);
     }
 
     public void recordLaserPreRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        laserPreRenderCalls.add(call);
+        renderer.recordLaserPreRenderCall(call);
     }
 
     public void recordLightRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        lightRenderCalls.add(call);
+        renderer.recordLightRenderCall(call);
     }
 
     public void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        bloomfogPosColCalls.add(call);
+        renderer.recordBloomfogPosColCall(call);
     }
 
     public void recordPlainMirrorCall(BiConsumer<BufferBuilder, Vector3f> call) {
-
+        renderer.recordPlainMirrorCall(call);
     }
 
-    public BeatmapPlayer() {
+    public BeatmapPlayer(Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
         mapId = UUID.randomUUID();
+        worldPosition = position;
+        worldAngle = rotation;
+        renderer = new BeatmapRenderer(this, style);
+        this.level = level;
     }
 
     public float getBpm(float beat) {
@@ -116,11 +124,11 @@ public class BeatmapPlayer {
     }
 
     public void renderObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
-
+        renderer.renderObstacle(pos, rot, bounds, color);
     }
 
     public void renderMirroredObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
-
+        renderer.renderMirroredObstacle(pos, rot, bounds, color);
     }
 
 
@@ -129,5 +137,23 @@ public class BeatmapPlayer {
             ":\n  Position: " + worldPosition +
             "\n  Rotation: " + worldAngle;
     }
+
+    public void render(Camera camera) {
+
+        if (camera.getEntity().level() != level) {
+            return;
+        }
+
+        var dist = camera.getPosition().toVector3f().distance(worldPosition);
+
+        var matrices = new PoseStack();
+
+        matrices.translate(worldPosition.x, worldPosition.y, worldPosition.z);
+
+        matrices.mulPose(ori.rotationY(worldAngle));
+
+        renderer.render(matrices, difficulty, camera, dist);
+    }
+
 
 }

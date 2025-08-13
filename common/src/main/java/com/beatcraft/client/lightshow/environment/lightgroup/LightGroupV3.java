@@ -49,9 +49,9 @@ public abstract class LightGroupV3 extends LightGroup {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera) {
+    public void render(PoseStack matrices, Camera camera, float alpha) {
         lights.forEach((key, light) -> {
-            light.render(matrices, camera, BeatcraftRenderer.bloomfog);
+            light.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
         });
     }
 }

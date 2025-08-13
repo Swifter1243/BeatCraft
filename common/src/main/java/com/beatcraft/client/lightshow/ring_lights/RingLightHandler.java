@@ -122,7 +122,7 @@ public class RingLightHandler extends LightObject {
 
         }
 
-        protected void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+        protected void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
             if (ringLight == null) return;
             ringLight.setOffset(
                 new Vector3f(0, 0, controller.ringOffset * lerpZoom(controller.mapController.currentSeconds) * index)
@@ -132,9 +132,9 @@ public class RingLightHandler extends LightObject {
             ringLight.setRotation(
                 new Quaternionf().rotationZ(rotation).mul(controller.orientation).mul(controller.rotation)
             );
-            ringLight.render(matrices, camera, bloomfog);
+            ringLight.render(matrices, camera, alpha, bloomfog);
             if (nextRing != null) {
-                nextRing.render(matrices, camera, bloomfog);
+                nextRing.render(matrices, camera, alpha, bloomfog);
             }
         }
 
@@ -187,8 +187,8 @@ public class RingLightHandler extends LightObject {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
-        headRing.render(matrices, camera, bloomfog);
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
+        headRing.render(matrices, camera, alpha, bloomfog);
     }
 
 

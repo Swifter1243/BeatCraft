@@ -109,7 +109,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
     private static final Color WHITE = new Color(0xFFFFFFFF);
     @Override
-    protected void objectRender(PoseStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
+    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
         var localPos = matrices.last();
 
         var renderPos = localPos.pose().getTranslation(MemoryPool.newVector3f());
@@ -146,22 +146,22 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
         if (!isBaseDissolved()) {
             var dissolve = Math.max(mapController.globalDissolve, localDissolve);
-            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.pose(), data.getColor(), dissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
+            MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
 
         }
 
         if (!isArrowDissolved()) {
             var dissolve = Math.max(mapController.globalArrowDissolve, localArrowDissolve);
             if (getData().getCutDirection() == CutDirection.DOT) {
-                MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom(data.getColor());
+                MeshLoader.NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+                MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+                MeshLoader.NOTE_DOT_INSTANCED_MESH.copyDrawToBloom(data.getColor().copy().withAlpha(alpha));
 
             } else {
-                MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE, dissolve, data.getMapIndex()));
-                MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(data.getColor());
+                MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+                MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+                MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(data.getColor().copy().withAlpha(alpha));
 
             }
         }

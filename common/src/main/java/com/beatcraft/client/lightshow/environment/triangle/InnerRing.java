@@ -26,7 +26,7 @@ public class InnerRing extends LightObject {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
         resetVertices();
 
         var pos = new Vector3f(position);

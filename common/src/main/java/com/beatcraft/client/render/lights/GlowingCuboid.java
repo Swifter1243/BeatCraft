@@ -50,7 +50,7 @@ public class GlowingCuboid extends LightObject {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
 
         Vector3f pos = MemoryPool.newVector3f(position);
         Vector3f off = MemoryPool.newVector3f(offset);

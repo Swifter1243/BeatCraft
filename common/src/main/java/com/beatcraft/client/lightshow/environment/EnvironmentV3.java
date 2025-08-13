@@ -809,7 +809,7 @@ public abstract class EnvironmentV3 extends Environment {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera) {
-        super.render(matrices, camera);
+    public void render(PoseStack matrices, Camera camera, float alpha) {
+        super.render(matrices, camera, alpha);
     }
 }

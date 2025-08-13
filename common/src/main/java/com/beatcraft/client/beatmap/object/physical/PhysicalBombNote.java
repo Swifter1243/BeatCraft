@@ -31,7 +31,7 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     }
 
     @Override
-    protected void objectRender(PoseStack matrices, VertexConsumer vertexConsumer, AnimationState animationState) {
+    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
         var localPos = matrices.last();
 
         var renderPos = localPos.pose().getTranslation(MemoryPool.newVector3f());
@@ -47,8 +47,8 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
         renderPos.add(c);
 
         var dissolve = Math.max(mapController.globalDissolve, getBaseDissolve());
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.pose(), data.getColor(), dissolve, data.getMapIndex()));
-        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(flipped, data.getColor(), dissolve, data.getMapIndex()));
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
 
     }
 

@@ -355,10 +355,10 @@ public abstract class EnvironmentV2 extends Environment {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera) {
-        super.render(matrices, camera);
+    public void render(PoseStack matrices, Camera camera, float alpha) {
+        super.render(matrices, camera, alpha);
         uniqueGroups.forEach(v -> {
-            v.render(matrices, camera);
+            v.render(matrices, camera, alpha);
         });
     }
 

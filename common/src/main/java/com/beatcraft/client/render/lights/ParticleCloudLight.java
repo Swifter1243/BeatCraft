@@ -67,7 +67,7 @@ public class ParticleCloudLight extends LightObject {
     float pt = 0;
     float t = 0;
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
         pt = t;
         t = (System.nanoTime() / 1_000_000_000f);
         var dt = t - pt;

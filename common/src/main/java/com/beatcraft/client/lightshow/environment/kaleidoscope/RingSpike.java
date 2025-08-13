@@ -40,7 +40,7 @@ public class RingSpike extends LightObject {
         }
 
         @Override
-        public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+        public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
             // sub-controller does not render
         }
 
@@ -119,7 +119,7 @@ public class RingSpike extends LightObject {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera, Bloomfog bloomfog) {
+    public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
         mesh.transform.set(mat);

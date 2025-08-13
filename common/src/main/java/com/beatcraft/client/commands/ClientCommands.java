@@ -1,9 +1,12 @@
 package com.beatcraft.client.commands;
 
 import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapRenderer;
 import com.beatcraft.client.services.CommandManager;
 import net.minecraft.network.chat.Component;
 
+import static com.beatcraft.client.commands.CommandTree.argument;
 import static com.beatcraft.client.commands.CommandTree.literal;
 
 public class ClientCommands {
@@ -39,10 +42,27 @@ public class ClientCommands {
         return CommandResult.ok(Component.literal(BeatmapManager.getMapsInfo()));
     }
 
+    private static CommandResult createBeatmap(CommandCallback callback) {
+
+        var pos = callback.getVec3fArg("position");
+        var rot = callback.getFloatArg("rotation");
+
+        var map = BeatmapManager.place(callback.getLevel(), pos, rot, BeatmapRenderer.RenderStyle.DISTANCE);
+
+        return CommandResult.ok(Component.literal(String.format("Placed beatmap: %s", map.getDisplayInfo())));
+    }
+
     public static void init() {
         CommandManager.register(
             literal("beatmap").then(
                 literal("list").executes(ClientCommands::listBeatmaps)
+            ).then(
+                literal("place").then(
+                    argument("position", CommandTree.ArgumentType.Vec3i).then(
+                        argument("rotation", CommandTree.ArgumentType.Float)
+                            .executes(ClientCommands::createBeatmap)
+                    ).build()
+                ).build()
             )
             .build()
         );

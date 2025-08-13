@@ -11,20 +11,17 @@ import net.minecraft.world.phys.Vec3;
 public abstract class WorldRenderer {
     protected static final Minecraft mc = Minecraft.getInstance();
 
-    public void render(PoseStack matrices, Camera camera) {
+    public void render(PoseStack matrices, Camera camera, float alpha) {
         if (!shouldRender()) return;
-
-        MultiBufferSource provider = mc.renderBuffers().bufferSource();
-        VertexConsumer vertexConsumer = provider.getBuffer(RenderType.solid());
 
         matrices.pushPose();
         Vec3 cameraPos = camera.getPosition();
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        worldRender(matrices, vertexConsumer);
+        worldRender(matrices, alpha);
         matrices.popPose();
     }
 
     // I'll probably add more parameters to this as I need them
-    protected abstract void worldRender(PoseStack matrices, VertexConsumer vertexConsumer);
+    protected abstract void worldRender(PoseStack matrices, float alpha);
     protected abstract boolean shouldRender();
 }

@@ -14,6 +14,6 @@ public abstract class LightGroup {
 
     public abstract void update(float beat, double deltaTime);
 
-    public abstract void render(PoseStack matrices, Camera camera);
+    public abstract void render(PoseStack matrices, Camera camera, float alpha);
 
 }

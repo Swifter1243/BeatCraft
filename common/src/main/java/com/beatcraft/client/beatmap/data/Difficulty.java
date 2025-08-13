@@ -175,18 +175,18 @@ public abstract class Difficulty {
         return setDifficulty;
     }
 
-    public void render(PoseStack matrices, Camera camera) {
+    public void render(PoseStack matrices, Camera camera, float alpha) {
         //if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
         if (lightShowEnvironment != null) {
-            lightShowEnvironment.render(matrices, camera);
+            lightShowEnvironment.render(matrices, camera, alpha);
         }
         if (mapController.isModifierActive("Zen Mode")) return;
-        colorNotes.forEach(o -> o.render(matrices, camera));
-        if (!mapController.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.render(matrices, camera));
-        chainHeadNotes.forEach(o -> o.render(matrices, camera));
-        chainLinkNotes.forEach(o -> o.render(matrices, camera));
-        if (!mapController.isModifierActive("No Walls")) obstacles.forEach(o -> o.render(matrices, camera));
-        arcs.forEach(o -> o.render(matrices, camera));
+        colorNotes.forEach(o -> o.render(matrices, camera, alpha));
+        if (!mapController.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.render(matrices, camera, alpha));
+        chainHeadNotes.forEach(o -> o.render(matrices, camera, alpha));
+        chainLinkNotes.forEach(o -> o.render(matrices, camera, alpha));
+        if (!mapController.isModifierActive("No Walls")) obstacles.forEach(o -> o.render(matrices, camera, alpha));
+        arcs.forEach(o -> o.render(matrices, camera, alpha));
     }
 
     public void seek(float beat) {

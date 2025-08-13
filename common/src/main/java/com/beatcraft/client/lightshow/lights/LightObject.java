@@ -110,7 +110,7 @@ public abstract class LightObject {
 
     public abstract LightObject cloneOffset(Vector3f offset);
 
-    public abstract void render(PoseStack matrices, Camera camera, Bloomfog bloomfog);
+    public abstract void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog);
 
     // Mainly used for light intensity, but also will work for spectrum visualizer elements
     public abstract void setBrightness(float value);

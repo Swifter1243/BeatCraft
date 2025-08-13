@@ -1,6 +1,8 @@
 package com.beatcraft.client.beatmap;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
@@ -14,6 +16,12 @@ public class BeatmapManager {
         // TODO: interpolate fog heights of all beatmaps based on distance? (or just use nearest)
 
         return DEFAULT_FOG_HEIGHTS;
+    }
+
+    public static BeatmapPlayer place(Level level, Vector3f pos, float angle, BeatmapRenderer.RenderStyle style) {
+        var map = new BeatmapPlayer(level, pos, angle, style);
+        beatmaps.add(map);
+        return map;
     }
 
     public static BeatmapPlayer nearestBeatmapToPlayer() {
@@ -65,6 +73,13 @@ public class BeatmapManager {
             return info.toString();
         }
 
+    }
+
+    public static void renderMaps() {
+        var cam = Minecraft.getInstance().gameRenderer.getMainCamera();
+        for (var map : beatmaps) {
+            map.render(cam);
+        }
     }
 
 }

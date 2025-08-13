@@ -375,7 +375,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     @Override
-    protected void worldRender(PoseStack matrices, VertexConsumer vertexConsumer) {
+    protected void worldRender(PoseStack matrices, float alpha) {
         applyMatrixToRender(matrix, matrices);
 
         matrices.last().pose().getTranslation(worldPos)
@@ -389,10 +389,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         mapController.checkNote(this);
 
-        objectRender(matrices, vertexConsumer, animationState);
+        objectRender(matrices, animationState, alpha);
     }
 
-    abstract protected void objectRender(PoseStack matrices, VertexConsumer vertexConsumer, AnimationState animationState);
+    abstract protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha);
 
     public T getData() {
         return data;
