@@ -147,9 +147,9 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
     }
 
     @Override
-    public void render(PoseStack matrices, Camera camera) {
-        innerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
-        outerRing.render(matrices, camera, BeatcraftRenderer.bloomfog);
+    public void render(PoseStack matrices, Camera camera, float alpha) {
+        innerRing.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
+        outerRing.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
     }
 
 }

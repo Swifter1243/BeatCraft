@@ -429,8 +429,8 @@ public class NiceEnvironment extends EnvironmentV2 {
 
 
     @Override
-    public void render(PoseStack matrices, Camera camera) {
-        super.render(matrices, camera);
+    public void render(PoseStack matrices, Camera camera, float alpha) {
+        super.render(matrices, camera, alpha);
 
         var t = mapController.currentSeconds;
 

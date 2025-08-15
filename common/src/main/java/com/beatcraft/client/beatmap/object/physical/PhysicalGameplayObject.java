@@ -458,7 +458,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
 
-        if (BeatcraftClient.playerConfig.isReducedDebris()) return;
+        if (BeatcraftClient.playerConfig.preferences.reducedDebris) return;
 
         var m = getMesh();
         if (m == null) return;

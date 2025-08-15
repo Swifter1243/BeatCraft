@@ -592,7 +592,7 @@ public class MeshLoader {
 
         });
 
-        return new SaberItemRenderer.SaberModel(displayName, authors, meshes, complexityScore.get(), texture);
+        return new SaberItemRenderer.SaberModel(fileName, displayName, authors, meshes, complexityScore.get(), texture);
 
     }
 

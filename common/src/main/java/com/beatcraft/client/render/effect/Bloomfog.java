@@ -282,7 +282,7 @@ public class Bloomfog {
             rollQuat.mul(invCameraRotation, invCameraRotation);
         }
 
-        if (!BeatcraftClient.playerConfig.doBloomfog()) {
+        if (!BeatcraftClient.playerConfig.quality.doBloomfog) {
             return;
         }
 
@@ -495,30 +495,30 @@ public class Bloomfog {
 
     /// This passes a triangle:position-color buffer
     public void recordBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
-        if (!BeatcraftClient.playerConfig.doBloom()) return;
+        if (!BeatcraftClient.playerConfig.quality.doBloom) return;
         bloomCalls.add(call);
     }
 
     public void recordMiscBloomCall(TriConsumer<Vector3f, Quaternionf, Integer> call) {
-        if (!BeatcraftClient.playerConfig.doBloom()) return;
+        if (!BeatcraftClient.playerConfig.quality.doBloom) return;
         miscBloomCalls.add(call);
     }
 
 
     public void recordNoteBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
-        if (!BeatcraftClient.playerConfig.doBloom()) return;
+        if (!BeatcraftClient.playerConfig.quality.doBloom) return;
         noteBloomCalls.add(call);
     }
 
     public void recordArrowBloomCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
-        if (!BeatcraftClient.playerConfig.doBloom()) return;
+        if (!BeatcraftClient.playerConfig.quality.doBloom) return;
         arrowBloomCalls.add(call);
     }
 
     public static int sceneDepthBuffer;
     public void renderBloom() {
 
-        if (!BeatcraftClient.playerConfig.doBloom()) {
+        if (!BeatcraftClient.playerConfig.quality.doBloom) {
             bloomCalls.clear();
             noteBloomCalls.clear();
             arrowBloomCalls.clear();

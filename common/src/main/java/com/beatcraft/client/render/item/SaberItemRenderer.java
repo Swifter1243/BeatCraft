@@ -481,6 +481,7 @@ public class SaberItemRenderer {
 
     public static class SaberModel {
 
+        public final String id;
         public final String modelName;
         public final List<String> authors;
         private final ArrayList<AttributedMesh> meshComponents;
@@ -488,7 +489,8 @@ public class SaberItemRenderer {
 
         private final ResourceLocation texture;
 
-        public SaberModel(String modelName, List<String> authors, ArrayList<AttributedMesh> meshComponents, int performanceImpactScore, ResourceLocation texture) {
+        public SaberModel(String id, String modelName, List<String> authors, ArrayList<AttributedMesh> meshComponents, int performanceImpactScore, ResourceLocation texture) {
+            this.id = id;
             this.modelName = modelName;
             this.authors = authors;
             this.meshComponents = meshComponents;
@@ -604,10 +606,10 @@ public class SaberItemRenderer {
 
     }
 
-    public static boolean selectModel(String name, List<String> authors) {
+    public static void selectModel(String id) {
         var found = false;
         for (var model : models) {
-            if (model.modelName.equals(name) && authors.equals(model.authors)) {
+            if (model.id.equals(id)) {
                 active = model;
                 found = true;
                 break;
@@ -616,9 +618,7 @@ public class SaberItemRenderer {
         if (!found) {
             active = builtin;
         }
-        BeatcraftClient.playerConfig.setSelectedSaberModelName(active.modelName);
-        BeatcraftClient.playerConfig.setSelectedSaberModelAuthors(active.authors);
-        return found;
+        BeatcraftClient.playerConfig.preferences.selectedSaber = active.id;
     }
 
     public static void init() {
@@ -629,7 +629,7 @@ public class SaberItemRenderer {
         builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"));
         models.add(builtin);
 
-        selectModel(BeatcraftClient.playerConfig.getSelectedSaberModelName(), BeatcraftClient.playerConfig.getSelectedSaberModelAuthors());
+        selectModel(BeatcraftClient.playerConfig.preferences.selectedSaber);
 
         initialized = true;
     }
