@@ -1,6 +1,8 @@
 package com.beatcraft.client.render.mesh;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
+import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import com.beatcraft.client.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.client.render.instancing.*;
@@ -11,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockModel;
@@ -55,18 +58,48 @@ public class MeshLoader {
     public static final ResourceLocation NOTE_TEXTURE = Beatcraft.id("textures/gameplay_objects/color_note.png");
     public static final ResourceLocation ARROW_TEXTURE = Beatcraft.id("textures/gameplay_objects/arrow.png");
     public static final ResourceLocation SMOKE_TEXTURE = Beatcraft.id("textures/noise/smoke.png");
+    public static final ResourceLocation MATRIX_LOCATOR_TEXTURE = Beatcraft.id("textures/debug/matrix_visualizer.png");
 
     public static InstancedMesh<SmokeInstanceData> SMOKE_INSTANCED_MESH;
 
-    private static ModelLoaderAccessor modelLoader;
+    public static InstancedMesh<TransformationWidgetInstanceData> MATRIX_LOCATOR_MESH;
 
+    private static ModelLoaderAccessor modelLoader;
 
     public static LightMesh KALEIDOSCOPE_SPIKE;
 
-    public static void loadGameplayMeshes(ModelLoaderAccessor modelLoader) {
+    public static void loadMeshes() {
+        COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note_chain_head.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        CHAIN_LINK_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note_chain_link.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
+        BOMB_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/bomb_note.json"), NOTE_TEXTURE, "instanced/bomb_note", 1f);
+        NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/note_arrow.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
+        CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/chain_note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
 
+        MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
+        MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH = CHAIN_HEAD_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH = CHAIN_LINK_NOTE_INSTANCED_MESH.copy();
+        MIRROR_NOTE_ARROW_INSTANCED_MESH = NOTE_ARROW_INSTANCED_MESH.copy();
+        MIRROR_NOTE_DOT_INSTANCED_MESH = NOTE_DOT_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_DOT_INSTANCED_MESH = CHAIN_DOT_INSTANCED_MESH.copy();
+
+        SMOKE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/gameplay/smoke.json"), SMOKE_TEXTURE, "instanced/smoke", 6f);
+
+        MATRIX_LOCATOR_MESH = loadInstancedMesh(Beatcraft.id("models/debug/matrix_visualizer.json"), MATRIX_LOCATOR_TEXTURE, "debug/matrix_visualizer", 1f);
+
+
+        try {
+            KALEIDOSCOPE_SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("meshes/environment/kaleidoscope/spikes.json"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static void init(ModelLoaderAccessor modelLoader) {
         MeshLoader.modelLoader = modelLoader;
-
     }
 
     protected static class UnboundJsonModel {
@@ -285,16 +318,12 @@ public class MeshLoader {
                 Vector3f min = element.from.mul(1/32f, new Vector3f());
                 Vector3f max = element.to.mul(1/32f, new Vector3f());
 
-                float angleDegrees = 0;
-                Direction.Axis axis = Direction.Axis.X;
+                float angleDegrees;
+                Direction.Axis axis;
                 Vector3f origin;
-                if (element.rotation != null) {
-                    angleDegrees = element.rotation.angle();
-                    axis = element.rotation.axis();
-                    origin = element.rotation.origin().mul(0.5f);
-                } else {
-                    origin = new Vector3f(0, 0, 0);
-                }
+                angleDegrees = element.rotation.angle();
+                axis = element.rotation.axis();
+                origin = element.rotation.origin().mul(0.5f);
                 int start = mesh.vertices.size();
                 if (angleDegrees != 0) {
                     mesh.addUniquePermutedVertices(min, max);

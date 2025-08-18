@@ -1,6 +1,9 @@
 package com.beatcraft.client.render;
 
+import com.beatcraft.client.BeatcraftClient;
+import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -53,7 +56,21 @@ public class BeatcraftRenderer {
 
     }
 
-    public static void renderBeatmap() {
+    public static void renderBeatmap(Camera camera) {
+
+        for (var map : BeatmapManager.beatmaps) {
+            map.render(camera);
+        }
+        var cameraPos = camera.getPosition().toVector3f();
+
+
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
 
     }
 
@@ -61,7 +78,13 @@ public class BeatcraftRenderer {
 
     }
 
-    public static void renderDebug() {
+    public static void renderDebug(Vector3f cameraPos) {
+
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition) {
+            MeshLoader.MATRIX_LOCATOR_MESH.render(cameraPos);
+        } else {
+            MeshLoader.MATRIX_LOCATOR_MESH.cancelDraws();
+        }
 
     }
 

@@ -20,6 +20,9 @@
         ],
         "client": [
             "com.beatcraft.fabric.client.BeatcraftFabricClient"
+        ],
+        "preLaunch": [
+            "com.beatcraft.fabric.FabricPreLaunch"
         ]
     },
     "mixins": [

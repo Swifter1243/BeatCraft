@@ -51,7 +51,10 @@ public class MirrorHandler {
     public static ShaderInstance mirrorPositionColorClip;
 
     public static void init() {
+        var window = Minecraft.getInstance().getWindow();
 
+        mirrorFramebuffer = new TextureTarget(window.getWidth(), window.getHeight(), true, Minecraft.ON_OSX);
+        depthFramebuffer = new TextureTarget(window.getWidth(), window.getHeight(), true, Minecraft.ON_OSX);
         try {
             mirrorShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "light_mirror", DefaultVertexFormat.POSITION_COLOR);
             mirrorPositionColorClip = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "position_color_clip", DefaultVertexFormat.POSITION_COLOR);
@@ -62,9 +65,6 @@ public class MirrorHandler {
 
     public MirrorHandler(BeatmapPlayer map) {
         mapController = map;
-        var window = Minecraft.getInstance().getWindow();
-        mirrorFramebuffer = new TextureTarget(window.getWidth(), window.getHeight(), true, Minecraft.ON_OSX);
-        depthFramebuffer = new TextureTarget(window.getWidth(), window.getHeight(), true, Minecraft.ON_OSX);
         mirrors.add(this);
     }
 

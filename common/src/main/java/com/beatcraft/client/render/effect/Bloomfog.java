@@ -126,7 +126,7 @@ public class Bloomfog {
             gaussianV = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "gaussian_v", DefaultVertexFormat.POSITION_TEX_COLOR);
             gaussianH = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "gaussian_h", DefaultVertexFormat.POSITION_TEX_COLOR);
             blueNoise = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "blue_noise", DefaultVertexFormat.POSITION_TEX_COLOR);
-            blitShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "Beatcraft_blit", DefaultVertexFormat.POSITION_TEX_COLOR);
+            blitShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "beatcraft_blit", DefaultVertexFormat.POSITION_TEX_COLOR);
             compositeShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "composite", DefaultVertexFormat.POSITION_TEX_COLOR);
             /**/bloomfogPositionColor = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "col_bloomfog", DefaultVertexFormat.POSITION_COLOR);
             // /**/lightsPositionColorShader = new ShaderProgram(Minecraft.getInstance().getResourceManager(), "lights_position_color", VertexFormats.POSITION_COLOR);

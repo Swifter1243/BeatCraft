@@ -1,5 +1,6 @@
 package com.beatcraft.client.render.instancing;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.gl.GlUtil;
@@ -254,7 +255,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
         }
 
-        activateShaderAndTexture(cameraRotation, arrowBloomProgram, depthBuffer);
+        activateShaderAndTexture(cameraPos, cameraRotation, arrowBloomProgram, depthBuffer);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
@@ -305,7 +306,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     }
 
 
-    private void activateShaderAndTexture(Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
+    private void activateShaderAndTexture(Vector3f cameraPos, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
 
         shaderProgram = GlUtil.getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
         shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
@@ -316,7 +317,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         RenderSystem.bindTexture(0);
 
         var projMat = RenderSystem.getProjectionMatrix();
-        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation);
+        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z).rotate(cameraRotation);
         GlUtil.uniformMat4f("u_projection", projMat);
         GlUtil.uniformMat4f("u_view", viewMat);
 

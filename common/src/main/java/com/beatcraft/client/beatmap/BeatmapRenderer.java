@@ -3,6 +3,8 @@ package com.beatcraft.client.beatmap;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
+import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -103,7 +105,13 @@ public class BeatmapRenderer {
             }
         }
 
-        difficulty.render(matrices, camera, alpha);
+        if (difficulty != null) {
+            difficulty.render(matrices, camera, alpha);
+        }
+
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition) {
+            MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(matrices.last().pose()));
+        }
 
     }
 

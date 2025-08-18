@@ -53,8 +53,9 @@ public abstract class LevelRendererMixin {
         )
     )
     public void renderBeatmap(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
-        BeatcraftRenderer.renderBeatmap();
-        BeatcraftRenderer.renderDebug();
+        var cameraPos = camera.getPosition().toVector3f();
+        BeatcraftRenderer.renderBeatmap(camera);
+        BeatcraftRenderer.renderDebug(cameraPos);
         BeatcraftRenderer.renderParticles();
         BeatcraftRenderer.renderSabers();
         BeatcraftRenderer.renderSmoke();
