@@ -33,6 +33,11 @@ subprojects {
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         mappings loom.layered() {
