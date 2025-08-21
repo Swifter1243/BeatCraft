@@ -546,13 +546,15 @@ public class Bloomfog {
         RenderSystem.getModelViewMatrix().identity();
         RenderSystem.disableCull();
 
-        bloomInput.setClearColor(0, 0, 0, 0);
-        bloomInput.clear(Minecraft.ON_OSX);
         sceneDepthBuffer = Minecraft.getInstance().getMainRenderTarget().getDepthTextureId();
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
         Minecraft.getInstance().getMainRenderTarget().bindRead();
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        bloomInput.setClearColor(0, 0, 0, 0);
+        bloomInput.clear(Minecraft.ON_OSX);
         bloomInput.bindWrite(true);
 
         RenderSystem.defaultBlendFunc();
@@ -632,7 +634,6 @@ public class Bloomfog {
             call.accept(cameraPos, invCameraRotation, sceneDepthBuffer);
         }
         miscBloomCalls.clear();
-
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);

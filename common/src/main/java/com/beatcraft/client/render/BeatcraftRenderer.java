@@ -2,16 +2,22 @@ package com.beatcraft.client.render;
 
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.beatmap.data.ColorScheme;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.instancing.ArrowInstanceData;
+import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
+import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +51,7 @@ public class BeatcraftRenderer {
     }
 
     public static void renderBloomfog(float tickDelta) {
-
+        BeatcraftRenderer.bloomfog.render(false, tickDelta);
     }
 
     public static void renderMirror() {
@@ -56,6 +62,8 @@ public class BeatcraftRenderer {
 
     }
 
+    private static final Color WHITE = new Color(-1);
+
     public static void renderBeatmap(Camera camera) {
 
         for (var map : BeatmapManager.beatmaps) {
@@ -63,6 +71,13 @@ public class BeatcraftRenderer {
         }
         var cameraPos = camera.getPosition().toVector3f();
 
+        var p = new Matrix4f().translate(0, -54, 0).scale(0.5f);
+
+        var c = ColorScheme.getDefaultEnvironment().getNoteLeftColor();
+
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(p, c, 0, 0));
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(p, WHITE, 0, 0));
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(c);
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
@@ -97,7 +112,7 @@ public class BeatcraftRenderer {
     }
 
     public static void renderBloom() {
-
+        BeatcraftRenderer.bloomfog.renderBloom();
     }
 
 

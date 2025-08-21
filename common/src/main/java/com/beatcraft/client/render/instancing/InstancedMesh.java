@@ -5,6 +5,9 @@ import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -312,12 +315,15 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
         GlUtil.useProgram(shaderProgram);
 
-        RenderSystem.setShaderTexture(0, texture);
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+        AbstractTexture abstractTexture = textureManager.getTexture(texture);
 
+        RenderSystem.setShaderTexture(0, texture);
         RenderSystem.bindTexture(0);
+        GlUtil.setTex(shaderProgram, "u_texture", 0, abstractTexture.getId());
 
         var projMat = RenderSystem.getProjectionMatrix();
-        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z).rotate(cameraRotation);
+        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         GlUtil.uniformMat4f("u_projection", projMat);
         GlUtil.uniformMat4f("u_view", viewMat);
 
