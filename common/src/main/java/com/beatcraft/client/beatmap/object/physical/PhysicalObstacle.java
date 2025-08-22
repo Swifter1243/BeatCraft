@@ -13,6 +13,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Camera;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -44,7 +45,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     @Override
-    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
+    protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha) {
         var localPos = matrices.last().pose().getTranslation(MemoryPool.newVector3f());
         var rotation = matrices.last().pose().getUnnormalizedRotation(MemoryPool.newQuaternionf());
         var scale = matrices.last().pose().getScale(MemoryPool.newVector3f());

@@ -13,6 +13,7 @@ import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -116,7 +117,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
     }
 
     @Override
-    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
+    protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha) {
 
         updateCurve();
 

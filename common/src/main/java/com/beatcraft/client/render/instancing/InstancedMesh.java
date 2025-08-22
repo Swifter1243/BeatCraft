@@ -1,6 +1,5 @@
 package com.beatcraft.client.render.instancing;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.gl.GlUtil;
@@ -295,7 +294,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         RenderSystem.depthMask(false);
         RenderSystem.enableCull();
 
-        deactivateShaderAndTexture();
+        GL20.glUseProgram(0);
 
         for (var loc : attrLocations) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
@@ -331,10 +330,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             GlUtil.setTex(arrowBloomProgram, "u_depth", 1, depthBuffer);
         }
 
-    }
-
-    private void deactivateShaderAndTexture() {
-        GL20.glUseProgram(0);
     }
 
     public void cleanup() {

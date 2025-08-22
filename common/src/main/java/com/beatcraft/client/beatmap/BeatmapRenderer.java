@@ -109,7 +109,7 @@ public class BeatmapRenderer {
             difficulty.render(matrices, camera, alpha);
         }
 
-        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition) {
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(matrices.last().pose()));
         }
 

@@ -618,7 +618,7 @@ public class SaberItemRenderer {
         if (!found) {
             active = builtin;
         }
-        BeatcraftClient.playerConfig.preferences.selectedSaber = active.id;
+        BeatcraftClient.playerConfig.preferences.selectedSaber(active.id);
     }
 
     public static void init() {
@@ -629,7 +629,7 @@ public class SaberItemRenderer {
         builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"));
         models.add(builtin);
 
-        selectModel(BeatcraftClient.playerConfig.preferences.selectedSaber);
+        selectModel(BeatcraftClient.playerConfig.preferences.selectedSaber());
 
         initialized = true;
     }

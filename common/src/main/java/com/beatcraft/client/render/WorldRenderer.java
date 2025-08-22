@@ -14,14 +14,14 @@ public abstract class WorldRenderer {
     public void render(PoseStack matrices, Camera camera, float alpha) {
         if (!shouldRender()) return;
 
-        matrices.pushPose();
-        Vec3 cameraPos = camera.getPosition();
-        matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        worldRender(matrices, alpha);
-        matrices.popPose();
+        //matrices.pushPose();
+        //Vec3 cameraPos = camera.getPosition();
+        //matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        worldRender(matrices, camera, alpha);
+        //matrices.popPose();
     }
 
     // I'll probably add more parameters to this as I need them
-    protected abstract void worldRender(PoseStack matrices, float alpha);
+    protected abstract void worldRender(PoseStack matrices, Camera camera, float alpha);
     protected abstract boolean shouldRender();
 }

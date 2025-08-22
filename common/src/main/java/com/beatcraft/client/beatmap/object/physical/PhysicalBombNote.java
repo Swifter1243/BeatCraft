@@ -9,6 +9,7 @@ import com.beatcraft.client.render.instancing.BombNoteInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import org.joml.Math;
 import org.joml.Matrix4f;
@@ -31,20 +32,22 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
     }
 
     @Override
-    protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha) {
+    protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha) {
         var localPos = matrices.last();
 
         var renderPos = localPos.pose().getTranslation(MemoryPool.newVector3f());
         var renderRotation = localPos.pose().getUnnormalizedRotation(MemoryPool.newQuaternionf());
-        var c = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        var renderScale = localPos.pose().getScale(MemoryPool.newVector3f());
+        var c = camera.getPosition().toVector3f();
 
         var flipped = new Matrix4f().scale(1, -1, 1);
         flipped.translate(0, c.y * 2f, 0);
         flipped.translate(renderPos);
         flipped.rotate(renderRotation);
-        flipped.scale(0.5f);
+        flipped.scale(renderScale);
 
-        renderPos.add(c);
+        MemoryPool.release(renderPos, renderScale);
+        MemoryPool.release(renderRotation);
 
         var dissolve = Math.max(mapController.globalDissolve, getBaseDissolve());
         MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));

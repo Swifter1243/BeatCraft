@@ -20,6 +20,7 @@ import com.beatcraft.client.render.particle.Debris;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Camera;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
@@ -375,24 +376,19 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     @Override
-    protected void worldRender(PoseStack matrices, float alpha) {
+    protected void worldRender(PoseStack matrices, Camera camera, float alpha) {
         applyMatrixToRender(matrix, matrices);
-
-        matrices.last().pose().getTranslation(worldPos)
-            .add(mc.gameRenderer.getMainCamera().getPosition().toVector3f());
-        matrices.last().pose().getUnnormalizedRotation(worldRot);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         var v = getModelOffset();
         matrices.translate(v.x, v.y, v.z);
 
-
         mapController.checkNote(this);
 
-        objectRender(matrices, animationState, alpha);
+        objectRender(matrices, camera, animationState, alpha);
     }
 
-    abstract protected void objectRender(PoseStack matrices, AnimationState animationState, float alpha);
+    abstract protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha);
 
     public T getData() {
         return data;
@@ -458,7 +454,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
 
-        if (BeatcraftClient.playerConfig.preferences.reducedDebris) return;
+        if (BeatcraftClient.playerConfig.preferences.reducedDebris()) return;
 
         var m = getMesh();
         if (m == null) return;

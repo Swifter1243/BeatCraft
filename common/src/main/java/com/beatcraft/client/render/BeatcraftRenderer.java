@@ -95,7 +95,7 @@ public class BeatcraftRenderer {
 
     public static void renderDebug(Vector3f cameraPos) {
 
-        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition) {
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.render(cameraPos);
         } else {
             MeshLoader.MATRIX_LOCATOR_MESH.cancelDraws();
