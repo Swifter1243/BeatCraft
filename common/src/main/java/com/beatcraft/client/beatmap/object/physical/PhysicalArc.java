@@ -129,9 +129,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         render(basePath, localPos, data.getColor().toARGB());
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
-            var offset = MemoryPool.newVector3f(localPos).add(camPos);
-            DebugRenderer.renderPath(basePath, offset, segments, data.getColor().copy().withAlpha(alpha).toARGB());
-            MemoryPool.release(offset);
+            DebugRenderer.renderPath(basePath, segments, data.getColor().copy().withAlpha(alpha).toARGB());
         }
         MemoryPool.release(localPos, camPos);
     }

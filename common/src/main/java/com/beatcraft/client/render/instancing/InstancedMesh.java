@@ -1,5 +1,6 @@
 package com.beatcraft.client.render.instancing;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.gl.GlUtil;

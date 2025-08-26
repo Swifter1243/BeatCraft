@@ -1,6 +1,8 @@
 package com.beatcraft.client.audio;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
@@ -228,6 +230,7 @@ public class Audio {
         });
     }
 
+
     private void streamLoopSinglePass() {
         streamLoopSinglePass(false, null);
     }
@@ -241,11 +244,13 @@ public class Audio {
             int filled = 0;
             byte[] tmp = new byte[STREAM_BUFFER_SIZE];
 
+            // Initial fill
             for (int i = 0; i < buffer.length; i++) {
                 ByteBuffer pcm = s.read(STREAM_BUFFER_SIZE);
                 if (!pcm.hasRemaining()) break;
 
                 int len = pcm.remaining();
+                if (len > tmp.length) tmp = new byte[len];
                 pcm.get(tmp, 0, len);
                 if (cachePCM && cache != null) cache.write(tmp, 0, len);
 
@@ -261,11 +266,15 @@ public class Audio {
                 return;
             }
 
-            AL10.alSourceQueueBuffers(source, buffer);
+            // Queue only what we actually filled
+            for (int i = 0; i < filled; i++) {
+                AL10.alSourceQueueBuffers(source, buffer[i]);
+            }
             if (playing && !paused) {
                 AL10.alSourcePlay(source);
             }
 
+            // Refill loop
             byte[] tmpRefill = new byte[STREAM_BUFFER_SIZE];
             while (streaming && !closed) {
                 int processed = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED);
@@ -277,6 +286,7 @@ public class Audio {
                         break;
                     }
                     int len = pcm.remaining();
+                    if (len > tmpRefill.length) tmpRefill = new byte[len];
                     pcm.get(tmpRefill, 0, len);
                     if (cachePCM && cache != null) cache.write(tmpRefill, 0, len);
 
@@ -285,7 +295,6 @@ public class Audio {
                     AL10.alBufferData(bufId, formatId, albuf, sampleRate);
                     AL10.alSourceQueueBuffers(source, bufId);
                 }
-
             }
 
             if (mode == Mode.STREAM) phase = 1;
@@ -307,6 +316,7 @@ public class Audio {
                 read = s.read(STREAM_BUFFER_SIZE);
                 if (!read.hasRemaining()) break;
                 int len = read.remaining();
+                if (len > tmp.length) tmp = new byte[len];
                 read.get(tmp, 0, len);
                 out.write(tmp, 0, len);
             }
@@ -382,21 +392,22 @@ public class Audio {
 
                 long skipped = 0;
                 int safety = 0;
-                ByteBuffer tmp;
+                ByteBuffer tmpBB;
                 while (skipped < bytesToSkip) {
-                    tmp = s.read(STREAM_BUFFER_SIZE);
-                    if (!tmp.hasRemaining()) break;
-                    skipped += tmp.remaining();
+                    tmpBB = s.read(STREAM_BUFFER_SIZE);
+                    if (!tmpBB.hasRemaining()) break;
+                    skipped += tmpBB.remaining();
                     if (++safety > 1_000_000) break;
                 }
 
                 byte[] tmpArr = new byte[STREAM_BUFFER_SIZE];
                 int filled = 0;
                 for (int i = 0; i < buffer.length; i++) {
-                    tmp = s.read(STREAM_BUFFER_SIZE);
-                    if (!tmp.hasRemaining()) break;
-                    int len = tmp.remaining();
-                    tmp.get(tmpArr, 0, len);
+                    tmpBB = s.read(STREAM_BUFFER_SIZE);
+                    if (!tmpBB.hasRemaining()) break;
+                    int len = tmpBB.remaining();
+                    if (len > tmpArr.length) tmpArr = new byte[len];
+                    tmpBB.get(tmpArr, 0, len);
                     ByteBuffer alBuf = BufferUtils.createByteBuffer(len).put(tmpArr, 0, len);
                     alBuf.flip();
                     if (buffer[i] == 0) buffer[i] = AL10.alGenBuffers();
@@ -405,7 +416,9 @@ public class Audio {
                 }
 
                 if (filled > 0) {
-                    AL10.alSourceQueueBuffers(source, buffer);
+                    for (int i = 0; i < filled; i++) {
+                        AL10.alSourceQueueBuffers(source, buffer[i]);
+                    }
                     if (playing && !paused) AL10.alSourcePlay(source);
                 } else {
                     AL10.alSourceStop(source);
@@ -418,6 +431,43 @@ public class Audio {
                 Beatcraft.LOGGER.error("Seek error on {}: {}", filePath, ex.getMessage());
             }
         });
+    }
+
+    private boolean wasInWall = false;
+    private double lastSeekPos = -1;
+
+    public void update(float beat, double dt, BeatmapPlayer controller) {
+        if (!isLoaded()) {
+            return;
+        }
+        if (Minecraft.getInstance().isPaused() || !controller.isPlaying()) {
+            pause();
+        } else {
+            // Only seek if controller time jumped (big drift or manual scrub)
+            if (Math.abs(controller.currentSeconds - lastSeekPos) > 0.05) { // ~50ms tolerance
+                seek(controller.currentSeconds);
+                lastSeekPos = controller.currentSeconds;
+            }
+
+            if (!isPlaying()) {
+                play();
+            }
+
+            if (controller.isInWall && !wasInWall) {
+                applyFx();
+            } else if (wasInWall && !controller.isInWall) {
+                clearFx();
+            }
+            wasInWall = controller.isInWall;
+        }
+    }
+
+    private void applyFx() {
+
+    }
+
+    private void clearFx() {
+
     }
 
     public synchronized void close() {

@@ -55,8 +55,8 @@ public class DebugRenderer {
         renderCalls.add(() -> _renderHitbox(hitbox, position, orientation, color, doDepthTest, lineWidth));
     }
 
-    public static void renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
-        renderCalls.add(() -> _renderPath(path, offset, segments, color));
+    public static void renderPath(ISplinePath path, int segments, int color) {
+        renderCalls.add(() -> _renderPath(path, segments, color));
     }
 
     public static void _renderLine(Vector3f origin, Vector3f endPoint, int colorA, int colorB) {
@@ -92,7 +92,7 @@ public class DebugRenderer {
 
     }
 
-    public static void _renderPath(ISplinePath path, Vector3f offset, int segments, int color) {
+    public static void _renderPath(ISplinePath path, int segments, int color) {
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
@@ -103,8 +103,8 @@ public class DebugRenderer {
         for (int i = 0; i < segments; i++) {
             float f = ((float) i) / ((float) segments);
             float f2 = ((float) (i + 1)) / ((float) segments);
-            Vector3f p = path.evaluate(f).add(offset).sub(cam);
-            Vector3f p2 = path.evaluate(f2).add(offset).sub(cam);
+            Vector3f p = path.evaluate(f).sub(cam);
+            Vector3f p2 = path.evaluate(f2).sub(cam);
 
             //renderParticle(p.add(cam, new Vector3f()), ParticleTypes.BUBBLE);
 
@@ -119,8 +119,8 @@ public class DebugRenderer {
 
         if (controlPoints.size() >= 2) {
             for (int i = 0; i < controlPoints.size()-1; i++) {
-                Vector3f p = controlPoints.get(i).add(offset, new Vector3f()).sub(cam);
-                Vector3f p2 = controlPoints.get(i+1).add(offset, new Vector3f()).sub(cam);
+                Vector3f p = controlPoints.get(i).sub(cam);
+                Vector3f p2 = controlPoints.get(i+1).sub(cam);
 
                 Vector3f normal = p2.sub(p, new Vector3f()).normalize();
 

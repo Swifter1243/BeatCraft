@@ -59,6 +59,7 @@
   "command.beatcraft.error.song_not_found": "Song not found",
   "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
   "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set",
+  "command.beatcraft.error.map_controller_not_found": "Beatmap Controller with that UUID does not exist",
 
   "command.beatcraft.feedback.environment_placed": "Placed environment '%s'",
   "command.beatcraft.feedback.invalid_environment": "'%s' is not a valid environment",

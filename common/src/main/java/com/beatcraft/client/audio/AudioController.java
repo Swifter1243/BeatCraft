@@ -10,13 +10,13 @@ public class AudioController {
 
     private static final HashMap<Integer, Audio> channels = new HashMap<>();
 
-    public Audio playAudio(String path, Audio.Mode mode) {
+    public static Audio playAudio(String path, Audio.Mode mode) {
         var audio = Audio.loadFromFile(path, mode);
         audio.play();
         return audio;
     }
 
-    public void playAudioForChannel(int channel, String path, Audio.Mode mode) {
+    public static Audio playAudioForChannel(int channel, String path, Audio.Mode mode) {
         if (channels.containsKey(channel)) {
             var old = channels.remove(channel);
             old.close();
@@ -29,19 +29,18 @@ public class AudioController {
             audio.play();
         }
 
+        return audio;
     }
 
-    public void playMapPreview(String path, float startTime) {
-        playAudioForChannel(0, path, Audio.Mode.STREAM);
-        if (channels.containsKey(0)) {
-            var audio = channels.get(0);
-            audio.seek(startTime);
-            audio.play();
-        }
+    public static Audio playMapPreview(String path, float startTime) {
+        var audio = playAudioForChannel(0, path, Audio.Mode.STREAM);
+        audio.seek(startTime);
+        audio.play();
+        return audio;
     }
 
-    public void playMapSong(String path) {
-        playAudioForChannel(0, path, Audio.Mode.INSTANT);
+    public static Audio playMapSong(String path) {
+        return playAudioForChannel(0, path, Audio.Mode.INSTANT);
     }
 
 }

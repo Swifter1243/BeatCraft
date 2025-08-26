@@ -7,11 +7,14 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
+
+import java.util.UUID;
 
 public record NeoforgeCommandCallback(CommandContext<CommandSourceStack> ctx) implements CommandCallback {
     @Override
@@ -45,7 +48,12 @@ public record NeoforgeCommandCallback(CommandContext<CommandSourceStack> ctx) im
     }
 
     @Override
+    public UUID getUuidArg(String name) {
+        return UuidArgument.getUuid(ctx, name);
+    }
+
+    @Override
     public Level getLevel() {
-        return ctx.getSource().getLevel();
+        return ctx.getSource().getUnsidedLevel();
     }
 }

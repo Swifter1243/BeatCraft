@@ -1,6 +1,6 @@
 package com.beatcraft.common.beatmap;
 
-public class BeatmapInfo {
+public class MapInfo {
 
     public enum MapLocation {
         LOCAL,  // the map folder is stored locally in the profile's beatmaps folder

@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+
+import java.util.UUID;
 
 public record FabricCommandCallback(CommandContext<FabricClientCommandSource> ctx) implements CommandCallback {
 
@@ -47,6 +50,11 @@ public record FabricCommandCallback(CommandContext<FabricClientCommandSource> ct
         var c = new CommandSourceStack(null, p, ctx.getSource().getRotation(), null, 0, null, null, null, ctx.getSource().getEntity());
 
         return (ctx.getArgument(name, Coordinates.class)).getPosition(c).toVector3f();
+    }
+
+    @Override
+    public UUID getUuidArg(String name) {
+        return ctx.getArgument(name, UUID.class);
     }
 
     @Override

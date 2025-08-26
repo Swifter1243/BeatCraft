@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.data;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 
 public abstract class Difficulty {
 
-    private final BeatmapPlayer mapController;
+    public final BeatmapPlayer mapController;
 
     private final Info info;
     private final Info.SetDifficulty setDifficulty;
@@ -176,6 +177,7 @@ public abstract class Difficulty {
     }
 
     public void render(PoseStack matrices, Camera camera, float alpha) {
+        matrices.pushPose();
         //if (HUDRenderer.scene == HUDRenderer.MenuScene.Paused) return;
         if (lightShowEnvironment != null) {
             lightShowEnvironment.render(matrices, camera, alpha);
@@ -187,6 +189,7 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.render(matrices, camera, alpha));
         if (!mapController.isModifierActive("No Walls")) obstacles.forEach(o -> o.render(matrices, camera, alpha));
         arcs.forEach(o -> o.render(matrices, camera, alpha));
+        matrices.popPose();
     }
 
     public void seek(float beat) {

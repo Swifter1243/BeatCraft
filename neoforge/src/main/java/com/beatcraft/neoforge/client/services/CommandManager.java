@@ -7,22 +7,25 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.neoforged.neoforge.client.ClientCommandHandler;
 
 public class CommandManager implements ICommandManager {
 
+    public static CommandDispatcher<CommandSourceStack> dispatcher;
+
     @Override
     public void register(CommandTree... commands) {
-
-        CommandDispatcher<CommandSourceStack> dispatcher = ClientCommandHandler.getDispatcher();
 
         for (var cmd : commands) {
             dispatcher.register((LiteralArgumentBuilder<CommandSourceStack>) parse(cmd));
@@ -37,6 +40,14 @@ public class CommandManager implements ICommandManager {
             builder = LiteralArgumentBuilder.literal(cmd.name);
         } else {
             builder = RequiredArgumentBuilder.argument(cmd.name, getArg(cmd.type));
+
+            if (cmd.suggestionProvider != null) {
+                ((RequiredArgumentBuilder<CommandSourceStack, ?>) builder).suggests((ctx, suggestionsBuilder) -> {
+                    var callback = new NeoforgeCommandCallback(ctx);
+                    return cmd.suggestionProvider.apply(callback, suggestionsBuilder);
+                });
+            }
+
         }
 
         if (cmd.callback != null) {
@@ -45,10 +56,12 @@ public class CommandManager implements ICommandManager {
 
                 var fb = cmd.callback.apply(cb);
 
-                if (fb.state == 0) {
-                    ctx.getSource().sendSystemMessage(fb.msg);
-                } else {
-                    ctx.getSource().sendFailure(fb.msg);
+                if (fb.msg != null) {
+                    if (fb.state == 0) {
+                        ctx.getSource().sendSystemMessage(fb.msg);
+                    } else {
+                        ctx.getSource().sendFailure(fb.msg);
+                    }
                 }
 
                 return fb.state;
@@ -73,6 +86,8 @@ public class CommandManager implements ICommandManager {
             case Vec3f -> Vec3Argument.vec3(false);
             case Vec2i -> Vec2Argument.vec2(false);
             case Vec2f -> Vec2Argument.vec2(false);
+            case Uuid -> UuidArgument.uuid();
+            case String -> StringArgumentType.string();
         };
     }
 

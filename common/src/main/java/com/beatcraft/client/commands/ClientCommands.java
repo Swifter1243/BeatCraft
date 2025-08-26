@@ -1,10 +1,17 @@
 package com.beatcraft.client.commands;
 
+import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.BeatmapRenderer;
 import com.beatcraft.client.services.CommandManager;
+import com.beatcraft.common.data.map.SongData;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.network.chat.Component;
+
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 import static com.beatcraft.client.commands.CommandTree.argument;
 import static com.beatcraft.client.commands.CommandTree.literal;
@@ -52,19 +59,192 @@ public class ClientCommands {
         return CommandResult.ok(Component.literal(String.format("Placed beatmap: %s", map.getDisplayInfo())));
     }
 
+    private static CompletableFuture<Suggestions> beatmapUuidSuggester(CommandCallback callback, SuggestionsBuilder builder) {
+        var current = builder.getRemaining();
+        for (var map : BeatmapManager.beatmaps) {
+            var id = map.mapId.toString();
+            if (id.contains(current)) {
+                builder.suggest(id);
+            }
+        }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> mapSuggester(CommandCallback callback, SuggestionsBuilder builder) {
+
+        var song_name = builder.getRemaining();
+
+        var matches = new ArrayList<SongData>();
+
+        for (var song : BeatmapManager.songs) {
+            if (song.getTitle().contains(song_name)) {
+                matches.add(song);
+            }
+        }
+
+        if (matches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        for (var m : matches) {
+            builder.suggest("\"" + m.getTitle() + "\"");
+        }
+
+        return builder.buildFuture();
+    }
+    private static CompletableFuture<Suggestions> mapSetSuggester(CommandCallback callback, SuggestionsBuilder builder) {
+
+        var song_name = callback.getStringArg("map");
+        var set_name = builder.getRemaining();
+
+        var matches = new ArrayList<SongData>();
+
+        for (var song : BeatmapManager.songs) {
+            if (song.getTitle().contains(song_name)) {
+                matches.add(song);
+            }
+        }
+
+        if (matches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        var song = matches.getFirst();
+
+        var setMatches = new ArrayList<String>();
+
+        for (var set : song.getDifficultySets()) {
+            if (set.contains(set_name)) {
+                setMatches.add(set);
+            }
+        }
+
+        if (setMatches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        for (var s : setMatches) {
+            builder.suggest("\"" + s + "\"");
+        }
+
+        return builder.buildFuture();
+    }
+    private static CompletableFuture<Suggestions> mapDifficultySuggester(CommandCallback callback, SuggestionsBuilder builder) {
+
+
+        var song_name = callback.getStringArg("map");
+        var set_name = callback.getStringArg("set");
+        var diff_name = builder.getRemaining();
+
+        var matches = new ArrayList<SongData>();
+
+        for (var song : BeatmapManager.songs) {
+            if (song.getTitle().contains(song_name)) {
+                matches.add(song);
+            }
+        }
+
+        if (matches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        var song = matches.getFirst();
+
+        var setMatches = new ArrayList<String>();
+
+        for (var set : song.getDifficultySets()) {
+            if (set.contains(set_name)) {
+                setMatches.add(set);
+            }
+        }
+
+        if (setMatches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        var diffs = song.getDifficulties(setMatches.getFirst());
+
+        var diffMatches = new ArrayList<String>();
+
+        for (var diff : diffs) {
+            if (diff.contains(diff_name)) {
+                diffMatches.add(diff);
+            }
+        }
+
+        if (diffMatches.isEmpty()) {
+            return builder.buildFuture();
+        }
+
+        for (var diff : diffMatches) {
+            builder.suggest("\"" + diff + "\"");
+        }
+
+        return builder.buildFuture();
+    }
+
+    private static CommandResult playSongForMap(CommandCallback callback) {
+
+        var uuid = callback.getUuidArg("uuid");
+        var map = callback.getStringArg("map");
+        var set = callback.getStringArg("set");
+        var diff = callback.getStringArg("difficulty");
+
+        callback.sendFeedback(Component.literal(String.format("Trying to play map: %s %s %s", map, set, diff)));
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        var selectedBeatmap = BeatmapManager.songs.stream().filter(m -> m.getTitle().equals(map)).findFirst();
+
+        if (selectedBeatmap.isEmpty()) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.song_not_found"));
+        }
+
+        var song = selectedBeatmap.get();
+
+        if (!song.getDifficultySets().contains(set)) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.difficulty_set_not_found"));
+        }
+
+        if (!song.getDifficulties(set).contains(diff)) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.difficulty_not_found"));
+        }
+
+        var mapInfo = song.getBeatMapInfo(set, diff);
+
+        controller.playSong(mapInfo);
+
+        return CommandResult.ok();
+    }
+
     public static void init() {
         CommandManager.register(
             literal("beatmap").then(
-                literal("list").executes(ClientCommands::listBeatmaps)
+                literal("list")
+                    .executes(ClientCommands::listBeatmaps)
             ).then(
                 literal("place").then(
                     argument("position", CommandTree.ArgumentType.Vec3i).then(
                         argument("rotation", CommandTree.ArgumentType.Float)
                             .executes(ClientCommands::createBeatmap)
-                    ).build()
-                ).build()
-            )
-            .build()
+                    )
+                )
+            ).then(
+                argument("uuid", CommandTree.ArgumentType.Uuid).suggests(ClientCommands::beatmapUuidSuggester).then(
+                    literal("play").then(
+                        argument("map", CommandTree.ArgumentType.String).suggests(ClientCommands::mapSuggester).then(
+                            argument("set", CommandTree.ArgumentType.String).suggests(ClientCommands::mapSetSuggester).then(
+                                argument("difficulty", CommandTree.ArgumentType.String).suggests(ClientCommands::mapDifficultySuggester)
+                                    .executes(ClientCommands::playSongForMap)
+                            )
+                        )
+                    )
+                )
+            ).build()
         );
     }
 

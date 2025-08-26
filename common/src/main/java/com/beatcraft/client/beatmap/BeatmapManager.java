@@ -1,21 +1,77 @@
 package com.beatcraft.client.beatmap;
 
+import com.beatcraft.Beatcraft;
+import com.beatcraft.common.data.map.SongData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class BeatmapManager {
 
     public static final ArrayList<BeatmapPlayer> beatmaps = new ArrayList<>();
+    public static final ArrayList<SongData> songs = new ArrayList<>();
+
+    public static void loadBeatmaps() {
+        var folderPath = Minecraft.getInstance().gameDirectory.toPath() + "/beatmaps/";
+
+        var folder = new File(folderPath);
+
+        if (!folder.exists()) {
+            if (!folder.mkdirs()) {
+                Beatcraft.LOGGER.error("Failed to create beatmaps folder");
+                return;
+            }
+        }
+
+        var subFolders = folder.listFiles(File::isDirectory);
+
+        if (subFolders == null) {
+            Beatcraft.LOGGER.error("Failed to load beatmaps");
+            return;
+        }
+
+        songs.clear();
+
+        for (var songFolder : subFolders) {
+            try {
+                var data = new SongData(songFolder.getAbsolutePath());
+                songs.add(data);
+
+                // TODO: convert images to PNG
+
+            } catch (IOException e) {
+                Beatcraft.LOGGER.error("Failed to load beatmap", e);
+            }
+        }
+
+    }
+
 
     private static final float[] DEFAULT_FOG_HEIGHTS = new float[]{-50, -30};
     public static float[] getAverageFogHeight() {
 
-        // TODO: interpolate fog heights of all beatmaps based on distance? (or just use nearest)
+        var nearest = nearestBeatmapToPlayer();
+        if (nearest != null) {
+            return nearest.difficulty.lightShowEnvironment.getFogHeights();
+        }
 
         return DEFAULT_FOG_HEIGHTS;
+    }
+
+    public static BeatmapPlayer getByUuid(UUID uuid) {
+
+        for (var map : beatmaps) {
+            if (map.mapId.equals(uuid)) {
+                return map;
+            }
+        }
+
+        return null;
     }
 
     public static BeatmapPlayer place(Level level, Vector3f pos, float angle, BeatmapRenderer.RenderStyle style) {
@@ -25,7 +81,6 @@ public class BeatmapManager {
     }
 
     public static BeatmapPlayer nearestBeatmapToPlayer() {
-        // TODO
         var playerCamera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         var nearestDist = Float.POSITIVE_INFINITY;

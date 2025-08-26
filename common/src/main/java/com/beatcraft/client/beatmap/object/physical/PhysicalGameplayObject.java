@@ -377,6 +377,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
     @Override
     protected void worldRender(PoseStack matrices, Camera camera, float alpha) {
+        matrices.pushPose();
         applyMatrixToRender(matrix, matrices);
 
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
@@ -386,6 +387,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         mapController.checkNote(this);
 
         objectRender(matrices, camera, animationState, alpha);
+        matrices.popPose();
     }
 
     abstract protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha);
