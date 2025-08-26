@@ -19,6 +19,15 @@ public class AudioInfo {
         this.frequency = frequency;
     }
 
+    public static AudioInfo loadDefault(float bpm, String audioFileName) {
+        var info = new AudioInfo(-1, -1);
+
+        var inf = new BpmRegion(info, bpm);
+        info.regions.add(inf);
+
+        return info;
+    }
+
     public static AudioInfo loadV2(JsonObject json) {
         int sampleCount = json.get("_songSampleCount").getAsInt();
         int frequency = json.get("_songFrequency").getAsInt();
@@ -54,6 +63,9 @@ public class AudioInfo {
     }
 
     public float getBpm(float beat) {
+        if (this.frequency == -1) {
+            return regions.getFirst().bpm;
+        }
         for (var region : regions) {
             if (region.containsBeat(beat)) {
                 return region.bpm;
@@ -63,6 +75,10 @@ public class AudioInfo {
     }
 
     public float getBeat(float time) {
+        if (frequency == -1) {
+            return time * regions.getFirst().bpm;
+        }
+
         float beat = 0;
         for (BpmRegion region : regions) {
             float b = region.getBeat(time);
@@ -73,6 +89,9 @@ public class AudioInfo {
     }
 
     public float getTime(float beat) {
+        if (frequency == -1) {
+            return beat / regions.getFirst().bpm;
+        }
         float t = 0;
         for (BpmRegion region : regions) {
             t += region.getTime(beat);

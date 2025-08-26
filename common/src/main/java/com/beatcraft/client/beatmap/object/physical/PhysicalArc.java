@@ -124,14 +124,14 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         var localPos = matrices.last().pose().getTranslation(MemoryPool.newVector3f());
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getMainCamera().getPosition());
 
-        localPos.add(0.2f, 0.3f, 0.25f);
+        localPos.add(0.2f, 0.3f, 0.25f).sub(camPos);
+        MemoryPool.release(localPos, camPos);
 
         render(basePath, localPos, data.getColor().toARGB());
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
             DebugRenderer.renderPath(basePath, segments, data.getColor().copy().withAlpha(alpha).toARGB());
         }
-        MemoryPool.release(localPos, camPos);
     }
 
     @Override

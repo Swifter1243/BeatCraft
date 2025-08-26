@@ -434,7 +434,7 @@ public class Audio {
     }
 
     private boolean wasInWall = false;
-    private double lastSeekPos = -1;
+    private double lastSeconds = 0;
 
     public void update(float beat, double dt, BeatmapPlayer controller) {
         if (!isLoaded()) {
@@ -444,10 +444,11 @@ public class Audio {
             pause();
         } else {
             // Only seek if controller time jumped (big drift or manual scrub)
-            if (Math.abs(controller.currentSeconds - lastSeekPos) > 0.05) { // ~50ms tolerance
+            if (Math.abs(controller.currentSeconds - lastSeconds) > 0.2) {
+                Beatcraft.LOGGER.info("re-seeking");
                 seek(controller.currentSeconds);
-                lastSeekPos = controller.currentSeconds;
             }
+            lastSeconds = controller.currentSeconds;
 
             if (!isPlaying()) {
                 play();

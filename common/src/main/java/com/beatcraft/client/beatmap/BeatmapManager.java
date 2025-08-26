@@ -55,7 +55,7 @@ public class BeatmapManager {
     private static final float[] DEFAULT_FOG_HEIGHTS = new float[]{-50, -30};
     public static float[] getAverageFogHeight() {
 
-        var nearest = nearestBeatmapToPlayer();
+        var nearest = nearestActiveBeatmapToPlayer();
         if (nearest != null) {
             return nearest.difficulty.lightShowEnvironment.getFogHeights();
         }
@@ -80,13 +80,16 @@ public class BeatmapManager {
         return map;
     }
 
-    public static BeatmapPlayer nearestBeatmapToPlayer() {
+    public static BeatmapPlayer nearestActiveBeatmapToPlayer() {
         var playerCamera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         var nearestDist = Float.POSITIVE_INFINITY;
         BeatmapPlayer nearest = null;
 
         for (var map : beatmaps) {
+            if (map.difficulty == null || map.difficulty.lightShowEnvironment == null) {
+                continue;
+            }
             var dist = map.getRenderOrigin().distance(playerCamera);
             if (dist < nearestDist) {
                 nearestDist = dist;

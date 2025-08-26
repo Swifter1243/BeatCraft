@@ -647,9 +647,9 @@ public class SaberItemRenderer {
         if (sync == -1 || BeatmapManager.hasNearbyBeatmapToPlayer()) {
             color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT.get(), 0) + 0xFF000000;
         } else if (sync == 0) {
-            color = BeatmapManager.nearestBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
+            color = BeatmapManager.nearestActiveBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
         } else {
-            color = BeatmapManager.nearestBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
+            color = BeatmapManager.nearestActiveBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
 
         active.render(matrices.last().pose(), color, cameraPos, mode == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || mode == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || mode == ItemDisplayContext.GUI);

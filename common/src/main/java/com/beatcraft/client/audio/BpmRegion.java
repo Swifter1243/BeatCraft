@@ -11,7 +11,16 @@ public class BpmRegion {
     public final float bpm;
     private final AudioInfo info;
 
-    private BpmRegion(AudioInfo parent, int startIndex, int endIndex, float startBeat, float endBeat) {
+    public BpmRegion(AudioInfo parent, float bpm) {
+        startIndex = -1;
+        endIndex = -1;
+        startBeat = -1;
+        endBeat = -1;
+        this.bpm = bpm;
+        this.info = parent;
+    }
+
+    BpmRegion(AudioInfo parent, int startIndex, int endIndex, float startBeat, float endBeat) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.startBeat = startBeat;

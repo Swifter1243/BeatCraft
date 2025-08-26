@@ -103,6 +103,8 @@ public class Info {
                 String audioDataRaw = Files.readString(audioInfoPath);
                 JsonObject audioJson = JsonParser.parseString(audioDataRaw).getAsJsonObject();
                 info.audioInfo = AudioInfo.loadV2(audioJson);
+            } else {
+                info.audioInfo = AudioInfo.loadDefault(info.bpm, info.songFilename);
             }
         }
         return info;
