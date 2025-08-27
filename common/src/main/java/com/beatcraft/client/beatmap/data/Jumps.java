@@ -5,9 +5,22 @@ public record Jumps(float njs, float halfDuration, float jumpDistance) {
 
         // v * t = d
 
-        var jumpDistance = 16;
+        var hjd = 4f;
+        var num = 60 / bpm;
 
-        return new Jumps(njs, (njs/jumpDistance), jumpDistance + offset); // this needs to be calculated properly at some point...
+        while (njs * num * hjd > 17.999f) {
+            hjd /= 2;
+        }
+
+        hjd += offset;
+
+        if (hjd < 0.25f) {
+            hjd = 0.25f;
+        }
+        var jd = hjd * num * njs * 2;
+
+
+        return new Jumps(njs, hjd, jd); // this needs to be calculated properly at some point...
 
     }
 }

@@ -2,6 +2,7 @@ package com.beatcraft.client.audio;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.lwjgl.openal.AL10;
 
 import java.util.ArrayList;
 
@@ -20,7 +21,17 @@ public class AudioInfo {
     }
 
     public static AudioInfo loadDefault(float bpm, String audioFileName) {
-        var info = new AudioInfo(-1, -1);
+
+        var audio = Audio.loadFromFile(audioFileName, Audio.Mode.FULL);
+
+        int size = AL10.alGetBufferi(audio.buffer[0], AL10.AL_SIZE);
+        int frequency = AL10.alGetBufferi(audio.buffer[0], AL10.AL_FREQUENCY);
+        int channels = AL10.alGetBufferi(audio.buffer[0], AL10.AL_CHANNELS);
+        int bits = AL10.alGetBufferi(audio.buffer[0], AL10.AL_BITS);
+
+        int sampleCount = size / (channels * (bits / 8));
+
+        var info = new AudioInfo(sampleCount, frequency);
 
         var inf = new BpmRegion(info, bpm);
         info.regions.add(inf);
@@ -63,9 +74,6 @@ public class AudioInfo {
     }
 
     public float getBpm(float beat) {
-        if (this.frequency == -1) {
-            return regions.getFirst().bpm;
-        }
         for (var region : regions) {
             if (region.containsBeat(beat)) {
                 return region.bpm;
@@ -75,10 +83,6 @@ public class AudioInfo {
     }
 
     public float getBeat(float time) {
-        if (frequency == -1) {
-            return time * regions.getFirst().bpm;
-        }
-
         float beat = 0;
         for (BpmRegion region : regions) {
             float b = region.getBeat(time);
@@ -89,9 +93,6 @@ public class AudioInfo {
     }
 
     public float getTime(float beat) {
-        if (frequency == -1) {
-            return beat / regions.getFirst().bpm;
-        }
         float t = 0;
         for (BpmRegion region : regions) {
             t += region.getTime(beat);

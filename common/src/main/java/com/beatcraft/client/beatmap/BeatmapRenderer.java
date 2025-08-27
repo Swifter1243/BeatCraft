@@ -3,14 +3,24 @@ package com.beatcraft.client.beatmap;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.BeatcraftRenderer;
+import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.effect.MirrorHandler;
+import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
+import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.utils.MathUtil;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.beatcraft.mixin_utils.BufferBuilderAccessor;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -80,12 +90,191 @@ public class BeatmapRenderer {
 
     }
 
+    private void renderLightDepth(Tesselator tesselator, Vector3f cameraPos) {
 
-    public void renderObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
+        BeatcraftRenderer.bloomfog.overrideBuffer = true;
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = Bloomfog.lightDepth;
+
+        Bloomfog.lightDepth.bindWrite(true);
+        Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
+        Bloomfog.lightDepth.clear(Minecraft.ON_OSX);
+
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        var buff = buffer.build();
+        if (buff != null) {
+            BufferUploader.drawWithShader(buff);
+        }
+
+        Bloomfog.lightDepth.unbindWrite();
+
+        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
+        BeatcraftRenderer.bloomfog.overrideBuffer = false;
+
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 
     }
 
-    public void renderMirroredObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
+    private void renderEnvironmentLights(Tesselator tesselator, Vector3f cameraPos) {
+        // environment lights
+
+        Matrix4f worldTransform = new Matrix4f();
+        worldTransform.translate(cameraPos);
+        worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
+
+        renderLightDepth(tesselator, cameraPos);
+
+        //renderBackgroundLights(tesselator, cameraPos, worldTransform);
+        //
+        //lightRenderCalls.clear();
+        //if (true) return;
+
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+        //RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+
+        for (var call : lightRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        lightRenderCalls.clear();
+
+        var buff = buffer.build();
+        if (buff != null) {
+            Bloomfog.backlightsPositionColorShader.setSampler("Sampler0", Bloomfog.lightDepth.getDepthTextureId());
+            RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthTextureId());
+            Bloomfog.backlightsPositionColorShader.safeGetUniform("WorldTransform").set(worldTransform);
+            Bloomfog.backlightsPositionColorShader.safeGetUniform("u_fog").set(Bloomfog.getFogHeights());
+            BufferUploader.drawWithShader(buff);
+        }
+
+        LightMesh.renderAllSolid();
+
+        RenderSystem.defaultBlendFunc();
+    }
+
+
+    private void renderFloorLightsPhase1(Tesselator tesselator, Vector3f cameraPos) {
+        // floor tiles and walls
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
+        for (var call : laserPreRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+        laserPreRenderCalls.clear();
+
+        var buff = buffer.build();
+        if (buff == null) return;
+
+
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorting.DISTANCE_TO_ORIGIN);
+
+        BufferUploader.drawWithShader(buff);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+    }
+
+    private void renderFloorLights(Tesselator tesselator, Vector3f cameraPos) {
+        // floor tiles and walls
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+
+        for (var call : laserRenderCalls) {
+            call.accept(buffer, cameraPos);
+        }
+
+        laserRenderCalls.clear();
+
+        var buff = buffer.build();
+        if (buff == null) return;
+
+
+        buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorting.DISTANCE_TO_ORIGIN);
+
+        BufferUploader.drawWithShader(buff);
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+    }
+
+
+    private void renderObstacles(Tesselator tesselator, Vector3f cameraPos) {
+
+        if (mapController.difficulty == null) {
+            obstacleRenderCalls.clear();
+            return;
+        }
+
+        int color = mapController.difficulty.getSetDifficulty()
+            .getColorScheme().getObstacleColor().toARGB(0.15f);
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+
+        for (var call : obstacleRenderCalls) {
+            call.accept(buffer, cameraPos, color);
+        }
+        obstacleRenderCalls.clear();
+
+        var buff = buffer.build();
+
+        if (buff != null) {
+            ObstacleGlowRenderer.grabScreen();
+
+
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.depthMask(true);
+
+            var scene = ObstacleGlowRenderer.framebuffer;//MinecraftClient.getInstance().getFramebuffer();
+
+            RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
+            RenderSystem.setShaderTexture(0, scene.getColorTextureId());
+            ObstacleGlowRenderer.distortionShader.safeGetUniform("Time").set(System.nanoTime() / 1_000_000_000f);
+
+            buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorting.DISTANCE_TO_ORIGIN);
+
+            BufferUploader.drawWithShader(buff);
+
+            RenderSystem.disableDepthTest();
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+
+        }
 
     }
 
@@ -104,6 +293,18 @@ public class BeatmapRenderer {
                 alpha = BeatcraftClient.wearingHeadset ? 1 : 0;
             }
         }
+
+        var tesselator = Tesselator.getInstance();
+        var cameraPos = camera.getPosition().toVector3f();
+        renderEnvironmentLights(tesselator, cameraPos);
+
+        // render notes
+
+        renderFloorLightsPhase1(tesselator, cameraPos);
+
+        renderObstacles(tesselator, cameraPos);
+
+        renderFloorLights(tesselator, cameraPos);
 
         if (difficulty != null) {
             difficulty.render(matrices, camera, alpha);

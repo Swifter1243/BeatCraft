@@ -199,7 +199,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         float jumpOutBeat = getJumpOutBeat();
 
         // jumps
-        if (time < spawnBeat) {
+        if (time <= spawnBeat) {
             // jump in
             float percent = (spawnBeat - time) / 2;
             return Math.lerp(spawnPosition, JUMP_FAR_Z, percent);

@@ -181,14 +181,6 @@ public class BeatmapPlayer {
         return activeModifiers.contains(modifier);
     }
 
-    public void renderObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
-        renderer.renderObstacle(pos, rot, bounds, color);
-    }
-
-    public void renderMirroredObstacle(Vector3f pos, Quaternionf rot, Hitbox bounds, int color) {
-        renderer.renderMirroredObstacle(pos, rot, bounds, color);
-    }
-
 
     public String getDisplayInfo() {
         return "Info for map " + mapId +
@@ -223,9 +215,9 @@ public class BeatmapPlayer {
             elapsedNanoTime += (long) (deltaNanoSeconds * playbackSpeed);
 
             if (difficulty != null) {
-                difficulty.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d);
                 currentSeconds = elapsedNanoTime / 1_000_000_000f;
                 currentBeat = info.getBeat(currentSeconds);
+                difficulty.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d);
             }
 
         }

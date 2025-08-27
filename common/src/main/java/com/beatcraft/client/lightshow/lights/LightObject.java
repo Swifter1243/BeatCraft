@@ -59,12 +59,13 @@ public abstract class LightObject {
         return mirror ? new Quaternionf(-quat.x, quat.y, -quat.z, quat.w) : quat;
     }
 
-    public Matrix4f createTransformMatrix(boolean mirrorDraw, Quaternionf orientation, Quaternionf rotation,
+    public Matrix4f createTransformMatrix(Matrix4f worldPos, boolean mirrorDraw, Quaternionf orientation, Quaternionf rotation,
                                           CompoundTransformState transformState, Vector3f position,
                                           Quaternionf worldRotation, Vector3f offset, Vector3f cameraPos) {
 
         Matrix4f matrix = new Matrix4f().identity();
         matrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        matrix.mul(worldPos);
 
         Vector3f transformTranslation = new Vector3f();
         transformState.getTranslation(translationSwizzle, translationPolarity, transformTranslation);

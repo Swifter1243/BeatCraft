@@ -35,6 +35,9 @@ public class BpmRegion {
     }
 
     public float getBeat(float time) {
+        if (endBeat == -1) {
+            return time / (60f / bpm);
+        }
         float startTime = (((float) startIndex) / info.frequency);
         if (time < startTime) return 0;
 
@@ -46,6 +49,9 @@ public class BpmRegion {
     }
 
     public float getTime(float beat) {
+        if (endBeat == -1) {
+            return beat * (60f / bpm);
+        }
         if (beat < startBeat) return 0;
 
         float progress = Math.clamp((beat - startBeat) / (endBeat - startBeat), 0, 1);
@@ -56,7 +62,7 @@ public class BpmRegion {
     }
 
     public boolean containsBeat(float currentBeat) {
-        return startBeat <= currentBeat && currentBeat < endBeat;
+        return (endBeat == -1) || startBeat <= currentBeat && currentBeat < endBeat;
     }
 
     public static BpmRegion loadV2(JsonObject json, AudioInfo parent) {

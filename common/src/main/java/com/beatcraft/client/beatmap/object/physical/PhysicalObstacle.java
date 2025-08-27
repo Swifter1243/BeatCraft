@@ -5,6 +5,7 @@ import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.object.data.Obstacle;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -53,15 +54,15 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         updateBounds(scale);
 
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getMainCamera().getPosition());
-        localPos.add(camPos);
+        // localPos.add(camPos);
         MemoryPool.release(camPos);
         mapController.checkObstacle(this, localPos, rotation);
 
         render(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
         renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
 
-        mapController.renderObstacle(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
-        mapController.renderMirroredObstacle(localPos, rotation, bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
+        ObstacleGlowRenderer.render(mapController, MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
+        ObstacleGlowRenderer.renderMirrored(mapController, localPos, rotation, bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
 
     }
 

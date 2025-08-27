@@ -36,7 +36,6 @@ public class Audio {
     private boolean paused = false;   // explicit pause state
     private boolean closed = false;   // if true, all functions should no-op
     private final Mode mode;
-    private int phase = 0;
 
     private volatile boolean streaming = false;
     private CompletableFuture<Void> streamFuture = null;
@@ -146,18 +145,15 @@ public class Audio {
     }
 
     private void startStreamMode() {
-        phase = 0;
         loaded = true;
         streaming = true;
 
         ensureStreamBuffersAllocated();
 
         streamFuture = CompletableFuture.runAsync(this::streamLoopSinglePass);
-        streamFuture.thenRun(() -> { if (!closed) phase = 1; });
     }
 
     private void startFullMode() {
-        phase = 0;
         loaded = false;
         streaming = false;
 
@@ -174,7 +170,6 @@ public class Audio {
                 AL10.alSourcei(source, AL10.AL_BUFFER, fullBuffer);
 
                 loaded = true;
-                phase = 1;
             } catch (IOException ex) {
                 Beatcraft.LOGGER.error("Failed to fully load audio: {}", ex.getMessage());
             }
@@ -182,7 +177,6 @@ public class Audio {
     }
 
     private void startInstantMode() {
-        phase = 0;
         loaded = true;
         streaming = true;
 
@@ -219,7 +213,6 @@ public class Audio {
                 deleteStreamBuffers();
 
                 fullBuffer = fb;
-                phase = 3;
                 loaded = true;
 
                 if (playing && !paused) AL10.alSourcePlay(source);
@@ -297,8 +290,6 @@ public class Audio {
                 }
             }
 
-            if (mode == Mode.STREAM) phase = 1;
-
         } catch (Exception ex) {
             Beatcraft.LOGGER.error("Streaming error for {}: {}", filePath, ex.getMessage());
             streaming = false;
@@ -373,64 +364,64 @@ public class Audio {
             return;
         }
 
-        CompletableFuture.runAsync(() -> {
-            streaming = false;
-            try {
+        if (streaming) {
+            CompletableFuture.runAsync(() -> {
+                streaming = false;
                 AL10.alSourceStop(source);
-            } catch (Exception ignored) {}
 
-            int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
-            while (queued-- > 0) {
-                try { AL10.alSourceUnqueueBuffers(source); } catch (Exception ignored) {}
-            }
-
-            try (InputStream is = Files.newInputStream(filePath);
-                 JOrbisAudioStream s = new JOrbisAudioStream(is)) {
-
-                long bytesPerSecond = (long) sampleRate * channels * (sampleSizeInBits / 8);
-                long bytesToSkip = (long) (seconds * bytesPerSecond);
-
-                long skipped = 0;
-                int safety = 0;
-                ByteBuffer tmpBB;
-                while (skipped < bytesToSkip) {
-                    tmpBB = s.read(STREAM_BUFFER_SIZE);
-                    if (!tmpBB.hasRemaining()) break;
-                    skipped += tmpBB.remaining();
-                    if (++safety > 1_000_000) break;
+                int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
+                while (queued-- > 0) {
+                    AL10.alSourceUnqueueBuffers(source);
                 }
 
-                byte[] tmpArr = new byte[STREAM_BUFFER_SIZE];
-                int filled = 0;
-                for (int i = 0; i < buffer.length; i++) {
-                    tmpBB = s.read(STREAM_BUFFER_SIZE);
-                    if (!tmpBB.hasRemaining()) break;
-                    int len = tmpBB.remaining();
-                    if (len > tmpArr.length) tmpArr = new byte[len];
-                    tmpBB.get(tmpArr, 0, len);
-                    ByteBuffer alBuf = BufferUtils.createByteBuffer(len).put(tmpArr, 0, len);
-                    alBuf.flip();
-                    if (buffer[i] == 0) buffer[i] = AL10.alGenBuffers();
-                    AL10.alBufferData(buffer[i], formatId, alBuf, sampleRate);
-                    filled++;
-                }
+                try (InputStream is = Files.newInputStream(filePath);
+                     JOrbisAudioStream s = new JOrbisAudioStream(is)) {
 
-                if (filled > 0) {
-                    for (int i = 0; i < filled; i++) {
-                        AL10.alSourceQueueBuffers(source, buffer[i]);
+                    long bytesPerSecond = (long) sampleRate * channels * (sampleSizeInBits / 8);
+                    long bytesToSkip = (long) (seconds * bytesPerSecond);
+
+                    long skipped = 0;
+                    int safety = 0;
+                    ByteBuffer tmpBB;
+                    while (skipped < bytesToSkip) {
+                        tmpBB = s.read(STREAM_BUFFER_SIZE);
+                        if (!tmpBB.hasRemaining()) break;
+                        skipped += tmpBB.remaining();
+                        if (++safety > 1_000_000) break;
                     }
-                    if (playing && !paused) AL10.alSourcePlay(source);
-                } else {
-                    AL10.alSourceStop(source);
+
+                    byte[] tmpArr = new byte[STREAM_BUFFER_SIZE];
+                    int filled = 0;
+                    for (int i = 0; i < buffer.length; i++) {
+                        tmpBB = s.read(STREAM_BUFFER_SIZE);
+                        if (!tmpBB.hasRemaining()) break;
+                        int len = tmpBB.remaining();
+                        if (len > tmpArr.length) tmpArr = new byte[len];
+                        tmpBB.get(tmpArr, 0, len);
+                        ByteBuffer alBuf = BufferUtils.createByteBuffer(len).put(tmpArr, 0, len);
+                        alBuf.flip();
+                        if (buffer[i] == 0) buffer[i] = AL10.alGenBuffers();
+                        AL10.alBufferData(buffer[i], formatId, alBuf, sampleRate);
+                        filled++;
+                    }
+
+                    if (filled > 0) {
+                        for (int i = 0; i < filled; i++) {
+                            AL10.alSourceQueueBuffers(source, buffer[i]);
+                        }
+                        if (playing && !paused) AL10.alSourcePlay(source);
+                    } else {
+                        AL10.alSourceStop(source);
+                    }
+
+                    streaming = true;
+                    streamFuture = CompletableFuture.runAsync(this::streamLoopSinglePass);
+
+                } catch (IOException ex) {
+                    Beatcraft.LOGGER.error("Seek error on {}: {}", filePath, ex.getMessage());
                 }
-
-                streaming = true;
-                streamFuture = CompletableFuture.runAsync(this::streamLoopSinglePass);
-
-            } catch (IOException ex) {
-                Beatcraft.LOGGER.error("Seek error on {}: {}", filePath, ex.getMessage());
-            }
-        });
+            });
+        }
     }
 
     private boolean wasInWall = false;
@@ -445,7 +436,7 @@ public class Audio {
         } else {
             // Only seek if controller time jumped (big drift or manual scrub)
             if (Math.abs(controller.currentSeconds - lastSeconds) > 0.2) {
-                Beatcraft.LOGGER.info("re-seeking");
+                // Beatcraft.LOGGER.info("re-seeking");
                 seek(controller.currentSeconds);
             }
             lastSeconds = controller.currentSeconds;

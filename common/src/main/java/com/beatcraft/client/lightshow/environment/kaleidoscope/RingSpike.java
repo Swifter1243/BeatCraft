@@ -121,7 +121,7 @@ public class RingSpike extends LightObject {
     @Override
     public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
-        var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+        var mat = createTransformMatrix(matrices.last().pose(), false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
         mesh.transform.set(mat);
 
         mesh.setColor(0, lightState);

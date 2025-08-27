@@ -40,7 +40,7 @@ public class AudioController {
     }
 
     public static Audio playMapSong(String path) {
-        return playAudioForChannel(0, path, Audio.Mode.INSTANT);
+        return playAudio(path, Audio.Mode.INSTANT);
     }
 
 }

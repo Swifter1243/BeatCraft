@@ -14,6 +14,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import oshi.util.tuples.Pair;
@@ -195,19 +196,23 @@ public class FloodLight extends LightObject {
 
         //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
 
+        var mat = matrices.last().pose();
+
         if (bloomfog != null) {
             bloomfog.record(
                 (b, c, r, m) -> _render(
+                    mat,
                     b, c, 1, r,
                     ori, rot, wrot, pos, off, state, m
                 )
             );
             bloomfog.recordBloomCall((b, v, q) -> {
-                _renderBloom(b, v, q, ori3, rot3, wrot3, pos3, off3, state);
+                _renderBloom(mat, b, v, q, ori3, rot3, wrot3, pos3, off3, state);
             });
         }
         mapController.recordLightRenderCall(
             (b, c) -> _render(
+                mat,
                 b, c, 0, null,
                 ori4, rot4, wrot4, pos4, off4, state, false
             )
@@ -225,7 +230,7 @@ public class FloodLight extends LightObject {
         lightState.setColor(new Color(color));
     }
 
-    private void _renderBloom(BufferBuilder buffer, Vector3f cameraPos, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
+    private void _renderBloom(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState) {
         var color = lightState.getBloomColor();
 
         if (((color >> 24) & 0xFF) <= 1) {
@@ -239,7 +244,7 @@ public class FloodLight extends LightObject {
         //    startOffset, width, length * b, fadeLength * b, spread * b
         //);
 
-        var mat = createTransformMatrix(false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+        var mat = createTransformMatrix(transform, false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         for (var face : fadeFaces) {
 
@@ -263,7 +268,7 @@ public class FloodLight extends LightObject {
         }
     }
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
+    private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
         var color = isBloomfog > 0 ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
         if (((color >> 24) & 0xFF) <= 1) {
@@ -275,7 +280,7 @@ public class FloodLight extends LightObject {
         //    startOffset, width, length * b, fadeLength * b, spread * b
         //);
 
-        var mat = createTransformMatrix(mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
+        var mat = createTransformMatrix(transform, mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         var c = new Color(color);
 
