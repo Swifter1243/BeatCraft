@@ -27,7 +27,7 @@ public class DifficultyV2 extends Difficulty {
 
     public DifficultyV2 load(JsonObject json) {
         loadLightshow(json);
-        // BaseProviderHandler.setupStaticProviders(getSetDifficulty().getColorScheme());
+        mapController.baseProvider.setupStaticProviders(getSetDifficulty().getColorScheme());
         loadNotesAndBombs(json);
         loadObstacles(json);
         loadArcs(json);
@@ -45,10 +45,10 @@ public class DifficultyV2 extends Difficulty {
             JsonObject obj = o.getAsJsonObject();
             int type = obj.get("_type").getAsInt();
             if (type == 3) {
-                BombNote note = new BombNote().loadV2(obj, this);
+                BombNote note = new BombNote(mapController).loadV2(obj, this);
                 bombNotes.add(new PhysicalBombNote(mapController, note));
             } else {
-                ColorNote note = new ColorNote().loadV2(obj, this);
+                ColorNote note = new ColorNote(mapController).loadV2(obj, this);
                 colorNotes.add(new PhysicalColorNote(mapController, note));
             }
         });
@@ -59,7 +59,7 @@ public class DifficultyV2 extends Difficulty {
 
         rawObstacles.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Obstacle obstacle = new Obstacle().loadV2(obj, this);
+            Obstacle obstacle = new Obstacle(mapController).loadV2(obj, this);
             obstacles.add(new PhysicalObstacle(mapController, obstacle));
         });
     }
@@ -72,7 +72,7 @@ public class DifficultyV2 extends Difficulty {
 
             rawArcs.forEach(o -> {
                 JsonObject obj = o.getAsJsonObject();
-                Arc arc = new Arc().loadV2(obj, this);
+                Arc arc = new Arc(mapController).loadV2(obj, this);
                 arcs.add(new PhysicalArc(mapController, arc));
             });
 
@@ -123,8 +123,8 @@ public class DifficultyV2 extends Difficulty {
     private void loadCustomEvent(JsonObject json) {
         String type = json.get("_type").getAsString();
         switch (type) {
-            case "AnimateTrack" -> animateTracks.add(new AnimateTrack().loadV2(json, this));
-            case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV2(json, this));
+            case "AnimateTrack" -> animateTracks.add(new AnimateTrack(mapController).loadV2(json, this));
+            case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation(mapController).loadV2(json, this));
             case "AssignTrackParent" -> assignTrackParents.add(new AssignTrackParent().loadV2(json, this));
         }
     }

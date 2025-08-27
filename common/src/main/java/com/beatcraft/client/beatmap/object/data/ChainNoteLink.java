@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.CutDirection;
@@ -17,6 +18,10 @@ public class ChainNoteLink extends GameplayObject implements ScorableObject {
     private Color color;
     private boolean disableNoteLook = false;
     private boolean disableNoteGravity = false;
+
+    public ChainNoteLink(BeatmapPlayer map) {
+        super(map);
+    }
 
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
         if (noteType == NoteType.RED) {

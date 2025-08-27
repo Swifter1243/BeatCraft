@@ -21,7 +21,7 @@ public class DifficultyV4 extends Difficulty {
 
     public DifficultyV4 load(JsonObject json) {
         loadLightshow();
-        // BaseProviderHandler.setupStaticProviders(getSetDifficulty().getColorScheme());
+        mapController.baseProvider.setupStaticProviders(getSetDifficulty().getColorScheme());
         loadChains(json);
         loadNotes(json);
         loadBombs(json);
@@ -44,7 +44,7 @@ public class DifficultyV4 extends Difficulty {
 
         noteData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            ColorNote note = new ColorNote().loadV4(obj, noteMetaData, this);
+            ColorNote note = new ColorNote(mapController).loadV4(obj, noteMetaData, this);
             AtomicBoolean canAdd = new AtomicBoolean(true);
             chainHeadNotes.forEach(c -> {
                 if (
@@ -70,7 +70,7 @@ public class DifficultyV4 extends Difficulty {
 
         bombData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            BombNote bomb = new BombNote().loadV4(obj, bombMetaData, this);
+            BombNote bomb = new BombNote(mapController).loadV4(obj, bombMetaData, this);
             bombNotes.add(new PhysicalBombNote(mapController, bomb));
         });
 
@@ -83,7 +83,7 @@ public class DifficultyV4 extends Difficulty {
 
         obstacles.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Obstacle obstacle = new Obstacle().loadV4(obj, obstacleMetaData, this);
+            Obstacle obstacle = new Obstacle(mapController).loadV4(obj, obstacleMetaData, this);
             this.obstacles.add(new PhysicalObstacle(mapController, obstacle));
         });
     }
@@ -96,7 +96,7 @@ public class DifficultyV4 extends Difficulty {
 
         chainData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV4(obj, noteMetaData, chainMetaData, this);
+            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV4(mapController, obj, noteMetaData, chainMetaData, this);
             chainHeadNotes.add(new PhysicalChainNoteHead(mapController, chain.getA()));
             chain.getB().forEach(c -> {
                 chainLinkNotes.add(new PhysicalChainNoteLink(mapController, c));
@@ -113,7 +113,7 @@ public class DifficultyV4 extends Difficulty {
 
         rawArcs.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Arc arc = new Arc().loadV4(obj, arcMetaData, colorNotesData, this);
+            Arc arc = new Arc(mapController).loadV4(obj, arcMetaData, colorNotesData, this);
             arcs.add(new PhysicalArc(mapController, arc));
         });
     }

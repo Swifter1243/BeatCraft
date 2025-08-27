@@ -4,6 +4,7 @@ import com.beatcraft.Beatcraft;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.animation.event.AnimatedPathEvent;
 import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.event.AnimateTrack;
 import com.beatcraft.client.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.client.beatmap.data.event.AssignPathAnimation;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 
 public abstract class PointDefinition<T> {
     protected ArrayList<Point<T>> points = new ArrayList<>();
+
+    protected BeatmapPlayer map;
 
     abstract protected T interpolatePoints(int a, int b, float time);
 
@@ -86,7 +89,8 @@ public abstract class PointDefinition<T> {
         return getFlagIndex(json, "spline");
     }
 
-    public PointDefinition(JsonArray json) throws RuntimeException {
+    public PointDefinition(BeatmapPlayer map, JsonArray json) throws RuntimeException {
+        this.map = map;
         if (isSimple(json)) {
             loadSimple(json);
         } else {

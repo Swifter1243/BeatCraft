@@ -1,6 +1,7 @@
 package com.beatcraft.client.beatmap;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
 import com.beatcraft.client.audio.Audio;
 import com.beatcraft.client.audio.AudioController;
 import com.beatcraft.client.beatmap.data.*;
@@ -61,6 +62,10 @@ public class BeatmapPlayer {
 
     private final ArrayList<String> activeModifiers = new ArrayList<>();
 
+    public final BeatmapLogicController logic = new BeatmapLogicController(this);
+
+    public final BaseProviderHandler baseProvider = new BaseProviderHandler(this);
+
     public final BeatmapRenderer renderer;
 
     private final Quaternionf ori = new Quaternionf();
@@ -119,6 +124,7 @@ public class BeatmapPlayer {
 
     public void playSong(SongData.BeatmapInfo info) {
         try {
+            baseProvider.setupDynamicProviders();
             setupDifficulty(info);
             scene = HUDRenderer.MenuScene.InGame;
 
@@ -131,6 +137,9 @@ public class BeatmapPlayer {
             setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
             elapsedNanoTime = 0;
             playing = true;
+
+            var cs = this.difficulty.getSetDifficulty().getColorScheme();
+            baseProvider.setupStaticProviders(cs);
 
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to load map", e);

@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.JsonUtil;
@@ -15,6 +16,10 @@ public class Obstacle extends GameplayObject {
     private Color color;
     private Integer cachedColor = null;
     private boolean noodleSizing = false;
+
+    public Obstacle(BeatmapPlayer map) {
+        super(map);
+    }
 
     public void loadCustomObstacleDataV2(JsonObject json, Difficulty difficulty) {
         if (json.has("_customData")) {

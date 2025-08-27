@@ -5,6 +5,7 @@ import com.beatcraft.client.animation.Animation;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.client.animation.track.Track;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.object.data.BeatmapObject;
 import com.google.gson.JsonElement;
@@ -18,7 +19,11 @@ public class AssignPathAnimation extends BeatmapObject {
     private ArrayList<Track> tracks;
     private float duration;
     private Function<Float, Float> easing;
-    private final Animation animation = new Animation();
+    private final Animation animation;
+
+    public AssignPathAnimation(BeatmapPlayer map) {
+        animation = new Animation(map);
+    }
 
     @Override
     public AssignPathAnimation loadV2(JsonObject json, Difficulty difficulty) {

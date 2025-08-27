@@ -2,14 +2,15 @@ package com.beatcraft.client.animation.pointdefinition;
 
 import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
 import com.beatcraft.client.animation.base_providers.Vector3fReader;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.common.utils.JsonUtil;
 import com.beatcraft.common.utils.MathUtil;
 import com.google.gson.JsonArray;
 import org.joml.Vector3f;
 
 public class Vector3PointDefinition extends PointDefinition<Vector3f> {
-    public Vector3PointDefinition(JsonArray json) throws RuntimeException {
-        super(json);
+    public Vector3PointDefinition(BeatmapPlayer map, JsonArray json) throws RuntimeException {
+        super(map, json);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class Vector3PointDefinition extends PointDefinition<Vector3f> {
             point.setValue(vector);
         } else {
             if (isModifier(json)) {
-                var v = BaseProviderHandler.parseFromJson(json, 3);
+                var v = map.baseProvider.parseFromJson(json, 3);
                 point.setValue(new Vector3fReader(v.getValues()));
             } else {
                 var v = JsonUtil.getVector3(json);

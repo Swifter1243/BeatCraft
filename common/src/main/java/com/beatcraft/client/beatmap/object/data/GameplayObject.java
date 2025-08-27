@@ -2,6 +2,7 @@ package com.beatcraft.client.beatmap.object.data;
 
 import com.beatcraft.client.animation.Animation;
 import com.beatcraft.client.animation.track.ObjectTrackContainer;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.Jumps;
@@ -21,8 +22,12 @@ public abstract class GameplayObject extends BeatmapObject {
     private Quaternionf localRotation;
     private Quaternionf worldRotation;
     private final ObjectTrackContainer trackContainer = new ObjectTrackContainer();
-    private final Animation pathAnimation = new Animation();
+    private final Animation pathAnimation;
     private Jumps jumps;
+
+    public GameplayObject(BeatmapPlayer map) {
+        pathAnimation = new Animation(map);
+    }
 
     public void loadCustomDataV2(JsonObject json, Difficulty difficulty) {
         if (json.has("_customData")) {

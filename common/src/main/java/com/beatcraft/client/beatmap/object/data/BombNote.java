@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.data.types.Color;
 import com.google.gson.JsonArray;
@@ -7,6 +8,10 @@ import com.google.gson.JsonObject;
 
 public class BombNote extends GameplayObject {
     private Color color = new Color(0.2f, 0.2f, 0.2f);
+
+    public BombNote(BeatmapPlayer map) {
+        super(map);
+    }
 
     @Override
     public BombNote loadV2(JsonObject json, Difficulty difficulty) {

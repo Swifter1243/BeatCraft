@@ -1,6 +1,7 @@
 package com.beatcraft.client.beatmap.data.event;
 
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.object.data.BeatmapObject;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.client.animation.Animation;
@@ -19,7 +20,11 @@ public class AnimateTrack extends BeatmapObject {
     private float duration;
     private Function<Float, Float> easing;
     private Integer repeat;
-    private final Animation animation = new Animation();
+    private final Animation animation;
+
+    public AnimateTrack(BeatmapPlayer map) {
+        animation = new Animation(map);
+    }
 
     @Override
     public AnimateTrack loadV2(JsonObject json, Difficulty difficulty) {

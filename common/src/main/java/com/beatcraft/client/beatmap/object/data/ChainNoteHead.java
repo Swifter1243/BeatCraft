@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.CutDirection;
@@ -28,6 +29,10 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
     private boolean disableNoteLook = false;
     private boolean disableNoteGravity = false;
 
+    public ChainNoteHead(BeatmapPlayer map) {
+        super(map);
+    }
+
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
         if (noteType == NoteType.RED) {
             color = setDifficulty.getColorScheme().getNoteLeftColor();
@@ -37,8 +42,8 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
     }
 
 
-    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV3(JsonObject json, Difficulty difficulty) {
-        ChainNoteHead headNote = new ChainNoteHead();
+    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV3(BeatmapPlayer map, JsonObject json, Difficulty difficulty) {
+        ChainNoteHead headNote = new ChainNoteHead(map);
         headNote.loadV3(json, difficulty);
 
         headNote.cutDirection = CutDirection.values()[JsonUtil.getOrDefault(json, "d", JsonElement::getAsInt, 0)];
@@ -60,14 +65,14 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
 
 
 
-        return new Pair<>(headNote, generateChainLinks(linkPositions, chainNoteLink -> {
+        return new Pair<>(headNote, generateChainLinks(map, linkPositions, chainNoteLink -> {
             chainNoteLink.loadV3(json, difficulty);
             return null;
         }));
     }
 
-    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV4(JsonObject json, JsonArray colorNotesData, JsonArray chainsData, Difficulty difficulty) {
-        ChainNoteHead headNote = new ChainNoteHead();
+    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV4(BeatmapPlayer map, JsonObject json, JsonArray colorNotesData, JsonArray chainsData, Difficulty difficulty) {
+        ChainNoteHead headNote = new ChainNoteHead(map);
 
         headNote.loadV4(json, colorNotesData, difficulty);
         headNote.beat = JsonUtil.getOrDefault(json, "hb", JsonElement::getAsFloat, 0f);
@@ -94,7 +99,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
             new Vector2f(tailX, tailY), tailBeat, sliceCount, squishFactor
         );
 
-        return new Pair<>(headNote, generateChainLinks(linkPositions, chainNoteLink -> {
+        return new Pair<>(headNote, generateChainLinks(map, linkPositions, chainNoteLink -> {
             chainNoteLink.loadV4(json, chainsData, headNote.noteType, difficulty);
             return null;
         }));
@@ -140,7 +145,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
         return placements;
     }
 
-    private static List<ChainNoteLink> generateChainLinks(List<Pair<Vector3f, Float>> positions, Function<ChainNoteLink, Void> loader) {
+    private static List<ChainNoteLink> generateChainLinks(BeatmapPlayer map, List<Pair<Vector3f, Float>> positions, Function<ChainNoteLink, Void> loader) {
         ArrayList<ChainNoteLink> chainLinks = new ArrayList<>();
 
 
@@ -149,7 +154,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
             Vector3f pos = pair.getA();
             float angle = pair.getB();
 
-            ChainNoteLink chainLink = new ChainNoteLink();
+            ChainNoteLink chainLink = new ChainNoteLink(map);
             loader.apply(chainLink);
 
             chainLink.setAngleOffset(angle);

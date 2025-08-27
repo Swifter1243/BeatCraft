@@ -4,6 +4,7 @@ package com.beatcraft.client.animation;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.client.animation.pointdefinition.*;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.event.AnimateTrack;
 import com.beatcraft.client.beatmap.object.data.IBeatmapData;
@@ -15,48 +16,55 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.GsonHelper;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Animation extends AnimationPropertyContainer<FloatPointDefinition, Vector3PointDefinition, Vector4PointDefinition, QuaternionPointDefinition, ColorPointDefinition> implements IBeatmapData<Animation> {
 
+    private BeatmapPlayer map;
+
+    public Animation(BeatmapPlayer map) {
+        this.map = map;
+    }
+
     @Override
     public Animation loadV2(JsonObject json, Difficulty difficulty) {
-        offsetPosition = getPointDefinition(json, "_position", difficulty, Vector3PointDefinition::new);
-        offsetWorldRotation = getPointDefinition(json, "_rotation", difficulty, QuaternionPointDefinition::new);
-        localRotation = getPointDefinition(json, "_localRotation", difficulty, QuaternionPointDefinition::new);
-        localPosition = getPointDefinition(json, "_localPosition", difficulty, Vector3PointDefinition::new);
-        definitePosition = getPointDefinition(json, "_definitePosition", difficulty, Vector3PointDefinition::new);
-        position = getPointDefinition(json, "_position", difficulty, Vector3PointDefinition::new);
-        rotation = getPointDefinition(json, "_rotation", difficulty, QuaternionPointDefinition::new);
-        scale = getPointDefinition(json, "_scale", difficulty, Vector3PointDefinition::new);
-        dissolve = getPointDefinition(json, "_dissolve", difficulty, FloatPointDefinition::new);
-        dissolveArrow = getPointDefinition(json, "_dissolveArrow", difficulty, FloatPointDefinition::new);
-        interactable = getPointDefinition(json, "_interactable", difficulty, FloatPointDefinition::new);
-        time = getPointDefinition(json, "_time", difficulty, FloatPointDefinition::new);
-        color = getPointDefinition(json, "_color", difficulty, ColorPointDefinition::new);
+        offsetPosition = getPointDefinition(map, json, "_position", difficulty, Vector3PointDefinition::new);
+        offsetWorldRotation = getPointDefinition(map, json, "_rotation", difficulty, QuaternionPointDefinition::new);
+        localRotation = getPointDefinition(map, json, "_localRotation", difficulty, QuaternionPointDefinition::new);
+        localPosition = getPointDefinition(map, json, "_localPosition", difficulty, Vector3PointDefinition::new);
+        definitePosition = getPointDefinition(map, json, "_definitePosition", difficulty, Vector3PointDefinition::new);
+        position = getPointDefinition(map, json, "_position", difficulty, Vector3PointDefinition::new);
+        rotation = getPointDefinition(map, json, "_rotation", difficulty, QuaternionPointDefinition::new);
+        scale = getPointDefinition(map, json, "_scale", difficulty, Vector3PointDefinition::new);
+        dissolve = getPointDefinition(map, json, "_dissolve", difficulty, FloatPointDefinition::new);
+        dissolveArrow = getPointDefinition(map, json, "_dissolveArrow", difficulty, FloatPointDefinition::new);
+        interactable = getPointDefinition(map, json, "_interactable", difficulty, FloatPointDefinition::new);
+        time = getPointDefinition(map, json, "_time", difficulty, FloatPointDefinition::new);
+        color = getPointDefinition(map, json, "_color", difficulty, ColorPointDefinition::new);
 
         return this;
     }
 
     @Override
     public Animation loadV3(JsonObject json, Difficulty difficulty) {
-        offsetPosition = getPointDefinition(json, "offsetPosition", difficulty, Vector3PointDefinition::new);
-        offsetWorldRotation = getPointDefinition(json, "offsetWorldRotation", difficulty, QuaternionPointDefinition::new);
-        localRotation = getPointDefinition(json, "localRotation", difficulty, QuaternionPointDefinition::new);
-        localPosition = getPointDefinition(json, "localPosition", difficulty, Vector3PointDefinition::new);
-        definitePosition = getPointDefinition(json, "definitePosition", difficulty, Vector3PointDefinition::new);
-        position = getPointDefinition(json, "position", difficulty, Vector3PointDefinition::new);
-        rotation = getPointDefinition(json, "rotation", difficulty, QuaternionPointDefinition::new);
-        scale = getPointDefinition(json, "scale", difficulty, Vector3PointDefinition::new);
-        dissolve = getPointDefinition(json, "dissolve", difficulty, FloatPointDefinition::new);
-        dissolveArrow = getPointDefinition(json, "dissolveArrow", difficulty, FloatPointDefinition::new);
-        interactable = getPointDefinition(json, "interactable", difficulty, FloatPointDefinition::new);
-        time = getPointDefinition(json, "time", difficulty, FloatPointDefinition::new);
-        color = getPointDefinition(json, "color", difficulty, ColorPointDefinition::new);
+        offsetPosition = getPointDefinition(map, json, "offsetPosition", difficulty, Vector3PointDefinition::new);
+        offsetWorldRotation = getPointDefinition(map, json, "offsetWorldRotation", difficulty, QuaternionPointDefinition::new);
+        localRotation = getPointDefinition(map, json, "localRotation", difficulty, QuaternionPointDefinition::new);
+        localPosition = getPointDefinition(map, json, "localPosition", difficulty, Vector3PointDefinition::new);
+        definitePosition = getPointDefinition(map, json, "definitePosition", difficulty, Vector3PointDefinition::new);
+        position = getPointDefinition(map, json, "position", difficulty, Vector3PointDefinition::new);
+        rotation = getPointDefinition(map, json, "rotation", difficulty, QuaternionPointDefinition::new);
+        scale = getPointDefinition(map, json, "scale", difficulty, Vector3PointDefinition::new);
+        dissolve = getPointDefinition(map, json, "dissolve", difficulty, FloatPointDefinition::new);
+        dissolveArrow = getPointDefinition(map, json, "dissolveArrow", difficulty, FloatPointDefinition::new);
+        interactable = getPointDefinition(map, json, "interactable", difficulty, FloatPointDefinition::new);
+        time = getPointDefinition(map, json, "time", difficulty, FloatPointDefinition::new);
+        color = getPointDefinition(map, json, "color", difficulty, ColorPointDefinition::new);
 
         return this;
     }
-    private <T> T getPointDefinition(JsonObject json, String property, Difficulty difficulty, Function<JsonArray, T> factory) {
+    private <T> T getPointDefinition(BeatmapPlayer map, JsonObject json, String property, Difficulty difficulty, BiFunction<BeatmapPlayer, JsonArray, T> factory) {
         if (!json.has(property)) {
             return null;
         }
@@ -65,13 +73,13 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
         if (GsonHelper.isStringValue(element)) {
             String name = element.getAsString();
             if (difficulty.pointDefinitions.containsKey(name)) {
-                return factory.apply(difficulty.pointDefinitions.get(name));
+                return factory.apply(map, difficulty.pointDefinitions.get(name));
             } else {
                 Beatcraft.LOGGER.warn("Point Definition [{}] does not exist! Skipping...", name);
                 return null;
             }
         } else {
-            return factory.apply(element.getAsJsonArray());
+            return factory.apply(map, element.getAsJsonArray());
         }
     }
 

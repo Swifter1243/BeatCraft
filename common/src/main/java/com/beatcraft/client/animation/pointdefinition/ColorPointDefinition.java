@@ -2,6 +2,7 @@ package com.beatcraft.client.animation.pointdefinition;
 
 import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
 import com.beatcraft.client.animation.base_providers.ColorReader;
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.JsonUtil;
 import com.beatcraft.common.utils.MathUtil;
@@ -9,8 +10,8 @@ import com.google.gson.JsonArray;
 
 public class ColorPointDefinition extends PointDefinition<Color> {
 
-    public ColorPointDefinition(JsonArray json) throws RuntimeException {
-        super(json);
+    public ColorPointDefinition(BeatmapPlayer map, JsonArray json) throws RuntimeException {
+        super(map, json);
     }
 
     @Override
@@ -38,7 +39,7 @@ public class ColorPointDefinition extends PointDefinition<Color> {
             point.setValue(new Color(v.x, v.y, v.z, 1f));
         } else {
             if (isModifier(json)) {
-                var v = BaseProviderHandler.parseFromJson(json, 4);
+                var v = map.baseProvider.parseFromJson(json, 4);
                 point.setValue(new ColorReader(v.getValues()));
             } else {
                 var v = JsonUtil.getVector4(json);

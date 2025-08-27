@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
+import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.common.data.types.Color;
@@ -18,6 +19,10 @@ public class ColorNote extends GameplayObject implements ScorableObject {
     private Color color;
     private boolean disableNoteLook = false;
     private boolean disableNoteGravity = false;
+
+    public ColorNote(BeatmapPlayer map) {
+        super(map);
+    }
 
     private void applyColorScheme(Info.SetDifficulty setDifficulty) {
         if (getNoteType() == NoteType.RED) {

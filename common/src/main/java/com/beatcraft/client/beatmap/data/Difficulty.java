@@ -212,7 +212,7 @@ public abstract class Difficulty {
         //}
         trackLibrary.update(beat);
         parentHandler.update(beat);
-        BaseProviderHandler.update();
+        mapController.baseProvider.update();
         if (lightShowEnvironment != null) {
             lightShowEnvironment.update(beat, deltaTime);
             EventVisualizer.update(beat);

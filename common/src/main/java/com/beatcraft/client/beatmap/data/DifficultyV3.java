@@ -25,7 +25,7 @@ public class DifficultyV3 extends Difficulty {
 
     public DifficultyV3 load(JsonObject json) {
         loadLightshow(json);
-        // BaseProviderHandler.setupStaticProviders(getSetDifficulty().getColorScheme());
+        mapController.baseProvider.setupStaticProviders(getSetDifficulty().getColorScheme());
         loadChains(json);
         loadNotes(json);
         loadBombs(json);
@@ -52,7 +52,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawColorNotes.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            ColorNote note = new ColorNote().loadV3(obj, this);
+            ColorNote note = new ColorNote(mapController).loadV3(obj, this);
             AtomicBoolean canAdd = new AtomicBoolean(true);
             chainHeadNotes.forEach(c -> {
                 if (
@@ -83,7 +83,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawBombNotes.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            BombNote note = new BombNote().loadV3(obj, this);
+            BombNote note = new BombNote(mapController).loadV3(obj, this);
             bombNotes.add(new PhysicalBombNote(mapController, note));
         });
     }
@@ -93,7 +93,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawChainsData.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV3(obj, this);
+            Pair<ChainNoteHead, List<ChainNoteLink>> chain = ChainNoteHead.buildV3(mapController, obj, this);
             chainHeadNotes.add(new PhysicalChainNoteHead(mapController, chain.getA()));
             chain.getB().forEach(c -> {
                 chainLinkNotes.add(new PhysicalChainNoteLink(mapController, c));
@@ -107,7 +107,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawArcs.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Arc arc = new Arc().loadV3(obj, this);
+            Arc arc = new Arc(mapController).loadV3(obj, this);
             arcs.add(new PhysicalArc(mapController, arc));
         });
     }
@@ -117,7 +117,7 @@ public class DifficultyV3 extends Difficulty {
 
         rawObstacles.forEach(o -> {
             JsonObject obj = o.getAsJsonObject();
-            Obstacle obstacle = new Obstacle().loadV3(obj, this);
+            Obstacle obstacle = new Obstacle(mapController).loadV3(obj, this);
             obstacles.add(new PhysicalObstacle(mapController, obstacle));
         });
     }
@@ -171,8 +171,8 @@ public class DifficultyV3 extends Difficulty {
     private void loadCustomEvent(JsonObject json) {
         String type = json.get("t").getAsString();
         switch (type) {
-            case "AnimateTrack" -> animateTracks.add(new AnimateTrack().loadV3(json, this));
-            case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation().loadV3(json, this));
+            case "AnimateTrack" -> animateTracks.add(new AnimateTrack(mapController).loadV3(json, this));
+            case "AssignPathAnimation" -> assignPathAnimations.add(new AssignPathAnimation(mapController).loadV3(json, this));
             case "AssignTrackParent" -> assignTrackParents.add(new AssignTrackParent().loadV3(json, this));
         }
     }
