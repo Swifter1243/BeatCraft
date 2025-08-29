@@ -2,11 +2,11 @@ package com.beatcraft.client.beatmap;
 
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.data.Difficulty;
-import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
+import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
@@ -253,14 +253,13 @@ public class BeatmapRenderer {
         if (buff != null) {
             ObstacleGlowRenderer.grabScreen();
 
-
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.depthMask(true);
 
-            var scene = ObstacleGlowRenderer.framebuffer;//MinecraftClient.getInstance().getFramebuffer();
+            var scene = ObstacleGlowRenderer.framebuffer;
 
             RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
             RenderSystem.setShaderTexture(0, scene.getColorTextureId());
@@ -278,6 +277,15 @@ public class BeatmapRenderer {
 
     }
 
+    public void pre_render(PoseStack matrices, Difficulty difficulty, Camera camera, float distance) {
+
+
+        var tesselator = Tesselator.getInstance();
+        var cameraPos = camera.getPosition().toVector3f();
+        renderEnvironmentLights(tesselator, cameraPos);
+
+        // render notes
+    }
     public void render(PoseStack matrices, Difficulty difficulty, Camera camera, float distance) {
         float alpha = 0;
 
@@ -286,7 +294,7 @@ public class BeatmapRenderer {
                 if (distance <= 10) {
                     alpha = 1;
                 } else {
-                    alpha = Math.clamp(MathUtil.inverseLerp(300, 0, (distance-10)), 0, 1);
+                    alpha = Math.clamp(MathUtil.inverseLerp(300, 0, (distance - 10)), 0, 1);
                 }
             }
             case HEADSET -> {
@@ -296,9 +304,6 @@ public class BeatmapRenderer {
 
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();
-        renderEnvironmentLights(tesselator, cameraPos);
-
-        // render notes
 
         renderFloorLightsPhase1(tesselator, cameraPos);
 

@@ -10,14 +10,12 @@ import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +45,7 @@ public class BeatcraftRenderer {
     }
 
     public static void renderSky(Camera camera, float tickDelta) {
-
+        BeatmapManager.updateMaps();
     }
 
     public static void renderBloomfog(float tickDelta) {
@@ -66,7 +64,7 @@ public class BeatcraftRenderer {
 
     public static void renderBeatmap(Camera camera) {
 
-        BeatmapManager.renderMaps();
+        BeatmapManager.preRenderMaps();
         var cameraPos = camera.getPosition().toVector3f();
 
         var p = new Matrix4f().translate(0, -54, 0).scale(0.5f);
@@ -85,6 +83,7 @@ public class BeatcraftRenderer {
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
 
+        BeatmapManager.renderMaps();
     }
 
     public static void renderParticles() {

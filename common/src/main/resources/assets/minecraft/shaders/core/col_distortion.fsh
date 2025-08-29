@@ -106,7 +106,7 @@ void main() {
         cnoise(noiseInput + vec3(0.0, 23.1, 0.0))
     ) * distortionStrength;
 
-    vec2 uv = -(screenUV.xy / (screenUV.z * 2.0)) + 0.5;
+    vec2 uv = (screenUV.xy / (screenUV.z * 2.0)) + 0.5;
 
     vec2 distortedUV = uv + distortion;
 

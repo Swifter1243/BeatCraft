@@ -133,6 +133,19 @@ public class BeatmapManager {
 
     }
 
+    public static void updateMaps() {
+        for (var map : beatmaps) {
+            map.update();
+        }
+    }
+
+    public static void preRenderMaps() {
+        var cam = Minecraft.getInstance().gameRenderer.getMainCamera();
+        for (var map : beatmaps) {
+            map.pre_render(cam);
+        }
+    }
+
     public static void renderMaps() {
         var cam = Minecraft.getInstance().gameRenderer.getMainCamera();
         for (var map : beatmaps) {

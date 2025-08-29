@@ -8,10 +8,8 @@ import com.beatcraft.client.beatmap.data.*;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalGameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalObstacle;
-import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.common.data.map.SongData;
-import com.beatcraft.common.data.types.Color;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -19,9 +17,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -209,14 +205,8 @@ public class BeatmapPlayer {
         return ndt;
     }
 
-    public void render(Camera camera) {
-
+    public void update() {
         long deltaNanoSeconds = getNanoDeltaTime();
-
-
-        if (camera.getEntity().level() != level) {
-            return;
-        }
 
         boolean shouldPlay = this.isPlaying() && !Minecraft.getInstance().isPaused();
 
@@ -231,18 +221,39 @@ public class BeatmapPlayer {
 
         }
 
+        if (audio != null) {
+            audio.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d, this);
+        }
+    }
+
+    private PoseStack matrices = new PoseStack();
+    public void pre_render(Camera camera) {
+
+        if (camera.getEntity().level() != level) {
+            return;
+        }
+
         var dist = camera.getPosition().toVector3f().distance(worldPosition);
 
-        var matrices = new PoseStack();
+        matrices.clear();
 
         matrices.translate(worldPosition.x, worldPosition.y, worldPosition.z);
 
         matrices.mulPose(ori.rotationY(worldAngle));
 
-        renderer.render(matrices, difficulty, camera, dist);
-        if (audio != null) {
-            audio.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d, this);
+        matrices.pushPose();
+        renderer.pre_render(matrices, difficulty, camera, dist);
+        matrices.popPose();
+
+    }
+
+    public void render(Camera camera) {
+        if (camera.getEntity().level() != level) {
+            return;
         }
+        var dist = camera.getPosition().toVector3f().distance(worldPosition);
+        renderer.render(matrices, difficulty, camera, dist);
+
     }
 
 
