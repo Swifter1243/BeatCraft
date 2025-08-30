@@ -221,6 +221,40 @@ public class ClientCommands {
         return CommandResult.ok();
     }
 
+    private static CommandResult setMapSpeed(CommandCallback callback) {
+        var uuid = callback.getUuidArg("uuid");
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        var speed = callback.getFloatArg("value");
+
+        if (0f >= speed || speed > 7f) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.invalid_speed", 0, 7));
+        }
+
+        controller.playbackSpeed = speed;
+        return CommandResult.ok(Component.translatable("command.beatcraft.feedback.set_speed", speed * 100f));
+    }
+
+    private static CommandResult mapSeek(CommandCallback callback) {
+        var uuid = callback.getUuidArg("uuid");
+
+
+        return CommandResult.ok();
+    }
+
+    private static CommandResult resumeMap(CommandCallback callback) {
+        return CommandResult.ok();
+    }
+
+    private static CommandResult pauseMap(CommandCallback callback) {
+        return CommandResult.ok();
+    }
+
     public static void init() {
         CommandManager.register(
             literal("beatmap").then(
@@ -242,6 +276,16 @@ public class ClientCommands {
                                     .executes(ClientCommands::playSongForMap)
                             )
                         )
+                    )
+                ).then(
+                    literal("speed").then(
+                        argument("value", CommandTree.ArgumentType.Float)
+                            .executes(ClientCommands::setMapSpeed)
+                    )
+                ).then(
+                    literal("seek").then(
+                        argument("beat", CommandTree.ArgumentType.Float)
+                            .executes(ClientCommands::mapSeek)
                     )
                 )
             ).build()

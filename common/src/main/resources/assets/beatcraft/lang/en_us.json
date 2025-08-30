@@ -60,6 +60,7 @@
   "command.beatcraft.error.difficulty_set_not_found": "Difficulty set doesn't exist for song",
   "command.beatcraft.error.difficulty_not_found": "Difficulty not found for song and difficulty set",
   "command.beatcraft.error.map_controller_not_found": "Beatmap Controller with that UUID does not exist",
+  "command.beatcraft.error.invalid_speed": "Playback speed is invalid, must be between %s and %s",
 
   "command.beatcraft.feedback.environment_placed": "Placed environment '%s'",
   "command.beatcraft.feedback.invalid_environment": "'%s' is not a valid environment",
@@ -68,6 +69,7 @@
   "command.beatcraft.feedback.current_environment": "Current environment: '%s'",
   "command.beatcraft.feedback.no_environment_placed": "No environment is currently placed",
   "command.beatcraft.feedback.generated_playarea": "Generated play area at world origin",
+  "command.beatcraft.feedback.set_speed": "Set playback speed to %.1f%%",
 
   "event.beatcraft.first_join_feedback": "§fDifficulty §7set to §aPeaceful§7; §fTime §7set to §9Midnight§7; §fDoDaylightCycle§7, §fDoWeatherCycle§7, §fDoMobSpawning§7, and §fDoTraderSpawning §7 set to §4false§7;",
   "event.beatcraft.movement_locked": "Player movement LOCKED! (press \"%s\" to unlock)",
