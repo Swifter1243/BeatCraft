@@ -184,6 +184,13 @@ public class PlayerConfig {
         public int selectedProfile = -1;
         public final ArrayList<ControllerProfile> profiles = new ArrayList<>();
 
+        public ControllerProfile activeProfile() {
+            if (selectedProfile == -1) {
+                return DEFAULT_CONTROLLER_PROFILE;
+            }
+            return profiles.get(selectedProfile);
+        }
+
         public JsonObject getJson() {
             var json = new JsonObject();
 

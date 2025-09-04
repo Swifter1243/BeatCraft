@@ -7,7 +7,6 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
-import com.beatcraft.client.services.VivecraftClientInterface;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -25,6 +24,8 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL31;
+import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.render.helpers.RenderHelper;
 //import org.vivecraft.client_vr.ClientDataHolderVR;
 //import org.vivecraft.client_vr.render.RenderPass;
 //import org.vivecraft.client_vr.render.helpers.RenderHelper;
@@ -147,8 +148,8 @@ public class Bloomfog {
         }
     }
 
-    public static float[] getFogHeights() {
-        return BeatmapManager.getAverageFogHeight();
+    public static float[] getFogHeights(Vector3f position) {
+        return BeatmapManager.getAverageFogHeight(position);
     }
 
     /// DO NOT CALL: use Bloomfog.create()
@@ -269,8 +270,8 @@ public class Bloomfog {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
 
         Vector3f cameraPos = camera.getPosition().toVector3f();
-        if (VivecraftClientInterface.isVRNonNull()) {
-            var rotationMatrix = VivecraftClientInterface.getVRModelView();
+        if (ClientDataHolderVR.getInstance().vr != null) {
+            var rotationMatrix = RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
             invCameraRotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
         } else {
             invCameraRotation = camera.rotation().conjugate(new Quaternionf());
@@ -587,7 +588,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, sceneDepthBuffer);
             bloomMaskLightShader.setSampler("Sampler0", sceneDepthBuffer);
             bloomMaskLightShader.safeGetUniform("WorldTransform").set(worldTransform);
-            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights());
+            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights(cameraPos));
             BufferUploader.drawWithShader(buff);
             RenderSystem.enableDepthTest();
         }
@@ -606,7 +607,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
             RenderSystem.setShaderTexture(1, sceneDepthBuffer);
             bloomMaskLightShader.setSampler("Sampler1", sceneDepthBuffer);
-            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights());
+            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights(cameraPos));
             BufferUploader.drawWithShader(buff);
             RenderSystem.enableDepthTest();
         }
@@ -625,7 +626,7 @@ public class Bloomfog {
             RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
             RenderSystem.setShaderTexture(1, sceneDepthBuffer);
             bloomMaskLightShader.setSampler("Sampler1", sceneDepthBuffer);
-            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights());
+            bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights(cameraPos));
             BufferUploader.drawWithShader(buff);
             RenderSystem.enableDepthTest();
         }

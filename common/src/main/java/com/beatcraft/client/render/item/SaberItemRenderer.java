@@ -5,7 +5,6 @@ import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 //import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.services.VivecraftClientInterface;
 import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -23,6 +22,7 @@ import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL31;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.File;
 import java.io.IOException;
@@ -408,7 +408,7 @@ public class SaberItemRenderer {
                 afterCalls.add(() -> customRender(c, texture, mts, ori, new Quaternionf(), false, 0));
             }
 
-            var vrActive = (VivecraftClientInterface.isVRNonNull() && VivecraftClientInterface.isVRActive());
+            var vrActive = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
 
             if (doBloom && !(bypassBloom && !vrActive)) {
                 var mts = new Matrix4f(matrices);

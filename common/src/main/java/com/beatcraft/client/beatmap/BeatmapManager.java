@@ -53,14 +53,17 @@ public class BeatmapManager {
 
 
     private static final float[] DEFAULT_FOG_HEIGHTS = new float[]{-50, -30};
-    public static float[] getAverageFogHeight() {
+    public static float[] getAverageFogHeight(Vector3f position) {
 
         var nearest = nearestActiveBeatmapToPlayer();
+        float[] x;
         if (nearest != null) {
-            return nearest.difficulty.lightShowEnvironment.getFogHeights();
+            x = nearest.difficulty.lightShowEnvironment.getFogHeights();
+        } else {
+            x = DEFAULT_FOG_HEIGHTS;
         }
 
-        return DEFAULT_FOG_HEIGHTS;
+        return new float[]{x[0] + position.y, x[1] + position.y};
     }
 
     public static BeatmapPlayer getByUuid(UUID uuid) {
@@ -81,7 +84,11 @@ public class BeatmapManager {
     }
 
     public static BeatmapPlayer nearestActiveBeatmapToPlayer() {
-        var playerCamera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        var pos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        return nearestActiveBeatmap(pos);
+    }
+
+    public static BeatmapPlayer nearestActiveBeatmap(Vector3f pos) {
 
         var nearestDist = Float.POSITIVE_INFINITY;
         BeatmapPlayer nearest = null;
@@ -90,7 +97,7 @@ public class BeatmapManager {
             if (map.difficulty == null || map.difficulty.lightShowEnvironment == null) {
                 continue;
             }
-            var dist = map.getRenderOrigin().distance(playerCamera);
+            var dist = map.getRenderOrigin().distance(pos);
             if (dist < nearestDist) {
                 nearestDist = dist;
                 nearest = map;
@@ -117,11 +124,14 @@ public class BeatmapManager {
 
     public static boolean hasNearbyActiveBeatmapToPlayer() {
         var playerCamera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        return hasNearbyActiveBeatmap(playerCamera);
+    }
+    public static boolean hasNearbyActiveBeatmap(Vector3f position) {
         var renderDist = Minecraft.getInstance().gameRenderer.getRenderDistance();
         for (var map : beatmaps) {
             var pos = map.getRenderOrigin();
 
-            if (playerCamera.distance(pos) <= renderDist + 64 && map.difficulty != null && map.difficulty.lightShowEnvironment != null) {
+            if (position.distance(pos) <= renderDist + 64 && map.difficulty != null && map.difficulty.lightShowEnvironment != null) {
                 return true;
             }
 

@@ -30,6 +30,8 @@ public class BeatcraftRenderer {
     public static ShaderInstance heartHealthShader;
     public static ShaderInstance BCPosTexColShader;
 
+    private static final ArrayList<Runnable> saberRenderCalls = new ArrayList<>();
+
     public static void init() {
         bloomfog = Bloomfog.create();
 
@@ -97,7 +99,16 @@ public class BeatcraftRenderer {
 
     }
 
+    public static void recordSaberRenderCall(Runnable call) {
+        saberRenderCalls.add(call);
+    }
+
     public static void renderSabers() {
+
+        for (var call : saberRenderCalls) {
+            call.run();
+        }
+        saberRenderCalls.clear();
 
     }
 

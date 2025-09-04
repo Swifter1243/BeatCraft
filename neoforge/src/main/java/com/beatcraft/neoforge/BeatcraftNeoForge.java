@@ -1,6 +1,7 @@
 package com.beatcraft.neoforge;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.common.items.ModItems;
 import com.beatcraft.neoforge.common.items.NeoforgeItems;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
@@ -27,7 +28,7 @@ public final class BeatcraftNeoForge {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-
+        ModItems.init();
     }
 
     private void addCreativeTab(BuildCreativeModeTabContentsEvent event) {

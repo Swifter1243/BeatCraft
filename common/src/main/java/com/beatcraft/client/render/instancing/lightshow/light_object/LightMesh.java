@@ -643,7 +643,9 @@ public class LightMesh {
             GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
         }
 
-        var fogHeights = Bloomfog.getFogHeights();
+         var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+
+        var fogHeights = Bloomfog.getFogHeights(camPos);
         GlUtil.uniform2f("u_fog", fogHeights[0], fogHeights[1]);
 
 

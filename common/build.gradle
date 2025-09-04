@@ -8,6 +8,9 @@ architectury {
 repositories {
     mavenCentral()
 
+    maven {
+        url = "https://cursemaven.com"
+    }
 }
 
 dependencies {
@@ -15,6 +18,9 @@ dependencies {
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+
+    modCompileOnly "curse.maven:vivecraft-667903:6208699"
 
     modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

@@ -163,7 +163,7 @@ public class BeatmapRenderer {
             Bloomfog.backlightsPositionColorShader.setSampler("Sampler0", Bloomfog.lightDepth.getDepthTextureId());
             RenderSystem.setShaderTexture(0, Bloomfog.lightDepth.getDepthTextureId());
             Bloomfog.backlightsPositionColorShader.safeGetUniform("WorldTransform").set(worldTransform);
-            Bloomfog.backlightsPositionColorShader.safeGetUniform("u_fog").set(Bloomfog.getFogHeights());
+            Bloomfog.backlightsPositionColorShader.safeGetUniform("u_fog").set(Bloomfog.getFogHeights(mapController.worldPosition));
             BufferUploader.drawWithShader(buff);
         }
 
