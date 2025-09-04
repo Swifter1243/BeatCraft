@@ -14,6 +14,8 @@ public class ModComponents {
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS =
         DeferredRegister.create(Beatcraft.MOD_ID, Registries.DATA_COMPONENT_TYPE);
 
+
+
     public static final RegistrySupplier<DataComponentType<Integer>> SABER_COLOR_COMPONENT =
         COMPONENTS.register("saber_color", () ->
             DataComponentType.<Integer>builder()
@@ -30,6 +32,9 @@ public class ModComponents {
                 .build()
         );
 
+    public static void register() {
+        COMPONENTS.register();
+    }
 
 
 }

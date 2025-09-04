@@ -128,14 +128,14 @@ public class BeatmapPlayer {
                 audio.close();
             }
 
-            audio = AudioController.playMapSong(this.info.getSongFilename());
-
-            setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
-            elapsedNanoTime = 0;
             playing = true;
-
+            setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
             var cs = this.difficulty.getSetDifficulty().getColorScheme();
             baseProvider.setupStaticProviders(cs);
+            audio = AudioController.playMapSong(this.info.getSongFilename());
+
+            elapsedNanoTime = 0;
+
 
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to load map", e);
@@ -229,13 +229,14 @@ public class BeatmapPlayer {
     private PoseStack matrices = new PoseStack();
     public void pre_render(Camera camera) {
 
-        if (camera.getEntity().level() != level) {
+        if (!camera.getEntity().level().equals(level)) {
             return;
         }
 
         var dist = camera.getPosition().toVector3f().distance(worldPosition);
 
         matrices.clear();
+        matrices.pushPose();
 
         matrices.translate(worldPosition.x, worldPosition.y, worldPosition.z);
 
@@ -248,12 +249,38 @@ public class BeatmapPlayer {
     }
 
     public void render(Camera camera) {
-        if (camera.getEntity().level() != level) {
+        if (!camera.getEntity().level().equals(level)) {
             return;
         }
         var dist = camera.getPosition().toVector3f().distance(worldPosition);
         renderer.render(matrices, difficulty, camera, dist);
+        matrices.popPose();
 
+    }
+
+    public void seek(float beat) {
+        if (difficulty != null) {
+            difficulty.seek(beat);
+            var t = info.getTime(beat);
+            elapsedNanoTime = (long) (t * 1_000_000_000f);
+            audio.seek(t);
+        }
+    }
+
+    public void setSpeed(float speed) {
+        playbackSpeed = speed;
+        audio.setSpeed(speed);
+    }
+
+    public void resume() {
+        if (difficulty != null) {
+            playing = true;
+        }
+    }
+    public void pause() {
+        if (difficulty != null) {
+            playing = false;
+        }
     }
 
 

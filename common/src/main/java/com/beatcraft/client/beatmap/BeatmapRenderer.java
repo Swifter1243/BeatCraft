@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -279,7 +280,6 @@ public class BeatmapRenderer {
 
     public void pre_render(PoseStack matrices, Difficulty difficulty, Camera camera, float distance) {
 
-
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();
         renderEnvironmentLights(tesselator, cameraPos);
@@ -301,6 +301,7 @@ public class BeatmapRenderer {
                 alpha = BeatcraftClient.wearingHeadset ? 1 : 0;
             }
         }
+
 
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();

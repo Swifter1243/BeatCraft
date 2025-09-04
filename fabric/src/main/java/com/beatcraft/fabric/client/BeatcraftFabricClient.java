@@ -3,6 +3,7 @@ package com.beatcraft.fabric.client;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.resources.ResourceReloadListener;
+import com.beatcraft.fabric.client.render.item.ItemRenderSettings;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -33,9 +34,10 @@ public final class BeatcraftFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
         BeatcraftClient.earlyInit();
         BeatcraftClient.initCommands();
+
+        ItemRenderSettings.init();
 
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new ReloadWrapper());
 

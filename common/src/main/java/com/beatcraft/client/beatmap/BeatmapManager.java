@@ -115,6 +115,20 @@ public class BeatmapManager {
         return false;
     }
 
+    public static boolean hasNearbyActiveBeatmapToPlayer() {
+        var playerCamera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        var renderDist = Minecraft.getInstance().gameRenderer.getRenderDistance();
+        for (var map : beatmaps) {
+            var pos = map.getRenderOrigin();
+
+            if (playerCamera.distance(pos) <= renderDist + 64 && map.difficulty != null && map.difficulty.lightShowEnvironment != null) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     public static String getMapsInfo() {
 
         if (beatmaps.isEmpty()) {

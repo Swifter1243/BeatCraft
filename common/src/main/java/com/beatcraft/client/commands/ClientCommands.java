@@ -236,22 +236,54 @@ public class ClientCommands {
             return CommandResult.err(Component.translatable("command.beatcraft.error.invalid_speed", 0, 7));
         }
 
-        controller.playbackSpeed = speed;
+        controller.setSpeed(speed);
         return CommandResult.ok(Component.translatable("command.beatcraft.feedback.set_speed", speed * 100f));
     }
 
     private static CommandResult mapSeek(CommandCallback callback) {
+
         var uuid = callback.getUuidArg("uuid");
 
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        var beat = callback.getFloatArg("beat");
+
+        controller.seek(beat);
 
         return CommandResult.ok();
     }
 
     private static CommandResult resumeMap(CommandCallback callback) {
+
+        var uuid = callback.getUuidArg("uuid");
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        controller.resume();
+
         return CommandResult.ok();
     }
 
     private static CommandResult pauseMap(CommandCallback callback) {
+
+        var uuid = callback.getUuidArg("uuid");
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        controller.pause();
+
         return CommandResult.ok();
     }
 
@@ -276,7 +308,7 @@ public class ClientCommands {
                                     .executes(ClientCommands::playSongForMap)
                             )
                         )
-                    )
+                    ).executes(ClientCommands::resumeMap)
                 ).then(
                     literal("speed").then(
                         argument("value", CommandTree.ArgumentType.Float)
@@ -287,6 +319,12 @@ public class ClientCommands {
                         argument("beat", CommandTree.ArgumentType.Float)
                             .executes(ClientCommands::mapSeek)
                     )
+                ).then(
+                    literal("pause")
+                        .executes(ClientCommands::pauseMap)
+                ).then(
+                    literal("resume")
+                        .executes(ClientCommands::resumeMap)
                 )
             ).build()
         );

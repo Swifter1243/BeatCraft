@@ -71,9 +71,7 @@ public class BeatcraftRenderer {
 
         var c = ColorScheme.getDefaultEnvironment().getNoteLeftColor();
 
-        MeshLoader.COLOR_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(p, c, 0, 0));
-        MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(p, WHITE, 0, 0));
-        MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(c);
+        BeatmapManager.renderMaps();
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
@@ -83,7 +81,6 @@ public class BeatcraftRenderer {
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
 
-        BeatmapManager.renderMaps();
     }
 
     public static void renderParticles() {

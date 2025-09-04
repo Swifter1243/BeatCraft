@@ -352,6 +352,10 @@ public class Audio {
         paused = false;
     }
 
+    public void setSpeed(float speed) {
+        AL10.alSourcef(source, AL10.AL_PITCH, speed);
+    }
+
     public boolean isOk() {
         return mode != Mode.ERR;
     }

@@ -33,3 +33,8 @@ type = "required"
 versionRange = "[13.0.8,)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[mixins]]
+config = "beatcraft.mixins.json"
+[[mixins]]
+config = "beatcraft.neoforge.mixins.json"

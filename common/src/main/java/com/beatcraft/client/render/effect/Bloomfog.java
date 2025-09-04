@@ -356,13 +356,13 @@ public class Bloomfog {
         RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorting.DISTANCE_TO_ORIGIN);
         RenderSystem.setShaderTexture(0, blurredTexId);
         RenderSystem.enableBlend();
+        RenderSystem.disableDepthTest();
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         RenderSystem.setProjectionMatrix(oldProjMat, oldVertexSort);
 
         RenderSystem.enableCull();
-        RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
     }

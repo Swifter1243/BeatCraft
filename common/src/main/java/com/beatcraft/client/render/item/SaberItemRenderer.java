@@ -644,7 +644,7 @@ public class SaberItemRenderer {
 
         int sync = stack.getOrDefault(ModComponents.AUTO_SYNC_COLOR.get(), -1);
 
-        if (sync == -1 || BeatmapManager.hasNearbyBeatmapToPlayer()) {
+        if (sync == -1 || !BeatmapManager.hasNearbyActiveBeatmapToPlayer()) {
             color = stack.getOrDefault(ModComponents.SABER_COLOR_COMPONENT.get(), 0) + 0xFF000000;
         } else if (sync == 0) {
             color = BeatmapManager.nearestActiveBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteLeftColor().toARGB();
