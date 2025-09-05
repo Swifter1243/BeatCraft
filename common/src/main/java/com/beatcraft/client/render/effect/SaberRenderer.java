@@ -1,5 +1,6 @@
 package com.beatcraft.client.render.effect;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -93,9 +95,9 @@ public class SaberRenderer {
         });
     }
 
-    public static void renderSaber(ItemStack item, PoseStack matrices, MultiBufferSource vertexConsumerProvider, Object hand, AbstractClientPlayer player, float tickDelta) {
+    public static void renderSaber(ItemStack item, PoseStack matrices, MultiBufferSource vertexConsumerProvider, InteractionHand hand, AbstractClientPlayer player, float tickDelta) {
         matrices.pushPose();
-        renderTrail(true, matrices, true, player, tickDelta, item); // TODO: fix "Hand"
+        renderTrail(true, matrices, hand.equals(InteractionHand.MAIN_HAND), player, tickDelta, item);
 
         Vector3f worldPos = matrices.last().pose()
             .getTranslation(new Vector3f());
@@ -226,8 +228,10 @@ public class SaberRenderer {
     // Called from ItemEntityRendererMixin
     public static void renderItemEntityTrail(ItemEntity entity, float tickDelta, BakedModel bakedModel) {
 
+        Beatcraft.LOGGER.info("render saber?");
         ItemStack stack = entity.getItem();
         if (stack.is(ModItems.SABER_ITEM)) {
+            Beatcraft.LOGGER.info("render saber.");
 
             PoseStack matrix = new PoseStack();
 

@@ -113,7 +113,7 @@ public class MirrorHandler {
         obstacleRenderCalls.add(call);
     }
 
-    private void renderEarly(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderEarly(Tesselator tesselator, Vector3f cameraPos) {
         for (var call : earlyCalls) {
             call.run();
         }
@@ -121,7 +121,7 @@ public class MirrorHandler {
 
     }
 
-    private void renderObstacles(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderObstacles(Tesselator tesselator, Vector3f cameraPos) {
         if (mapController == null) {
             obstacleRenderCalls.clear();
             return;
@@ -129,7 +129,7 @@ public class MirrorHandler {
 
         int color = mapController.difficulty.getSetDifficulty()
             .getColorScheme().getObstacleColor().toARGB(0.15f);
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : obstacleRenderCalls) {
             call.accept(buffer, cameraPos, color);
@@ -156,7 +156,7 @@ public class MirrorHandler {
 
     }
 
-    private void renderNotes(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderNotes(Tesselator tesselator, Vector3f cameraPos) {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.disableCull();
@@ -176,9 +176,9 @@ public class MirrorHandler {
         RenderSystem.enableCull();
     }
 
-    private void renderNotes0(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderNotes0(Tesselator tesselator, Vector3f cameraPos) {
         // notes and debris
-        BufferBuilder triBuffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+        BufferBuilder triBuffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
@@ -199,7 +199,7 @@ public class MirrorHandler {
             BufferUploader.drawWithShader(triBuff);
         }
 
-        triBuffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+        triBuffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         RenderSystem.setShader(() -> BeatcraftRenderer.arrowShader);
         RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
@@ -225,9 +225,9 @@ public class MirrorHandler {
         mirrorArrows.clear();
     }
 
-    private void renderFloorLights(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderFloorLights(Tesselator tesselator, Vector3f cameraPos) {
         // floor tiles and walls
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableBlend();
@@ -254,7 +254,7 @@ public class MirrorHandler {
         RenderSystem.depthMask(true);
     }
 
-    private void renderForDepth(Tesselator tessellator, Vector3f cameraPos) {
+    private void renderForDepth(Tesselator tesselator, Vector3f cameraPos) {
         depthFramebuffer.setClearColor(0, 0, 0, 1);
         depthFramebuffer.clear(Minecraft.ON_OSX);
 
@@ -262,7 +262,7 @@ public class MirrorHandler {
         BeatcraftRenderer.bloomfog.overrideFramebuffer = depthFramebuffer;
         depthFramebuffer.bindWrite(true);
 
-        var buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : drawCalls) {
             call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
@@ -286,8 +286,8 @@ public class MirrorHandler {
     }
 
     public void drawMirror() {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Vector3f cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         Matrix4f worldTransform = new Matrix4f();
@@ -297,7 +297,7 @@ public class MirrorHandler {
         worldTransform.rotate(q);
 
         if (BeatcraftClient.playerConfig.quality.doMirror()) {
-            renderForDepth(tessellator, cameraPos);
+            renderForDepth(tesselator, cameraPos);
         }
 
         // render mirror block non-reflective faces
@@ -363,9 +363,9 @@ public class MirrorHandler {
         BeatcraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.bindWrite(true);
 
-        renderEarly(tessellator, cameraPos);
+        renderEarly(tesselator, cameraPos);
 
-        buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : mirrorDraws) {
             call.accept(buffer, cameraPos, new Quaternionf(), true);
@@ -383,11 +383,11 @@ public class MirrorHandler {
             RenderSystem.enableCull();
         }
 
-        renderNotes(tessellator, cameraPos);
+        renderNotes(tesselator, cameraPos);
 
-        renderFloorLights(tessellator, cameraPos);
+        renderFloorLights(tesselator, cameraPos);
 
-        renderObstacles(tessellator, cameraPos);
+        renderObstacles(tesselator, cameraPos);
 
         LightMesh.renderAllMirror();
         //RenderSystem.depthMask(false);
@@ -400,7 +400,7 @@ public class MirrorHandler {
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 
 
-        buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : drawCalls) {
             call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));

@@ -31,23 +31,23 @@ public abstract class ItemStackMixin implements ItemStackWithSaberTrailStack {
     private Item item;
 
     @Unique
-    private HashMap<RenderPass, CycleStack<Pair<Vector3f, Vector3f>>> stacks = new HashMap<>();
+    private HashMap<RenderPass, CycleStack<Pair<Vector3f, Vector3f>>> beatcraft$stacks = new HashMap<>();
 
     @Unique
-    public void initStash() {
-        this.stacks = new HashMap<>();
-        stacks.put(RenderPass.LEFT, new CycleStack<>(CycleStack.getTrailSize(), true));
-        stacks.put(RenderPass.RIGHT, new CycleStack<>(CycleStack.getTrailSize(), true));
-        stacks.put(RenderPass.CENTER, new CycleStack<>(CycleStack.getTrailSize(), true));
+    public void beatcraft$initStack() {
+        this.beatcraft$stacks = new HashMap<>();
+        beatcraft$stacks.put(RenderPass.LEFT, new CycleStack<>(CycleStack.getTrailSize(), true));
+        beatcraft$stacks.put(RenderPass.RIGHT, new CycleStack<>(CycleStack.getTrailSize(), true));
+        beatcraft$stacks.put(RenderPass.CENTER, new CycleStack<>(CycleStack.getTrailSize(), true));
     }
 
     @Unique
     @Override
     public CycleStack<Pair<Vector3f, Vector3f>> beatcraft$getTrailStash(RenderPass currentPass) {
-        if (!stacks.containsKey(currentPass)) {
-            stacks.put(currentPass, new CycleStack<>(CycleStack.getTrailSize(), true));
+        if (!beatcraft$stacks.containsKey(currentPass)) {
+            beatcraft$stacks.put(currentPass, new CycleStack<>(CycleStack.getTrailSize(), true));
         }
-        var stash = stacks.get(currentPass);
+        var stash = beatcraft$stacks.get(currentPass);
 
         return stash == null ? new CycleStack<>(2, false) : stash;
     }
@@ -59,7 +59,7 @@ public abstract class ItemStackMixin implements ItemStackWithSaberTrailStack {
     )
     public void init(ItemLike item, int count, PatchedDataComponentMap components, CallbackInfo ci) {
         if (this.item instanceof SaberItem) {
-            this.initStash();
+            this.beatcraft$initStack();
         }
     }
 

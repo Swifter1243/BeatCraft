@@ -2,6 +2,7 @@ package com.beatcraft.common.data;
 
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.common.data.types.CycleStack;
 import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -249,7 +250,10 @@ public class PlayerConfig {
         public void reducedDebris(boolean set) { reducedDebris.set(set); }
 
         public int trailIntensity() { return trailIntensity.get(); }
-        public void trailIntensity(int set) { trailIntensity.set(set); }
+        public void trailIntensity(int set) {
+            trailIntensity.set(set);
+            CycleStack.updateTrailSize(set);
+        }
 
         public HealthStyle healthStyle() { return healthStyle.get(); }
         public void healthStyle(HealthStyle set) { healthStyle.set(set); }
@@ -482,6 +486,8 @@ public class PlayerConfig {
             debug.parse$old(json);
             // No misc settings
         }
+
+        CycleStack.updateTrailSize(preferences.trailIntensity());
 
     }
 

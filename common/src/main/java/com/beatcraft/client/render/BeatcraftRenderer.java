@@ -4,6 +4,7 @@ import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.beatmap.data.ColorScheme;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.instancing.ArrowInstanceData;
 import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
@@ -109,6 +110,8 @@ public class BeatcraftRenderer {
             call.run();
         }
         saberRenderCalls.clear();
+
+        SaberRenderer.renderAll();
 
     }
 
