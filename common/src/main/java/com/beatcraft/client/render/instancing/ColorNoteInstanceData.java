@@ -23,7 +23,7 @@ public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
     private static final ArrayList<ColorNoteInstanceData> sharedCache = new ArrayList<>();
 
     private ColorNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index, Vector4f slicePosition) {
-        this.transform = new Matrix4f(transform);
+        this.transform = transform;
         this.color = color;
         this.dissolve = dissolve;
         this.index = index;
