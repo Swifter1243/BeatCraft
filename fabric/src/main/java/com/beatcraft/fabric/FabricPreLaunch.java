@@ -6,8 +6,8 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 public class FabricPreLaunch implements PreLaunchEntrypoint {
     @Override
     public void onPreLaunch() {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            System.loadLibrary("renderdoc");
-        }
+//        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+//            System.loadLibrary("renderdoc");
+//        }
     }
 }

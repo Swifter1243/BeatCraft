@@ -228,10 +228,8 @@ public class SaberRenderer {
     // Called from ItemEntityRendererMixin
     public static void renderItemEntityTrail(ItemEntity entity, float tickDelta, BakedModel bakedModel) {
 
-        Beatcraft.LOGGER.info("render saber?");
         ItemStack stack = entity.getItem();
         if (stack.is(ModItems.SABER_ITEM)) {
-            Beatcraft.LOGGER.info("render saber.");
 
             PoseStack matrix = new PoseStack();
 

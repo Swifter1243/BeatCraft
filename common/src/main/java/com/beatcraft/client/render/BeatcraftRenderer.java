@@ -7,6 +7,7 @@ import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.instancing.ArrowInstanceData;
 import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.HeadsetInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
@@ -63,8 +64,6 @@ public class BeatcraftRenderer {
 
     }
 
-    private static final Color WHITE = new Color(-1);
-
     public static void renderBeatmap(Camera camera) {
 
         BeatmapManager.preRenderMaps();
@@ -83,6 +82,7 @@ public class BeatcraftRenderer {
         MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
+        MeshLoader.HEADSET_INSTANCED_MESH.render(cameraPos);
 
     }
 
@@ -123,6 +123,8 @@ public class BeatcraftRenderer {
         BeatcraftRenderer.bloomfog.renderBloom();
     }
 
+
+    // v HELPER FUNCTIONS v //
 
     public static List<Vector3f[]> getGlowingQuadAsTris(Vector2f quadSize, float glowSpread) {
         List<Vector3f[]> tris = new ArrayList<>();

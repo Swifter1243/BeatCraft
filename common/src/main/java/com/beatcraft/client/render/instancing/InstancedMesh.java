@@ -1,6 +1,5 @@
 package com.beatcraft.client.render.instancing;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.gl.GlUtil;
@@ -30,7 +29,8 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         int getFrameSize();
         void init();
         int[] getLocations();
-        void setup(int program);
+        default void setup(int program) {}
+        default void setup(int program, DrawPass pass) { setup(program); }
         void cleanup();
         void free();
         InstanceData copy();
@@ -195,18 +195,22 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         bloomCopyCalls.add(draw);
     }
 
+    public void copyDrawToBloom() {
+        copyDrawToBloom(null);
+    }
+
     public void cancelDraws() {
         instanceDataList.clear();
         bloomCopyCalls.clear();
     }
 
-    public void render(Vector3f cameraPos, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
-        render(cameraPos, bloomCopyCalls, cameraRotation, arrowBloomProgram, depthBuffer);
+    public void renderBloom(Vector3f cameraPos, Quaternionf cameraRotation) {
+        render(cameraPos, bloomCopyCalls, cameraRotation, DrawPass.Bloom);
     }
 
     public void render(Vector3f cameraPos) {
         var q = MemoryPool.newQuaternionf();
-        render(cameraPos, instanceDataList, q, -1, -1);
+        render(cameraPos, instanceDataList, q, DrawPass.Normal);
         MemoryPool.releaseSafe(q);
     }
 
@@ -214,7 +218,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         bloomCopyCalls.clear();
     }
 
-    protected void render(Vector3f cameraPos, ArrayList<I> dataList, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
+    protected void render(Vector3f cameraPos, ArrayList<I> dataList, Quaternionf cameraRotation, DrawPass pass) {
 
         if (dataList.isEmpty()) {
             return;
@@ -258,13 +262,13 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
         }
 
-        activateShaderAndTexture(cameraPos, cameraRotation, arrowBloomProgram, depthBuffer);
+        activateShaderAndTexture(cameraPos, cameraRotation);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.disableCull();
 
-        first.setup(shaderProgram);
+        first.setup(shaderProgram, pass);
 
         // mat4 + vec4 + float
         FloatBuffer instanceDataBuffer = MemoryUtil.memAllocFloat(instanceCount * first.getFrameSize());
@@ -309,10 +313,9 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
     }
 
 
-    private void activateShaderAndTexture(Vector3f cameraPos, Quaternionf cameraRotation, int arrowBloomProgram, int depthBuffer) {
+    private void activateShaderAndTexture(Vector3f cameraPos, Quaternionf cameraRotation) {
 
         shaderProgram = GlUtil.getOrCreateShaderProgram(vertexShaderLoc, fragmentShaderLoc);
-        shaderProgram = arrowBloomProgram == -1 ? shaderProgram : arrowBloomProgram;
         GlUtil.useProgram(shaderProgram);
 
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
@@ -326,10 +329,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(cameraRotation).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         GlUtil.uniformMat4f("u_projection", projMat);
         GlUtil.uniformMat4f("u_view", viewMat);
-
-        if (arrowBloomProgram != -1) {
-            GlUtil.setTex(arrowBloomProgram, "u_depth", 1, depthBuffer);
-        }
 
     }
 

@@ -55,10 +55,13 @@ public class MeshLoader {
     public static InstancedMesh<ArrowInstanceData> MIRROR_NOTE_DOT_INSTANCED_MESH;
     public static InstancedMesh<ArrowInstanceData> MIRROR_CHAIN_DOT_INSTANCED_MESH;
 
+    public static InstancedMesh<HeadsetInstanceData> HEADSET_INSTANCED_MESH;
+
     public static final ResourceLocation NOTE_TEXTURE = Beatcraft.id("textures/gameplay_objects/color_note.png");
     public static final ResourceLocation ARROW_TEXTURE = Beatcraft.id("textures/gameplay_objects/arrow.png");
     public static final ResourceLocation SMOKE_TEXTURE = Beatcraft.id("textures/noise/smoke.png");
     public static final ResourceLocation MATRIX_LOCATOR_TEXTURE = Beatcraft.id("textures/debug/matrix_visualizer.png");
+    public static final ResourceLocation HEADSET_TEXTURE = Beatcraft.id("textures/item/headset.png");
 
     public static InstancedMesh<SmokeInstanceData> SMOKE_INSTANCED_MESH;
 
@@ -76,6 +79,8 @@ public class MeshLoader {
         NOTE_ARROW_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/note_arrow.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
         NOTE_DOT_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
         CHAIN_DOT_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/chain_note_dot.json"), ARROW_TEXTURE, "instanced/arrow", 1f);
+
+        HEADSET_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/headset.json"), HEADSET_TEXTURE, "instanced/headset", 1f);
 
         MIRROR_COLOR_NOTE_INSTANCED_MESH = COLOR_NOTE_INSTANCED_MESH.copy();
         MIRROR_BOMB_NOTE_INSTANCED_MESH = BOMB_NOTE_INSTANCED_MESH.copy();

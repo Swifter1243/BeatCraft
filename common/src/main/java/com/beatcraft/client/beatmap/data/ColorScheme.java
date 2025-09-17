@@ -3,8 +3,8 @@ package com.beatcraft.client.beatmap.data;
 import com.beatcraft.common.data.types.Color;
 
 public class ColorScheme {
-    private Color noteLeftColor = new Color(0.75294f, 0.188f, 0.188f);
-    private Color noteRightColor = new Color(0.1254f, 0.3921f, 0.6588f);
+    private Color noteLeftColor = new Color(0.75294f, 0.188f, 0.188f); // c03030 // 12595248
+    private Color noteRightColor = new Color(0.1254f, 0.3921f, 0.6588f); // 2064a8 // 2122920
     private Color obstacleColor = new Color(1, 0.1882f, 0.1882f);
     private Color environmentLeftColor = new Color(0.7529f, 0.188f, 0.188f);
     private Color environmentLeftColorBoost = new Color(0.7529f, 0.188f, 0.188f);

@@ -1,5 +1,7 @@
 package com.beatcraft.client.render.instancing;
 
+import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.common.data.types.Color;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBInstancedArrays;
@@ -120,7 +122,15 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
 
     }
 
-    public void setup(int program) {}
+    public void setup(int program, DrawPass pass) {
+
+        GlUtil.uniform1i("u_pass", pass.ordinal());
+
+        if (pass == DrawPass.Bloom) {
+            GlUtil.setTex(program, "u_depth", 1, Bloomfog.sceneDepthBuffer);
+        }
+
+    }
     public void cleanup() {}
 
 }

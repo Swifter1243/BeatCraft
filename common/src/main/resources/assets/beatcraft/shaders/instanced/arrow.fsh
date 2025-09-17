@@ -1,10 +1,5 @@
-#PC
 #version 330 core
-#ENDPC
-#QUEST
-#version 300 es
-precision highp float;
-#ENDQUEST
+
 
 in vec2 v_uv;
 in vec4 v_color;
@@ -14,6 +9,8 @@ in vec3 v_pos;
 in vec3 screenUV;
 
 uniform sampler2D u_texture;
+uniform sampler2D u_depth;
+uniform int u_pass; // 0 = Normal, 1 = Bloom, 2 = Bloomfog
 
 out vec4 fragColor;
 
@@ -92,6 +89,16 @@ float cnoise(vec3 P){
 
 
 void main() {
+    if (u_pass == 1) {
+        vec2 uv = (screenUV.xy / (-screenUV.z * 2.0)) + 0.5;
+
+        float sceneDepth = texture(u_depth, uv).r;
+
+        if (sceneDepth < gl_FragCoord.z-0.000001) {
+            discard;
+        }
+    }
+
     vec3 clamped = floor(v_pos*18.01)/18.01;
 
     vec4 c = v_color;

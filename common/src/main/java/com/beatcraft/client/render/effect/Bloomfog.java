@@ -138,11 +138,6 @@ public class Bloomfog {
             /**/bloomMaskLightShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "position_color_bloom_mask", DefaultVertexFormat.POSITION_COLOR);
             bloomMaskLightTextureShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "position_color_texture_bloom_mask", DefaultVertexFormat.POSITION_TEX_COLOR);
 
-            var vertexShaderLoc = Beatcraft.id("shaders/instanced/arrow.vsh");
-            var fragmentShaderLoc = Beatcraft.id("shaders/instanced/arrow_bloom_mask.fsh");
-
-            arrowShaderProgram = GlUtil.createShaderProgram(vertexShaderLoc, fragmentShaderLoc);
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -532,6 +527,7 @@ public class Bloomfog {
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.cancelBloomCalls();
             MeshLoader.NOTE_DOT_INSTANCED_MESH.cancelBloomCalls();
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.cancelBloomCalls();
+            MeshLoader.HEADSET_INSTANCED_MESH.cancelBloomCalls();
 
             LightMesh.cancelBloomDraws();
 
@@ -636,13 +632,14 @@ public class Bloomfog {
         }
         miscBloomCalls.clear();
 
-        MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.NOTE_ARROW_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
-        MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos, invCameraRotation, arrowShaderProgram, sceneDepthBuffer);
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.HEADSET_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
         LightMesh.renderAllBloom(sceneDepthBuffer);
 
         bloomInput.unbindWrite();
