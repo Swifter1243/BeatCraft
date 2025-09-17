@@ -69,10 +69,6 @@ public class BeatcraftRenderer {
         BeatmapManager.preRenderMaps();
         var cameraPos = camera.getPosition().toVector3f();
 
-        var p = new Matrix4f().translate(0, -54, 0).scale(0.5f);
-
-        var c = ColorScheme.getDefaultEnvironment().getNoteLeftColor();
-
         BeatmapManager.renderMaps();
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
