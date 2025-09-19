@@ -3,6 +3,7 @@ package com.beatcraft.neoforge;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.common.items.ModItems;
 import com.beatcraft.neoforge.common.items.NeoforgeItems;
+import com.beatcraft.neoforge.common.items.NeoforgeItemsGroup;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -22,6 +23,7 @@ public final class BeatcraftNeoForge {
         // NeoForge.EVENT_BUS.register(this);
 
         NeoforgeItems.register(modEventBus);
+        NeoforgeItemsGroup.register(modEventBus);
 
         modEventBus.addListener(this::addCreativeTab);
 

@@ -17,6 +17,10 @@ public class NeoforgeItems {
         "saber",
         () -> new NeoforgeSaberItem(new Item.Properties().stacksTo(1))
     );
+    public static final DeferredItem<Item> HEADSET_ITEM = ITEMS.register(
+        "vr_headset",
+        () -> new NeoforgeHeadsetItem(new Item.Properties().stacksTo(1))
+    );
 
 
 

@@ -7,6 +7,7 @@ public class ItemRenderSettings {
 
     public static void init() {
         BuiltinItemRendererRegistry.INSTANCE.register(FabricItems.SABER_ITEM, new FabricSaberItemRenderer());
+        BuiltinItemRendererRegistry.INSTANCE.register(FabricItems.HEADSET_ITEM, new FabricHeadsetItemRenderer());
     }
 
 }

@@ -7,5 +7,6 @@ public class ItemLookup implements IItemLookup {
     @Override
     public void init() {
         ModItems.SABER_ITEM = FabricItems.SABER_ITEM;
+        ModItems.HEADSET_ITEM = FabricItems.HEADSET_ITEM;
     }
 }

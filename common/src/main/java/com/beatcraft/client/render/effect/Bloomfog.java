@@ -556,7 +556,7 @@ public class Bloomfog {
 
         RenderSystem.defaultBlendFunc();
 
-        Tesselator tessellator = Tesselator.getInstance();
+        Tesselator tesselator = Tesselator.getInstance();
 
         var window = Minecraft.getInstance().getWindow();
 
@@ -566,7 +566,7 @@ public class Bloomfog {
         Vector3f cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         // untextured renders
-        var buffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        var buffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (var call : bloomCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
         }
@@ -590,7 +590,7 @@ public class Bloomfog {
         }
 
         // note-textured renders
-        buffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+        buffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         for (var call : noteBloomCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
@@ -609,7 +609,7 @@ public class Bloomfog {
         }
 
         // arrow-textured renders
-        buffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+        buffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         for (var call : arrowBloomCalls) {
             call.accept(buffer, cameraPos, invCameraRotation);
@@ -664,10 +664,10 @@ public class Bloomfog {
 
         RenderSystem.depthMask(false);
 
-        buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 
-        var cr = invCameraRotation.conjugate(new Quaternionf());
+        // var cr = invCameraRotation.conjugate(new Quaternionf());
         float z = 0;
         buffer.addVertex(new Vector3f(-1, -1, z)).setUv(0.0f, 0.0f).setColor(0xFF020200);
         buffer.addVertex(new Vector3f( 1, -1, z)).setUv(1.0f, 0.0f).setColor(0xFF020200);

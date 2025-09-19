@@ -3,7 +3,6 @@ package com.beatcraft.client.render.item;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
-//import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.common.data.types.Color;
@@ -500,8 +499,8 @@ public class SaberItemRenderer {
 
         public void render(Matrix4f matrices, int color, Vector3f cameraPos, boolean bypassBloom) {
 
-            var tessellator = Tesselator.getInstance();
-            var buffer = tessellator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+            var tesselator = Tesselator.getInstance();
+            var buffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
 
             var afterCalls = new ArrayList<Runnable>();
 
@@ -526,14 +525,14 @@ public class SaberItemRenderer {
 
             }
 
-            afterCalls.forEach(c -> {
+            for (var c : afterCalls) {
                 try {
                     c.run();
                 } catch (Exception e) {
                     Beatcraft.LOGGER.error("Saber Model late callback errored!", e);
                     throw new RuntimeException(e);
                 }
-            });
+            }
 
         }
 

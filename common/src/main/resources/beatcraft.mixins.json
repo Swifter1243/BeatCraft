@@ -5,9 +5,11 @@
   "minVersion": "0.8",
   "client": [
     "BufferBuilderMixin",
+    "InventoryScreenMixin",
     "ItemEntityRendererMixin",
     "ItemInHandRendererMixin",
     "LevelRendererMixin",
+    "ModelBakeryMixin",
     "PlayerHeldItemFeatureRendererMixin"
   ],
   "mixins": [

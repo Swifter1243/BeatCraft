@@ -23,6 +23,7 @@ public class FabricItemsGroup {
 
         ItemGroupEvents.modifyEntriesEvent(ModItemGroup.GROUP_KEY).register(group -> {
             group.accept(FabricItems.SABER_ITEM);
+            group.accept(FabricItems.HEADSET_ITEM);
         });
 
     }

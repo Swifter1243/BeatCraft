@@ -3,6 +3,7 @@ package com.beatcraft.fabric;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.common.items.ModItems;
 import com.beatcraft.fabric.common.items.FabricItems;
+import com.beatcraft.fabric.common.items.FabricItemsGroup;
 import net.fabricmc.api.ModInitializer;
 
 public final class BeatcraftFabric implements ModInitializer {
@@ -16,6 +17,7 @@ public final class BeatcraftFabric implements ModInitializer {
         Beatcraft.init();
 
         FabricItems.init();
+        FabricItemsGroup.init();
         ModItems.init();
 
     }
