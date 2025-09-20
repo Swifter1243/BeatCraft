@@ -8,14 +8,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
-import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 
 import java.util.UUID;
 

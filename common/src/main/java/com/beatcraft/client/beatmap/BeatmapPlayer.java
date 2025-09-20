@@ -217,6 +217,16 @@ public class BeatmapPlayer {
                 currentSeconds = elapsedNanoTime / 1_000_000_000f;
                 currentBeat = info.getBeat(currentSeconds);
                 difficulty.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d);
+
+                if (currentSeconds > info.getSongDuration()) {
+                    info = null;
+                    difficulty = null;
+                    currentSeconds = 0;
+                    currentBeat = 0;
+                    elapsedNanoTime = 0;
+                    audio.close();
+                    Beatcraft.LOGGER.info("Song ended");
+                }
             }
 
         }
@@ -226,7 +236,7 @@ public class BeatmapPlayer {
         }
     }
 
-    private PoseStack matrices = new PoseStack();
+    private final PoseStack matrices = new PoseStack();
     public void pre_render(Camera camera) {
 
         if (!camera.getEntity().level().equals(level)) {

@@ -9,6 +9,7 @@ import com.beatcraft.common.data.map.SongData;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -54,7 +55,7 @@ public class ClientCommands {
         var pos = callback.getVec3fArg("position");
         var rot = callback.getFloatArg("rotation");
 
-        var map = BeatmapManager.place(callback.getLevel(), pos, rot, BeatmapRenderer.RenderStyle.DISTANCE);
+        var map = BeatmapManager.place(callback.getLevel(), pos, rot * Mth.DEG_TO_RAD, BeatmapRenderer.RenderStyle.DISTANCE);
 
         return CommandResult.ok(Component.literal(String.format("Placed beatmap: %s", map.getDisplayInfo())));
     }

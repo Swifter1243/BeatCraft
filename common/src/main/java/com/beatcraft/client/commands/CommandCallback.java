@@ -1,6 +1,7 @@
 package com.beatcraft.client.commands;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 
@@ -17,5 +18,4 @@ public interface CommandCallback {
     UUID getUuidArg(String name);
 
     Level getLevel();
-
 }
