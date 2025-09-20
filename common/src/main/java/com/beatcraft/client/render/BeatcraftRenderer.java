@@ -69,8 +69,6 @@ public class BeatcraftRenderer {
         BeatmapManager.preRenderMaps();
         var cameraPos = camera.getPosition().toVector3f();
 
-        BeatmapManager.renderMaps();
-
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
@@ -79,6 +77,8 @@ public class BeatcraftRenderer {
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.HEADSET_INSTANCED_MESH.render(cameraPos);
+
+        BeatmapManager.renderMaps();
 
     }
 

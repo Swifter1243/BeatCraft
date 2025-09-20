@@ -284,9 +284,6 @@ public class BeatmapRenderer {
         var cameraPos = camera.getPosition().toVector3f();
         renderEnvironmentLights(tesselator, cameraPos);
 
-        // render notes
-    }
-    public void render(PoseStack matrices, Difficulty difficulty, Camera camera, float distance) {
         float alpha = 0;
 
         switch (renderStyle) {
@@ -302,13 +299,8 @@ public class BeatmapRenderer {
             }
         }
 
-
-        var tesselator = Tesselator.getInstance();
-        var cameraPos = camera.getPosition().toVector3f();
-
         renderFloorLightsPhase1(tesselator, cameraPos);
 
-        renderObstacles(tesselator, cameraPos);
 
         renderFloorLights(tesselator, cameraPos);
 
@@ -319,6 +311,15 @@ public class BeatmapRenderer {
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(matrices.last().pose()));
         }
+
+        // render notes
+    }
+    public void render(PoseStack matrices, Difficulty difficulty, Camera camera, float distance) {
+
+        var tesselator = Tesselator.getInstance();
+        var cameraPos = camera.getPosition().toVector3f();
+
+        renderObstacles(tesselator, cameraPos);
 
     }
 
