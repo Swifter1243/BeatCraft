@@ -40,7 +40,7 @@ public class BeatmapRenderer {
     public boolean doSkyEffects = true;
     public boolean skipWorldRender = false;
 
-    public final ArrayList<BiConsumer<BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
+    public final ArrayList<TriConsumer<Matrix4f, BufferBuilder, Vector3f>> bloomfogPosColCalls = new ArrayList<>();
     public final ArrayList<Runnable> renderCalls = new ArrayList<>();
     public final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
     public final ArrayList<BiConsumer<BufferBuilder, Vector3f>> laserRenderCalls = new ArrayList<>();
@@ -83,7 +83,7 @@ public class BeatmapRenderer {
         lightRenderCalls.add(call);
     }
 
-    public void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
+    public void recordBloomfogPosColCall(TriConsumer<Matrix4f, BufferBuilder, Vector3f> call) {
         bloomfogPosColCalls.add(call);
     }
 
@@ -124,6 +124,32 @@ public class BeatmapRenderer {
         BeatcraftRenderer.bloomfog.overrideBuffer = false;
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+
+    }
+
+    private void renderBloomfogPosCol(Matrix4f transform, Tesselator tesselator, Vector3f cameraPos) {
+
+        var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        for (var call : bloomfogPosColCalls) {
+            call.accept(transform, buffer, cameraPos);
+        }
+        bloomfogPosColCalls.clear();
+
+        var buff = buffer.build();
+        if (buff != null) {
+            RenderSystem.disableCull();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
+            BeatcraftRenderer.bloomfog.loadTex();
+            BufferUploader.drawWithShader(buff);
+            RenderSystem.enableCull();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableDepthTest();
+        }
+
+
 
     }
 
@@ -282,6 +308,10 @@ public class BeatmapRenderer {
 
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();
+        var m = matrices.last().pose();
+
+        renderBloomfogPosCol(m, tesselator, cameraPos);
+
         renderEnvironmentLights(tesselator, cameraPos);
 
         float alpha = 0;
@@ -301,7 +331,6 @@ public class BeatmapRenderer {
 
         renderFloorLightsPhase1(tesselator, cameraPos);
 
-
         renderFloorLights(tesselator, cameraPos);
 
         if (difficulty != null) {
@@ -309,7 +338,7 @@ public class BeatmapRenderer {
         }
 
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
-            MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(matrices.last().pose()));
+            MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(m));
         }
 
         // render notes

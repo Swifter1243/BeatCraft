@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -98,7 +99,7 @@ public class BeatmapPlayer {
         renderer.recordLightRenderCall(call);
     }
 
-    public void recordBloomfogPosColCall(BiConsumer<BufferBuilder, Vector3f> call) {
+    public void recordBloomfogPosColCall(TriConsumer<Matrix4f, BufferBuilder, Vector3f> call) {
         renderer.recordBloomfogPosColCall(call);
     }
 
@@ -218,6 +219,8 @@ public class BeatmapPlayer {
                 currentBeat = info.getBeat(currentSeconds);
                 difficulty.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d);
 
+                Beatcraft.LOGGER.info("TIME: {} / {}", currentSeconds, info.getSongDuration());
+
                 if (currentSeconds > info.getSongDuration()) {
                     info = null;
                     difficulty = null;
@@ -225,6 +228,7 @@ public class BeatmapPlayer {
                     currentBeat = 0;
                     elapsedNanoTime = 0;
                     audio.close();
+                    audio = null;
                     Beatcraft.LOGGER.info("Song ended");
                 }
             }

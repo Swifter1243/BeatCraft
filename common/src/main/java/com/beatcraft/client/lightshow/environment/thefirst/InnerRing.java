@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -34,8 +35,8 @@ public class InnerRing extends LightObject {
         var ori = new Quaternionf(orientation);
         var rot = new Quaternionf(rotation);
 
-        mapController.recordBloomfogPosColCall((b, c) ->
-            _render(b, c, pos, off, ori, rot, bloomfog)
+        mapController.recordBloomfogPosColCall((t, b, c) ->
+            _render(t, b, c, pos, off, ori, rot, bloomfog)
         );
     }
 
@@ -91,11 +92,11 @@ public class InnerRing extends LightObject {
             new Vector3f(1, -1, 1)
     };
 
-    private void _render(BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
+    private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         // manual mesh building since loading over-sized json model doesn't work >:(
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
-                buffer.addVertex(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos)).setColor(color);
+                buffer.addVertex(transform.transformPosition(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos))).setColor(color);
             }
         }
 
