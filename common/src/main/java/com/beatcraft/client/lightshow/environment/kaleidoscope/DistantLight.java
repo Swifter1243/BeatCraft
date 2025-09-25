@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.kaleidoscope;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,7 +10,7 @@ import org.joml.Vector3f;
 
 public class DistantLight extends LightObject {
 
-    public DistantLight(BeatmapPlayer map, Vector3f pos, Quaternionf ori) {
+    public DistantLight(BeatmapController map, Vector3f pos, Quaternionf ori) {
         super(map);
         position = pos;
         orientation = ori;

@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.physical;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.object.data.Arc;
@@ -12,7 +12,6 @@ import com.beatcraft.client.render.DebugRenderer;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
@@ -26,7 +25,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
     BezierPath basePath;
     private int segments = 50;
 
-    public PhysicalArc(BeatmapPlayer map, Arc data) {
+    public PhysicalArc(BeatmapController map, Arc data) {
         super(map, data);
         buildBasePath(new Vector3f(1, 1, 1));
     }

@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.ring_lights;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
@@ -13,7 +13,6 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RingLightHandler extends LightObject {
@@ -143,9 +142,9 @@ public class RingLightHandler extends LightObject {
     private final RingHandler headRing;
 
     public RingLightHandler(
-        BeatmapPlayer map,
-        Function<TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject>, LightObject> ringFactory,
-        TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> lightBuilder,
+        BeatmapController map,
+        Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> ringFactory,
+        TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> lightBuilder,
         int count, Vector3f position, float ringGap
     ) {
         super(map);

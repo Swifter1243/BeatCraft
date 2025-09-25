@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.thefirst;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
@@ -47,7 +47,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     private SpectrogramTowers leftSpectrogramTowers;
     private SpectrogramTowers rightSpectrogramTowers;
 
-    public TheFirstEnvironment(BeatmapPlayer map) {
+    public TheFirstEnvironment(BeatmapController map) {
         super(map);
     }
 
@@ -79,7 +79,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
 
     }
 
-    private static GlowingCuboid getRunway(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getRunway(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -93,7 +93,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         );
     }
 
-    private static GlowingCuboid getTowerLight1(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getTowerLight1(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -107,7 +107,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         );
     }
 
-    private static GlowingCuboid getTowerLight2(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getTowerLight2(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -125,7 +125,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     // additional side lasers:
     // @ 10 5.5 -14
     // @ 10 2.5 -17
-    private static GlowingCuboid getTowerLight3(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getTowerLight3(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -139,7 +139,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         );
     }
 
-    private static GlowingCuboid getTowerLight4(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getTowerLight4(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -159,7 +159,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     // @ -22.5 30  19.5
     // @ -12.5 24 -13.5
     // @  12.5 24 -13.5
-    private static GlowingCuboid[] getSkyLasers(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid[] getSkyLasers(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         // [back, front]
@@ -189,7 +189,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     // slanted lasers:
     // @  3.5 -64 -0.5 ->  3.5 32 -34.5 // distance: 102, angle: 19.8 degrees
     // @ -x ^^^
-    private static GlowingCuboid getSlantedLaser(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getSlantedLaser(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(

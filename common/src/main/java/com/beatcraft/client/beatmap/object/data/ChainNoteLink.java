@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.CutDirection;
@@ -19,7 +19,7 @@ public class ChainNoteLink extends GameplayObject implements ScorableObject {
     private boolean disableNoteLook = false;
     private boolean disableNoteGravity = false;
 
-    public ChainNoteLink(BeatmapPlayer map) {
+    public ChainNoteLink(BeatmapController map) {
         super(map);
     }
 

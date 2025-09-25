@@ -1,13 +1,11 @@
 package com.beatcraft.client.beatmap;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
-import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
@@ -34,7 +32,7 @@ public class BeatmapRenderer {
         DISTANCE,
     }
 
-    private final BeatmapPlayer mapController;
+    private final BeatmapController mapController;
 
     public RenderStyle renderStyle;
     public boolean doSkyEffects = true;
@@ -49,7 +47,7 @@ public class BeatmapRenderer {
     public final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
 
 
-    public BeatmapRenderer(BeatmapPlayer map, RenderStyle style) {
+    public BeatmapRenderer(BeatmapController map, RenderStyle style) {
         mapController = map;
         renderStyle = style;
     }

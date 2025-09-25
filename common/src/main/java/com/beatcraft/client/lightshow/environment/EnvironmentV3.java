@@ -1,7 +1,7 @@
 package com.beatcraft.client.lightshow.environment;
 
 import com.beatcraft.client.animation.Easing;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.client.lightshow.event.EventBuilder;
@@ -42,7 +42,7 @@ public abstract class EnvironmentV3 extends Environment {
         }
     }
 
-    public EnvironmentV3(BeatmapPlayer map) {
+    public EnvironmentV3(BeatmapController map) {
         super(map);
     }
 

@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.CutDirection;
@@ -41,7 +41,7 @@ public class Arc extends GameplayObject {
     private NoteType noteType;
     private Color color;
 
-    public Arc(BeatmapPlayer map) {
+    public Arc(BeatmapController map) {
         super(map);
     }
 

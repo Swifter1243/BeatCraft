@@ -1,6 +1,6 @@
 package com.beatcraft.client.render.effect;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.common.memory.MemoryPool;
@@ -13,8 +13,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.function.BiConsumer;
 
 public class ObstacleGlowRenderer {
 
@@ -86,7 +84,7 @@ public class ObstacleGlowRenderer {
         return out;
     }
 
-    public static void render(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
+    public static void render(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
         if (distortionShader == null) init();
         map.recordLaserRenderCall((buffer, camera) -> _render(position, orientation, bounds, color, buffer, camera, false));
         var p = MemoryPool.newVector3f(position);
@@ -95,7 +93,7 @@ public class ObstacleGlowRenderer {
 
     }
 
-    public static void renderMirrored(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
+    public static void renderMirrored(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
         Vector3f flippedPos = position.mul(1, -1, 1);
         Quaternionf flippedOrientation = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
         MemoryPool.release(orientation);

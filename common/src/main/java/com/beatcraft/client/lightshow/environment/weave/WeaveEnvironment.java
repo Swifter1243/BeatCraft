@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.weave;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.environment.EnvironmentV3;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.client.lightshow.environment.lightgroup.OrientableLightGroup;
@@ -80,7 +80,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
         return eventGroups;
     }
 
-    public WeaveEnvironment(BeatmapPlayer map) {
+    public WeaveEnvironment(BeatmapController map) {
         super(map);
     }
 

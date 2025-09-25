@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.data.types.Color;
 import com.google.gson.JsonObject;
@@ -9,13 +9,13 @@ import net.minecraft.client.Camera;
 
 public abstract class Environment {
 
-    public BeatmapPlayer mapController;
+    public BeatmapController mapController;
 
     public static Color DEFAULT_FOG_COLOR = new Color(0.18823f, 0.5960f, 1);
 
     public abstract float getVersion();
 
-    public Environment(BeatmapPlayer map) {
+    public Environment(BeatmapController map) {
         mapController = map;
         setup();
     }

@@ -1,8 +1,6 @@
 package com.beatcraft.client.beatmap.object.physical;
 
-import com.beatcraft.Beatcraft;
-import com.beatcraft.client.BeatcraftClient;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.ChainNoteLink;
@@ -17,9 +15,7 @@ import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -43,7 +39,7 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         new Vector3f(0.25f, 0.046875f, 0.25f)
     );
 
-    public PhysicalChainNoteLink(BeatmapPlayer map, ChainNoteLink data) {
+    public PhysicalChainNoteLink(BeatmapController map, ChainNoteLink data) {
         super(map, data);
         scoreState = ScoreState.unChecked();
         baseDegrees = data.getCutDirection().baseAngleDegrees;

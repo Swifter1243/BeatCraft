@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.lights;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,7 +12,7 @@ import org.joml.Vector3f;
 
 public abstract class LightObject {
 
-    protected final BeatmapPlayer mapController;
+    protected final BeatmapController mapController;
 
     protected Vector3f position = new Vector3f();
     protected Quaternionf orientation = new Quaternionf();
@@ -33,7 +33,7 @@ public abstract class LightObject {
     protected CompoundTransformState.Polarity translationPolarity = CompoundTransformState.Polarity.PPP;
     protected CompoundTransformState.Polarity rotationPolarity = CompoundTransformState.Polarity.PPP;
 
-    public LightObject(BeatmapPlayer map) {
+    public LightObject(BeatmapController map) {
         mapController = map;
     }
 

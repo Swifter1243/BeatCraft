@@ -1,6 +1,5 @@
 package com.beatcraft.client.beatmap.data;
-import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.object.data.*;
 import com.beatcraft.client.beatmap.object.physical.*;
 import com.beatcraft.client.lightshow.environment.EnvironmentUtils;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DifficultyV4 extends Difficulty {
-    public DifficultyV4(BeatmapPlayer controller, Info info, Info.SetDifficulty setDifficulty) {
+    public DifficultyV4(BeatmapController controller, Info info, Info.SetDifficulty setDifficulty) {
         super(controller, info, setDifficulty);
     }
 

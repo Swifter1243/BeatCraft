@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.lightgroup;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
@@ -15,12 +15,11 @@ import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RingLightGroup extends ActionLightGroupV2 {
 
-    private BeatmapPlayer mapController;
+    private BeatmapController mapController;
 
     private final RingLightHandler innerRing;
     private final RingLightHandler outerRing;
@@ -44,7 +43,7 @@ public class RingLightGroup extends ActionLightGroupV2 {
     }
 
     private int linkIndex = 1;
-    private LightObject linkLight(BeatmapPlayer map, Vector3f position, Quaternionf orientation) {
+    private LightObject linkLight(BeatmapController map, Vector3f position, Quaternionf orientation) {
         var light = lights.get(linkIndex++);
         light.setPosition(position);
         light.setRotation(orientation);
@@ -57,9 +56,9 @@ public class RingLightGroup extends ActionLightGroupV2 {
     }
 
     public RingLightGroup(
-        BeatmapPlayer map,
-        Function<TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
-        Function<TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
+        BeatmapController map,
+        Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
+        Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
         Callable<LightObject> outerLightFactory
     ) {
         this(
@@ -71,9 +70,9 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
 
     public RingLightGroup(
-        BeatmapPlayer map,
-        Function<TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
-        Function<TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
+        BeatmapController map,
+        Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> innerRingFactory,
+        Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> outerRingFactory,
         Callable<LightObject> outerLightFactory,
         float height, int outerRingCount, float outerRingZ, float outerRingSpacing
     ) {

@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.JsonUtil;
@@ -17,7 +17,7 @@ public class Obstacle extends GameplayObject {
     private Integer cachedColor = null;
     private boolean noodleSizing = false;
 
-    public Obstacle(BeatmapPlayer map) {
+    public Obstacle(BeatmapController map) {
         super(map);
     }
 

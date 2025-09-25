@@ -1,14 +1,13 @@
 package com.beatcraft.client.animation.pointdefinition;
 
-import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
 import com.beatcraft.client.animation.base_providers.FloatReader;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.google.gson.JsonArray;
 import org.joml.Math;
 
 public class FloatPointDefinition extends PointDefinition<Float> {
 
-    public FloatPointDefinition(BeatmapPlayer map, JsonArray json) throws RuntimeException {
+    public FloatPointDefinition(BeatmapController map, JsonArray json) throws RuntimeException {
         super(map, json);
     }
 

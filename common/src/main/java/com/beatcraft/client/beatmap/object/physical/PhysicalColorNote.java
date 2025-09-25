@@ -1,8 +1,6 @@
 package com.beatcraft.client.beatmap.object.physical;
 
-import com.beatcraft.Beatcraft;
-import com.beatcraft.client.BeatcraftClient;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.ColorNote;
@@ -19,9 +17,7 @@ import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import org.joml.*;
 import org.joml.Math;
 
@@ -48,7 +44,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
         new Vector3f(0.25f, 0.25f, 0.25f)
     );
 
-    public PhysicalColorNote(BeatmapPlayer map, ColorNote data) {
+    public PhysicalColorNote(BeatmapController map, ColorNote data) {
         super(map, data);
         scoreState.setUnchecked();
         baseDegrees = data.getCutDirection().baseAngleDegrees;

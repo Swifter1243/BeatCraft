@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.origins;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -17,9 +17,9 @@ import java.util.List;
 
 public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleSpawner {
 
-    BeatmapPlayer mapController;
+    BeatmapController mapController;
 
-    public OriginsParticleSpawner(BeatmapPlayer map) {
+    public OriginsParticleSpawner(BeatmapController map) {
         mapController = map;
     }
 
@@ -27,7 +27,7 @@ public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleS
 
     public static class BarParticle implements Particle {
 
-        private BeatmapPlayer mapController;
+        private BeatmapController mapController;
 
         private Vector3f position;
         private Quaternionf orientation;
@@ -39,7 +39,7 @@ public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleS
         private List<Vector3f[]> tris;
 
 
-        public BarParticle(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Vector3f velocity, LightState lightState) {
+        public BarParticle(BeatmapController map, Vector3f position, Quaternionf orientation, Vector3f velocity, LightState lightState) {
             mapController = map;
             this.velocity = velocity;
             this.position = position;

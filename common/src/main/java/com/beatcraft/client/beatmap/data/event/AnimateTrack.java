@@ -1,7 +1,7 @@
 package com.beatcraft.client.beatmap.data.event;
 
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.object.data.BeatmapObject;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.client.animation.Animation;
@@ -22,7 +22,7 @@ public class AnimateTrack extends BeatmapObject {
     private Integer repeat;
     private final Animation animation;
 
-    public AnimateTrack(BeatmapPlayer map) {
+    public AnimateTrack(BeatmapController map) {
         animation = new Animation(map);
     }
 

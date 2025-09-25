@@ -1,6 +1,6 @@
 package com.beatcraft.client.render.lights;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
@@ -24,7 +24,7 @@ public class GlowingCuboid extends LightObject {
     private List<Vector3f[]> faces;
     private List<Vector3f[]> lines;
 
-    public GlowingCuboid(BeatmapPlayer map, Hitbox dimensions, Vector3f pos, Quaternionf rot) {
+    public GlowingCuboid(BeatmapController map, Hitbox dimensions, Vector3f pos, Quaternionf rot) {
         super(map);
         position = pos;
         orientation = rot;

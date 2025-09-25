@@ -4,26 +4,24 @@ package com.beatcraft.client.animation;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.client.animation.pointdefinition.*;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.event.AnimateTrack;
 import com.beatcraft.client.beatmap.object.data.IBeatmapData;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.client.beatmap.data.event.AssignPathAnimation;
-import com.beatcraft.common.data.types.Color;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.GsonHelper;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class Animation extends AnimationPropertyContainer<FloatPointDefinition, Vector3PointDefinition, Vector4PointDefinition, QuaternionPointDefinition, ColorPointDefinition> implements IBeatmapData<Animation> {
 
-    private BeatmapPlayer map;
+    private BeatmapController map;
 
-    public Animation(BeatmapPlayer map) {
+    public Animation(BeatmapController map) {
         this.map = map;
     }
 
@@ -64,7 +62,7 @@ public class Animation extends AnimationPropertyContainer<FloatPointDefinition, 
 
         return this;
     }
-    private <T> T getPointDefinition(BeatmapPlayer map, JsonObject json, String property, Difficulty difficulty, BiFunction<BeatmapPlayer, JsonArray, T> factory) {
+    private <T> T getPointDefinition(BeatmapController map, JsonObject json, String property, Difficulty difficulty, BiFunction<BeatmapController, JsonArray, T> factory) {
         if (!json.has(property)) {
             return null;
         }

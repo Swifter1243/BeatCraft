@@ -1,6 +1,6 @@
 package com.beatcraft.client.render.lights;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
@@ -36,7 +36,7 @@ public class ParticleCloudLight extends LightObject {
     private float regionVolume;
     private float averageLifetime;
 
-    public ParticleCloudLight(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Hitbox spawnRegion, float density, float minParticleLifetime, float maxParticleLifetime, Vector3f particleDelta) {
+    public ParticleCloudLight(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox spawnRegion, float density, float minParticleLifetime, float maxParticleLifetime, Vector3f particleDelta) {
         super(map);
         this.position = position;
         this.orientation = orientation;

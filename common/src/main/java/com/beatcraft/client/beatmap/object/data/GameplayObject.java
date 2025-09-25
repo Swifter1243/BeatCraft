@@ -2,7 +2,7 @@ package com.beatcraft.client.beatmap.object.data;
 
 import com.beatcraft.client.animation.Animation;
 import com.beatcraft.client.animation.track.ObjectTrackContainer;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.Jumps;
@@ -25,7 +25,7 @@ public abstract class GameplayObject extends BeatmapObject {
     private final Animation pathAnimation;
     private Jumps jumps;
 
-    public GameplayObject(BeatmapPlayer map) {
+    public GameplayObject(BeatmapController map) {
         pathAnimation = new Animation(map);
     }
 

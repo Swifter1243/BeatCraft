@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.kaleidoscope;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
@@ -30,7 +30,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
     HashMap<Integer, LightObject> right;
     HashMap<Integer, LightObject> back;
 
-    public KaleidoscopeEnvironment(BeatmapPlayer map) {
+    public KaleidoscopeEnvironment(BeatmapController map) {
         super(map);
     }
 

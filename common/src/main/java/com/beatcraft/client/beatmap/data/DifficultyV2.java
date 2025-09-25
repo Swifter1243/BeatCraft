@@ -1,7 +1,6 @@
 package com.beatcraft.client.beatmap.data;
 
-import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.event.AnimateTrack;
 import com.beatcraft.client.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.client.beatmap.data.event.AssignTrackParent;
@@ -20,7 +19,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.util.GsonHelper;
 
 public class DifficultyV2 extends Difficulty {
-    public DifficultyV2(BeatmapPlayer controller, Info info, Info.SetDifficulty setDifficulty) {
+    public DifficultyV2(BeatmapController controller, Info info, Info.SetDifficulty setDifficulty) {
         super(controller, info, setDifficulty);
     }
 

@@ -1,12 +1,11 @@
 package com.beatcraft.client.render.lights;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.common.memory.MemoryPool;
-import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.RenderUtil;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.common.utils.MathUtil;
@@ -41,7 +40,7 @@ public class FloodLight extends LightObject {
             .withRotationSwizzle(rotationSwizzle, rotationPolarity, quaternionBuilder);
     }
 
-    public FloodLight(BeatmapPlayer map, float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths, Vector3f pos, Quaternionf rot) {
+    public FloodLight(BeatmapController map, float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths, Vector3f pos, Quaternionf rot) {
         super(map);
         this.startOffset = startOffset;
         this.width = width;

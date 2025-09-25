@@ -31,13 +31,16 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
-public class BeatmapPlayer {
+public class BeatmapController {
 
     public Vector3f worldPosition;
     public float worldAngle;
     private final Level level;
+
+    public UUID trackedPlayer = null;
 
     public final UUID mapId;
 
@@ -107,16 +110,24 @@ public class BeatmapPlayer {
         renderer.recordPlainMirrorCall(call);
     }
 
-    public BeatmapPlayer(Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
+    public BeatmapController(Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
         this(UUID.randomUUID(), level, position, rotation, style);
     }
 
-    public BeatmapPlayer(UUID uuid, Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
+    public BeatmapController(UUID uuid, Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
         mapId = uuid;
         worldPosition = position;
         worldAngle = rotation;
         renderer = new BeatmapRenderer(this, style);
         this.level = level;
+    }
+
+    public void trackPlayer(UUID playerUuid) {
+        trackedPlayer = playerUuid;
+    }
+
+    public void untrackPlayer() {
+        trackedPlayer = null;
     }
 
     public void playSong(SongData.BeatmapInfo info) {
@@ -208,6 +219,7 @@ public class BeatmapPlayer {
 
     public void update() {
         long deltaNanoSeconds = getNanoDeltaTime();
+        double dt = (double) deltaNanoSeconds / 1_000_000_000d;
 
         boolean shouldPlay = this.isPlaying() && !Minecraft.getInstance().isPaused();
 
@@ -217,9 +229,9 @@ public class BeatmapPlayer {
             if (difficulty != null) {
                 currentSeconds = elapsedNanoTime / 1_000_000_000f;
                 currentBeat = info.getBeat(currentSeconds);
-                difficulty.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d);
+                difficulty.update(currentBeat, dt);
 
-                Beatcraft.LOGGER.info("TIME: {} / {}", currentSeconds, info.getSongDuration());
+                logic.update(dt);
 
                 if (currentSeconds > info.getSongDuration()) {
                     info = null;
@@ -236,7 +248,7 @@ public class BeatmapPlayer {
         }
 
         if (audio != null) {
-            audio.update(currentBeat, (double) deltaNanoSeconds / 1_000_000_000d, this);
+            audio.update(currentBeat, dt, this);
         }
     }
 

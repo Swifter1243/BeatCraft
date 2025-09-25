@@ -1,7 +1,6 @@
 package com.beatcraft.client.lightshow.environment;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
-import com.beatcraft.client.beatmap.data.Difficulty;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.environment.kaleidoscope.KaleidoscopeEnvironment;
 import com.beatcraft.client.lightshow.environment.nice.NiceEnvironment;
 import com.beatcraft.client.lightshow.environment.origins.OriginsEnvironment;
@@ -12,7 +11,7 @@ import com.google.gson.JsonObject;
 
 public class EnvironmentUtils {
 
-    public static Environment setupEnvironment(String environment, BeatmapPlayer map) {
+    public static Environment setupEnvironment(String environment, BeatmapController map) {
         return (switch (environment) {
             case "OriginsEnvironment" -> new OriginsEnvironment(map);
             case "TriangleEnvironment" -> new TriangleEnvironment(map);
@@ -23,7 +22,7 @@ public class EnvironmentUtils {
         }).reset();
     }
 
-    public static Environment load(BeatmapPlayer map, JsonObject json) {
+    public static Environment load(BeatmapController map, JsonObject json) {
         Environment env = setupEnvironment(map.difficulty.getInfo().getEnvironmentName(), map);
         env.loadLightshow(map.difficulty, json);
         return env;

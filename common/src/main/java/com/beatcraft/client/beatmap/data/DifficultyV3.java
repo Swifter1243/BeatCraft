@@ -1,6 +1,5 @@
 package com.beatcraft.client.beatmap.data;
-import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.event.AnimateTrack;
 import com.beatcraft.client.beatmap.data.event.AssignPathAnimation;
 import com.beatcraft.client.beatmap.data.event.AssignTrackParent;
@@ -10,16 +9,14 @@ import com.beatcraft.client.beatmap.object.physical.*;
 import com.beatcraft.client.lightshow.environment.EnvironmentUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.joml.Vector2f;
 import oshi.util.tuples.Pair;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DifficultyV3 extends Difficulty {
 
-    public DifficultyV3(BeatmapPlayer controller, Info info, Info.SetDifficulty setDifficulty) {
+    public DifficultyV3(BeatmapController controller, Info info, Info.SetDifficulty setDifficulty) {
         super(controller, info, setDifficulty);
     }
 

@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.kaleidoscope;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
@@ -15,7 +15,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
 
 public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
@@ -27,7 +26,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
     private final RingLightHandler innerRing;
     private final RingLightHandler outerRing;
 
-    protected static HashMap<Integer, LightObject> buildRingLights(BeatmapPlayer beatmap) {
+    protected static HashMap<Integer, LightObject> buildRingLights(BeatmapController beatmap) {
         var map = new HashMap<Integer, LightObject>();
 
         var pos = new Vector3f(0, 0, 8);
@@ -45,7 +44,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         return map;
     }
 
-    public KaleidoscopeRingLights(BeatmapPlayer map) {
+    public KaleidoscopeRingLights(BeatmapController map) {
         super(map, buildRingLights(map));
 
         //
@@ -97,7 +96,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
 
     private int linkInnerIndex = 1;
-    private LightObject linkInner(BeatmapPlayer map, Vector3f pos, Quaternionf ori) {
+    private LightObject linkInner(BeatmapController map, Vector3f pos, Quaternionf ori) {
         var light = lights.get(linkInnerIndex);
         linkInnerIndex += 2;
         light.setPosition(pos);
@@ -105,18 +104,18 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         return light;
     }
 
-    private LightObject linkOuter(BeatmapPlayer map, Vector3f pos, Quaternionf ori) {
+    private LightObject linkOuter(BeatmapController map, Vector3f pos, Quaternionf ori) {
         return new DistantLight(mapController, pos, ori);
     }
 
     private int fetchIndex = 1;
-    private LightObject createInner(TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> f) {
+    private LightObject createInner(TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> f) {
         var light = lights.get(fetchIndex);
         fetchIndex += 2;
         return light;
     }
 
-    private LightObject createOuter(TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> f) {
+    private LightObject createOuter(TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> f) {
         return f.apply(mapController, new Vector3f(0, 0, 50), new Quaternionf());
     }
 

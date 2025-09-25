@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.data;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.Info;
 import com.beatcraft.client.beatmap.data.CutDirection;
@@ -29,7 +29,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
     private boolean disableNoteLook = false;
     private boolean disableNoteGravity = false;
 
-    public ChainNoteHead(BeatmapPlayer map) {
+    public ChainNoteHead(BeatmapController map) {
         super(map);
     }
 
@@ -42,7 +42,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
     }
 
 
-    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV3(BeatmapPlayer map, JsonObject json, Difficulty difficulty) {
+    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV3(BeatmapController map, JsonObject json, Difficulty difficulty) {
         ChainNoteHead headNote = new ChainNoteHead(map);
         headNote.loadV3(json, difficulty);
 
@@ -71,7 +71,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
         }));
     }
 
-    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV4(BeatmapPlayer map, JsonObject json, JsonArray colorNotesData, JsonArray chainsData, Difficulty difficulty) {
+    public static Pair<ChainNoteHead, List<ChainNoteLink>> buildV4(BeatmapController map, JsonObject json, JsonArray colorNotesData, JsonArray chainsData, Difficulty difficulty) {
         ChainNoteHead headNote = new ChainNoteHead(map);
 
         headNote.loadV4(json, colorNotesData, difficulty);
@@ -145,7 +145,7 @@ public class ChainNoteHead extends GameplayObject implements ScorableObject {
         return placements;
     }
 
-    private static List<ChainNoteLink> generateChainLinks(BeatmapPlayer map, List<Pair<Vector3f, Float>> positions, Function<ChainNoteLink, Void> loader) {
+    private static List<ChainNoteLink> generateChainLinks(BeatmapController map, List<Pair<Vector3f, Float>> positions, Function<ChainNoteLink, Void> loader) {
         ArrayList<ChainNoteLink> chainLinks = new ArrayList<>();
 
 

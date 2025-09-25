@@ -1,6 +1,6 @@
 package com.beatcraft.client.beatmap.object.physical;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.object.data.Obstacle;
@@ -9,11 +9,9 @@ import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
-import com.beatcraft.client.render.effect.MirrorHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import org.joml.Math;
 import org.joml.Quaternionf;
@@ -29,7 +27,7 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         new Vector3f(0.3f, 0, 0)
     );
 
-    public PhysicalObstacle(BeatmapPlayer map, Obstacle data) {
+    public PhysicalObstacle(BeatmapController map, Obstacle data) {
         super(map, data);
     }
 

@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.origins;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
@@ -37,7 +37,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
     private SpectrogramTowers leftSpectrogramTowers;
     private SpectrogramTowers rightSpectrogramTowers;
 
-    public OriginsEnvironment(BeatmapPlayer map) {
+    public OriginsEnvironment(BeatmapController map) {
         super(map);
     }
 
@@ -72,7 +72,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
     }
 
 
-    private static GlowingCuboid getRunway(BeatmapPlayer map, boolean isLeft) {
+    private static GlowingCuboid getRunway(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
         return new GlowingCuboid(
@@ -87,7 +87,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
     }
 
 
-    private static ParticleCloudLight getParticles(BeatmapPlayer map, boolean isLeft) {
+    private static ParticleCloudLight getParticles(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
         var rotation = new Quaternionf().rotationY(12.5f * Mth.DEG_TO_RAD * -sign);
 

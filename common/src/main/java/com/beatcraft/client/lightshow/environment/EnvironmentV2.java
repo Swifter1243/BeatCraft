@@ -1,7 +1,7 @@
 package com.beatcraft.client.lightshow.environment;
 
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.ActionLightGroupV2;
@@ -42,7 +42,7 @@ public abstract class EnvironmentV2 extends Environment {
     private HashMap<EventGroup, LightGroupV2> lightGroups;
     private ArrayList<LightGroupV2> uniqueGroups;
 
-    public EnvironmentV2(BeatmapPlayer map) {
+    public EnvironmentV2(BeatmapController map) {
         super(map);
     }
 

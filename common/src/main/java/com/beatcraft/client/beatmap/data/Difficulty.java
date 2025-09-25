@@ -1,10 +1,7 @@
 package com.beatcraft.client.beatmap.data;
 
-import com.beatcraft.Beatcraft;
-import com.beatcraft.client.BeatcraftClient;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
-import com.beatcraft.client.animation.base_providers.BaseProviderHandler;
 import com.beatcraft.client.beatmap.data.event.*;
 import com.beatcraft.client.beatmap.object.data.BeatmapObject;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
@@ -30,7 +27,7 @@ import java.util.stream.Collectors;
 
 public abstract class Difficulty {
 
-    public final BeatmapPlayer mapController;
+    public final BeatmapController mapController;
 
     private final Info info;
     private final Info.SetDifficulty setDifficulty;
@@ -51,7 +48,7 @@ public abstract class Difficulty {
 
     public Environment lightShowEnvironment;
 
-    public Difficulty(BeatmapPlayer controller, Info info, Info.SetDifficulty setDifficulty) {
+    public Difficulty(BeatmapController controller, Info info, Info.SetDifficulty setDifficulty) {
         this.mapController = controller;
         this.info = info;
         this.setDifficulty = setDifficulty;

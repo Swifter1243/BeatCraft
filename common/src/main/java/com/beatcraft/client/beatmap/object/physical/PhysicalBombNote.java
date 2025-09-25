@@ -1,16 +1,14 @@
 package com.beatcraft.client.beatmap.object.physical;
 
 import com.beatcraft.client.animation.AnimationState;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.object.data.BombNote;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.instancing.BombNoteInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -27,7 +25,7 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
         new Vector3f(0.175f, 0.175f, 0.175f)
     );
 
-    public PhysicalBombNote(BeatmapPlayer map, BombNote data) {
+    public PhysicalBombNote(BeatmapController map, BombNote data) {
         super(map, data);
     }
 

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public class BeatmapManager {
 
-    public static final ArrayList<BeatmapPlayer> beatmaps = new ArrayList<>();
+    public static final ArrayList<BeatmapController> beatmaps = new ArrayList<>();
     public static final ArrayList<SongData> songs = new ArrayList<>();
 
     public static void loadBeatmaps() {
@@ -66,7 +66,7 @@ public class BeatmapManager {
         return new float[]{x[0] + position.y, x[1] + position.y};
     }
 
-    public static BeatmapPlayer getByUuid(UUID uuid) {
+    public static BeatmapController getByUuid(UUID uuid) {
 
         for (var map : beatmaps) {
             if (map.mapId.equals(uuid)) {
@@ -77,21 +77,21 @@ public class BeatmapManager {
         return null;
     }
 
-    public static BeatmapPlayer place(Level level, Vector3f pos, float angle, BeatmapRenderer.RenderStyle style) {
-        var map = new BeatmapPlayer(level, pos, angle, style);
+    public static BeatmapController place(Level level, Vector3f pos, float angle, BeatmapRenderer.RenderStyle style) {
+        var map = new BeatmapController(level, pos, angle, style);
         beatmaps.add(map);
         return map;
     }
 
-    public static BeatmapPlayer nearestActiveBeatmapToPlayer() {
+    public static BeatmapController nearestActiveBeatmapToPlayer() {
         var pos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         return nearestActiveBeatmap(pos);
     }
 
-    public static BeatmapPlayer nearestActiveBeatmap(Vector3f pos) {
+    public static BeatmapController nearestActiveBeatmap(Vector3f pos) {
 
         var nearestDist = Float.POSITIVE_INFINITY;
-        BeatmapPlayer nearest = null;
+        BeatmapController nearest = null;
 
         for (var map : beatmaps) {
             if (map.difficulty == null || map.difficulty.lightShowEnvironment == null) {

@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.lightgroup;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
@@ -21,7 +21,7 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
     private final List<LightObject> rotatingLights;
     private final List<LightObject> staticLights;
 
-    public RotatingLightsGroup(BeatmapPlayer map, HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
+    public RotatingLightsGroup(BeatmapController map, HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
         super(map, collectLights(rotatingLights, staticLights));
         this.rotatingLights = rotatingLights.values().stream().toList();
         this.staticLights = staticLights.values().stream().toList();

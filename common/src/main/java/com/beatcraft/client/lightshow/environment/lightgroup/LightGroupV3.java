@@ -1,7 +1,7 @@
 package com.beatcraft.client.lightshow.environment.lightgroup;
 
 import com.beatcraft.Beatcraft;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.lightshow.lights.TransformState;
@@ -15,7 +15,7 @@ public abstract class LightGroupV3 extends LightGroup {
 
     public final HashMap<Integer, LightObject> lights;
 
-    public LightGroupV3(BeatmapPlayer map, HashMap<Integer, LightObject> lights) {
+    public LightGroupV3(BeatmapController map, HashMap<Integer, LightObject> lights) {
         super(map);
         this.lights = lights;
     }

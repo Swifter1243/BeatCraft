@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.kaleidoscope;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
@@ -20,7 +20,7 @@ public class RingSpike extends LightObject {
     // use default light state + 7 extra
     private final LightState[] states = new LightState[7];
 
-    public RingSpike(BeatmapPlayer map) {
+    public RingSpike(BeatmapController map) {
         super(map);
     }
 
@@ -28,7 +28,7 @@ public class RingSpike extends LightObject {
 
         private final int target;
 
-        public SubLightController(BeatmapPlayer map, int target) {
+        public SubLightController(BeatmapController map, int target) {
             super(map);
             this.target = target;
         }
@@ -95,7 +95,7 @@ public class RingSpike extends LightObject {
         }
     }
 
-    public RingSpike(BeatmapPlayer map, Vector3f pos, Quaternionf ori) {
+    public RingSpike(BeatmapController map, Vector3f pos, Quaternionf ori) {
         super(map);
         spikes.add(this);
         position = pos;

@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.environment.triangle;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.render.effect.Bloomfog;
@@ -14,7 +14,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class OuterRing extends LightObject {
 
@@ -28,13 +27,13 @@ public class OuterRing extends LightObject {
     private static final float lightOffset = 0.001f;
     protected boolean lightsOnly = false;
 
-    public static OuterRing getLightsOnly(BeatmapPlayer map, TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> lightFactory) {
+    public static OuterRing getLightsOnly(BeatmapController map, TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> lightFactory) {
         var a = new OuterRing(map, lightFactory);
         a.lightsOnly = true;
         return a;
     }
 
-    public OuterRing(BeatmapPlayer map, TriFunction<BeatmapPlayer, Vector3f, Quaternionf, LightObject> lightFactory) {
+    public OuterRing(BeatmapController map, TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> lightFactory) {
         super(map);
         orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
         lights = List.of(

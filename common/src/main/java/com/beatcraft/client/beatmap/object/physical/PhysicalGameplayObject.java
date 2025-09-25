@@ -1,11 +1,9 @@
 package com.beatcraft.client.beatmap.object.physical;
 
 import com.beatcraft.client.BeatcraftClient;
-import com.beatcraft.client.beatmap.BeatmapManager;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.Easing;
-import com.beatcraft.client.audio.AudioController;
 import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.data.ScoreState;
@@ -19,7 +17,6 @@ import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.client.render.particle.Debris;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
@@ -27,7 +24,7 @@ import org.joml.Math;
 
 public abstract class PhysicalGameplayObject<T extends GameplayObject> extends WorldRenderer {
 
-    public final BeatmapPlayer mapController;
+    public final BeatmapController mapController;
 
     private static final float JUMP_FAR_Z = 500;
     private static final float JUMP_SECONDS = 0.4f;
@@ -46,7 +43,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected ScoreState scoreState = ScoreState.unChecked();
     private NoteType contactColor = null;
 
-    public PhysicalGameplayObject(BeatmapPlayer beatmap, T data) {
+    public PhysicalGameplayObject(BeatmapController beatmap, T data) {
         this.mapController = beatmap;
         this.data = data;
     }

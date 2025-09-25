@@ -1,8 +1,6 @@
 package com.beatcraft.client.commands;
 
-import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
 import com.beatcraft.client.beatmap.BeatmapRenderer;
 import com.beatcraft.client.services.CommandManager;
 import com.beatcraft.common.data.map.SongData;

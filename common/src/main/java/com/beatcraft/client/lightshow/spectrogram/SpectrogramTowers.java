@@ -2,10 +2,9 @@ package com.beatcraft.client.lightshow.spectrogram;
 
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.audio.SpectrogramAnalyzer;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
-import com.beatcraft.client.render.effect.MirrorHandler;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -19,7 +18,7 @@ public class SpectrogramTowers {
         Cuboid
     }
 
-    private BeatmapPlayer mapController;
+    private BeatmapController mapController;
 
     private SpectrogramAnalyzer spectrogram;
     private Vector3f position;
@@ -38,7 +37,7 @@ public class SpectrogramTowers {
 
     private Vector3f upVec = new Vector3f();
 
-    public SpectrogramTowers(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, File soundFile, TowerStyle towerStyle, boolean splitHalfway) {
+    public SpectrogramTowers(BeatmapController map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, File soundFile, TowerStyle towerStyle, boolean splitHalfway) {
         this.mapController = map;
         this.position = position;
         this.orientation = orientation;
@@ -53,7 +52,7 @@ public class SpectrogramTowers {
 
     }
 
-    private SpectrogramTowers(BeatmapPlayer map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, TowerStyle towerStyle, boolean splitHalfway) {
+    private SpectrogramTowers(BeatmapController map, Vector3f position, Quaternionf orientation, Vector3f towerOffset, int towerCount, TowerStyle towerStyle, boolean splitHalfway) {
         this.mapController = map;
         this.position = position;
         this.orientation = orientation;

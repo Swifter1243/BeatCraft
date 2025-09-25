@@ -1,6 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.event.VoidEventHandler;
 import com.beatcraft.client.lightshow.environment.BoostableColor;
 import com.beatcraft.client.lightshow.event.events.ColorBoostEvent;
@@ -8,9 +8,9 @@ import com.beatcraft.client.lightshow.event.events.ColorBoostEvent;
 import java.util.List;
 
 public class ColorBoostEventHandler extends VoidEventHandler<ColorBoostEvent> {
-    BeatmapPlayer mapController;
+    BeatmapController mapController;
 
-    public ColorBoostEventHandler(BeatmapPlayer map, List<ColorBoostEvent> events) {
+    public ColorBoostEventHandler(BeatmapController map, List<ColorBoostEvent> events) {
         super(events);
         mapController = map;
     }

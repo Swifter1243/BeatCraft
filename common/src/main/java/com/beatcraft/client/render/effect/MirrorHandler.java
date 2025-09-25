@@ -2,7 +2,7 @@ package com.beatcraft.client.render.effect;
 
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -18,7 +18,6 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import java.util.function.BiConsumer;
 
 public class MirrorHandler {
 
-    private final BeatmapPlayer mapController;
+    private final BeatmapController mapController;
 
     private static final ArrayList<MirrorHandler> mirrors = new ArrayList<>();
 
@@ -63,7 +62,7 @@ public class MirrorHandler {
         }
     }
 
-    public MirrorHandler(BeatmapPlayer map) {
+    public MirrorHandler(BeatmapController map) {
         mapController = map;
         mirrors.add(this);
     }

@@ -4,7 +4,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class BeatmapLogicController {
-    private final BeatmapPlayer controller;
+    private final BeatmapController controller;
 
     public Vector3f headPos = new Vector3f();
     public Quaternionf headRot = new Quaternionf();
@@ -19,7 +19,7 @@ public class BeatmapLogicController {
     public Quaternionf playerGlobalRotation = new Quaternionf();
 
 
-    public BeatmapLogicController(BeatmapPlayer player) {
+    public BeatmapLogicController(BeatmapController player) {
         controller = player;
     }
 
@@ -46,5 +46,10 @@ public class BeatmapLogicController {
     public float getHealthPercentage() {
         return 1;
     }
+
+    public void update(double deltaTime) {
+
+    }
+
 
 }

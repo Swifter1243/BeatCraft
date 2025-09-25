@@ -1,7 +1,7 @@
 package com.beatcraft.client.audio;
 
 import com.beatcraft.Beatcraft;
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import org.lwjgl.BufferUtils;
@@ -234,7 +234,7 @@ public class Audio {
     private boolean wasInWall = false;
     private double lastSeconds = 0;
 
-    public void update(float beat, double dt, BeatmapPlayer controller) {
+    public void update(float beat, double dt, BeatmapController controller) {
         if (!isLoaded()) {
             return;
         }

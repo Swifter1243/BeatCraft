@@ -1,14 +1,14 @@
 package com.beatcraft.client.lightshow.environment.lightgroup;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 
 public abstract class LightGroup {
 
-    protected BeatmapPlayer mapController;
+    protected BeatmapController mapController;
 
-    public LightGroup(BeatmapPlayer map) {
+    public LightGroup(BeatmapController map) {
         mapController = map;
     }
 

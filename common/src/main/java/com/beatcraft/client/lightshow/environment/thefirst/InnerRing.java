@@ -1,8 +1,7 @@
 package com.beatcraft.client.lightshow.environment.thefirst;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
-import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,12 +11,10 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.function.BiFunction;
-
 public class InnerRing extends LightObject {
 
 
-    public InnerRing(BeatmapPlayer map) {
+    public InnerRing(BeatmapController map) {
         super(map);
         orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
     }

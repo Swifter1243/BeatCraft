@@ -1,6 +1,6 @@
 package com.beatcraft.client.render.particle;
 
-import com.beatcraft.client.beatmap.BeatmapPlayer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.client.render.instancing.InstancedMesh;
@@ -14,7 +14,7 @@ import org.joml.Vector4f;
 
 public class Debris implements Particle {
 
-    private final BeatmapPlayer mapController;
+    private final BeatmapController mapController;
 
     private final Vector3f position;
     private final Quaternionf orientation;
@@ -31,7 +31,7 @@ public class Debris implements Particle {
 
     public boolean persistent = false;
 
-    public Debris(BeatmapPlayer beatmap, Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color, InstancedMesh<ColorNoteInstanceData> mesh) {
+    public Debris(BeatmapController beatmap, Vector3f position, Quaternionf orientation, Vector3f velocity, Quaternionf spin, Vector4f slice, Color color, InstancedMesh<ColorNoteInstanceData> mesh) {
         mapController = beatmap;
         this.position = position;
         this.velocity = velocity;
