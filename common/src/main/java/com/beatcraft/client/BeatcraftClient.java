@@ -2,10 +2,16 @@ package com.beatcraft.client;
 
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.commands.ClientCommands;
+import com.beatcraft.client.logic.PhysicsTransform;
 import com.beatcraft.common.data.PlayerConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.RandomSource;
+import org.joml.Matrix4f;
+import oshi.util.tuples.Pair;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 @Environment(EnvType.CLIENT)
 public class BeatcraftClient {
@@ -14,6 +20,7 @@ public class BeatcraftClient {
     public static RandomSource random = RandomSource.create();
     public static PlayerConfig playerConfig;
     public static boolean wearingHeadset = false;
+    public static final HashMap<UUID, Pair<PhysicsTransform, PhysicsTransform>> saberTransforms = new HashMap<>();
 
     public static void earlyInit() {
         Beatcraft.LOGGER.info("Initializing Beatcraft Neoforge");

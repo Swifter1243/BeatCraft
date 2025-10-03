@@ -1,5 +1,8 @@
 package com.beatcraft.client.beatmap;
 
+import com.beatcraft.client.BeatcraftClient;
+import com.beatcraft.client.logic.PhysicsTransform;
+import net.minecraft.client.Minecraft;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -48,6 +51,15 @@ public class BeatmapLogicController {
     }
 
     public void update(double deltaTime) {
+
+        if (controller.trackedPlayer != null && BeatcraftClient.saberTransforms.containsKey(controller.trackedPlayer)) {
+            var transforms = BeatcraftClient.saberTransforms.get(controller.trackedPlayer);
+            PhysicsTransform leftSaber = transforms.getA();
+            PhysicsTransform rightSaber = transforms.getB();
+
+
+
+        }
 
     }
 
