@@ -1,6 +1,5 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.item.HeadsetItemRenderer;
 import com.beatcraft.common.items.ModItems;
