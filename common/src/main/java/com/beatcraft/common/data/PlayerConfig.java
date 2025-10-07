@@ -231,6 +231,22 @@ public class PlayerConfig {
             }
         }
 
+        public int activeIndex() {
+            return selectedProfile;
+        }
+
+        public void selectProfile(int index) {
+            selectedProfile = Math.clamp(index, -1, profiles.size()-1);
+        }
+
+        public void addProfile() {
+            profiles.add(new ControllerProfile());
+        }
+
+        public int getProfileCount() {
+            return profiles.size();
+        }
+
     }
 
     public enum HealthStyle {
@@ -257,6 +273,7 @@ public class PlayerConfig {
 
         public HealthStyle healthStyle() { return healthStyle.get(); }
         public void healthStyle(HealthStyle set) { healthStyle.set(set); }
+        public void healthStyle(int set) { healthStyle(HealthStyle.values()[set]); }
 
         public String selectedSaber() { return selectedSaber.get(); }
         public void selectedSaber(String set) { selectedSaber.set(set); }

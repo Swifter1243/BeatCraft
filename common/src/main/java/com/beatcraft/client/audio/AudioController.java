@@ -1,5 +1,7 @@
 package com.beatcraft.client.audio;
 
+import com.beatcraft.client.BeatcraftClient;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -39,8 +41,23 @@ public class AudioController {
         return audio;
     }
 
+    /// Sets the volume of all beatmap audio
+    public static void setVolume(float percent) {
+        for (var track : tracks) {
+            track.setVolume(percent);
+        }
+    }
+
     public static Audio playMapSong(String path) {
-        return playAudio(path, Audio.Mode.INSTANT);
+        var audio = playAudio(path, Audio.Mode.INSTANT);
+        audio.setVolume(BeatcraftClient.playerConfig.audio.volume());
+        tracks.add(audio);
+        return audio;
+    }
+
+
+    public static void remove(Audio audio) {
+        tracks.remove(audio);
     }
 
 }

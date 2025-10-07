@@ -199,8 +199,8 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.seek(beat));
         obstacles.forEach(o -> o.seek(beat));
         arcs.forEach(o -> o.seek(beat));
-        PlayRecorder.seek(beat);
-        Replayer.seek(beat);
+        mapController.playRecorder.seek(beat);
+        mapController.replayer.seek(beat);
     }
 
     public void update(float beat, double deltaTime) {
@@ -221,8 +221,8 @@ public abstract class Difficulty {
         chainLinkNotes.forEach(o -> o.update(beat));
         if (!mapController.isModifierActive("No Walls")) obstacles.forEach(o -> o.update(beat));
         arcs.forEach(o -> o.update(beat));
-        PlayRecorder.update(beat);
-        Replayer.update(beat);
+        mapController.playRecorder.update(beat);
+        mapController.replayer.update(beat);
     }
 
     public TrackLibrary getTrackLibrary() {

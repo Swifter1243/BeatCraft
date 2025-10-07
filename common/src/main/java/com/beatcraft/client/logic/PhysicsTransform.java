@@ -13,8 +13,10 @@ public class PhysicsTransform {
     private final Quaternionf q1 = new Quaternionf();
     private static final Vector3f ZERO = new Vector3f();
 
-    public PhysicsTransform() {
-
+    public PhysicsTransform(float x, float y, float z) {
+        v0.set(x, y, z);
+        currentTransform.translate(v0);
+        previousTransform.translate(v0);
     }
 
     public void update(Matrix4f newTransform) {
@@ -48,6 +50,10 @@ public class PhysicsTransform {
 
     public Vector3f getPosition(Vector3f offset, Vector3f dest) {
         return currentTransform.transformPosition(offset, dest);
+    }
+
+    public Vector3f getPosition(Vector3f dest) {
+        return getPosition(ZERO, dest);
     }
 
     public Quaternionf getRotation(Quaternionf dest) {

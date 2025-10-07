@@ -9,15 +9,18 @@ import com.beatcraft.client.render.instancing.ArrowInstanceData;
 import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
 import com.beatcraft.client.render.instancing.HeadsetInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
+import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +52,10 @@ public class BeatcraftRenderer {
     }
 
     public static void renderSky(Camera camera, float tickDelta) {
-        BeatmapManager.updateMaps();
+        if (ClientDataHolderVR.getInstance().isFirstPass || ClientDataHolderVR.getInstance().vr == null || !ClientDataHolderVR.getInstance().vr.isActive()) {
+            BeatcraftClient.updatePlayerSabers(tickDelta);
+            BeatmapManager.updateMaps();
+        }
     }
 
     public static void renderBloomfog(float tickDelta) {
@@ -60,8 +66,8 @@ public class BeatcraftRenderer {
 
     }
 
-    public static void renderHUD() {
-
+    public static void renderHUD(MultiBufferSource imm) {
+        BeatmapManager.renderHUDs(imm);
     }
 
     public static void renderBeatmap(Camera camera) {
@@ -83,7 +89,7 @@ public class BeatcraftRenderer {
     }
 
     public static void renderParticles() {
-
+        BeatcraftParticleRenderer.renderParticles();
     }
 
     public static void renderDebug(Vector3f cameraPos) {

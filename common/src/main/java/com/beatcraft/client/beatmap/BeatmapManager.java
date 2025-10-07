@@ -3,6 +3,7 @@ package com.beatcraft.client.beatmap;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.map.SongData;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 
@@ -174,6 +175,12 @@ public class BeatmapManager {
         var cam = Minecraft.getInstance().gameRenderer.getMainCamera();
         for (var map : beatmaps) {
             map.render(cam);
+        }
+    }
+
+    public static void renderHUDs(MultiBufferSource imm) {
+        for (var map : beatmaps) {
+            map.hudRenderer.render(imm);
         }
     }
 

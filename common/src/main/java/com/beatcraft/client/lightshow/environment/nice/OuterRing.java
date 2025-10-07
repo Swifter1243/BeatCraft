@@ -71,11 +71,10 @@ public class OuterRing extends LightObject {
 
     }
 
-    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot, Vector3f camera) {
+    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot) {
         return new Vector3f(base)
             .rotate(ori).add(pos)
-            .rotate(rot).add(off)
-            .sub(camera);
+            .rotate(rot).add(off);
     }
 
 
@@ -117,7 +116,7 @@ public class OuterRing extends LightObject {
 
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
-                buffer.addVertex(transform.transformPosition(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation, cameraPos))).setColor(color);
+                buffer.addVertex(cameraPos.negate(new Vector3f()).add(transform.transformPosition(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation)))).setColor(color);
             }
         }
 

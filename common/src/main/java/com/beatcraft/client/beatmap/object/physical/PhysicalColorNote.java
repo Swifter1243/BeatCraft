@@ -239,6 +239,16 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     }
 
     @Override
+    public CutDirection score$getCutDirection() {
+        return data.getCutDirection();
+    }
+
+    @Override
+    public void score$spawnDebris(Vector3f point, Vector3f normal) {
+        spawnDebris(point, normal);
+    }
+
+    @Override
     public Quaternionf score$getLaneRotation() {
         return getLaneRotation();
     }

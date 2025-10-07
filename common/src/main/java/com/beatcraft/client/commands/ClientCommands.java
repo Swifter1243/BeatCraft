@@ -1,11 +1,13 @@
 package com.beatcraft.client.commands;
 
+import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.beatmap.BeatmapRenderer;
 import com.beatcraft.client.services.CommandManager;
 import com.beatcraft.common.data.map.SongData;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -64,6 +66,18 @@ public class ClientCommands {
             var id = map.mapId.toString();
             if (id.contains(current)) {
                 builder.suggest(id);
+            }
+        }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> playerUuidSuggester(CommandCallback callback, SuggestionsBuilder builder) {
+        var current = builder.getRemaining();
+        assert Minecraft.getInstance().level != null;
+        for (var player : Minecraft.getInstance().level.players()) {
+            var uuid = player.getUUID();
+            if (uuid.toString().startsWith(current)) {
+                builder.suggest(uuid.toString());
             }
         }
         return builder.buildFuture();
@@ -286,6 +300,34 @@ public class ClientCommands {
         return CommandResult.ok();
     }
 
+    private static CommandResult trackPlayer(CommandCallback callback) {
+        var uuid = callback.getUuidArg("uuid");
+        var playerUuid = callback.getUuidArg("player");
+
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        controller.trackPlayer(playerUuid);
+        return CommandResult.ok();
+    }
+
+    private static CommandResult enableFPFC(CommandCallback callback) {
+        BeatcraftClient.FPFC = true;
+        return CommandResult.ok();
+    }
+    private static CommandResult disableFPFC(CommandCallback callback) {
+        BeatcraftClient.FPFC = false;
+        return CommandResult.ok();
+    }
+    private static CommandResult toggleFPFC(CommandCallback callback) {
+        BeatcraftClient.FPFC = !BeatcraftClient.FPFC;
+        return CommandResult.ok();
+    }
+
     public static void init() {
         CommandManager.register(
             literal("beatmap").then(
@@ -324,8 +366,18 @@ public class ClientCommands {
                 ).then(
                     literal("resume")
                         .executes(ClientCommands::resumeMap)
+                ).then(
+                    literal("track").then(
+                        argument("player", CommandTree.ArgumentType.Uuid).suggests(ClientCommands::playerUuidSuggester)
+                            .executes(ClientCommands::trackPlayer)
+                    )
                 )
-            ).build()
+            ).build(),
+            literal("fpfc").then(
+                literal("true").executes(ClientCommands::enableFPFC)
+            ).then(
+                literal("false").executes(ClientCommands::disableFPFC)
+            ).executes(ClientCommands::toggleFPFC)
         );
     }
 

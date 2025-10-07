@@ -9,6 +9,9 @@ import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalGameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalObstacle;
 import com.beatcraft.client.render.HUDRenderer;
+import com.beatcraft.client.replay.PlayRecorder;
+import com.beatcraft.client.replay.ReplayHandler;
+import com.beatcraft.client.replay.Replayer;
 import com.beatcraft.common.data.map.SongData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -38,7 +41,7 @@ public class BeatmapController {
 
     public Vector3f worldPosition;
     public float worldAngle;
-    private final Level level;
+    public final Level level;
 
     public UUID trackedPlayer = null;
 
@@ -54,13 +57,17 @@ public class BeatmapController {
     public Audio audio;
     public Info info;
     public Difficulty difficulty;
+    public HUDRenderer hudRenderer;
     public HUDRenderer.MenuScene scene;
+    public PlayRecorder playRecorder;
+    public ReplayHandler replayHandler;
+    public Replayer replayer;
     private boolean playing = false;
 
     public float playbackSpeed = 1.0f;
     public boolean isInWall = false;
 
-    private final ArrayList<String> activeModifiers = new ArrayList<>();
+    public final ArrayList<String> activeModifiers = new ArrayList<>();
 
     public final BeatmapLogicController logic = new BeatmapLogicController(this);
 
@@ -118,8 +125,18 @@ public class BeatmapController {
         mapId = uuid;
         worldPosition = position;
         worldAngle = rotation;
+        scene = HUDRenderer.MenuScene.SongSelect;
         renderer = new BeatmapRenderer(this, style);
+        playRecorder = new PlayRecorder(this);
+        replayHandler = new ReplayHandler(this);
+        replayer = new Replayer(this);
+        hudRenderer = new HUDRenderer(this);
         this.level = level;
+    }
+
+    public void restart() {
+        seek(0);
+        resume();
     }
 
     public void trackPlayer(UUID playerUuid) {
@@ -144,6 +161,7 @@ public class BeatmapController {
             setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
             var cs = this.difficulty.getSetDifficulty().getColorScheme();
             baseProvider.setupStaticProviders(cs);
+            logic.reset();
             audio = AudioController.playMapSong(this.info.getSongFilename());
 
             elapsedNanoTime = 0;
@@ -175,11 +193,11 @@ public class BeatmapController {
     }
 
     public void checkNote(PhysicalGameplayObject<? extends GameplayObject> obj) {
-
+        logic.checkNote(obj);
     }
 
     public void checkObstacle(PhysicalObstacle obstacle, Vector3f localPos, Quaternionf rotation) {
-
+        logic.checkObstacle(obstacle, localPos, rotation);
     }
 
     public boolean isPlaying() {
@@ -208,8 +226,6 @@ public class BeatmapController {
 
     private long lastNanoTime = 0;
 
-
-
     private long getNanoDeltaTime() {
         var n = System.nanoTime();
         var ndt = n - lastNanoTime;
@@ -229,18 +245,12 @@ public class BeatmapController {
             if (difficulty != null) {
                 currentSeconds = elapsedNanoTime / 1_000_000_000f;
                 currentBeat = info.getBeat(currentSeconds);
-                difficulty.update(currentBeat, dt);
-
-                logic.update(dt);
+                if (logic.update(dt)) {
+                    difficulty.update(currentBeat, dt);
+                }
 
                 if (currentSeconds > info.getSongDuration()) {
-                    info = null;
-                    difficulty = null;
-                    currentSeconds = 0;
-                    currentBeat = 0;
-                    elapsedNanoTime = 0;
-                    audio.close();
-                    audio = null;
+                    reset();
                     Beatcraft.LOGGER.info("Song ended");
                 }
             }
@@ -408,5 +418,16 @@ public class BeatmapController {
         }
     }
 
+    public void reset() {
+        info = null;
+        difficulty = null;
+        playing = false;
+        elapsedNanoTime = 0;
+        lastNanoTime = 0;
+        currentBeat = 0;
+        currentSeconds = 0;
+        audio.close();
+        audio = null;
+    }
 
 }

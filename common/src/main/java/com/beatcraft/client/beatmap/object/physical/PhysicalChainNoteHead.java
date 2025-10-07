@@ -2,6 +2,7 @@ package com.beatcraft.client.beatmap.object.physical;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
+import com.beatcraft.client.beatmap.data.CutDirection;
 import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.ChainNoteHead;
 import com.beatcraft.client.beatmap.object.data.ScorableObject;
@@ -174,6 +175,16 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     @Override
     public int score$getMaxSwingInAngle() {
         return 100;
+    }
+
+    @Override
+    public CutDirection score$getCutDirection() {
+        return data.getCutDirection();
+    }
+
+    @Override
+    public void score$spawnDebris(Vector3f point, Vector3f normal) {
+        spawnDebris(point, normal);
     }
 
     @Override

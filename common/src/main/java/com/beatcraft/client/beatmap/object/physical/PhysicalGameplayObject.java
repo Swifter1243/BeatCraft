@@ -34,8 +34,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected Quaternionf baseRotation = new Quaternionf();
     private Quaternionf laneRotation = new Quaternionf();
     private Quaternionf lookRotation = new Quaternionf();
-    private Vector3f worldPos = new Vector3f();
-    private Quaternionf worldRot = new Quaternionf();
+    private Matrix4f worldTransform = new Matrix4f();
     private Matrix4f matrix = new Matrix4f();
     private AnimationState animationState = new AnimationState();
     protected T data;
@@ -91,7 +90,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     public void seek(float beat) {
         despawned = false;
         if (this instanceof PhysicalScorableObject scorable) {
-            scoreState = ScoreState.missed();
+            scoreState = ScoreState.unChecked();
         }
         update(beat);
     }
@@ -107,13 +106,6 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (jumpEnded(beat)) {
             despawn();
             return;
-        }
-
-        if (pastBeat(beat)) {
-            if (this instanceof PhysicalScorableObject scorable) {
-                //scorable.score$getScoreState().setContactPosition(this.getWorldPos());
-                //scorable.score$getScoreState().finalizeScore();
-            }
         }
 
         float lifetime = getLifetime(beat);
@@ -383,6 +375,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         mapController.checkNote(this);
 
+        worldTransform = matrices.last().pose();
         objectRender(matrices, camera, animationState, alpha);
         matrices.popPose();
     }
@@ -405,13 +398,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return 0;
     }
 
-    public Vector3f getWorldPos() {
-        return worldPos;
+    public Matrix4f getWorldTransform() {
+        return worldTransform;
     }
 
-    public Quaternionf getWorldRot() {
-        return worldRot;
+    public Vector3f getWorldPos(Vector3f dest) {
+        return worldTransform.transformPosition(dest.zero());
     }
+
 
     public Hitbox getGoodCutBounds() {
         return new Hitbox(new Vector3f(), new Vector3f());
@@ -451,12 +445,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
 
-    public void spawnDebris(Vector3f notePos, Quaternionf noteOrientation, Color color, Vector3f planeIncident, Vector3f planeNormal) {
-
+    public void spawnDebris(Vector3f planeIncident, Vector3f planeNormal) {
         if (BeatcraftClient.playerConfig.preferences.reducedDebris()) return;
 
         var m = getMesh();
         if (m == null) return;
+
+        var notePos = this.getWorldPos(new Vector3f()).add(-0.25f, -0.25f, -0.25f);
+        var noteOrientation = this.getWorldTransform().getUnnormalizedRotation(new Quaternionf());
+        if (!(this instanceof PhysicalColorNote)) return;
+        var color = ((PhysicalColorNote) this).getData().getColor();
 
         float d = planeNormal.normalize(new Vector3f()).dot(planeIncident);
 

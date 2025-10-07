@@ -38,11 +38,10 @@ public class InnerRing extends LightObject {
         );
     }
 
-    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot, Vector3f camera) {
+    private Vector3f processVertex(Vector3f base, Vector3f pos, Vector3f off, Quaternionf ori, Quaternionf rot) {
         return new Vector3f(base)
             .rotate(ori).add(pos)
-            .rotate(rot).add(off)
-            .sub(camera);
+            .rotate(rot).add(off);
     }
 
     private static final float ringRadius = 11;
@@ -125,7 +124,7 @@ public class InnerRing extends LightObject {
 
     private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         for (var vertex : quads) {
-            buffer.addVertex(transform.transformPosition(processVertex(vertices[vertex], position, offset, orientation, rotation, cameraPos))).setColor(color);
+            buffer.addVertex(cameraPos.negate(new Vector3f()).add(transform.transformPosition(processVertex(vertices[vertex], position, offset, orientation, rotation)))).setColor(color);
         }
 
 
