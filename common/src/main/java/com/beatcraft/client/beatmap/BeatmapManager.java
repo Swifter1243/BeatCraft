@@ -4,6 +4,7 @@ import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.map.SongData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class BeatmapManager {
 
@@ -182,6 +184,29 @@ public class BeatmapManager {
         for (var map : beatmaps) {
             map.hudRenderer.render(imm);
         }
+    }
+
+    public static boolean isTracked(UUID playerUuid) {
+        for (var map : beatmaps) {
+            if (map.trackedPlayer.equals(playerUuid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static BeatmapController getNearestFiltered(Vector3f pos, Function<BeatmapController, Boolean> filter) {
+        BeatmapController nearest = null;
+        var nearestDist = Float.POSITIVE_INFINITY;
+
+        for (var map : beatmaps) {
+            var dist = map.getRenderOrigin().distance(pos);
+            if (dist < nearestDist && filter.apply(map)) {
+                nearestDist = dist;
+                nearest = map;
+            }
+        }
+        return nearest;
     }
 
 }

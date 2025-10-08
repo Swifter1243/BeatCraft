@@ -34,11 +34,10 @@ public class AudioController {
         return audio;
     }
 
-    public static Audio playMapPreview(String path, float startTime) {
+    public static void playMapPreview(String path, float startTime) {
         var audio = playAudioForChannel(0, path, Audio.Mode.STREAM);
         audio.seek(startTime);
         audio.play();
-        return audio;
     }
 
     /// Sets the volume of all beatmap audio
@@ -49,6 +48,10 @@ public class AudioController {
     }
 
     public static Audio playMapSong(String path) {
+        if (channels.containsKey(0)) {
+            var preview = channels.remove(0);
+            preview.close();
+        }
         var audio = playAudio(path, Audio.Mode.INSTANT);
         audio.setVolume(BeatcraftClient.playerConfig.audio.volume());
         tracks.add(audio);

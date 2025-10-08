@@ -39,6 +39,7 @@ public class ResourceReloadListener implements ResourceManagerReloadListener {
         if (BeatcraftRenderer.bloomfog == null) BeatcraftRenderer.init();
         BeatcraftRenderer.bloomfog.resize(w, h, true);
 
+        BeatcraftClient.songs.loadSongs();
         // TODO: load song and replay info from local system AND request from server
         BeatmapManager.loadBeatmaps();
 

@@ -41,6 +41,8 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     protected boolean despawned = false;
     protected ScoreState scoreState = ScoreState.unChecked();
     private NoteType contactColor = null;
+    public Vector3f worldVelocity = new Vector3f();
+    private Matrix4f previousTransform = new Matrix4f();
 
     public PhysicalGameplayObject(BeatmapController beatmap, T data) {
         this.mapController = beatmap;
@@ -106,6 +108,15 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         if (jumpEnded(beat)) {
             despawn();
             return;
+        }
+
+        if (pastBeat(beat)) {
+            if (this instanceof PhysicalScorableObject scorable) {
+                if (scorable.score$getScoreState().isUnchecked()) {
+                    scorable.score$setScoreState(ScoreState.missed());
+                    this.mapController.logic.processNoCut(scorable.score$getMaxFollowThroughScore() + scorable.score$getMaxSwingInScore() + 15);
+                }
+            }
         }
 
         float lifetime = getLifetime(beat);
@@ -369,11 +380,13 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         matrices.pushPose();
         applyMatrixToRender(matrix, matrices);
 
+        previousTransform.set(worldTransform);
+        worldTransform.set(matrices.last().pose());
+        mapController.checkNote(this);
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         var v = getModelOffset();
         matrices.translate(v.x, v.y, v.z);
 
-        mapController.checkNote(this);
 
         worldTransform = matrices.last().pose();
         objectRender(matrices, camera, animationState, alpha);
@@ -467,7 +480,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             mapController,
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotateY(mapController.worldAngle).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
             slice, color, m
         );
@@ -476,7 +489,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             mapController,
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotate(laneRotation.invert(new Quaternionf())),
+            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotateY(mapController.worldAngle).rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
             slice2, color, m
         );

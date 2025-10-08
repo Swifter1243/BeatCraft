@@ -137,7 +137,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
             SettingsMenuPanel.getButton(
                 new TextWidget(REPORT_BUGS, new Vector3f(0, -11, 0.05f), 3).withColor(0xFFBB2222),
                 () -> {
-                    ConfirmLinkScreen.confirmLink(null, "https://github.com/Swifter1243/BeatCraft/issues");
+                    ConfirmLinkScreen.confirmLinkNow(null, "https://github.com/Swifter1243/BeatCraft/issues");
                 },
                 new Vector3f(140, -210, 0),
                 new Vector2f(210, 45)

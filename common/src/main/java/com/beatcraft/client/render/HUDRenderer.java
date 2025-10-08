@@ -22,10 +22,9 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
+
+import java.lang.Math;
 
 public class HUDRenderer {
 
@@ -63,7 +62,7 @@ public class HUDRenderer {
 
     // Menu Panels
     public final SongSelectMenu songSelectMenu;
-    public SongSelectMenuPanel songSelectMenuPanel = null;
+    public SongSelectMenuPanel songSelectMenuPanel;
     public ErrorMessagePanel errorMessagePanel;
 
     public final PauseScreenPanel pauseScreenPanel;
@@ -98,6 +97,7 @@ public class HUDRenderer {
         creditsPanel = new CreditsPanel(this);
         keyboardData = new KeyboardMenu(this, null);
         keyboard = new KeyboardPanel(keyboardData);
+        songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
     }
 
 
@@ -109,10 +109,6 @@ public class HUDRenderer {
 
     public void hideKeyboard() {
         showKeyboard = false;
-    }
-
-    public void initSongSelectMenuPanel() {
-        songSelectMenuPanel = new SongSelectMenuPanel(songSelectMenu);
     }
 
     public void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
@@ -129,7 +125,7 @@ public class HUDRenderer {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
 
-
+        // Beatcraft.LOGGER.info("Rendering scene {}", controller.scene);
 
         switch (controller.scene) {
             case InGame -> {
@@ -481,8 +477,6 @@ public class HUDRenderer {
 
         modifierMenuPanel.render(buffers, local, isTriggerPressed());
 
-
-
     }
 
     private void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
@@ -510,47 +504,58 @@ public class HUDRenderer {
     }
 
     private void renderCombo(PoseStack matrices, Font textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
-        Matrix4f pose = new Matrix4f(matrices.last().pose());
-        pose.scale(-32f);
 
         var txt = Component.translatable("hud.beatcraft.combo");
         int w = textRenderer.width(txt.getString());
 
         textRenderer.drawInBatch(
             txt,
-            -w / 2f, -28f, TEXT_COLOR, false,
+            -w / 2f, -28, TEXT_COLOR, false,
             matrices.last().pose(), buffers,
             TEXT_LAYER, 0, TEXT_LIGHT
         );
 
-        Vector3f topLineLocal = new Vector3f(0f, -31f, 0f);
-        Vector3f bottomLineLocal = new Vector3f(0f, -4f, 0f);
+        matrices.pushPose();
+        matrices.translate(0, -31, 0);
+        Vector3f topLine = matrices.last().pose().getTranslation(new Vector3f());
+        matrices.popPose();
 
-        Vector3f topLine = topLineLocal.mulPosition(pose, new Vector3f());
-        Vector3f bottomLine = bottomLineLocal.mulPosition(pose, new Vector3f());
+        matrices.pushPose();
+        matrices.translate(0, -4, 0);
+        Vector3f bottomLine = matrices.last().pose().getTranslation(new Vector3f());
+        matrices.popPose();
 
-        float op = Easing.easeInOutExpo(controller.logic.getComboBarOpacity());
+        float op = Easing.easeInExpo(controller.logic.getComboBarOpacity());
 
         if (op > 0) {
             float width = 0.5f * (1f / op);
+            float height = 0.05f;
             int color = 0xFFFFFF + (((int) (255 * op)) << 24);
 
-            // Draw top line
-            Vector3f tl0 = new Vector3f(width, 0, 0).add(topLine);
-            Vector3f tl1 = new Vector3f(width, 0.05f, 0).add(topLine);
-            Vector3f tl2 = new Vector3f(-width, 0.05f, 0).add(topLine);
-            Vector3f tl3 = new Vector3f(-width, 0, 0).add(topLine);
+            Matrix4f pose = new Matrix4f(matrices.last().pose());
+            pose.scale(-32f);
+
+            Vector3f worldOrigin = new Vector3f(0f, 0f, 0f).mulPosition(pose, new Vector3f());
+            Vector3f worldXPoint = new Vector3f(width, 0f, 0f).mulPosition(pose, new Vector3f());
+            Vector3f worldYPoint = new Vector3f(0f, height, 0f).mulPosition(pose, new Vector3f());
+
+            Vector3f worldXdir = worldXPoint.sub(worldOrigin, new Vector3f());
+            Vector3f worldYdir = worldYPoint.sub(worldOrigin, new Vector3f());
+
+            Vector3f tl0 = new Vector3f(topLine).add(worldXdir);
+            Vector3f tl1 = new Vector3f(topLine).add(worldXdir).add(worldYdir);
+            Vector3f tl2 = new Vector3f(topLine).add(new Vector3f(worldXdir).negate()).add(worldYdir);
+            Vector3f tl3 = new Vector3f(topLine).add(new Vector3f(worldXdir).negate());
 
             buffer.addVertex(tl0.x, tl0.y, tl0.z).setColor(color);
             buffer.addVertex(tl1.x, tl1.y, tl1.z).setColor(color);
             buffer.addVertex(tl2.x, tl2.y, tl2.z).setColor(color);
             buffer.addVertex(tl3.x, tl3.y, tl3.z).setColor(color);
 
-            // Draw bottom line
-            Vector3f bl0 = new Vector3f(width, 0, 0).add(bottomLine);
-            Vector3f bl1 = new Vector3f(width, 0.05f, 0).add(bottomLine);
-            Vector3f bl2 = new Vector3f(-width, 0.05f, 0).add(bottomLine);
-            Vector3f bl3 = new Vector3f(-width, 0, 0).add(bottomLine);
+            Vector3f bl0 = new Vector3f(bottomLine).add(worldXdir);
+            Vector3f bl1 = new Vector3f(bottomLine).add(worldXdir).add(worldYdir);
+            Vector3f bl2 = new Vector3f(bottomLine).add(new Vector3f(worldXdir).negate()).add(worldYdir);
+            Vector3f bl3 = new Vector3f(bottomLine).add(new Vector3f(worldXdir).negate());
 
             buffer.addVertex(bl0.x, bl0.y, bl0.z).setColor(color);
             buffer.addVertex(bl1.x, bl1.y, bl1.z).setColor(color);
@@ -558,19 +563,22 @@ public class HUDRenderer {
             buffer.addVertex(bl3.x, bl3.y, bl3.z).setColor(color);
         }
 
-        Matrix4f comboPose = new Matrix4f(matrices.last().pose());
-        comboPose.scale(1.5f, 1.5f, 1.5f);
+        matrices.pushPose();
+        matrices.scale(1.5f, 1.5f, 1.5f);
 
         String combo = String.valueOf(controller.logic.getCombo());
         w = textRenderer.width(combo);
 
         textRenderer.drawInBatch(
             Component.literal(combo),
-            -w / 2f, -12f, TEXT_COLOR, false,
-            comboPose, buffers,
+            -w / 2f, -12, TEXT_COLOR, false,
+            matrices.last().pose(), buffers,
             TEXT_LAYER, 0, TEXT_LIGHT
         );
+
+        matrices.popPose();
     }
+
 
 
     private void renderScore(PoseStack matrices, Font textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
@@ -699,37 +707,46 @@ public class HUDRenderer {
         if ((!showHUD) || controller.isModifierActive("Zen Mode")) return;
 
         String display = currentTime + " | " + length;
-
         int w = textRenderer.width(display);
 
-        Vector3f leftPos = matrices.last().pose().getTranslation(new Vector3f()).add(0.65f, -0.4f, 0);
+        Vector3f leftLocal = new Vector3f(0.65f, -0.4f, 0);
+        Vector3f rightLocal = new Vector3f(-0.65f, -0.4f, 0);
+        Vector3f midLocal = MathUtil.lerpVector3(leftLocal, rightLocal, progress);
 
-        Vector3f rightPos = leftPos.add(-1.3f, 0, 0, new Vector3f());
+        float height = 0.05f;
 
-        Vector3f midPos = MathUtil.lerpVector3(leftPos, rightPos, progress);
+        Matrix4f pose = new Matrix4f(matrices.last().pose());
+        pose.scale(-32f);
+
+        Vector3f leftPos = leftLocal.mulPosition(pose, new Vector3f());
+        Vector3f rightPos = rightLocal.mulPosition(pose, new Vector3f());
+        Vector3f midPos = midLocal.mulPosition(pose, new Vector3f());
+
+        Vector3f worldOrigin = new Vector3f(0, 0, 0).mulPosition(pose, new Vector3f());
+        Vector3f worldYdir = new Vector3f(0, height, 0).mulPosition(pose, new Vector3f()).sub(worldOrigin);
 
         buffer.addVertex(leftPos.x, leftPos.y, leftPos.z).setColor(0xFFFFFFFF);
-        buffer.addVertex(leftPos.x, leftPos.y+0.05f, leftPos.z).setColor(0xFFFFFFFF);
-        buffer.addVertex(midPos.x, midPos.y+0.05f, midPos.z).setColor(0xFFFFFFFF);
+        buffer.addVertex(leftPos.x + worldYdir.x, leftPos.y + worldYdir.y, leftPos.z + worldYdir.z).setColor(0xFFFFFFFF);
+        buffer.addVertex(midPos.x + worldYdir.x, midPos.y + worldYdir.y, midPos.z + worldYdir.z).setColor(0xFFFFFFFF);
         buffer.addVertex(midPos.x, midPos.y, midPos.z).setColor(0xFFFFFFFF);
 
         buffer.addVertex(midPos.x, midPos.y, midPos.z).setColor(0x7F7F7F7F);
-        buffer.addVertex(midPos.x, midPos.y+0.05f, midPos.z).setColor(0x7F7F7F7F);
-        buffer.addVertex(rightPos.x, rightPos.y+0.05f, rightPos.z).setColor(0x7F7F7F7F);
+        buffer.addVertex(midPos.x + worldYdir.x, midPos.y + worldYdir.y, midPos.z + worldYdir.z).setColor(0x7F7F7F7F);
+        buffer.addVertex(rightPos.x + worldYdir.x, rightPos.y + worldYdir.y, rightPos.z + worldYdir.z).setColor(0x7F7F7F7F);
         buffer.addVertex(rightPos.x, rightPos.y, rightPos.z).setColor(0x7F7F7F7F);
 
         matrices.pushPose();
         matrices.scale(0.5f, 0.5f, 0.5f);
         textRenderer.drawInBatch(
             Component.literal(display),
-            -w/2f, 32, TEXT_COLOR, false,
+            -w / 2f, 32, TEXT_COLOR, false,
             matrices.last().pose(), buffers,
             TEXT_LAYER,
             0, TEXT_LIGHT
         );
-
         matrices.popPose();
     }
+
 
     private void renderPlayerHealth(PoseStack matrices, Font textRenderer, Vector3f cameraPos) {
         float progress = controller.logic.getHealthPercentage();

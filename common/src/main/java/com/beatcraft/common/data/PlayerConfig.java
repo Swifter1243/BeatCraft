@@ -273,7 +273,7 @@ public class PlayerConfig {
 
         public HealthStyle healthStyle() { return healthStyle.get(); }
         public void healthStyle(HealthStyle set) { healthStyle.set(set); }
-        public void healthStyle(int set) { healthStyle(HealthStyle.values()[set]); }
+        public void healthStyle(int set) { healthStyle(HealthStyle.values()[Math.clamp(set, 0, HealthStyle.values().length-1)]); }
 
         public String selectedSaber() { return selectedSaber.get(); }
         public void selectedSaber(String set) { selectedSaber.set(set); }

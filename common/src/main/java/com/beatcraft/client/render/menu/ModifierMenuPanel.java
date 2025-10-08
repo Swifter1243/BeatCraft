@@ -588,6 +588,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         Vector3f camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         context.pose().translate(-camPos.x, -camPos.y, -camPos.z);
+
+        var wp = data.hudRenderer.controller.worldPosition;
+        context.pose().translate(wp.x, wp.y, wp.z);
+        context.pose().mulPose(new Quaternionf().rotationY(data.hudRenderer.controller.worldAngle));
+
         context.pose().translate(position.x, position.y, position.z);
 
         context.pose().mulPose(orientation);

@@ -16,7 +16,6 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
-import oshi.util.tuples.Pair;
 import oshi.util.tuples.Triplet;
 
 import java.util.HashMap;
@@ -59,7 +58,7 @@ public class BeatcraftClient {
         var right = isRightHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         var left = isRightHanded ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
 
-        var headPos = player.getPosition(tickDelta).toVector3f().add(0, (float) (player.getEyeHeight() - player.getPosition(0).y), 0);
+        var headPos = player.getPosition(tickDelta).toVector3f().add(0, player.getEyeHeight(), 0);
         rot.identity()
             .rotateY(-player.getViewYRot(tickDelta) * Mth.DEG_TO_RAD)
             .normalize()
@@ -69,10 +68,10 @@ public class BeatcraftClient {
         if (vr != null && vr.isActive()) {
             mat4.identity().translate(headPos).rotate(rot);
             sabers.getB().update(mat4);
-            RenderHelper.setupRenderingAtController(right.ordinal(), mat4);
-            sabers.getC().update(mat4);
-            RenderHelper.setupRenderingAtController(left.ordinal(), mat4);
-            sabers.getA().update(mat4);
+            // RenderHelper.setupRenderingAtController(right.ordinal(), mat4);
+            // sabers.getC().update(mat4);
+            // RenderHelper.setupRenderingAtController(left.ordinal(), mat4);
+            // sabers.getA().update(mat4);
         } else if (FPFC) {
             rot.rotateX(90 * Mth.DEG_TO_RAD);
             mat4.identity().translate(headPos).rotate(rot);

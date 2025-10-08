@@ -11,10 +11,14 @@ import com.beatcraft.client.logic.HapticsHandler;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.logic.Rank;
 import com.beatcraft.client.menu.EndScreenData;
+import com.beatcraft.client.render.DebugRenderer;
 import com.beatcraft.client.render.HUDRenderer;
+import com.beatcraft.common.items.ModItems;
 import com.beatcraft.common.utils.MathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -118,13 +122,30 @@ public class BeatmapLogicController {
         var head = sabers.getB();
         var right = sabers.getC();
 
-        left.getPosition(leftSaberPos);
-        left.getRotation(leftSaberRotation);
-        left.getAngularVelocity((float) deltaTime, leftSaberTipVelocity);
+        var rightHanded = player.getMainArm() == HumanoidArm.RIGHT;
+        var leftHand = rightHanded ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
+        var rightHand = rightHanded ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+        var leftItem = player.getItemBySlot(leftHand).is(ModItems.SABER_ITEM);
+        var rightItem = player.getItemBySlot(rightHand).is(ModItems.SABER_ITEM);
+        if (leftItem) {
+            left.getPosition(leftSaberPos);
+            left.getRotation(leftSaberRotation);
+            left.getPositionalVelocity((float) deltaTime, SABER_TIP_OFFSET, leftSaberTipVelocity);
+        } else {
+            leftSaberPos.set(0, -600, 0); // just stick it below the void I guess?
+        }
 
-        right.getPosition(rightSaberPos);
-        right.getRotation(rightSaberRotation);
-        right.getAngularVelocity((float) deltaTime, rightSaberTipVelocity);
+        if (rightItem) {
+            right.getPosition(rightSaberPos);
+            right.getRotation(rightSaberRotation);
+            right.getPositionalVelocity((float) deltaTime, SABER_TIP_OFFSET, rightSaberTipVelocity);
+        } else {
+            rightSaberPos.set(0, -600, 0);
+        }
+
+        if (player == Minecraft.getInstance().player) {
+            BeatcraftClient.wearingHeadset = player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.HEADSET_ITEM);
+        }
 
         head.getPosition(headPos);
         head.getRotation(headRot);
@@ -187,7 +208,7 @@ public class BeatmapLogicController {
     private void processNote(PhysicalScorableObject obj, Hitbox gc, Hitbox bc, NoteType expectedNoteType, Vector3f vel) {
         var cd = obj.score$getCutDirection();
         if (obj.score$getData().score$getNoteType() == expectedNoteType) {
-            if (cd.equals(CutDirection.DOT)) {
+            if (cd == CutDirection.DOT) {
                 if (gc.checkCollision(localBase, localTip)) {
                     calculateScore(obj, localVel, localBase, localTip);
                     obj.score$cutNote();
@@ -231,10 +252,31 @@ public class BeatmapLogicController {
 
         invTransform.transformPosition(pos, localBase);
         invTransform.transformPosition(tipPos, localTip);
-        vel.rotate(invTransform.getUnnormalizedRotation(q0), localVel);
+        vel.rotate(invTransform.getNormalizedRotation(q0), localVel);
 
         var gc = obj.getGoodCutBounds();
         var bc = obj.getBadCutBounds();
+        var ac = obj.getAccurateHitbox();
+
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderSaberColliders()) {
+            DebugRenderer.renderParticle(new Vector3f(localBase), DebugRenderer.GREEN_DUST);
+            DebugRenderer.renderParticle(obj.getWorldPos(new Vector3f()), DebugRenderer.ORANGE_DUST);
+            DebugRenderer.renderParticle(new Vector3f(localTip), DebugRenderer.MAGENTA_DUST);
+            DebugRenderer.renderLine(new Vector3f(tipPos), tipPos.add(vel, new Vector3f()), 0xFF00FF00, 0x7FFF0000);
+            DebugRenderer.renderLine(new Vector3f(localTip), localTip.add(localVel, new Vector3f()), 0x7F007F00, 0x27007F00);
+            int c = 0x7F000000 + (expectedNoteType == NoteType.BLUE ? 0x0000FF : 0xFF0000);
+            DebugRenderer.renderLine(new Vector3f(localBase), new Vector3f(localTip), c, 0x7FFFFFFF);
+            DebugRenderer.renderHitbox(gc, new Vector3f(), new Quaternionf(), 0x00FF00);
+            DebugRenderer.renderHitbox(bc, new Vector3f(), new Quaternionf(), 0xFF0000);
+        }
+        if (BeatcraftClient.playerConfig.debug.beatmap.renderHitboxes()) {
+            var wt = obj.getWorldTransform();
+            var wp = wt.getTranslation(new Vector3f());
+            var wr = wt.getNormalizedRotation(new Quaternionf());
+            DebugRenderer.renderHitbox(gc, wp, wr, 0x00FF00);
+            DebugRenderer.renderHitbox(bc, wp, wr, 0xFF0000);
+            DebugRenderer.renderHitbox(ac, wp, wr, 0x7F7F7F);
+        }
 
         if (failAnim) return;
 

@@ -14,6 +14,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -120,13 +121,13 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         updateCurve();
 
-        var localPos = matrices.last().pose().getTranslation(MemoryPool.newVector3f());
+        var localPos = matrices.last().pose().transformPosition(new Vector3f(0.5f, 0.5f, 0.5f));
         var camPos = MemoryPool.newVector3f(mc.gameRenderer.getMainCamera().getPosition());
 
-        localPos.add(0.2f, 0.3f, 0.25f).sub(camPos);
+        localPos.sub(camPos);
         MemoryPool.release(localPos, camPos);
 
-        render(basePath, localPos, data.getColor().toARGB());
+        render(matrices, basePath, localPos, data.getColor().toARGB());
 
         if (DebugRenderer.doDebugRendering && DebugRenderer.renderArcDebugLines) {
             DebugRenderer.renderPath(basePath, segments, data.getColor().copy().withAlpha(alpha).toARGB());
@@ -158,27 +159,29 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         return data.getTailBeat() + data.getJumps().halfDuration();
     }
 
-    public void render(ISplinePath path, Vector3f origin, int color) {
+    public void render(PoseStack matrices, ISplinePath path, Vector3f origin, int color) {
 
         var o = MemoryPool.newVector3f(origin);
         var o2 = MemoryPool.newVector3f(origin);
         var q = MemoryPool.newQuaternionf();
+        var m = new Matrix4f(matrices.last().pose());
 
-        mapController.recordArcRenderCall((b, c) -> _render(b, path, o, color, q));
-        BeatcraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(b, path, o2, color, MemoryPool.newQuaternionf(r)));
+        mapController.recordArcRenderCall((b, c) -> _render(m, b, path, o, color, q));
+        BeatcraftRenderer.bloomfog.recordBloomCall((b, c, r) -> _render(m, b, path, o2, color, MemoryPool.newQuaternionf(r)));
     }
 
-    public void _render(BufferBuilder buffer, ISplinePath path, Vector3f origin, int color, Quaternionf cameraRotation) {
+    public void _render(Matrix4f transform, BufferBuilder buffer, ISplinePath path, Vector3f origin, int color, Quaternionf cameraRotation) {
 
         int segments = 35;
 
         for (int i = 0; i < segments; i++) {
             float f = ((float) i) / ((float) segments);
             float f2 = ((float) (i + 1)) / ((float) segments);
-            Vector3f p = path.evaluate(f).add(origin).rotate(cameraRotation);
-            Vector3f p2 = path.evaluate(f2).add(origin).rotate(cameraRotation);
-            Vector3f t = path.getTangent(f).rotate(cameraRotation);
-            Vector3f t2 = path.getTangent(f2).rotate(cameraRotation);
+            var q = transform.getUnnormalizedRotation(new Quaternionf());
+            Vector3f p = path.evaluate(f).rotate(q).add(origin).rotate(cameraRotation);
+            Vector3f p2 = path.evaluate(f2).rotate(q).add(origin).rotate(cameraRotation);
+            Vector3f t = path.getTangent(f).rotate(q).rotate(cameraRotation);
+            Vector3f t2 = path.getTangent(f2).rotate(q).rotate(cameraRotation);
 
 
             var h1 = MathUtil.generateCircle(t, 0.075f, 6, p);

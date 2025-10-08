@@ -9,6 +9,7 @@
     "ItemEntityRendererMixin",
     "ItemInHandRendererMixin",
     "LevelRendererMixin",
+    "MinecraftMixin",
     "ModelBakeryMixin",
     "PlayerHeldItemFeatureRendererMixin"
   ],

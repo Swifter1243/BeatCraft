@@ -3,6 +3,7 @@ package com.beatcraft.client.render.effect;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.logic.PhysicsTransform;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.common.data.ControllerProfile;
@@ -28,10 +29,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import oshi.util.tuples.Pair;
+import oshi.util.tuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +100,8 @@ public class SaberRenderer {
 
     public static void renderSaber(ItemStack item, PoseStack matrices, MultiBufferSource vertexConsumerProvider, InteractionHand hand, AbstractClientPlayer player, float tickDelta) {
         matrices.pushPose();
-        renderTrail(true, matrices, hand.equals(InteractionHand.MAIN_HAND), player, tickDelta, item);
+
+
 
         Vector3f worldPos = matrices.last().pose()
             .getTranslation(new Vector3f());
@@ -105,19 +109,44 @@ public class SaberRenderer {
             // .add(BeatcraftClient.playerSaberPosition.toVector3f())
             // .sub(BeatcraftClient.playerCameraPosition.toVector3f());
 
-        // Quaternionf worldRotation = (hand == Hand.MAIN_HAND ? GameLogicHandler.rightSaberRotation : GameLogicHandler.leftSaberRotation);
+        Quaternionf worldRotation = matrices.last().pose().getNormalizedRotation(new Quaternionf());
 
-
-
-        PoseStack matrixStack = new PoseStack();
-        matrixStack.translate(worldPos.x, worldPos.y, worldPos.z);
+        // PoseStack matrixStack = new PoseStack();
+        // matrixStack.translate(worldPos.x, worldPos.y, worldPos.z);
+        // matrixStack.scale(0.3333f, 0.3333f, 0.3333f);
         // matrixStack.mulPose(worldRotation);
-        matrixStack.scale(0.3333f, 0.3333f, 0.3333f);
+        // matrixStack.pushPose();
+        renderTrail(true, matrices, hand.equals(InteractionHand.MAIN_HAND), player, tickDelta, item);
+        // matrixStack.popPose();
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
             item, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, 255, 0,
-            matrixStack, vertexConsumerProvider, null, 0
+            matrices, vertexConsumerProvider, null, 0
         );
+
+        var uuid = player.getUUID();
+
+        if (!BeatcraftClient.controllerTransforms.containsKey(uuid)) {
+            BeatcraftClient.controllerTransforms.put(uuid, new Triplet<>(
+                new PhysicsTransform(-0.4f, 0, 0),
+                new PhysicsTransform(0, 0, 0),
+                new PhysicsTransform(0.4f, 0, 0)
+            ));
+        }
+
+        var isRightHanded = player.getMainArm() == HumanoidArm.RIGHT;
+        var right = isRightHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+
+        var sabers = BeatcraftClient.controllerTransforms.get(uuid);
+
+        var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        var mat = new Matrix4f().translate(camPos).mul(matrices.last().pose());
+        if (hand == right) {
+            sabers.getC().update(mat);
+        } else {
+            sabers.getA().update(mat);
+        }
+
 
         matrices.popPose();
 
@@ -150,6 +179,7 @@ public class SaberRenderer {
             matrix.scale(0.3333f, 0.3333f, 0.3333f);
             matrix.translate(0, -0.25, 0.35);
             matrix.mulPose((new Quaternionf()).rotationXYZ(-45 * Mth.DEG_TO_RAD, 0, 0));
+
 
             // Step 2: modify rotation and translation based on user settings
             Vector3f translation;
@@ -186,15 +216,7 @@ public class SaberRenderer {
                 Vector3f blade_tip = matrix.last().pose().getTranslation(new Vector3f());
                 matrix.popPose();
 
-                matrix.pushPose();
-                matrix.translate(0, 0.25 * 0.6, 0);
-                var entry = matrix.last();
-                matrix.popPose();
-
-                Vec3 playerPos = player.getDeltaMovementLerped(tickDelta);
-                Vector3f saberPos = entry.pose().getTranslation(new Vector3f());
-                saberPos.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
-                Quaternionf saberRot = entry.pose().getUnnormalizedRotation(new Quaternionf());
+                var playerPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
                 // if (GameLogicHandler.isTrackingClient()) {
                 //     if (rightHand) {
@@ -203,8 +225,8 @@ public class SaberRenderer {
                 //         GameLogicHandler.updateLeftSaber(saberPos, saberRot);
                 //     }
                 // }
-                blade_tip = blade_tip.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
-                blade_base = blade_base.add((float) playerPos.x, (float) playerPos.y, (float) playerPos.z);
+                blade_tip.add(playerPos);
+                blade_base.add(playerPos);
                 CycleStack<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStack) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
                 int color;
 
@@ -222,6 +244,8 @@ public class SaberRenderer {
                     SaberRenderer.queueRender(blade_base, blade_tip, stash, color);
                 }
             }
+
+
         }
     }
 
@@ -243,7 +267,7 @@ public class SaberRenderer {
             bakedModel.getTransforms().getTransform(ItemDisplayContext.GROUND).apply(false, matrix);
 
             matrix.pushPose();
-            matrix.translate(0, (7/8f) * 0.6, 0);
+            matrix.translate(0, (14/8f) * 0.6, 0);
             Vector3f blade_base = matrix.last().pose().getTranslation(new Vector3f());
             matrix.popPose();
 
@@ -252,9 +276,9 @@ public class SaberRenderer {
             Vector3f blade_tip = matrix.last().pose().getTranslation(new Vector3f());
             matrix.popPose();
 
-            Vec3 pos = entity.getPosition(tickDelta);
-            blade_base = blade_base.add((float) pos.x, (float) pos.y, (float) pos.z);
-            blade_tip = blade_tip.add((float) pos.x, (float) pos.y, (float) pos.z);
+            var pos = entity.getPosition(tickDelta).toVector3f();
+            blade_base.add(pos);
+            blade_tip.add(pos);
             CycleStack<Pair<Vector3f, Vector3f>> stash = ((ItemStackWithSaberTrailStack) ((Object) stack)).beatcraft$getTrailStash(ClientDataHolderVR.getInstance().currentPass);
             int color;
 

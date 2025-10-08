@@ -51,7 +51,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
 
             SettingsMenuPanel.getButton(
                 new TextWidget(DISCORD, new Vector3f(0, -11, 0.05f), 2),
-                () -> ConfirmLinkScreen.confirmLink(null, "https://discord.gg/eQH4pbHptM"),
+                () -> ConfirmLinkScreen.confirmLinkNow(null, "https://discord.gg/eQH4pbHptM"),
                 new Vector3f(120, 60, 0),
                 new Vector2f(230, 50)
             )

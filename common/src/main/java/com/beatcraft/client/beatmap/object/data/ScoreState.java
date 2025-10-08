@@ -5,6 +5,10 @@ public class ScoreState {
     private int type;
     private int score = 0;
 
+    public boolean isUnchecked() {
+        return type == -1;
+    }
+
     private ScoreState(int type) {
         this.type = type;
     }

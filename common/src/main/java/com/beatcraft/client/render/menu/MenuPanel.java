@@ -44,7 +44,7 @@ public abstract class MenuPanel<T extends Menu> {
         protected ArrayList<Widget> children = new ArrayList<>();
 
         protected void draw(GuiGraphics context, @Nullable Vector2f pointerPosition, boolean triggerPressed) {
-            context.pose().popPose();
+            context.pose().pushPose();
             var p = pointerPosition == null ? null : new Vector2f(pointerPosition).sub(new Vector2f(position.x, position.y));
 
             render(context, p, triggerPressed);
@@ -401,11 +401,22 @@ public abstract class MenuPanel<T extends Menu> {
     // End widget definitions ------------------------------------------------------
 
     public Pair<Vector3f, Vector2f> raycast(Vector3f position, Quaternionf orientation) {
-        return MathUtil.raycastPlane(position, orientation, this.position, this.orientation, this.size.div(128, new Vector2f()));
+        var wa = data.hudRenderer.controller.worldAngle;
+        var wp = data.hudRenderer.controller.worldPosition;
+        var out = MathUtil.raycastPlane(
+            position.rotateY(-wa, new Vector3f()).sub(wp), new Quaternionf().rotationY(-wa).mul(orientation),
+            this.position,
+            this.orientation,
+            this.size.div(128, new Vector2f())
+        );
+        if (out != null) {
+            out.getA().rotateY(wa).add(wp);
+        }
+        return out;
     }
 
     public Vector3f getNormal() {
-        return new Vector3f(0, 0, -1).rotate(orientation);
+        return new Vector3f(0, 0, -1).rotateY(data.hudRenderer.controller.worldAngle).rotate(orientation);
     }
 
     public void render(MultiBufferSource.BufferSource immediate, @Nullable Vector2f pointerPosition, boolean triggerPressed) {
@@ -415,6 +426,11 @@ public abstract class MenuPanel<T extends Menu> {
         Vector3f camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         context.pose().translate(-camPos.x, -camPos.y, -camPos.z);
+
+        var wp = data.hudRenderer.controller.worldPosition;
+        context.pose().translate(wp.x, wp.y, wp.z);
+        context.pose().mulPose(new Quaternionf().rotationY(data.hudRenderer.controller.worldAngle));
+
         context.pose().translate(position.x, position.y, position.z);
 
         context.pose().mulPose(orientation);

@@ -239,17 +239,20 @@ public class BeatmapController {
 
         boolean shouldPlay = this.isPlaying() && !Minecraft.getInstance().isPaused();
 
+        var doDiffUpdate = logic.update(dt);
+
         if (shouldPlay) {
             elapsedNanoTime += (long) (deltaNanoSeconds * playbackSpeed);
 
             if (difficulty != null) {
                 currentSeconds = elapsedNanoTime / 1_000_000_000f;
                 currentBeat = info.getBeat(currentSeconds);
-                if (logic.update(dt)) {
+                if (doDiffUpdate) {
                     difficulty.update(currentBeat, dt);
+                    logic.lateUpdate(dt);
                 }
 
-                if (currentSeconds > info.getSongDuration()) {
+                if (info == null || currentSeconds > info.getSongDuration()) {
                     reset();
                     Beatcraft.LOGGER.info("Song ended");
                 }
@@ -305,7 +308,9 @@ public class BeatmapController {
 
     public void setSpeed(float speed) {
         playbackSpeed = speed;
-        audio.setSpeed(speed);
+        if (audio != null) {
+            audio.setSpeed(speed);
+        }
     }
 
     public void resume() {
@@ -426,8 +431,9 @@ public class BeatmapController {
         lastNanoTime = 0;
         currentBeat = 0;
         currentSeconds = 0;
-        audio.close();
+        if (audio != null) audio.close();
         audio = null;
+        scene = HUDRenderer.MenuScene.SongSelect;
     }
 
 }

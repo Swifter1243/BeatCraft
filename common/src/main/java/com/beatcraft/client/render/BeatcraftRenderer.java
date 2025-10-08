@@ -100,6 +100,8 @@ public class BeatcraftRenderer {
             MeshLoader.MATRIX_LOCATOR_MESH.cancelDraws();
         }
 
+        DebugRenderer.render();
+
     }
 
     public static void recordSaberRenderCall(Runnable call) {
