@@ -403,8 +403,9 @@ public abstract class MenuPanel<T extends Menu> {
     public Pair<Vector3f, Vector2f> raycast(Vector3f position, Quaternionf orientation) {
         var wa = data.hudRenderer.controller.worldAngle;
         var wp = data.hudRenderer.controller.worldPosition;
+
         var out = MathUtil.raycastPlane(
-            position.rotateY(-wa, new Vector3f()).sub(wp), new Quaternionf().rotationY(-wa).mul(orientation),
+            position.sub(wp, new Vector3f()).rotateY(-wa), new Quaternionf().rotationY(-wa).mul(orientation).normalize(),
             this.position,
             this.orientation,
             this.size.div(128, new Vector2f())

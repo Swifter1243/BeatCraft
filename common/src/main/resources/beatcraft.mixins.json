@@ -8,13 +8,15 @@
     "InventoryScreenMixin",
     "ItemEntityRendererMixin",
     "ItemInHandRendererMixin",
+    "KeyboardInputMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
     "PlayerHeldItemFeatureRendererMixin"
   ],
   "mixins": [
-    "ItemStackMixin"
+    "ItemStackMixin",
+    "vivecraft.MCVRMixin"
   ],
   "injectors": {
     "defaultRequire": 1

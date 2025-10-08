@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " iB",
+    "iAR",
+    " R "
+  ],
+  "key": {
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "minecraft:red_dye"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "beatcraft:saber",
+    "count": 1,
+    "components": {
+      "beatcraft:saber_color": 12595248,
+      "beatcraft:sync_color": 0
+    }
+  }
+}
