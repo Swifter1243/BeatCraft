@@ -98,13 +98,13 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         }
 
         if (!isBaseDissolved()) {
-            var dissolve = Math.max(mapController.globalDissolve, localDissolve);
+            var dissolve = Math.max(mapController.logic.globalDissolve, localDissolve);
             MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
-            var dissolve = Math.max(mapController.globalArrowDissolve, localArrowDissolve);
+            var dissolve = Math.max(mapController.logic.globalArrowDissolve, localArrowDissolve);
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.copyDrawToBloom(data.getColor().copy().withAlpha(alpha));

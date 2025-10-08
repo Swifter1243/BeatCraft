@@ -47,7 +47,7 @@ public class PhysicalBombNote extends PhysicalGameplayObject<BombNote> {
         MemoryPool.release(renderPos, renderScale);
         MemoryPool.release(renderRotation);
 
-        var dissolve = Math.max(mapController.globalDissolve, getBaseDissolve());
+        var dissolve = Math.max(mapController.logic.globalDissolve, getBaseDissolve());
         MeshLoader.BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
         MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.draw(BombNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
 

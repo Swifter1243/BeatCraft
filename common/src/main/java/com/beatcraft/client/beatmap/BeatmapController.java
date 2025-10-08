@@ -51,8 +51,6 @@ public class BeatmapController {
 
     public float currentBeat;
     public float currentSeconds;
-    public float globalDissolve;
-    public float globalArrowDissolve;
     public float firstBeat;
     public Audio audio;
     public Info info;
@@ -147,6 +145,7 @@ public class BeatmapController {
         trackedPlayer = null;
     }
 
+    public boolean firstFrame = false;
     public void playSong(SongData.BeatmapInfo info) {
         try {
             baseProvider.setupDynamicProviders();
@@ -157,14 +156,15 @@ public class BeatmapController {
                 audio.close();
             }
 
-            playing = true;
+            audio = AudioController.playMapSong(this.info.getSongFilename());
             setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
             var cs = this.difficulty.getSetDifficulty().getColorScheme();
             baseProvider.setupStaticProviders(cs);
             logic.reset();
-            audio = AudioController.playMapSong(this.info.getSongFilename());
+            playing = true;
 
             elapsedNanoTime = 0;
+            firstFrame = true;
 
 
         } catch (IOException e) {
@@ -228,6 +228,11 @@ public class BeatmapController {
 
     private long getNanoDeltaTime() {
         var n = System.nanoTime();
+        if (firstFrame) {
+            lastNanoTime = n;
+            firstFrame = false;
+            seek(0);
+        } // avoids hot starts for maps when audio loads in full mode
         var ndt = n - lastNanoTime;
         lastNanoTime = n;
         return ndt;

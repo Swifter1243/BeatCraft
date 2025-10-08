@@ -78,13 +78,13 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         }
 
         if (!isBaseDissolved()) {
-            var dissolve = Math.max(mapController.globalDissolve, localDissolve);
+            var dissolve = Math.max(mapController.logic.globalDissolve, localDissolve);
             MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
-            var dissolve = Math.max(mapController.globalArrowDissolve, localArrowDissolve);
+            var dissolve = Math.max(mapController.logic.globalArrowDissolve, localArrowDissolve);
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.NOTE_ARROW_INSTANCED_MESH.copyDrawToBloom(data.getColor().copy().withAlpha(alpha));

@@ -81,27 +81,28 @@ public class BeatmapLogicController {
     }
 
     public int getCombo() {
-        return 0;
+        return combo;
     }
 
     public int getMaxPossibleScore() {
-        return 0;
+        return maxPossibleScore;
     }
 
     public int getScore() {
-        return 0;
+        return score;
     }
 
     public float getAccuracy() {
-        return 0;
+        if (maxPossibleScore == 0) return 1;
+        return score / (float) maxPossibleScore;
     }
 
     public float getBonusModifier() {
-        return 1;
+        return bonusModifier;
     }
 
     public float getHealthPercentage() {
-        return 1;
+        return health / maxHealth;
     }
 
     public boolean update(double deltaTime) {
