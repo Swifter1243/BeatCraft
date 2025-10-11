@@ -144,10 +144,6 @@ public class BeatmapLogicController {
             rightSaberPos.set(0, -600, 0);
         }
 
-        if (player == Minecraft.getInstance().player) {
-            BeatcraftClient.wearingHeadset = player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.HEADSET_ITEM);
-        }
-
         head.getPosition(headPos);
         head.getRotation(headRot);
 

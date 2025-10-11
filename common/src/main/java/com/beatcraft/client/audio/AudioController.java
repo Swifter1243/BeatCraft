@@ -63,4 +63,11 @@ public class AudioController {
         tracks.remove(audio);
     }
 
+    public static void stopPreview() {
+        if (channels.containsKey(0)) {
+            var preview = channels.remove(0);
+            preview.close();
+        }
+    }
+
 }

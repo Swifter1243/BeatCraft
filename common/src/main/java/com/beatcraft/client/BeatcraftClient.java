@@ -1,22 +1,24 @@
 package com.beatcraft.client;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.audio.AudioController;
+import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.beatmap.BeatmapRenderer;
 import com.beatcraft.client.commands.ClientCommands;
 import com.beatcraft.client.logic.PhysicsTransform;
 import com.beatcraft.client.menu.SongList;
-import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.common.data.PlayerConfig;
+import com.beatcraft.common.items.ModItems;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.EquipmentSlot;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.vivecraft.client_vr.ClientDataHolderVR;
-import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import oshi.util.tuples.Triplet;
 
 import java.util.HashMap;
@@ -31,6 +33,8 @@ public class BeatcraftClient {
     public static boolean FPFC = false;
     public static final HashMap<UUID, Triplet<PhysicsTransform, PhysicsTransform, PhysicsTransform>> controllerTransforms = new HashMap<>();
 
+    public static BeatmapController headsetLinkedBeatmap = null;
+
     public static void earlyInit() {
         Beatcraft.LOGGER.info("Initializing Beatcraft Neoforge");
         playerConfig = PlayerConfig.loadFromFile();
@@ -44,6 +48,13 @@ public class BeatcraftClient {
 
     private static final Matrix4f mat4 = new Matrix4f();
     private static final Quaternionf rot = new Quaternionf();
+
+    private static float snapAngle(float degrees) {
+        float angle = Math.round(degrees / 45f) * 45f;
+        return (float) Math.toRadians(angle);
+    }
+
+
     public static void updatePlayerSabers(float tickDelta) {
         var vr = ClientDataHolderVR.getInstance().vr;
         var player = Minecraft.getInstance().player;
@@ -55,9 +66,24 @@ public class BeatcraftClient {
         }
         var sabers = controllerTransforms.get(uuid);
 
-        var isRightHanded = player.getMainArm().equals(HumanoidArm.RIGHT);
-        var right = isRightHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-        var left = isRightHanded ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+
+        var newWearingHeadset = player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.HEADSET_ITEM);
+
+        if (wearingHeadset && !newWearingHeadset) { // Headset taken off
+            if (headsetLinkedBeatmap != null) {
+                BeatmapManager.beatmaps.remove(headsetLinkedBeatmap);
+                headsetLinkedBeatmap = null;
+                AudioController.stopPreview();
+            }
+        } else if (newWearingHeadset && !wearingHeadset) { // put on
+            if (headsetLinkedBeatmap == null) {
+                headsetLinkedBeatmap = new BeatmapController(player.clientLevel, player.blockPosition().getBottomCenter().toVector3f(), snapAngle(-player.getViewYRot(tickDelta)), BeatmapRenderer.RenderStyle.HEADSET);
+                BeatmapManager.beatmaps.add(headsetLinkedBeatmap);
+                headsetLinkedBeatmap.trackPlayer(player.getUUID());
+            }
+        }
+        wearingHeadset = newWearingHeadset;
+
 
         var headPos = player.getPosition(tickDelta).toVector3f().add(0, player.getEyeHeight(), 0);
         rot.identity()
@@ -69,10 +95,6 @@ public class BeatcraftClient {
         if (vr != null && vr.isActive()) {
             mat4.identity().translate(headPos).rotate(rot);
             sabers.getB().update(mat4);
-            // RenderHelper.setupRenderingAtController(right.ordinal(), mat4);
-            // sabers.getC().update(mat4);
-            // RenderHelper.setupRenderingAtController(left.ordinal(), mat4);
-            // sabers.getA().update(mat4);
         } else if (FPFC) {
             rot.rotateX(90 * Mth.DEG_TO_RAD);
             mat4.identity().translate(headPos).rotate(rot);
