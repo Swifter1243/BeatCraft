@@ -20,7 +20,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
 
-    modCompileOnly "curse.maven:vivecraft-667903:6208699"
+    modCompileOnly "curse.maven:vivecraft-${vivecraft_curseforge_id}:${vivecraft_curseforge_file}"
 
     modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

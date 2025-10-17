@@ -327,13 +327,13 @@ public class BeatmapRenderer {
             }
         }
 
-        renderFloorLightsPhase1(tesselator, cameraPos);
-
-        renderFloorLights(tesselator, cameraPos);
-
         if (difficulty != null) {
             difficulty.render(matrices, camera, alpha);
         }
+
+        renderFloorLightsPhase1(tesselator, cameraPos);
+
+        renderFloorLights(tesselator, cameraPos);
 
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(m));

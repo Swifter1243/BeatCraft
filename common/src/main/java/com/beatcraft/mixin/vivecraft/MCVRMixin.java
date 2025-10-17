@@ -16,9 +16,9 @@ import org.vivecraft.client_vr.provider.MCVR;
 @Mixin(MCVR.class)
 public abstract class MCVRMixin {
 
-    @Shadow protected ClientDataHolderVR dh;
+    @Shadow(remap = false) protected ClientDataHolderVR dh;
 
-    @Shadow public float seatedRot;
+    @Shadow(remap = false) public float seatedRot;
 
     @WrapOperation(
         method = "processBindings",
