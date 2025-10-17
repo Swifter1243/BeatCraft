@@ -45,10 +45,18 @@ for casual gameplay, creative is recommended, but you can also access all gamepl
 ## Blocks/Items
 
 ### Sabers
-must be held in order to cut notes.
+must be held in order to cut notes.  
+
+New recipes (pretend there's a saber in the ouput lol):  
+<img height="100" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/fdf541f4-8197-4638-a6d8-e74014de8cda" />
+<img height="100" alt="crafting-grid" src="https://github.com/user-attachments/assets/0c215daf-98ea-4bbe-9005-cc52b541f3e6" />
+
 
 ### Headset
-must be worn to see the beatmap
+must be worn to see the beatmap  
+
+Recipe (dye positions can be swapped):  
+<img height="100" alt="crafting-grid(2)" src="https://github.com/user-attachments/assets/83e12c2c-9b47-47cd-83b2-1bf1570ae8b2" />
 
 ## Commands
 ```
