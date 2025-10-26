@@ -188,7 +188,7 @@ public class BeatmapManager {
 
     public static boolean isTracked(UUID playerUuid) {
         for (var map : beatmaps) {
-            if (map.trackedPlayer.equals(playerUuid)) {
+            if (playerUuid.equals(map.trackedPlayer)) {
                 return true;
             }
         }
