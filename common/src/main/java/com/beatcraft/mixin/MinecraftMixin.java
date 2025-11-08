@@ -28,7 +28,7 @@ public abstract class MinecraftMixin {
         var ths = ((Minecraft) ((Object) this));
         assert ths.player != null;
         if (BeatmapManager.isTracked(ths.player.getUUID()) && ths.player.getMainHandItem().is(ModItems.SABER_ITEM)) {
-            var map = BeatmapManager.getNearestFiltered(ths.player.position().toVector3f(), (bc) -> bc.trackedPlayer.equals(ths.player.getUUID()));
+            var map = BeatmapManager.getNearestFiltered(ths.player.position().toVector3f(), (bc) -> bc.trackedPlayer != null && bc.trackedPlayer.equals(ths.player.getUUID()));
             if (map == null) return;
             map.hudRenderer.triggerPressed = true;
             map.hudRenderer.pointerSaber = NoteType.BLUE;
@@ -64,7 +64,7 @@ public abstract class MinecraftMixin {
         assert Minecraft.getInstance().player != null;
         var player = Minecraft.getInstance().player;
         if (BeatmapManager.isTracked(player.getUUID())) {
-            var nearest = BeatmapManager.getNearestFiltered(player.getPosition(0).toVector3f(), map -> map.trackedPlayer.equals(player.getUUID()));
+            var nearest = BeatmapManager.getNearestFiltered(player.getPosition(0).toVector3f(), map -> map.trackedPlayer != null && map.trackedPlayer.equals(player.getUUID()));
 
             if (nearest == null) return;
 

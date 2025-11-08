@@ -4,7 +4,6 @@ import com.beatcraft.Beatcraft;
 import com.beatcraft.common.data.map.SongData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3f;
 
@@ -187,6 +186,7 @@ public class BeatmapManager {
     }
 
     public static boolean isTracked(UUID playerUuid) {
+        if (playerUuid == null) return false;
         for (var map : beatmaps) {
             if (playerUuid.equals(map.trackedPlayer)) {
                 return true;
