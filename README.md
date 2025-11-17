@@ -47,7 +47,7 @@ for casual gameplay, creative is recommended, but you can also access all gamepl
 ### Sabers
 must be held in order to cut notes.  
 
-New recipes (pretend there's a saber in the ouput lol):  
+New recipes (pretend there's a saber in the output lol):  
 <img height="100" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/fdf541f4-8197-4638-a6d8-e74014de8cda" />
 <img height="100" alt="crafting-grid" src="https://github.com/user-attachments/assets/0c215daf-98ea-4bbe-9005-cc52b541f3e6" />
 
