@@ -7,12 +7,12 @@
     "BufferBuilderMixin",
     "InventoryScreenMixin",
     "ItemEntityRendererMixin",
+    "ItemInHandLayerMixin",
     "ItemInHandRendererMixin",
     "KeyboardInputMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
-    "ModelBakeryMixin",
-    "PlayerHeldItemFeatureRendererMixin"
+    "ModelBakeryMixin"
   ],
   "mixins": [
     "ItemStackMixin",

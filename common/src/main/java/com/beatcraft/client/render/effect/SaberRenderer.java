@@ -172,6 +172,13 @@ public class SaberRenderer {
         queueRender(hiltPos, tipPos, cycleStack, color);
     }
 
+    public static void transformSaber(PoseStack matrix) {
+        matrix.scale(0.3333f, 0.3333f, 0.3333f);
+        matrix.translate(0, -0.25, 0.35);
+        // matrix.scale(0.5f, 0.5f, 0.5f);
+        matrix.mulPose((new Quaternionf()).rotationXYZ(-45 * Mth.DEG_TO_RAD, 0, 0));
+    }
+
     public static void renderTrail(boolean doCollisionCheck, PoseStack matrix, boolean mainHand, AbstractClientPlayer player, float tickDelta, ItemStack stack) {
         if (stack.is(ModItems.SABER_ITEM)) {
 
