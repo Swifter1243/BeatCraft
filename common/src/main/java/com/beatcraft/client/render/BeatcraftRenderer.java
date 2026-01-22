@@ -2,22 +2,16 @@ package com.beatcraft.client.render;
 
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
-import com.beatcraft.client.beatmap.data.ColorScheme;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.effect.SaberRenderer;
-import com.beatcraft.client.render.instancing.ArrowInstanceData;
-import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
-import com.beatcraft.client.render.instancing.HeadsetInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
-import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -53,7 +47,7 @@ public class BeatcraftRenderer {
 
     public static void renderSky(Camera camera, float tickDelta) {
         if (ClientDataHolderVR.getInstance().isFirstPass || ClientDataHolderVR.getInstance().vr == null || !ClientDataHolderVR.getInstance().vr.isActive()) {
-            BeatcraftClient.updatePlayerSabers(tickDelta);
+            BeatcraftClient.updatePlayerHeadPosAndFPFC(tickDelta);
             BeatmapManager.updateMaps();
         }
     }

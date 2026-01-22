@@ -36,7 +36,7 @@ public class BeatcraftClient {
     public static BeatmapController headsetLinkedBeatmap = null;
 
     public static void earlyInit() {
-        Beatcraft.LOGGER.info("Initializing Beatcraft Neoforge");
+        Beatcraft.LOGGER.info("Initializing Beatcraft");
         playerConfig = PlayerConfig.loadFromFile();
 
     }
@@ -55,7 +55,7 @@ public class BeatcraftClient {
     }
 
 
-    public static void updatePlayerSabers(float tickDelta) {
+    public static void updatePlayerHeadPosAndFPFC(float tickDelta) {
         var vr = ClientDataHolderVR.getInstance().vr;
         var player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -71,6 +71,7 @@ public class BeatcraftClient {
 
         if (wearingHeadset && !newWearingHeadset) { // Headset taken off
             if (headsetLinkedBeatmap != null) {
+                headsetLinkedBeatmap.stop();
                 BeatmapManager.beatmaps.remove(headsetLinkedBeatmap);
                 headsetLinkedBeatmap = null;
                 AudioController.stopPreview();

@@ -1,9 +1,20 @@
 package com.beatcraft.client.audio;
 
+import com.beatcraft.Beatcraft;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.jcraft.jorbis.Info;
+import com.jcraft.jorbis.VorbisFile;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.sounds.JOrbisAudioStream;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
 
+import javax.sound.sampled.AudioFormat;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class AudioInfo {
@@ -19,25 +30,30 @@ public class AudioInfo {
         this.duration = (float) sampleCount / (float) frequency;
         this.frequency = frequency;
     }
-
     public static AudioInfo loadDefault(float bpm, String audioFileName) {
+        Path file = Path.of(audioFileName);
 
-        var audio = Audio.loadFromFile(audioFileName, Audio.Mode.FULL);
+        try {
+            // Use VorbisFile to get duration directly from headers
+            VorbisFile vf = new VorbisFile(file.toString());
 
-        int size = AL10.alGetBufferi(audio.buffer[0], AL10.AL_SIZE);
-        int frequency = AL10.alGetBufferi(audio.buffer[0], AL10.AL_FREQUENCY);
-        int channels = AL10.alGetBufferi(audio.buffer[0], AL10.AL_CHANNELS);
-        int bits = AL10.alGetBufferi(audio.buffer[0], AL10.AL_BITS);
+            float duration = vf.time_total(-1); // Returns duration in seconds
+            Info info = vf.getInfo(0); // Get audio format info
+            int frequency = info.rate;
 
-        int sampleCount = size / (channels * (bits / 8));
+            // Calculate sample count from duration and frequency
+            int sampleCount = Math.round(duration * frequency);
 
-        var info = new AudioInfo(sampleCount, frequency);
+            var audioInfo = new AudioInfo(sampleCount, frequency);
+            audioInfo.regions.add(new BpmRegion(audioInfo, bpm));
+            return audioInfo;
 
-        var inf = new BpmRegion(info, bpm);
-        info.regions.add(inf);
-
-        return info;
+        } catch (Exception e) {
+            Beatcraft.LOGGER.error("Failed to load audio info {}", audioFileName, e);
+            return new AudioInfo(0, 44100);
+        }
     }
+
 
     public static AudioInfo loadV2(JsonObject json) {
         int sampleCount = json.get("_songSampleCount").getAsInt();

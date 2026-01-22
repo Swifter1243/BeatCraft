@@ -266,7 +266,7 @@ public class BeatmapController {
         }
 
         if (audio != null) {
-            audio.update(currentBeat, dt, this);
+            audio.update(currentBeat, currentSeconds, this);
         }
     }
 
@@ -290,6 +290,7 @@ public class BeatmapController {
         renderer.pre_render(matrices, difficulty, camera, dist);
         matrices.popPose();
 
+        matrices.popPose();
     }
 
     public void render(Camera camera) {
@@ -298,7 +299,6 @@ public class BeatmapController {
         }
         var dist = camera.getPosition().toVector3f().distance(worldPosition);
         renderer.render(matrices, difficulty, camera, dist);
-        matrices.popPose();
 
     }
 
@@ -326,6 +326,15 @@ public class BeatmapController {
     public void pause() {
         if (difficulty != null) {
             playing = false;
+        }
+    }
+
+    public void stop() {
+        if (difficulty != null) {
+            playing = false;
+        }
+        if (audio != null) {
+            audio.close();
         }
     }
 

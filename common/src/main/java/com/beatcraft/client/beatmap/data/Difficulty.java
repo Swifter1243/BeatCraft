@@ -179,7 +179,10 @@ public abstract class Difficulty {
         if (lightShowEnvironment != null) {
             lightShowEnvironment.render(matrices, camera, alpha);
         }
-        if (mapController.isModifierActive("Zen Mode")) return;
+        if (mapController.isModifierActive("Zen Mode")) {
+            matrices.popPose();
+            return;
+        }
         colorNotes.forEach(o -> o.render(matrices, camera, alpha));
         if (!mapController.isModifierActive("No Bombs")) bombNotes.forEach(o -> o.render(matrices, camera, alpha));
         chainHeadNotes.forEach(o -> o.render(matrices, camera, alpha));

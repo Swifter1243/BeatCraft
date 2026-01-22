@@ -66,12 +66,16 @@ public abstract class MinecraftMixin {
         if (BeatmapManager.isTracked(player.getUUID())) {
             var nearest = BeatmapManager.getNearestFiltered(player.getPosition(0).toVector3f(), map -> map.trackedPlayer != null && map.trackedPlayer.equals(player.getUUID()));
 
-            if (nearest == null) return;
+            if (nearest == null) {
+                original.call(instance, screen);
+                return;
+            }
 
             if (nearest.scene == HUDRenderer.MenuScene.InGame) {
                 InputSystem.unlockHotbar();
                 nearest.pause();
             } else if (nearest.scene == HUDRenderer.MenuScene.Paused) {
+                InputSystem.lockHotbar();
                 nearest.resume();
             } else {
                 original.call(instance, screen);
