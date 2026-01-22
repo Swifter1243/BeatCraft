@@ -52,6 +52,7 @@ public class PlayRecorder {
         //json.addProperty("set", difficultySet);
         //json.addProperty("diff", difficulty);
 
+        if (songID == null) return;
 
         var idBytes = songID.getBytes(StandardCharsets.UTF_8);
         var setBytes = difficultySet.getBytes(StandardCharsets.UTF_8);

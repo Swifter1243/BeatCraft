@@ -19,6 +19,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 public class Audio {
 
@@ -45,12 +46,15 @@ public class Audio {
     private final AtomicBoolean shouldStopSeekDecoder = new AtomicBoolean(false);
     private final AtomicBoolean usingSeekStream = new AtomicBoolean(false);
 
+    private CompletableFuture<?> decodeFuture;
+    private CompletableFuture<?> seekDecodeFuture;
+
     private ByteBuffer fullData;
     public int fullBuffer = 0;
 
     private boolean loaded = false;
     private boolean playing = false;
-    private boolean paused = false;
+    private volatile boolean paused = false;
     private volatile boolean closed = false;
 
     private float lastSeekTarget = -1f;
@@ -150,7 +154,7 @@ public class Audio {
     private void startStreamDecodeAsync() {
         shouldStopDecoder.set(false);
 
-        CompletableFuture.runAsync(() -> {
+        decodeFuture = CompletableFuture.runAsync(() -> {
             try (InputStream is = Files.newInputStream(filePath);
                  JOrbisAudioStream stream = new JOrbisAudioStream(is)) {
 
@@ -194,16 +198,23 @@ public class Audio {
         });
     }
 
+    private void waitWhilePaused() {
+        while (paused && !shouldStopDecoder.get() && !closed) {
+            LockSupport.parkNanos(5_000_000);
+        }
+    }
+
+
     private void startInstantDecodeAsync() {
         shouldStopDecoder.set(false);
 
-        CompletableFuture.runAsync(() -> {
+        decodeFuture = CompletableFuture.runAsync(() -> {
             try (InputStream is = Files.newInputStream(filePath);
                  JOrbisAudioStream s = new JOrbisAudioStream(is);
                  ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
                 while (!shouldStopDecoder.get() && !closed) {
-                    if (paused) continue;
+                    waitWhilePaused();
                     ByteBuffer pcm = s.read(STREAM_BUFFER_SIZE);
                     if (!pcm.hasRemaining()) {
                         break;
@@ -241,7 +252,7 @@ public class Audio {
         usingSeekStream.set(true);
         currentStreamPosition = seekSeconds;
 
-        CompletableFuture.runAsync(() -> {
+        seekDecodeFuture = CompletableFuture.runAsync(() -> {
             try (InputStream is = Files.newInputStream(filePath);
                  JOrbisAudioStream stream = new JOrbisAudioStream(is)) {
 
@@ -481,6 +492,14 @@ public class Audio {
         closed = true;
         shouldStopDecoder.set(true);
         shouldStopSeekDecoder.set(true);
+        if (decodeFuture != null) {
+            decodeFuture.cancel(true);
+            decodeFuture = null;
+        }
+        if (seekDecodeFuture != null) {
+            seekDecodeFuture.cancel(true);
+            seekDecodeFuture = null;
+        }
         AL10.alSourceStop(source);
         AL10.alDeleteSources(source);
         if (fullBuffer != 0) AL10.alDeleteBuffers(fullBuffer);

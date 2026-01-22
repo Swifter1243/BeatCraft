@@ -35,9 +35,10 @@ public class AudioController {
     }
 
     public static void playMapPreview(String path, float startTime) {
-        var audio = playAudioForChannel(0, path, Audio.Mode.STREAM);
-        audio.seek(startTime);
-        audio.play();
+        // TODO: fix stream mode + seeking
+        // var audio = playAudioForChannel(0, path, Audio.Mode.STREAM);
+        // audio.seek(startTime);
+        // audio.play();
     }
 
     /// Sets the volume of all beatmap audio

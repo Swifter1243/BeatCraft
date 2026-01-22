@@ -56,11 +56,11 @@ public abstract class MinecraftMixin {
         )
     )
     private void mapPauseInject(Minecraft instance, Screen screen, Operation<Void> original) {
-        boolean inVr = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
-        if (!inVr) {
-            original.call(instance, screen);
-            return;
-        }
+        // boolean inVr = (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive());
+        // if (!inVr) {
+        //     original.call(instance, screen);
+        //     return;
+        // }
         assert Minecraft.getInstance().player != null;
         var player = Minecraft.getInstance().player;
         if (BeatmapManager.isTracked(player.getUUID())) {
@@ -74,9 +74,11 @@ public abstract class MinecraftMixin {
             if (nearest.scene == HUDRenderer.MenuScene.InGame) {
                 InputSystem.unlockHotbar();
                 nearest.pause();
+                nearest.scene = HUDRenderer.MenuScene.Paused;
             } else if (nearest.scene == HUDRenderer.MenuScene.Paused) {
                 InputSystem.lockHotbar();
                 nearest.resume();
+                nearest.scene = HUDRenderer.MenuScene.InGame;
             } else {
                 original.call(instance, screen);
             }
