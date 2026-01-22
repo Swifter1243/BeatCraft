@@ -39,9 +39,11 @@ public class Audio {
     private static final float SEEK_THRESHOLD = 0.25f;
 
     private final BlockingQueue<ByteBuffer> pcmQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
+    private final BlockingQueue<ByteBuffer> seekQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
     private final AtomicBoolean fullReady = new AtomicBoolean(false);
     private final AtomicBoolean shouldStopDecoder = new AtomicBoolean(false);
-    private final AtomicBoolean streamEOF = new AtomicBoolean(false);
+    private final AtomicBoolean shouldStopSeekDecoder = new AtomicBoolean(false);
+    private final AtomicBoolean usingSeekStream = new AtomicBoolean(false);
 
     private ByteBuffer fullData;
     public int fullBuffer = 0;
@@ -53,6 +55,7 @@ public class Audio {
 
     private float lastSeekTarget = -1f;
     private volatile float targetSeekPosition = -1f;
+    private volatile float currentStreamPosition = 0f;
 
     private final Mode mode;
 
@@ -118,7 +121,6 @@ public class Audio {
         throw new IllegalArgumentException();
     }
 
-    // ===== FULL blocking decode =====
     private void loadFullBlocking() {
         try (InputStream is = Files.newInputStream(filePath);
              JOrbisAudioStream s = new JOrbisAudioStream(is);
@@ -145,10 +147,8 @@ public class Audio {
         }
     }
 
-    // ===== STREAM decode =====
     private void startStreamDecodeAsync() {
         shouldStopDecoder.set(false);
-        streamEOF.set(false);
 
         CompletableFuture.runAsync(() -> {
             try (InputStream is = Files.newInputStream(filePath);
@@ -156,7 +156,6 @@ public class Audio {
 
                 float currentSeekTarget = targetSeekPosition;
 
-                // Fast-forward if seeking
                 if (currentSeekTarget > 0) {
                     int bytesToSkip = (int)(currentSeekTarget * sampleRate * channels * 2);
                     int skipped = 0;
@@ -168,13 +167,13 @@ public class Audio {
                         skipped += pcm.remaining();
                     }
 
+                    currentStreamPosition = currentSeekTarget;
                     targetSeekPosition = -1f;
                 }
 
                 while (!shouldStopDecoder.get() && !closed) {
                     ByteBuffer pcm = stream.read(STREAM_BUFFER_SIZE);
                     if (!pcm.hasRemaining()) {
-                        streamEOF.set(true);
                         break;
                     }
                     ByteBuffer copy = BufferUtils.createByteBuffer(pcm.remaining()).put(pcm).flip();
@@ -197,7 +196,6 @@ public class Audio {
 
     private void startInstantDecodeAsync() {
         shouldStopDecoder.set(false);
-        streamEOF.set(false);
 
         CompletableFuture.runAsync(() -> {
             try (InputStream is = Files.newInputStream(filePath);
@@ -205,24 +203,24 @@ public class Audio {
                  ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
                 while (!shouldStopDecoder.get() && !closed) {
+                    if (paused) continue;
                     ByteBuffer pcm = s.read(STREAM_BUFFER_SIZE);
                     if (!pcm.hasRemaining()) {
-                        streamEOF.set(true);
                         break;
                     }
 
-                    // Feed both the streaming queue and the full buffer
                     byte[] tmp = new byte[pcm.remaining()];
                     pcm.get(tmp);
                     out.write(tmp);
 
-                    // Also queue for immediate streaming
-                    ByteBuffer copy = BufferUtils.createByteBuffer(tmp.length).put(tmp).flip();
-                    try {
-                        pcmQueue.put(copy);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
+                    if (!usingSeekStream.get()) {
+                        ByteBuffer copy = BufferUtils.createByteBuffer(tmp.length).put(tmp).flip();
+                        try {
+                            pcmQueue.put(copy);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
                     }
                 }
 
@@ -238,38 +236,77 @@ public class Audio {
         });
     }
 
-    // ===== Stream helpers =====
+    private void startSeekStreamDecodeAsync(float seekSeconds) {
+        shouldStopSeekDecoder.set(false);
+        usingSeekStream.set(true);
+        currentStreamPosition = seekSeconds;
+
+        CompletableFuture.runAsync(() -> {
+            try (InputStream is = Files.newInputStream(filePath);
+                 JOrbisAudioStream stream = new JOrbisAudioStream(is)) {
+
+                int bytesToSkip = (int)(seekSeconds * sampleRate * channels * 2);
+                int skipped = 0;
+
+                while (skipped < bytesToSkip && !shouldStopSeekDecoder.get() && !closed) {
+                    int toRead = Math.min(STREAM_BUFFER_SIZE, bytesToSkip - skipped);
+                    ByteBuffer pcm = stream.read(toRead);
+                    if (!pcm.hasRemaining()) break;
+                    skipped += pcm.remaining();
+                }
+
+                while (!shouldStopSeekDecoder.get() && !closed && !fullReady.get()) {
+                    ByteBuffer pcm = stream.read(STREAM_BUFFER_SIZE);
+                    if (!pcm.hasRemaining()) break;
+
+                    ByteBuffer copy = BufferUtils.createByteBuffer(pcm.remaining()).put(pcm).flip();
+
+                    try {
+                        seekQueue.put(copy);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+            } catch (Exception e) {
+                if (!closed) {
+                    Beatcraft.LOGGER.error("Seek stream decode failed", e);
+                }
+                usingSeekStream.set(false);
+            }
+        });
+    }
+
     private void fillStreamBuffers() {
         if (closed) return;
 
-        // Unqueue processed buffers and refill them
+        BlockingQueue<ByteBuffer> activeQueue = usingSeekStream.get() ? seekQueue : pcmQueue;
+
         int processed = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED);
         while (processed-- > 0) {
             int buf = AL10.alSourceUnqueueBuffers(source);
-            ByteBuffer pcm = pcmQueue.poll();
+            ByteBuffer pcm = activeQueue.poll();
             if (pcm != null) {
                 AL10.alBufferData(buf, formatId, pcm, sampleRate);
                 AL10.alSourceQueueBuffers(source, buf);
             }
         }
 
-        // Queue initial buffers if not loaded yet
         if (!loaded) {
             for (int i = 0; i < NUM_STREAM_BUFFERS; i++) {
-                ByteBuffer pcm = pcmQueue.poll();
+                ByteBuffer pcm = activeQueue.poll();
                 if (pcm == null) break;
                 AL10.alBufferData(buffers[i], formatId, pcm, sampleRate);
                 AL10.alSourceQueueBuffers(source, buffers[i]);
             }
 
-            // Mark as loaded once we have at least one buffer queued
             int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
             if (queued > 0) {
                 loaded = true;
             }
         }
 
-        // Restart playback if it stopped but should be playing
         int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
         int state = AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE);
         if (queued > 0 && state != AL10.AL_PLAYING && playing && !paused) {
@@ -277,7 +314,6 @@ public class Audio {
         }
     }
 
-    // ===== Public API =====
     public boolean isOk() { return mode != Mode.ERROR && !closed; }
     public boolean isPlaying() { return playing && !paused && !closed; }
     public boolean isPaused() { return paused && !closed; }
@@ -293,30 +329,53 @@ public class Audio {
     public void seek(float seconds) {
         if (closed) return;
 
-        // Only seek if difference is significant
         if (Math.abs(seconds - lastSeekTarget) < SEEK_THRESHOLD) {
             return;
         }
         lastSeekTarget = seconds;
 
         if (mode == Mode.FULL) {
-            // Direct seek in full buffer
             AL10.alSourcef(source, AL11.AL_SEC_OFFSET, seconds);
         } else if (mode == Mode.INSTANT && fullReady.get()) {
-            // Can seek directly once full buffer is ready
             AL10.alSourcef(source, AL11.AL_SEC_OFFSET, seconds);
-        } else {
-            // STREAM mode or INSTANT before full buffer ready
-            float currentPos = loaded ? AL10.alGetSourcef(source, AL11.AL_SEC_OFFSET) : 0f;
+        } else if (mode == Mode.INSTANT && !fullReady.get()) {
+            if (seconds < currentStreamPosition || Math.abs(seconds - currentStreamPosition) > SEEK_THRESHOLD) {
+                shouldStopSeekDecoder.set(true);
 
-            if (seconds < currentPos || !loaded) {
-                // Seeking backwards or initial seek - must restart and fast-forward
+                AL10.alSourceStop(source);
+
+                int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
+                while (queued-- > 0) {
+                    AL10.alSourceUnqueueBuffers(source);
+                }
+
+                seekQueue.clear();
+                loaded = false;
+
+                startSeekStreamDecodeAsync(seconds);
+            } else {
+                BlockingQueue<ByteBuffer> activeQueue = usingSeekStream.get() ? seekQueue : pcmQueue;
+                float delta = seconds - currentStreamPosition;
+                int bytesToDrain = (int)(delta * sampleRate * channels * 2);
+                int drained = 0;
+
+                while (drained < bytesToDrain) {
+                    ByteBuffer pcm = activeQueue.poll();
+                    if (pcm == null) break;
+                    drained += pcm.remaining();
+                }
+
+                currentStreamPosition = seconds;
+            }
+        } else {
+            float currentPos = AL10.alGetSourcef(source, AL11.AL_SEC_OFFSET);
+
+            if (seconds < currentPos) {
                 shouldStopDecoder.set(true);
                 targetSeekPosition = seconds;
 
                 AL10.alSourceStop(source);
 
-                // Unqueue all buffers
                 int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
                 while (queued-- > 0) {
                     AL10.alSourceUnqueueBuffers(source);
@@ -325,14 +384,8 @@ public class Audio {
                 pcmQueue.clear();
                 loaded = false;
 
-                // Restart decode with seek target
-                if (mode == Mode.STREAM) {
-                    startStreamDecodeAsync();
-                } else if (mode == Mode.INSTANT) {
-                    startInstantDecodeAsync();
-                }
+                startStreamDecodeAsync();
             } else {
-                // Seeking forward - fast-forward by draining queue
                 float delta = seconds - currentPos;
                 int bytesToDrain = (int)(delta * sampleRate * channels * 2);
                 int drained = 0;
@@ -350,7 +403,6 @@ public class Audio {
         Beatcraft.LOGGER.info("closed: {}, paused: {}, loaded: {}", closed, paused, loaded);
         if (closed) return;
 
-        // If resuming from pause, use resume logic
         if (paused) {
             paused = false;
             if (loaded) {
@@ -385,15 +437,15 @@ public class Audio {
     public void update(float beat, float currentSeconds, BeatmapController controller) {
         if (closed || mode == Mode.ERROR) return;
 
-        // STREAM/INSTANT streaming - always fill buffers when not using full buffer
         if (mode == Mode.STREAM || (mode == Mode.INSTANT && !fullReady.get())) {
             fillStreamBuffers();
         }
 
-        // Switch INSTANT to FULL buffer once ready
         if (mode == Mode.INSTANT && fullReady.get() && fullData != null && fullBuffer == 0) {
             boolean wasPlaying = (AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING);
-            float currentTime = AL10.alGetSourcef(source, AL11.AL_SEC_OFFSET);
+
+            shouldStopSeekDecoder.set(true);
+            usingSeekStream.set(false);
 
             fullBuffer = AL10.alGenBuffers();
             AL10.alBufferData(fullBuffer, formatId, fullData, sampleRate);
@@ -404,26 +456,23 @@ public class Audio {
                 AL10.alSourceUnqueueBuffers(source);
             }
             pcmQueue.clear();
+            seekQueue.clear();
 
             AL10.alSourcei(source, AL10.AL_BUFFER, fullBuffer);
-            AL10.alSourcef(source, AL11.AL_SEC_OFFSET, currentTime);
+            AL10.alSourcef(source, AL11.AL_SEC_OFFSET, currentSeconds);
 
             if (wasPlaying && playing && !paused) {
                 AL10.alSourcePlay(source);
             }
         }
 
-        // Pause if Minecraft paused or controller stopped
         if (Minecraft.getInstance().isPaused() || !controller.isPlaying()) {
             if (!paused) pause();
             return;
         } else if (paused) {
-            lastSeekTarget = -2;
-            seek(currentSeconds);
             play();
         }
 
-        // Auto-play when loaded
         if (!playing && loaded) play();
     }
 
@@ -431,6 +480,7 @@ public class Audio {
         if (closed) return;
         closed = true;
         shouldStopDecoder.set(true);
+        shouldStopSeekDecoder.set(true);
         AL10.alSourceStop(source);
         AL10.alDeleteSources(source);
         if (fullBuffer != 0) AL10.alDeleteBuffers(fullBuffer);
