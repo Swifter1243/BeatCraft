@@ -21,6 +21,7 @@ import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
@@ -272,9 +273,10 @@ public class BeatmapRenderer {
 
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
-            RenderSystem.enableBlend();
+            // RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.depthMask(true);
+            RenderSystem.disableBlend();
 
             var scene = ObstacleGlowRenderer.framebuffer;
 

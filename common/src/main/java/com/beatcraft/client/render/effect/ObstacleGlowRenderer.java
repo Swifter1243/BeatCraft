@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
@@ -33,32 +34,26 @@ public class ObstacleGlowRenderer {
         var scene = Minecraft.getInstance().getMainRenderTarget();
 
         scene.unbindWrite();
-        scene.bindRead();
-        framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.bindWrite(true);
+        framebuffer.setClearColor(0, 0, 0, 0);
         framebuffer.clear(true);
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
-
-        ObstacleGlowRenderer.distortionShader.setSampler("DiffuseSampler", scene.getColorTextureId());
-        RenderSystem.setShaderTexture(0, scene.getColorTextureId());
-
         RenderSystem.setShader(() -> blitShader);
+        scene.bindRead();
+        blitShader.setSampler("DiffuseSampler", scene.getColorTextureId());
+        RenderSystem.setShaderTexture(0, scene.getColorTextureId());
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
-        buffer.addVertex(-1, -1, 0).setUv(0, 0);
-        buffer.addVertex(-1, 1, 0).setUv(0, 1);
-        buffer.addVertex(1, 1, 0).setUv(1, 1);
-        buffer.addVertex(1, -1, 0).setUv(1, 0);
+        buffer.addVertex(0, 0, 0);
+        buffer.addVertex(0, 1, 0);
+        buffer.addVertex(1, 1, 0);
+        buffer.addVertex(1, 0, 0);
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         scene.unbindRead();
         framebuffer.unbindWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
     }

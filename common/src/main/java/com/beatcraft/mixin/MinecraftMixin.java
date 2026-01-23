@@ -83,6 +83,8 @@ public abstract class MinecraftMixin {
                 original.call(instance, screen);
             }
 
+        } else {
+            original.call(instance, screen);
         }
     }
 
