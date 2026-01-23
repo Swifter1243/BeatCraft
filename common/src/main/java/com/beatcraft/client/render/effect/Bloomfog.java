@@ -7,6 +7,7 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
+import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -65,7 +67,6 @@ public class Bloomfog {
     private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>(); // Line renders
     private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls2 = new ArrayList<>(); // Quad renders
     private final ResourceLocation textureId = Beatcraft.id("bloomfog/main");
-    private final BloomfogTex tex;
 
     //private final SimpleRenderTarget[] pingPongBuffers = new SimpleRenderTarget[2];
     //private final ResourceLocation[] pingPongTexIds = new ResourceLocation[]{
@@ -77,7 +78,6 @@ public class Bloomfog {
     public final TextureTarget extraBuffer;
     public final TextureTarget blurredBuffer;
     private final ResourceLocation blurredTexId = Beatcraft.id("bloomfog/blurred");
-    private BloomfogTex blurredTex;
 
     public static ShaderInstance blurShaderUp;
     public static ShaderInstance blurShaderDown;
@@ -113,12 +113,8 @@ public class Bloomfog {
 
     private static final int LAYERS = 10;
 
-    private ResourceLocation[] pyramidTexIds = new ResourceLocation[LAYERS];
-    private TextureTarget[] pyramidBuffers = new TextureTarget[LAYERS];
-    private TextureTarget[] pyramidBuffers2 = new TextureTarget[LAYERS];
-    private BloomfogTex[] pyramidTextures = new BloomfogTex[LAYERS];
-
-    private static int arrowShaderProgram = 0;
+    private final TextureTarget[] pyramidBuffers = new TextureTarget[LAYERS];
+    private final TextureTarget[] pyramidBuffers2 = new TextureTarget[LAYERS];
 
     public static void initShaders() {
         try {
@@ -166,10 +162,10 @@ public class Bloomfog {
 
         lightDepth = new TextureTarget(1920, 1080, true, Minecraft.ON_OSX);
 
-        tex = new BloomfogTex(framebuffer);
+        BloomfogTex tex = new BloomfogTex(framebuffer);
         //pingPongTextures[0] = new BloomfogTex(pingPongBuffers[0]);
         //pingPongTextures[1] = new BloomfogTex(pingPongBuffers[1]);
-        blurredTex = new BloomfogTex(blurredBuffer);
+        BloomfogTex blurredTex = new BloomfogTex(blurredBuffer);
         var texManager = Minecraft.getInstance().getTextureManager();
 
         texManager.register(textureId, tex);
@@ -375,13 +371,11 @@ public class Bloomfog {
         return blurredBuffer.getColorTextureId();
     }
 
-    private int secondaryBindTex = 0;
-
     private void applyPyramidBlur(boolean isMirror) {
         var current = framebuffer;
         int l;
         for (l = 0; l < layers; l++) {
-            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true);
+            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true, overrideFramebuffer);
             //if (l == layers-1) {
             //    applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V, true);
             //    applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H, true);
@@ -398,17 +392,17 @@ public class Bloomfog {
 
         }
 
-        applyEffectPass(isMirror, current, extraBuffer, PassType.UPSAMPLE, true);
-        applyEffectPass(isMirror, extraBuffer, framebuffer, PassType.GAUSSIAN_V, true);
-        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true);
-        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false);
+        applyEffectPass(isMirror, current, extraBuffer, PassType.UPSAMPLE, true, overrideFramebuffer);
+        applyEffectPass(isMirror, extraBuffer, framebuffer, PassType.GAUSSIAN_V, true, overrideFramebuffer);
+        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true, overrideFramebuffer);
+        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false, overrideFramebuffer);
 
 
 
     }
 
 
-    private enum PassType {
+    public enum PassType {
         DOWNSAMPLE,
         UPSAMPLE,
         GAUSSIAN_V,
@@ -419,10 +413,10 @@ public class Bloomfog {
     }
 
     private void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass) {
-        applyEffectPass(isMirror, in, out, pass, false);
+        applyEffectPass(isMirror, in, out, pass, false, overrideFramebuffer);
     }
 
-    private void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode) {
+    public static void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode, @Nullable RenderTarget overrideFramebuffer) {
 
         out.setClearColor(0, 0, 0, 0);
         out.clear(Minecraft.ON_OSX);
@@ -466,6 +460,7 @@ public class Bloomfog {
             shader.safeGetUniform("texelSize").set(512f / w, 512f / h);
             //shader.getUniformOrDefault("GameTime").set(BeatcraftClient.random.nextFloat());
         } else if (pass == PassType.COMP) {
+            int secondaryBindTex = 0;
             shader.setSampler("Sampler1", secondaryBindTex);
             RenderSystem.setShaderTexture(1, secondaryBindTex);
         } else {
@@ -475,11 +470,15 @@ public class Bloomfog {
         //RenderSystem.defaultBlendFunc();
 
         float z = 0;
-        buffer.addVertex(new Vector3f(-1, -1, z)).setUv(0, 0).setColor(0xFF020200);
-        buffer.addVertex(new Vector3f( 1, -1, z)).setUv(1, 0).setColor(0xFF020200);
-        buffer.addVertex(new Vector3f( 1,  1, z)).setUv(1, 1).setColor(0xFF020200);
-        buffer.addVertex(new Vector3f(-1,  1, z)).setUv(0, 1).setColor(0xFF020200);
-
+        var q = MemoryPool.newQuaternionf();
+        if (out == ObstacleGlowRenderer.framebuffer) {
+            MirrorHandler.invCameraRotation.conjugate(q);
+        }
+        buffer.addVertex(new Vector3f(-1, -1, z).rotate(q)).setUv(0, 0).setColor(0xFF020200);
+        buffer.addVertex(new Vector3f( 1, -1, z).rotate(q)).setUv(1, 0).setColor(0xFF020200);
+        buffer.addVertex(new Vector3f( 1,  1, z).rotate(q)).setUv(1, 1).setColor(0xFF020200);
+        buffer.addVertex(new Vector3f(-1,  1, z).rotate(q)).setUv(0, 1).setColor(0xFF020200);
+        MemoryPool.release(q);
         BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         out.unbindWrite();
@@ -653,8 +652,8 @@ public class Bloomfog {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
 
-        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H, true);
-        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true);
+        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H, true, overrideFramebuffer);
+        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true, overrideFramebuffer);
 
         //applyEffectPass(false, bloomInput, bloomOutput, PassType.BLIT);
 

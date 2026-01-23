@@ -9,6 +9,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -31,30 +32,33 @@ public class ObstacleGlowRenderer {
     }
 
     public static void grabScreen() {
-        var scene = Minecraft.getInstance().getMainRenderTarget();
+        Bloomfog.applyEffectPass(false, Minecraft.getInstance().getMainRenderTarget(), framebuffer, Bloomfog.PassType.BLIT, false, null);
 
-        scene.unbindWrite();
-        framebuffer.bindWrite(true);
-        framebuffer.setClearColor(0, 0, 0, 0);
-        framebuffer.clear(true);
 
-        RenderSystem.setShader(() -> blitShader);
-        scene.bindRead();
-        blitShader.setSampler("DiffuseSampler", scene.getColorTextureId());
-        RenderSystem.setShaderTexture(0, scene.getColorTextureId());
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-
-        buffer.addVertex(0, 0, 0);
-        buffer.addVertex(0, 1, 0);
-        buffer.addVertex(1, 1, 0);
-        buffer.addVertex(1, 0, 0);
-
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
-
-        scene.unbindRead();
-        framebuffer.unbindWrite();
-
+        // var scene = Minecraft.getInstance().getMainRenderTarget();
+        //
+        // scene.unbindWrite();
+        // framebuffer.bindWrite(true);
+        // framebuffer.setClearColor(0, 0, 0, 0);
+        // framebuffer.clear(true);
+        //
+        // RenderSystem.setShader(() -> blitShader);
+        // scene.bindRead();
+        // Bloomfog.blitShader.setSampler("Sampler0", scene.getColorTextureId());
+        // RenderSystem.setShaderTexture(0, scene.getColorTextureId());
+        // Tesselator tesselator = Tesselator.getInstance();
+        // BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        //
+        // buffer.addVertex(0, 0, 0);
+        // buffer.addVertex(0, 1, 0);
+        // buffer.addVertex(1, 1, 0);
+        // buffer.addVertex(1, 0, 0);
+        //
+        // BufferUploader.drawWithShader(buffer.buildOrThrow());
+        //
+        // scene.unbindRead();
+        // framebuffer.unbindWrite();
+        //
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
     }
 
