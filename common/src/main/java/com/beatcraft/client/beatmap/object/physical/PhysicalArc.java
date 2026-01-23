@@ -56,21 +56,7 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
 
         Vector3f midpoint = MathUtil.lerpVector3(startC, endC, 0.5f);
 
-        boolean inline = data.getX() == data.getTailX() &&
-            data.getY() == data.getTailY() &&
-            (
-                data.getHeadCutDirection() == data.getTailCutDirection() ||
-                    data.getHeadCutDirection() == data.getTailCutDirection().opposite()
-            );
-
-        float radians = 0;
-        if (inline) {
-            if (data.getMidAnchorMode() == Arc.MidAnchorMode.CLOCKWISE) {
-                radians = (float) (-Math.PI / 2d);
-            } else if (data.getMidAnchorMode() == Arc.MidAnchorMode.COUNTER_CLOCKWISE) {
-                radians = (float) (Math.PI / 2d);
-            }
-        }
+        float radians = getRadians();
 
         float deg = -data.getHeadCutDirection().baseAngleDegrees;
 
@@ -93,6 +79,25 @@ public class PhysicalArc extends PhysicalGameplayObject<Arc> {
         basePath = new BezierPath(points);
         segments = (int) (start.distance(end) * 5);
 
+    }
+
+    private float getRadians() {
+        boolean inline = data.getX() == data.getTailX() &&
+            data.getY() == data.getTailY() &&
+            (
+                data.getHeadCutDirection() == data.getTailCutDirection() ||
+                    data.getHeadCutDirection() == data.getTailCutDirection().opposite()
+            );
+
+        float radians = 0;
+        if (inline) {
+            if (data.getMidAnchorMode() == Arc.MidAnchorMode.CLOCKWISE) {
+                radians = (float) (-Math.PI / 2d);
+            } else if (data.getMidAnchorMode() == Arc.MidAnchorMode.COUNTER_CLOCKWISE) {
+                radians = (float) (Math.PI / 2d);
+            }
+        }
+        return radians;
     }
 
     protected void updateCurve() {

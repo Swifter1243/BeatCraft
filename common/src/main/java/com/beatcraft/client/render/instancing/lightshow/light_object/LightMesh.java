@@ -629,9 +629,10 @@ public class LightMesh {
         int currentFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
 
         if (preBloomfog) {
-            fog.extraBuffer.setClearColor(0, 0, 0, 1);
-            fog.extraBuffer.clear(false);
-            fog.extraBuffer.bindRead();
+            // fog.extraBuffer.bindWrite(false);
+            // fog.extraBuffer.setClearColor(0, 0, 0, 1);
+            // fog.extraBuffer.clear(false);
+            // fog.extraBuffer.bindRead();
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorTextureId());
 
         } else {
@@ -707,8 +708,7 @@ public class LightMesh {
         if (!cullBackfaces) RenderSystem.enableCull();
 
         if (preBloomfog) {
-            fog.extraBuffer.unbindRead();
-            fog.extraBuffer.setClearColor(0, 0, 0, 0);
+            // GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, currentFbo);
         }
 
         GL20.glUseProgram(0);
@@ -717,8 +717,8 @@ public class LightMesh {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
         }
 
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
         GL30.glBindVertexArray(oldVAO);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
 
 
         drawList.forEach(Draw::free);

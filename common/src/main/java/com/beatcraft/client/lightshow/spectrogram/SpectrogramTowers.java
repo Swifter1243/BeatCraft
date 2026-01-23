@@ -77,10 +77,28 @@ public class SpectrogramTowers {
         mapController.recordPlainMirrorCall((b, c) -> _render(b, pos, ori, songTime, c));
     }
 
-    private void _render(BufferBuilder buffer, Vector3f position, Quaternionf orientation, float songTime, Vector3f cameraPos) {
+    private void _render(
+        BufferBuilder buffer,
+        Vector3f position,
+        Quaternionf orientation,
+        float songTime,
+        Vector3f cameraPos
+    ) {
 
-        var realOffset = towerOffset.rotate(orientation, MemoryPool.newVector3f());
-        upVec.set(0, 1, 0).rotate(orientation);
+        // --- world transform ---
+        var worldRot = MemoryPool.newQuaternionf()
+            .rotateY(mapController.worldAngle);
+
+        var worldPos = MemoryPool.newVector3f(position)
+            .rotate(worldRot)
+            .add(mapController.worldPosition);
+
+        var worldOrientation = MemoryPool.newQuaternionf(worldRot)
+            .mul(orientation);
+
+        // --- existing logic ---
+        var realOffset = towerOffset.rotate(worldOrientation, MemoryPool.newVector3f());
+        upVec.set(0, 1, 0).rotate(worldOrientation);
 
         var heights = spectrogram.getLevels(songTime);
 
@@ -88,31 +106,30 @@ public class SpectrogramTowers {
             float y;
             int j = i;
             if (splitHalfway) {
-                j = Math.max(1, Math.abs((int)(i-(towerCount/2f))));
+                j = Math.max(1, Math.abs((int)(i - (towerCount / 2f))));
             }
-            decayHeights[j] = Math.max(0, decayHeights[j] - (0.02f + (decayHeights[j]/90f)));
-            y = levelEasing.apply(Math.clamp(heights[j]/30f, 0, 1)) * maxHeight * levelModifier;
+
+            decayHeights[j] = Math.max(0, decayHeights[j] - (0.02f + (decayHeights[j] / 90f)));
+            y = levelEasing.apply(Math.clamp(heights[j] / 30f, 0, 1)) * maxHeight * levelModifier;
 
             if (j == 1) y *= 0.8f;
 
             decayHeights[j] = Math.max(decayHeights[j], y);
             y = decayHeights[j];
 
+            var pos = MemoryPool.newVector3f(realOffset)
+                .mul(i)
+                .add(worldPos);
 
-            var pos = MemoryPool.newVector3f(realOffset).mul(i).add(position);
+            var v0  = MemoryPool.newVector3f(-0.5f, 0, -0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v1  = MemoryPool.newVector3f(-0.5f, 0,  0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v2  = MemoryPool.newVector3f( 0.5f, 0,  0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v3  = MemoryPool.newVector3f( 0.5f, 0, -0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
 
-            // switch (towerStyle) {
-            //     case Cuboid -> {
-
-            var v0 = MemoryPool.newVector3f(-0.5f, 0, -0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v1 = MemoryPool.newVector3f(-0.5f, 0,  0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v2 = MemoryPool.newVector3f( 0.5f, 0,  0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v3 = MemoryPool.newVector3f( 0.5f, 0, -0.5f).rotate(orientation).add(pos).sub(cameraPos);
-
-            var v0t = MemoryPool.newVector3f(-0.5f, baseHeight + y, -0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v1t = MemoryPool.newVector3f(-0.5f, baseHeight + y,  0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v2t = MemoryPool.newVector3f( 0.5f, baseHeight + y,  0.5f).rotate(orientation).add(pos).sub(cameraPos);
-            var v3t = MemoryPool.newVector3f( 0.5f, baseHeight + y, -0.5f).rotate(orientation).add(pos).sub(cameraPos);
+            var v0t = MemoryPool.newVector3f(-0.5f, baseHeight + y, -0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v1t = MemoryPool.newVector3f(-0.5f, baseHeight + y,  0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v2t = MemoryPool.newVector3f( 0.5f, baseHeight + y,  0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
+            var v3t = MemoryPool.newVector3f( 0.5f, baseHeight + y, -0.5f).rotate(worldOrientation).add(pos).sub(cameraPos);
 
             var faces = BeatcraftRenderer.getCubeFaces(
                 v0, v1, v2, v3,
@@ -128,15 +145,13 @@ public class SpectrogramTowers {
             }
 
             MemoryPool.release(v0, v1, v2, v3, v0t, v1t, v2t, v3t);
-
-            //     }
-            // }
-
             MemoryPool.release(pos);
         }
 
-
-        MemoryPool.release(realOffset);
+        MemoryPool.release(realOffset, worldPos);
+        MemoryPool.release(worldRot);
+        MemoryPool.release(worldOrientation);
     }
+
 
 }

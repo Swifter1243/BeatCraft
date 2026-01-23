@@ -35,8 +35,8 @@ public class ObstacleGlowRenderer {
         scene.unbindWrite();
         scene.bindRead();
         framebuffer.setClearColor(0, 0, 0, 0);
-        framebuffer.clear(true);
         framebuffer.bindWrite(true);
+        framebuffer.clear(true);
 
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
         BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;

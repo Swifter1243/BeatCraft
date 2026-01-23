@@ -28,6 +28,7 @@ public class Audio {
     private final int source;
     private final int[] buffers;
     private final int wallFilter;
+    private boolean wasInWall;
 
     private Path filePath;
     private int formatId;
@@ -411,7 +412,6 @@ public class Audio {
     }
 
     public void play() {
-        Beatcraft.LOGGER.info("closed: {}, paused: {}, loaded: {}", closed, paused, loaded);
         if (closed) return;
 
         if (paused) {
@@ -480,11 +480,29 @@ public class Audio {
         if (Minecraft.getInstance().isPaused() || !controller.isPlaying()) {
             if (!paused) pause();
             return;
-        } else if (paused) {
-            play();
+        } else {
+            if (paused) {
+                play();
+            }
+            if (controller.isInWall && !wasInWall) {
+                applyFx();
+            } else if (wasInWall && !controller.isInWall) {
+                clearFx();
+            }
+            wasInWall = controller.isInWall;
         }
 
+
+
         if (!playing && loaded) play();
+    }
+
+    public void applyFx() {
+        AL10.alSourcei(source, EXTEfx.AL_DIRECT_FILTER, wallFilter);
+    }
+
+    public void clearFx() {
+        AL10.alSourcei(source, EXTEfx.AL_DIRECT_FILTER, 0);
     }
 
     public void close() {

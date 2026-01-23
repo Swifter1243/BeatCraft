@@ -92,20 +92,15 @@ public class PlayerConfig {
 
     public class QualitySettings {
 
-        public enum MirrorQuality {
-            EXACT,
-            SCUFFED,
-        }
 
         public Option<Boolean> doBloomfog = new Option<>(true, "Toggles the Bloomfog render effect", "[Medium performance impact]");
         public Option<Boolean> doBloom = new Option<>(true, "Toggles Bloom post effect", "[Low performance impact]");
-        public Option<Boolean> doMirror = new Option<>(true, "Toggles Mirror render effect", "[Performance varies]");
-        public Option<MirrorQuality> mirrorQuality = new Option<>(MirrorQuality.EXACT, "Controls mirror rendering method", "EXACT: [Medium-Extreme performance impact]\nSCUFFED: [Medium performance impact]");
-        public Option<Integer> mirrorLimit = new Option<>(1, "How many unique mirrors should be rendered?", "1: [Medium performance impact]\n2: [High performance impact]\n3+: [Extreme performance impact]");
+        public Option<Integer> mirrorLimit = new Option<>(1, "How many unique mirrors should be rendered?", "1: [Medium performance impact]\n2: [High performance impact]\n3+: [Extreme performance impact]\n-1: No limit. [Extreme performance impact]\n0: OFF. [No performance impact]");
         public Option<Boolean> skyFog = new Option<>(true, "Replace minecraft sky with a black, starless skybox", "[No performance impact]");
         public Option<Boolean> smokeGraphics = new Option<>(true, "Whether to render smoke around the player", "[Minimal performance impact]");
         public Option<Boolean> burnMarkTrails = new Option<>(true, "Saber burn marks", "NOT IMPLEMENTED");
         public Option<Boolean> sparkParticles = new Option<>(true, "Saber cut particles", "[Minimal performance impact]");
+        public Option<Boolean> renderEnvironment = new Option<>(true, "Render the environment as a mesh", "[Minimal performance impact]");
 
         public boolean doBloomfog() { return doBloomfog.get(); }
         public void doBloomfog(boolean set) { doBloomfog.set(set); }
@@ -113,11 +108,7 @@ public class PlayerConfig {
         public boolean doBloom() { return doBloom.get(); }
         public void doBloom(boolean set) { doBloom.set(set); }
 
-        public boolean doMirror() { return doMirror.get(); }
-        public void doMirror(boolean set) { doMirror.set(set); }
-
-        public MirrorQuality mirrorQuality() { return mirrorQuality.get(); }
-        public void mirrorQuality(MirrorQuality set) { mirrorQuality.set(set); }
+        public boolean doMirror() { return mirrorLimit.get() != 0; }
 
         public int mirrorLimit() { return mirrorLimit.get(); }
         public void mirrorLimit(int set) { mirrorLimit.set(set); }
@@ -134,19 +125,20 @@ public class PlayerConfig {
         public boolean sparkParticles() { return sparkParticles.get(); }
         public void sparkParticles(boolean set) { sparkParticles.set(set); }
 
+        public boolean renderEnvironment() { return renderEnvironment.get(); }
+        public void renderEnvironment(boolean set) { renderEnvironment.set(set); }
 
         public JsonObject getJson() {
             var json = new JsonObject();
 
             json.addProperty("bloomfog", doBloomfog.value);
             json.addProperty("bloom", doBloom.value);
-            json.addProperty("mirror", doMirror.value);
             json.addProperty("mirror_limit", mirrorLimit.value);
-            json.addProperty("mirror_quality", mirrorQuality.value.ordinal());
             json.addProperty("sky_fog", skyFog.value);
             json.addProperty("smoke_graphics", smokeGraphics.value);
             json.addProperty("burn_mark_trails", burnMarkTrails.value);
             json.addProperty("spark_particles", sparkParticles.value);
+            json.addProperty("render_environment", renderEnvironment.value);
 
             return json;
         }
@@ -159,7 +151,6 @@ public class PlayerConfig {
             if (json == null) return;
             doBloomfog.value = JsonUtil.getOrDefault(json, "quality.bloomfog", JsonElement::getAsBoolean, doBloomfog.value);
             doBloom.value = JsonUtil.getOrDefault(json, "quality.bloom", JsonElement::getAsBoolean, doBloom.value);
-            doMirror.value = JsonUtil.getOrDefault(json, "quality.mirror", JsonElement::getAsBoolean, doMirror.value);
             skyFog.value = JsonUtil.getOrDefault(json, "quality.sky_fog", JsonElement::getAsBoolean, skyFog.value);
             smokeGraphics.value = JsonUtil.getOrDefault(json, "quality.smoke_graphics", JsonElement::getAsBoolean, smokeGraphics.value);
             burnMarkTrails.value = JsonUtil.getOrDefault(json, "quality.burn_mark_trails", JsonElement::getAsBoolean, burnMarkTrails.value);
@@ -170,13 +161,12 @@ public class PlayerConfig {
             if (json == null) return;
             doBloomfog.value = JsonUtil.getOrDefault(json, "bloomfog", JsonElement::getAsBoolean, doBloomfog.value);
             doBloom.value = JsonUtil.getOrDefault(json, "bloom", JsonElement::getAsBoolean, doBloom.value);
-            doMirror.value = JsonUtil.getOrDefault(json, "mirror", JsonElement::getAsBoolean, doMirror.value);
             mirrorLimit.value = Math.min(1, JsonUtil.getOrDefault(json, "mirror_limit", JsonElement::getAsInt, mirrorLimit.value));
-            mirrorQuality.value = MirrorQuality.values()[Math.clamp(JsonUtil.getOrDefault(json, "mirror_quality", JsonElement::getAsInt, mirrorQuality.value.ordinal()), 0, MirrorQuality.values().length)];
             skyFog.value = JsonUtil.getOrDefault(json, "sky_fog", JsonElement::getAsBoolean, skyFog.value);
             smokeGraphics.value = JsonUtil.getOrDefault(json, "smoke_graphics", JsonElement::getAsBoolean, smokeGraphics.value);
             burnMarkTrails.value = JsonUtil.getOrDefault(json, "burn_mark_trails", JsonElement::getAsBoolean, burnMarkTrails.value);
             sparkParticles.value = JsonUtil.getOrDefault(json, "spark_particles", JsonElement::getAsBoolean, sparkParticles.value);
+            renderEnvironment.value = JsonUtil.getOrDefault(json, "render_environment", JsonElement::getAsBoolean, renderEnvironment.value);
         }
     }
 

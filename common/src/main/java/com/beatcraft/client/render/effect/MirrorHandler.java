@@ -3,6 +3,10 @@ package com.beatcraft.client.render.effect;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.render.instancing.ArrowInstanceData;
+import com.beatcraft.client.render.instancing.BombNoteInstanceData;
+import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -14,7 +18,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
-import org.apache.logging.log4j.util.TriConsumer;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -37,11 +41,18 @@ public class MirrorHandler {
     // lists for mirrored renders
     private final ArrayList<TriConsumer<BufferBuilder, Vector3f, Quaternionf>> drawCalls = new ArrayList<>();
     private final ArrayList<Bloomfog.QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> mirrorDraws = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorNotes = new ArrayList<>();
-    private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorArrows = new ArrayList<>();
     private final ArrayList<BiConsumer<BufferBuilder, Vector3f>> mirrorWallGlows = new ArrayList<>();
     private final ArrayList<Runnable> earlyCalls = new ArrayList<>();
     private final ArrayList<TriConsumer<BufferBuilder, Vector3f, Integer>> obstacleRenderCalls = new ArrayList<>();
+
+    // Mirrored instance mesh clones
+    public final InstancedMesh<ColorNoteInstanceData> MIRROR_COLOR_NOTE_INSTANCED_MESH;
+    public final InstancedMesh<BombNoteInstanceData> MIRROR_BOMB_NOTE_INSTANCED_MESH;
+    public final InstancedMesh<ColorNoteInstanceData> MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH;
+    public final InstancedMesh<ColorNoteInstanceData> MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH;
+    public final InstancedMesh<ArrowInstanceData> MIRROR_NOTE_ARROW_INSTANCED_MESH;
+    public final InstancedMesh<ArrowInstanceData> MIRROR_NOTE_DOT_INSTANCED_MESH;
+    public final InstancedMesh<ArrowInstanceData> MIRROR_CHAIN_DOT_INSTANCED_MESH;
 
     public static TextureTarget mirrorFramebuffer;
     public static TextureTarget depthFramebuffer;
@@ -65,7 +76,20 @@ public class MirrorHandler {
     public MirrorHandler(BeatmapController map) {
         mapController = map;
         mirrors.add(this);
+
+        MIRROR_COLOR_NOTE_INSTANCED_MESH = MeshLoader.COLOR_NOTE_INSTANCED_MESH.copy();
+        MIRROR_BOMB_NOTE_INSTANCED_MESH = MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH = MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH = MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.copy();
+        MIRROR_NOTE_ARROW_INSTANCED_MESH = MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.copy();
+        MIRROR_NOTE_DOT_INSTANCED_MESH = MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.copy();
+        MIRROR_CHAIN_DOT_INSTANCED_MESH = MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.copy();
     }
+
+    public void delete() {
+        mirrors.remove(this);
+    }
+
 
     public static void resize() {
         if (!BeatcraftClient.playerConfig.quality.doMirror()) return;
@@ -79,16 +103,6 @@ public class MirrorHandler {
         mirrorDraws.add(call);
     }
 
-    public void recordMirrorNoteDraw(BiConsumer<BufferBuilder, Vector3f> call) {
-        if (!BeatcraftClient.playerConfig.quality.doMirror()) return;
-        mirrorNotes.add(call);
-    }
-
-    public void recordMirrorArrowDraw(BiConsumer<BufferBuilder, Vector3f> call) {
-        if (!BeatcraftClient.playerConfig.quality.doMirror()) return;
-        mirrorArrows.add(call);
-    }
-
     public void recordMirrorLaserRenderCall(BiConsumer<BufferBuilder, Vector3f> call) {
         if (!BeatcraftClient.playerConfig.quality.doMirror()) return;
         mirrorWallGlows.add(call);
@@ -99,10 +113,12 @@ public class MirrorHandler {
         earlyCalls.add(call);
     }
 
+    /// Records a mirror surface call QUADS, POSITION_COLOR
     public void recordCall(TriConsumer<BufferBuilder, Vector3f, Quaternionf> call) {
         drawCalls.add(call);
     }
 
+    /// Records a plain block-like call QUADS, POSITION_COLOR
     public void recordPlainCall(BiConsumer<BufferBuilder, Vector3f> call) {
         plainMirrorCalls.add(call);
     }
@@ -121,7 +137,7 @@ public class MirrorHandler {
     }
 
     private void renderObstacles(Tesselator tesselator, Vector3f cameraPos) {
-        if (mapController == null) {
+        if (mapController == null || mapController.difficulty == null) {
             obstacleRenderCalls.clear();
             return;
         }
@@ -161,67 +177,18 @@ public class MirrorHandler {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         var q = MemoryPool.newQuaternionf();
-        MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.render(cameraPos);
-        MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
+        MIRROR_COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
+        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
+        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.render(cameraPos);
+        MIRROR_BOMB_NOTE_INSTANCED_MESH.render(cameraPos);
+        MIRROR_NOTE_ARROW_INSTANCED_MESH.render(cameraPos);
+        MIRROR_NOTE_DOT_INSTANCED_MESH.render(cameraPos);
+        MIRROR_CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
         MemoryPool.releaseSafe(q);
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-    }
-
-    private void renderNotes0(Tesselator tesselator, Vector3f cameraPos) {
-        // notes and debris
-        BufferBuilder triBuffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        int oldTexture = RenderSystem.getShaderTexture(0);
-        RenderSystem.setShader(() -> BeatcraftRenderer.noteShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.NOTE_TEXTURE);
-        for (var renderCall : mirrorNotes) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                Beatcraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        var triBuff = triBuffer.build();
-        if (triBuff != null) {
-            BufferUploader.drawWithShader(triBuff);
-        }
-
-        triBuffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
-
-        RenderSystem.setShader(() -> BeatcraftRenderer.arrowShader);
-        RenderSystem.setShaderTexture(0, MeshLoader.ARROW_TEXTURE);
-        for (var renderCall : mirrorArrows) {
-            try {
-                renderCall.accept(triBuffer, cameraPos);
-            } catch (Exception e) {
-                Beatcraft.LOGGER.error("Render call failed! ", e);
-            }
-        }
-        triBuff = triBuffer.build();
-        if (triBuff != null) {
-            BufferUploader.drawWithShader(triBuff);
-        }
-
-        RenderSystem.setShaderTexture(0, oldTexture);
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
-        mirrorNotes.clear();
-        mirrorArrows.clear();
     }
 
     private void renderFloorLights(Tesselator tesselator, Vector3f cameraPos) {
@@ -284,7 +251,49 @@ public class MirrorHandler {
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
     }
 
-    public void drawMirror() {
+    public static void drawMirrors() {
+        var limit = BeatcraftClient.playerConfig.quality.mirrorLimit();
+
+        assert Minecraft.getInstance().player != null;
+        var player = Minecraft.getInstance().player.position();
+
+        mirrors.sort((a, b) -> Float.compare(
+            a.mapController.worldPosition.distance((float) player.x, (float) player.y, (float) player.z),
+            b.mapController.worldPosition.distance((float) player.x, (float) player.y, (float) player.z)
+        ));
+
+        var skip = false;
+        var i = 0;
+        for (var mirror : mirrors) {
+            if (i >= limit && limit != -1) skip = true;
+            mirror.drawMirror(skip);
+            ++i;
+        }
+
+    }
+
+    public void cancelDraws() {
+        earlyCalls.clear();
+        mirrorDraws.clear();
+        mirrorWallGlows.clear();
+        obstacleRenderCalls.clear();
+        MIRROR_COLOR_NOTE_INSTANCED_MESH.cancelDraws();
+        MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.cancelDraws();
+        MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.cancelDraws();
+        MIRROR_BOMB_NOTE_INSTANCED_MESH.cancelDraws();
+        MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
+        MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
+        MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
+
+        LightMesh.cancelMirrorDraws();
+
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+    }
+
+    public void drawMirror(boolean skipMirrored) {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Vector3f cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
@@ -299,7 +308,7 @@ public class MirrorHandler {
             renderForDepth(tesselator, cameraPos);
         }
 
-        // render mirror block non-reflective faces
+        // render mirror-block non-reflective faces
         for (var call : plainMirrorCalls) {
             call.accept(buffer, cameraPos);
         }
@@ -332,30 +341,10 @@ public class MirrorHandler {
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
         mirrorFramebuffer.clear(Minecraft.ON_OSX);
 
-        if (!BeatcraftClient.playerConfig.quality.doMirror()) {
-            earlyCalls.clear();
-            mirrorDraws.clear();
-            mirrorNotes.clear();
-            mirrorArrows.clear();
-            mirrorWallGlows.clear();
-            obstacleRenderCalls.clear();
-            MeshLoader.MIRROR_COLOR_NOTE_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_CHAIN_HEAD_NOTE_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_BOMB_NOTE_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_NOTE_ARROW_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_NOTE_DOT_INSTANCED_MESH.cancelDraws();
-            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.cancelDraws();
-
-            LightMesh.cancelMirrorDraws();
-
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
-            RenderSystem.disableDepthTest();
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+        if (skipMirrored) {
+            cancelDraws();
             return;
-        };
-
+        }
 
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
         BeatcraftRenderer.bloomfog.overrideBuffer = true;
@@ -419,7 +408,11 @@ public class MirrorHandler {
             mirrorShader.setSampler("Sampler2", BeatcraftRenderer.bloomfog.blurredBuffer.getColorTextureId());
             mirrorShader.safeGetUniform("WorldPos").set(cameraPos);
             mirrorShader.safeGetUniform("GameTime").set(BeatcraftClient.random.nextFloat());
+
+            RenderSystem.disableBlend();
+
             BufferUploader.drawWithShader(buff);
+
             RenderSystem.depthMask(false);
         }
 

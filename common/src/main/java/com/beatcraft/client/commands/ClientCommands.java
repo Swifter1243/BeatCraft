@@ -300,6 +300,37 @@ public class ClientCommands {
         return CommandResult.ok();
     }
 
+    private static CommandResult deleteMap(CommandCallback callback) {
+
+        var uuid = callback.getUuidArg("uuid");
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        BeatmapManager.beatmaps.remove(controller);
+        controller.delete();
+
+        return CommandResult.ok();
+    }
+
+    private static CommandResult stopMap(CommandCallback callback) {
+
+        var uuid = callback.getUuidArg("uuid");
+
+        var controller = BeatmapManager.getByUuid(uuid);
+
+        if (controller == null) {
+            return CommandResult.err(Component.translatable("command.beatcraft.error.map_controller_not_found"));
+        }
+
+        controller.reset();
+
+        return CommandResult.ok();
+    }
+
     private static CommandResult trackPlayer(CommandCallback callback) {
         var uuid = callback.getUuidArg("uuid");
         var playerUuid = callback.getUuidArg("player");
@@ -371,6 +402,12 @@ public class ClientCommands {
                         argument("player", CommandTree.ArgumentType.Uuid).suggests(ClientCommands::playerUuidSuggester)
                             .executes(ClientCommands::trackPlayer)
                     )
+                ).then(
+                    literal("delete")
+                        .executes(ClientCommands::deleteMap)
+                ).then(
+                    literal("stop")
+                        .executes(ClientCommands::stopMap)
                 )
             ).build(),
             literal("fpfc").then(

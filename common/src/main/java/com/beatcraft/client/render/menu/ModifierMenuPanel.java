@@ -173,11 +173,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 this::getVolume,
                 new Vector3f(-100, -175, 0)),
 
-            // SettingsMenuPanel.getOptionModifier("Place Environments",
-            //     () -> BeatcraftClient.playerConfig.setEnvironmentPlacing(false),
-            //     () -> BeatcraftClient.playerConfig.setEnvironmentPlacing(true),
-            //     () -> BeatcraftClient.playerConfig.doEnvironmentPlacing() ? "ON" : "OFF",
-            //     new Vector3f(-100, -123, 0)),
+            SettingsMenuPanel.getOptionModifier("Render Environment",
+                () -> BeatcraftClient.playerConfig.quality.renderEnvironment(false),
+                () -> BeatcraftClient.playerConfig.quality.renderEnvironment(true),
+                () -> BeatcraftClient.playerConfig.quality.renderEnvironment() ? "ON" : "OFF",
+                new Vector3f(-100, -123, 0)),
 
             SettingsMenuPanel.getOptionModifier("Bloomfog",
                 () -> BeatcraftClient.playerConfig.quality.doBloomfog(false),
@@ -191,10 +191,14 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatcraftClient.playerConfig.quality.doBloom() ? "ON" : "OFF",
                 new Vector3f(230, -123, 0)),
 
-            SettingsMenuPanel.getOptionModifier("Mirror",
-                () -> BeatcraftClient.playerConfig.quality.doMirror(false),
-                () -> BeatcraftClient.playerConfig.quality.doMirror(true),
-                () -> BeatcraftClient.playerConfig.quality.doMirror() ? "ON" : "OFF",
+            SettingsMenuPanel.getOptionModifier("Mirror Limit",
+                () -> BeatcraftClient.playerConfig.quality.mirrorLimit(Math.max(-1, BeatcraftClient.playerConfig.quality.mirrorLimit() - 1)),
+                () -> BeatcraftClient.playerConfig.quality.mirrorLimit(BeatcraftClient.playerConfig.quality.mirrorLimit() + 1),
+                () -> switch (BeatcraftClient.playerConfig.quality.mirrorLimit()) {
+                        case -1 -> "INF";
+                        case 0 -> "OFF";
+                        default -> String.valueOf(BeatcraftClient.playerConfig.quality.mirrorLimit());
+                    },
                 new Vector3f(230, -71, 0)),
 
             SettingsMenuPanel.getOptionModifier("Sky Fog",

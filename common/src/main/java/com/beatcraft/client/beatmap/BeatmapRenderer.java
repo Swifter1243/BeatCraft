@@ -17,13 +17,13 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import org.apache.logging.log4j.util.BiConsumer;
-import org.apache.logging.log4j.util.TriConsumer;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
 public class BeatmapRenderer {
 
@@ -57,10 +57,6 @@ public class BeatmapRenderer {
         obstacleRenderCalls.add(call);
     }
 
-    public void recordMirroredObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
-        //obstacleRenderCalls.add(call);
-    }
-
     public void recordRenderCall(Runnable call) {
         renderCalls.add(call);
     }
@@ -83,10 +79,6 @@ public class BeatmapRenderer {
 
     public void recordBloomfogPosColCall(TriConsumer<Matrix4f, BufferBuilder, Vector3f> call) {
         bloomfogPosColCalls.add(call);
-    }
-
-    public void recordPlainMirrorCall(BiConsumer<BufferBuilder, Vector3f> call) {
-
     }
 
     private void renderLightDepth(Tesselator tesselator, Vector3f cameraPos) {
@@ -174,7 +166,7 @@ public class BeatmapRenderer {
 
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
+        RenderSystem.depthMask(true);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -310,8 +302,6 @@ public class BeatmapRenderer {
 
         renderBloomfogPosCol(m, tesselator, cameraPos);
 
-        renderEnvironmentLights(tesselator, cameraPos);
-
         float alpha = 0;
 
         switch (renderStyle) {
@@ -330,6 +320,8 @@ public class BeatmapRenderer {
         if (difficulty != null) {
             difficulty.render(matrices, camera, alpha);
         }
+
+        renderEnvironmentLights(tesselator, cameraPos);
 
         renderFloorLightsPhase1(tesselator, cameraPos);
 

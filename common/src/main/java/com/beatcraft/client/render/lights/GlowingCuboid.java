@@ -96,6 +96,13 @@ public class GlowingCuboid extends LightObject {
                 ori4, rot4, wrot4, pos4, off4, state, false
             )
         );
+        mapController.mirrorHandler.recordMirrorLaserRenderCall(
+            (b, c) -> _render(
+                mat,
+                b, c, 0, null,
+                ori4, rot4, wrot4, pos4, off4, state, true
+            )
+        );
 
     }
 

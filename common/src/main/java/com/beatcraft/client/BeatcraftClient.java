@@ -73,6 +73,7 @@ public class BeatcraftClient {
             if (headsetLinkedBeatmap != null) {
                 headsetLinkedBeatmap.stop();
                 BeatmapManager.beatmaps.remove(headsetLinkedBeatmap);
+                headsetLinkedBeatmap.delete();
                 headsetLinkedBeatmap = null;
                 AudioController.stopPreview();
             }

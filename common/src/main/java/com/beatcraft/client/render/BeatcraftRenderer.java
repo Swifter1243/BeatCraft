@@ -3,6 +3,7 @@ package com.beatcraft.client.render;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
@@ -77,6 +78,8 @@ public class BeatcraftRenderer {
         MeshLoader.NOTE_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_DOT_INSTANCED_MESH.render(cameraPos);
         MeshLoader.HEADSET_INSTANCED_MESH.render(cameraPos);
+
+        MirrorHandler.drawMirrors();
 
         BeatmapManager.renderMaps();
 

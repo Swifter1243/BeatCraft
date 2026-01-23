@@ -11,7 +11,9 @@ import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.environment.thefirst.TheFirstRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
+import com.beatcraft.common.memory.MemoryPool;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -47,6 +49,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     private SpectrogramTowers leftSpectrogramTowers;
     private SpectrogramTowers rightSpectrogramTowers;
 
+    private static final TheFirstRenderer renderer = new TheFirstRenderer();
+
     public TheFirstEnvironment(BeatmapController map) {
         super(map);
     }
@@ -75,6 +79,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         rightSpectrogramTowers.levelModifier = 0.75f;
         leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
         rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
+        leftSpectrogramTowers.baseHeight = -100;
+        rightSpectrogramTowers.baseHeight = -100;
 
 
     }
@@ -431,6 +437,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         leftSpectrogramTowers.render(t);
         rightSpectrogramTowers.render(t);
 
+        renderer.renderEnv(matrices, camera, mapController, alpha);
     }
 
     @Override

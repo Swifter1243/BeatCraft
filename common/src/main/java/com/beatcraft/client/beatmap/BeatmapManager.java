@@ -61,11 +61,12 @@ public class BeatmapManager {
         float[] x;
         if (nearest != null) {
             x = nearest.difficulty.lightShowEnvironment.getFogHeights();
+            x = new float[]{x[0] + nearest.worldPosition.y, x[1] + nearest.worldPosition.y};
         } else {
             x = DEFAULT_FOG_HEIGHTS;
         }
 
-        return new float[]{x[0] + position.y, x[1] + position.y};
+        return new float[]{x[0], x[1]};
     }
 
     public static BeatmapController getByUuid(UUID uuid) {

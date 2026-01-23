@@ -81,11 +81,25 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
     private void renderMirrored(Vector3f pos, Quaternionf orientation) {
+        float mirrorY = mapController.worldPosition.y;
+
         var flippedPos = pos.mul(1, -1, 1);
-        var flippedRot = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
+        flippedPos.y += mirrorY * 2f;
+
+        var flippedRot = MemoryPool.newQuaternionf(
+            -orientation.x,
+            orientation.y,
+            -orientation.z,
+            orientation.w
+        );
+
         MemoryPool.release(orientation);
-        mapController.recordMirroredObstacleRenderCall((b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true));
+
+        mapController.recordMirroredObstacleRenderCall(
+            (b, c, i) -> _render(b, c, i, flippedPos, flippedRot, true)
+        );
     }
+
 
     private void _render(BufferBuilder buffer, Vector3f cameraPos, int _color, Vector3f pos, Quaternionf orientation, boolean mirrored) {
         List<Vector3f[]> faces = BeatcraftRenderer.getCubeFaces(bounds.min, bounds.max);

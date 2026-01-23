@@ -68,11 +68,15 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         var renderScale = localPos.pose().getScale(MemoryPool.newVector3f());
         var c = camera.getPosition().toVector3f();
 
-        var flipped = new Matrix4f().scale(1, -1, 1);
-        flipped.translate(0, c.y * 2f, 0);
-        flipped.translate(renderPos);
-        flipped.rotate(renderRotation);
-        flipped.scale(renderScale);
+        float mirrorY = mapController.worldPosition.y;
+
+        var flipped = new Matrix4f()
+            .translate(0, mirrorY, 0)   // move mirror plane to y = 0
+            .scale(1, -1, 1)            // flip over Y
+            .translate(0, -mirrorY, 0)  // move back
+            .translate(renderPos)
+            .rotate(renderRotation)
+            .scale(renderScale);
 
         MemoryPool.release(renderPos, renderScale);
         MemoryPool.release(renderRotation);
@@ -100,13 +104,13 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
         if (!isBaseDissolved()) {
             var dissolve = Math.max(mapController.logic.globalDissolve, localDissolve);
             MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(localPos.pose(), data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+            mapController.mirrorHandler.MIRROR_CHAIN_LINK_NOTE_INSTANCED_MESH.draw(ColorNoteInstanceData.create(flipped, data.getColor().copy().withAlpha(alpha), dissolve, data.getMapIndex()));
         }
 
         if (!isArrowDissolved()) {
             var dissolve = Math.max(mapController.logic.globalArrowDissolve, localArrowDissolve);
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(localPos.pose(), WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
-            MeshLoader.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
+            mapController.mirrorHandler.MIRROR_CHAIN_DOT_INSTANCED_MESH.draw(ArrowInstanceData.create(flipped, WHITE.copy().withAlpha(alpha), dissolve, data.getMapIndex()));
             MeshLoader.CHAIN_DOT_INSTANCED_MESH.copyDrawToBloom(data.getColor().copy().withAlpha(alpha));
 
         }

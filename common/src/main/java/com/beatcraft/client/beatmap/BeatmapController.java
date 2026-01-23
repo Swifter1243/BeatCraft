@@ -9,6 +9,7 @@ import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalGameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalObstacle;
 import com.beatcraft.client.render.HUDRenderer;
+import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.replay.PlayRecorder;
 import com.beatcraft.client.replay.ReplayHandler;
 import com.beatcraft.client.replay.Replayer;
@@ -22,8 +23,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import org.apache.commons.compress.archivers.dump.UnrecognizedFormatException;
-import org.apache.logging.log4j.util.BiConsumer;
-import org.apache.logging.log4j.util.TriConsumer;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 public class BeatmapController {
 
@@ -69,6 +70,8 @@ public class BeatmapController {
 
     public final BeatmapLogicController logic = new BeatmapLogicController(this);
 
+    public final MirrorHandler mirrorHandler = new MirrorHandler(this);
+
     public final BaseProviderHandler baseProvider = new BaseProviderHandler(this);
 
     public final BeatmapRenderer renderer;
@@ -84,7 +87,7 @@ public class BeatmapController {
     }
 
     public void recordMirroredObstacleRenderCall(TriConsumer<BufferBuilder, Vector3f, Integer> call) {
-        renderer.recordMirroredObstacleRenderCall(call);
+        mirrorHandler.recordMirroredObstacleRenderCall(call);
     }
 
     public void recordRenderCall(Runnable call) {
@@ -112,7 +115,7 @@ public class BeatmapController {
     }
 
     public void recordPlainMirrorCall(BiConsumer<BufferBuilder, Vector3f> call) {
-        renderer.recordPlainMirrorCall(call);
+        mirrorHandler.recordPlainCall(call);
     }
 
     public BeatmapController(Level level, Vector3f position, float rotation, BeatmapRenderer.RenderStyle style) {
@@ -130,6 +133,10 @@ public class BeatmapController {
         replayer = new Replayer(this);
         hudRenderer = new HUDRenderer(this);
         this.level = level;
+    }
+
+    public void delete() {
+        mirrorHandler.delete();
     }
 
     public void restart() {
@@ -265,9 +272,6 @@ public class BeatmapController {
 
         }
 
-        if (audio != null) {
-            audio.update(currentBeat, currentSeconds, this);
-        }
     }
 
     private final PoseStack matrices = new PoseStack();
@@ -300,6 +304,9 @@ public class BeatmapController {
         var dist = camera.getPosition().toVector3f().distance(worldPosition);
         renderer.render(matrices, difficulty, camera, dist);
 
+        if (audio != null) {
+            audio.update(currentBeat, currentSeconds, this);
+        }
     }
 
     public void seek(float beat) {
