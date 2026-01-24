@@ -1,10 +1,13 @@
 package com.beatcraft.client.beatmap;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.common.data.map.SongData;
+import com.beatcraft.common.memory.MemoryPool;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.File;
@@ -17,6 +20,75 @@ public class BeatmapManager {
 
     public static final ArrayList<BeatmapController> beatmaps = new ArrayList<>();
     public static final ArrayList<SongData> songs = new ArrayList<>();
+
+    private static double last = 1.0;
+    private static final double STEP = 0.01;
+    private static void stepTo(double target) {
+        if (last == target) return;
+        if (target > last) {
+            last = Math.min(target, last+STEP);
+        } else {
+            last = Math.max(target, last-STEP);
+        }
+    }
+
+    public static double getSkyFadeFactor() {
+        return BeatcraftClient.playerConfig.quality.skyFog() ? last : 1.0;
+    }
+
+    private static void updateFadeFactor() {
+        assert Minecraft.getInstance().player != null;
+        var playerId = Minecraft.getInstance().player.getUUID();
+        var player = Minecraft.getInstance().player.position();
+        var p = MemoryPool.newVector3f((float) player.x, (float) player.y, (float) player.z);
+        // radii for playing: <=75: 0, 75-250: 0-1, >250: 1
+        var nearestPlaying = getNearestFiltered(
+            p,
+            map -> map.isPlaying()
+                && (
+                    ((map.trackedPlayer.equals(playerId) || BeatcraftClient.wearingHeadset) && map.renderer.renderStyle == BeatmapRenderer.RenderStyle.HEADSET)
+                    || map.renderer.renderStyle == BeatmapRenderer.RenderStyle.DISTANCE
+                )
+        );
+        // radii for not playing: <=6: 0, 6-18: 0-1, >18: 1
+        var nearestNotPlaying = getNearestFiltered(
+            p,
+            map -> !map.isPlaying()
+                && (
+                ((map.trackedPlayer.equals(playerId) || BeatcraftClient.wearingHeadset) && map.renderer.renderStyle == BeatmapRenderer.RenderStyle.HEADSET)
+                    || map.renderer.renderStyle == BeatmapRenderer.RenderStyle.DISTANCE
+            )
+        );
+
+        float fadePlaying = 1.0f;
+        if (nearestPlaying != null) {
+            float d = nearestPlaying.worldPosition.distance(p);
+
+            if (d <= 75.0f) {
+                fadePlaying = 0.0f;
+            } else if (d < 250.0f) {
+                fadePlaying = (d - 75.0f) / (250.0f - 75.0f);
+            }
+        }
+
+        float fadeNotPlaying = 1.0f;
+        if (nearestNotPlaying != null) {
+            float d = nearestNotPlaying.worldPosition.distance(p);
+
+            if (d <= 6.0f) {
+                fadeNotPlaying = 0.0f;
+            } else if (d < 18.0f) {
+                fadeNotPlaying = (d - 6.0f) / (18.0f - 6.0f);
+            }
+        }
+
+        // use the most restrictive fade
+        float fade = Math.min(fadePlaying, fadeNotPlaying);
+
+        stepTo(fade);
+
+        MemoryPool.release(p);
+    }
 
     public static void loadBeatmaps() {
         var folderPath = Minecraft.getInstance().gameDirectory.toPath() + "/beatmaps/";
@@ -164,6 +236,7 @@ public class BeatmapManager {
         for (var map : beatmaps) {
             map.update();
         }
+        updateFadeFactor();
     }
 
     public static void preRenderMaps() {
@@ -196,7 +269,7 @@ public class BeatmapManager {
         return false;
     }
 
-    public static BeatmapController getNearestFiltered(Vector3f pos, Function<BeatmapController, Boolean> filter) {
+    public static @Nullable BeatmapController getNearestFiltered(Vector3f pos, Function<BeatmapController, Boolean> filter) {
         BeatmapController nearest = null;
         var nearestDist = Float.POSITIVE_INFINITY;
 

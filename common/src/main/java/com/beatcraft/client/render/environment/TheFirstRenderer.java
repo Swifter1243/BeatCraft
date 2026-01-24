@@ -1,7 +1,6 @@
-package com.beatcraft.client.render.environment.thefirst;
+package com.beatcraft.client.render.environment;
 
 import com.beatcraft.client.beatmap.BeatmapController;
-import com.beatcraft.client.render.environment.EnvironmentRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -45,6 +44,8 @@ public class TheFirstRenderer implements EnvironmentRenderer {
 
     private static final float FAR = 1000;
     private static final float PARALLEL_STRIP_WIDTH = 0.5f;
+    private static final float PARALLEL_X = 16;
+    private static final float PARALLEL_Y = 1.25f;
 
     private static final float[][][] mirrorMesh = new float[][][]{
         { // Runway surface
@@ -110,14 +111,14 @@ public class TheFirstRenderer implements EnvironmentRenderer {
         },
         { // Runway parallel lines
             // Left side
-            {14, 1, -FAR}, {14, 1, FAR},  {14, 1+PARALLEL_STRIP_WIDTH, FAR}, {14, 1+PARALLEL_STRIP_WIDTH, -FAR}, // right face
-            {14, 1, -FAR}, {14+PARALLEL_STRIP_WIDTH, 1, -FAR}, {14+PARALLEL_STRIP_WIDTH, 1, FAR}, {14, 1, FAR}, // bottom face
-            {14, 1+PARALLEL_STRIP_WIDTH, -FAR}, {14+PARALLEL_STRIP_WIDTH, 1+PARALLEL_STRIP_WIDTH, -FAR}, {14+PARALLEL_STRIP_WIDTH, 1+PARALLEL_STRIP_WIDTH, FAR}, {14, 1+PARALLEL_STRIP_WIDTH, FAR}, // top face
+            {PARALLEL_X, PARALLEL_Y, -FAR}, {PARALLEL_X, PARALLEL_Y, FAR},  {PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, {PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, // right face
+            {PARALLEL_X, PARALLEL_Y, -FAR}, {PARALLEL_X+PARALLEL_STRIP_WIDTH, PARALLEL_Y, -FAR}, {PARALLEL_X+PARALLEL_STRIP_WIDTH, PARALLEL_Y, FAR}, {PARALLEL_X, PARALLEL_Y, FAR}, // bottom face
+            {PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, {PARALLEL_X+PARALLEL_STRIP_WIDTH, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, {PARALLEL_X+PARALLEL_STRIP_WIDTH, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, {PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, // top face
 
             // Right side
-            {-14, 1, -FAR}, {-14, 1, FAR},  {-14, 1+PARALLEL_STRIP_WIDTH, FAR}, {-14, 1+PARALLEL_STRIP_WIDTH, -FAR}, // right face
-            {-14, 1, -FAR}, {-14-PARALLEL_STRIP_WIDTH, 1, -FAR}, {-14-PARALLEL_STRIP_WIDTH, 1, FAR}, {-14, 1, FAR}, // bottom face
-            {-14, 1+PARALLEL_STRIP_WIDTH, -FAR}, {-14-PARALLEL_STRIP_WIDTH, 1+PARALLEL_STRIP_WIDTH, -FAR}, {-14-PARALLEL_STRIP_WIDTH, 1+PARALLEL_STRIP_WIDTH, FAR}, {-14, 1+PARALLEL_STRIP_WIDTH, FAR}, // top face
+            {-PARALLEL_X, PARALLEL_Y, -FAR}, {-PARALLEL_X, PARALLEL_Y, FAR},  {-PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, {-PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, // right face
+            {-PARALLEL_X, PARALLEL_Y, -FAR}, {-PARALLEL_X-PARALLEL_STRIP_WIDTH, PARALLEL_Y, -FAR}, {-PARALLEL_X-PARALLEL_STRIP_WIDTH, PARALLEL_Y, FAR}, {-PARALLEL_X, PARALLEL_Y, FAR}, // bottom face
+            {-PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, {-PARALLEL_X-PARALLEL_STRIP_WIDTH, PARALLEL_Y+PARALLEL_STRIP_WIDTH, -FAR}, {-PARALLEL_X-PARALLEL_STRIP_WIDTH, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, {-PARALLEL_X, PARALLEL_Y+PARALLEL_STRIP_WIDTH, FAR}, // top face
         },
         { // Runway light supports
             // left side

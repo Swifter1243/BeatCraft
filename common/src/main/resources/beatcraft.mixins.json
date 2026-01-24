@@ -5,6 +5,8 @@
   "minVersion": "0.8",
   "client": [
     "BufferBuilderMixin",
+    "ClientLevelMixin",
+    "FogRendererMixin",
     "InventoryScreenMixin",
     "ItemEntityRendererMixin",
     "ItemInHandLayerMixin",

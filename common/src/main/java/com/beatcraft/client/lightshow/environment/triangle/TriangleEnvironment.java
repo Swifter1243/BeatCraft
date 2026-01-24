@@ -11,6 +11,7 @@ import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.environment.TriangleRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 
 public class TriangleEnvironment extends EnvironmentV2 {
 
+    private final TriangleRenderer renderer = new TriangleRenderer();
 
     private RingLightGroup ringLights;
 
@@ -47,7 +49,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
 
         leftSpectrogramTowers = new SpectrogramTowers(
             mapController,
-            new Vector3f(13.5f, -5f, -80.5f),
+            new Vector3f(13.5f, -405f, -80.5f),
             new Quaternionf(),
             new Vector3f(0, 0, 2),
             127,
@@ -56,14 +58,15 @@ public class TriangleEnvironment extends EnvironmentV2 {
             true
         );
         rightSpectrogramTowers = leftSpectrogramTowers.copyTo(
-            new Vector3f(-13.5f, -5f, -80.5f),
+            new Vector3f(-13.5f, -405f, -80.5f),
             new Quaternionf()
         );
         leftSpectrogramTowers.levelModifier = 0.75f;
         rightSpectrogramTowers.levelModifier = 0.75f;
         leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
         rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
-
+        leftSpectrogramTowers.baseHeight = 400;
+        rightSpectrogramTowers.baseHeight = 400;
 
     }
 
@@ -352,6 +355,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
         leftSpectrogramTowers.render(t);
         rightSpectrogramTowers.render(t);
 
+        renderer.renderEnv(matrices, camera, mapController, alpha);
     }
 
     @Override

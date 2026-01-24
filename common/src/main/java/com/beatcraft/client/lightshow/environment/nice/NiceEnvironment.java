@@ -11,6 +11,7 @@ import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.environment.NiceRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,6 +24,8 @@ import java.io.File;
 import java.util.HashMap;
 
 public class NiceEnvironment extends EnvironmentV2 {
+
+    private final NiceRenderer renderer = new NiceRenderer();
 
     private RingLightGroup ringLights;
 
@@ -46,7 +49,7 @@ public class NiceEnvironment extends EnvironmentV2 {
 
         leftSpectrogramTowers = new SpectrogramTowers(
             mapController,
-            new Vector3f(13.5f, -5f, -80.5f),
+            new Vector3f(13.5f, -405f, -80.5f),
             new Quaternionf(),
             new Vector3f(0, 0, 2),
             127,
@@ -55,14 +58,15 @@ public class NiceEnvironment extends EnvironmentV2 {
             true
         );
         rightSpectrogramTowers = leftSpectrogramTowers.copyTo(
-            new Vector3f(-13.5f, -5f, -80.5f),
+            new Vector3f(-13.5f, -405f, -80.5f),
             new Quaternionf()
         );
         leftSpectrogramTowers.levelModifier = 0.75f;
         rightSpectrogramTowers.levelModifier = 0.75f;
         leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
         rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
-
+        leftSpectrogramTowers.baseHeight = 400;
+        rightSpectrogramTowers.baseHeight = 400;
 
     }
 
@@ -75,7 +79,7 @@ public class NiceEnvironment extends EnvironmentV2 {
                 new Vector3f(-0.03f, -0.03f, isCenter ? 0 : -500),
                 new Vector3f(0.03f, 0.03f, 500)
             ),
-            (isCenter ? new Vector3f(2 * sign, 0, 9) :
+            (isCenter ? new Vector3f(2 * sign, 0, 8) :
             new Vector3f(16f * sign, 1.5f, 8)
             ),
             new Quaternionf()
@@ -437,6 +441,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         leftSpectrogramTowers.render(t);
         rightSpectrogramTowers.render(t);
 
+        renderer.renderEnv(matrices, camera, mapController, alpha);
     }
 
     @Override

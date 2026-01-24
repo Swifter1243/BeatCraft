@@ -11,9 +11,8 @@ import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
-import com.beatcraft.client.render.environment.thefirst.TheFirstRenderer;
+import com.beatcraft.client.render.environment.TheFirstRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
-import com.beatcraft.common.memory.MemoryPool;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -63,7 +62,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
 
         leftSpectrogramTowers = new SpectrogramTowers(
             mapController,
-            new Vector3f(13.5f, -5f, -80.5f),
+            new Vector3f(13.5f, -405f, -80.5f),
             new Quaternionf(),
             new Vector3f(0, 0, 2),
             127,
@@ -72,15 +71,15 @@ public class TheFirstEnvironment extends EnvironmentV2 {
             true
         );
         rightSpectrogramTowers = leftSpectrogramTowers.copyTo(
-            new Vector3f(-13.5f, -5f, -80.5f),
+            new Vector3f(-13.5f, -405f, -80.5f),
             new Quaternionf()
         );
         leftSpectrogramTowers.levelModifier = 0.75f;
         rightSpectrogramTowers.levelModifier = 0.75f;
         leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
         rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
-        leftSpectrogramTowers.baseHeight = -400;
-        rightSpectrogramTowers.baseHeight = -400;
+        leftSpectrogramTowers.baseHeight = 400;
+        rightSpectrogramTowers.baseHeight = 400;
 
 
     }
