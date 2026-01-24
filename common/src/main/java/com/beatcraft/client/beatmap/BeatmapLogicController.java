@@ -279,10 +279,10 @@ public class BeatmapLogicController {
 
         if (obj instanceof PhysicalScorableObject scorable) {
             processNote(scorable, gc, bc, expectedNoteType, vel);
-        } else if (obj instanceof PhysicalBombNote bombNote) {
+        } else if (obj instanceof PhysicalBombNote) {
             if (bc.isPointInHitbox(localTip)) {
                 obj.cutNote();
-                processBadCut(0);
+                processBombCut();
             }
         }
 
@@ -299,7 +299,7 @@ public class BeatmapLogicController {
 
         float dot = dir.dot(DOWN);
 
-        return dot >= 0.7071f;
+        return dot >= 0.7071f; // sqrt(0.5)
     }
 
 
@@ -472,6 +472,11 @@ public class BeatmapLogicController {
         // push score display to HUD
     }
 
+    public void processBombCut() {
+        addBombCut();
+        breakCombo();
+    }
+
     public void processBadCut(int maxScore) {
         if (misses == 0 && badCuts == 0) {
             loseFCTime = System.nanoTime() / 1_000_000_000d;
@@ -498,6 +503,12 @@ public class BeatmapLogicController {
         if (maxHealth == 100 && !(failed && noFail)) {
             health = Math.min(maxHealth, health + HEAL_HP);
         }
+    }
+
+    public void addBombCut() {
+        if (failed && noFail) return;
+        processDamage(BOMB_HP);
+        checkFail();
     }
 
     public void addMiss() {
