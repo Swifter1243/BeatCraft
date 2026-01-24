@@ -75,12 +75,17 @@ public class Audio {
         EXTEfx.alFilterf(wallFilter, EXTEfx.AL_LOWPASS_GAINHF, 0.1f);
     }
 
+    public Audio reload() {
+        close();
+        return loadFromFile(this.filePath.toString(), this.mode);
+    }
+
     public static Audio loadFromFile(String path, Mode mode) {
         Path file = Path.of(path);
 
         AudioFormat format;
         try (InputStream probeIn = Files.newInputStream(file);
-             JOrbisAudioStream probe = new JOrbisAudioStream(probeIn)) {
+            JOrbisAudioStream probe = new JOrbisAudioStream(probeIn)) {
             format = probe.getFormat();
         } catch (Exception e) {
             Beatcraft.LOGGER.error("Failed to probe audio {}", path, e);

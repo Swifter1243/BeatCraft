@@ -140,6 +140,7 @@ public class BeatmapController {
     }
 
     public void restart() {
+        audio = audio.reload();
         seek(0);
         resume();
     }

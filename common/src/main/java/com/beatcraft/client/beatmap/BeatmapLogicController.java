@@ -183,7 +183,7 @@ public class BeatmapLogicController {
     public void checkNote(PhysicalGameplayObject<? extends GameplayObject> obj) {
 
         obj.getWorldPos(wp);
-        var cd = 1.2 + obj.getCollisionDistance();
+        var cd = 1.2 + obj.getCollisionDistance(); // 1.2 == distance that extends beyond the length of the saber
 
         if (rightSaberPos.distance(wp) <= cd) {
             checkSaber(obj, rightSaberPos, rightSaberRotation, rightSaberTipVelocity, NoteType.BLUE);

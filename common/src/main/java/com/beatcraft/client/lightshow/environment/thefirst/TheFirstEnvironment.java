@@ -79,8 +79,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         rightSpectrogramTowers.levelModifier = 0.75f;
         leftSpectrogramTowers.levelEasing = Easing::easeOutExpo;
         rightSpectrogramTowers.levelEasing = Easing::easeOutExpo;
-        leftSpectrogramTowers.baseHeight = -100;
-        rightSpectrogramTowers.baseHeight = -100;
+        leftSpectrogramTowers.baseHeight = -400;
+        rightSpectrogramTowers.baseHeight = -400;
 
 
     }
