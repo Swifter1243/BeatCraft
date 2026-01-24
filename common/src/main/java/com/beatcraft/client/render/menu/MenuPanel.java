@@ -417,7 +417,7 @@ public abstract class MenuPanel<T extends Menu> {
     }
 
     public Vector3f getNormal() {
-        return new Vector3f(0, 0, -1).rotateY(data.hudRenderer.controller.worldAngle).rotate(orientation);
+        return new Vector3f(0, 0, 1).rotateY(data.hudRenderer.controller.worldAngle).rotate(orientation);
     }
 
     public void render(MultiBufferSource.BufferSource immediate, @Nullable Vector2f pointerPosition, boolean triggerPressed) {

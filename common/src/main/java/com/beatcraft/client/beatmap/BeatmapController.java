@@ -164,6 +164,7 @@ public class BeatmapController {
             }
 
             audio = AudioController.playMapSong(this.info.getSongFilename());
+            audio.setSpeed(playbackSpeed);
             setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);
             var cs = this.difficulty.getSetDifficulty().getColorScheme();
             baseProvider.setupStaticProviders(cs);

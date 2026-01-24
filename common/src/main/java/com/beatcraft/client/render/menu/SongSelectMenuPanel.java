@@ -167,7 +167,7 @@ public class SongSelectMenuPanel extends MenuPanel<SongSelectMenu> {
 
         for (int i = start; i < end; i++) {
             SongData data = BeatcraftClient.songs.getSongs().get(i);
-            songListContainer.children.add(new SongDisplayWidget(data, new Vector3f(0, (i-start) * 80, 0.05f), getPreviewGetter(data)));
+            songListContainer.children.add(new SongDisplayWidget(data, new Vector3f(0, (i - start) * 80, 0.05f), getPreviewGetter(data)));
         }
 
     }

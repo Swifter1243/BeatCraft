@@ -179,7 +179,7 @@ public abstract class Difficulty {
         if (lightShowEnvironment != null) {
             lightShowEnvironment.render(matrices, camera, alpha);
         }
-        if (mapController.isModifierActive("Zen Mode")) {
+        if (mapController.isModifierActive("Zen Mode") || !mapController.isPlaying()) {
             matrices.popPose();
             return;
         }

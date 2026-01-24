@@ -39,7 +39,7 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
             new TextWidget(CREDITS, new Vector3f(0, -250, 0), 3),
 
             new TextWidget(DEVS, new Vector3f(0, -200, 0), 3),
-            getDeveloperWidget("textures/credits_menu/westbot.png", "Westbot", DEV, "https://ko-fi.com/westbot", new Vector3f(0, -115, 0)),
+            getDeveloperWidget("textures/credits_menu/westbot.png", "Westbot", DEV, "https://buymeacoffee.com/westbot", new Vector3f(0, -115, 0)),
             getDeveloperWidget("textures/credits_menu/swifter.png", "Swifter", DEV, "https://ko-fi.com/swifter", new Vector3f(0, -25, 0)),
 
             SettingsMenuPanel.getButton(
@@ -67,15 +67,16 @@ public class CreditsPanel extends MenuPanel<CreditsMenu> {
     private static final int ROLE_POS = 10;
 
 
-    private Widget getDeveloperWidget(String iconName, String name, Component role, String kofi, Vector3f position) {
+    private Widget getDeveloperWidget(String iconName, String name, Component role, String donationUrl, Vector3f position) {
 
         return new ContainerWidget(position, new Vector2f(),
             new TextureWidget(Beatcraft.id(iconName), new Vector3f(ICON_OFFSET, 0, 0), new Vector2f(80, 80)),
             new TextWidget(name, new Vector3f(TEXT_OFFSET, NAME_POS, -0.01f), 4).alignedLeft(),
             new TextWidget(role, new Vector3f(TEXT_OFFSET, ROLE_POS, -0.01f), 2).alignedLeft(),
             SettingsMenuPanel.getButton(
-                new TextureWidget(Beatcraft.id("textures/credits_menu/minecraft_kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
-                () -> ConfirmLinkScreen.confirmLink(null, kofi),
+                // new TextureWidget(Beatcraft.id("textures/credits_menu/minecraft_kofi_logo.png"), new Vector3f(0, 0, 0.05f), new Vector2f(984, 269)).withScale(0.1f),
+                new TextWidget("Donate", new Vector3f(0, -11, 0.05f), 3f),
+                () -> ConfirmLinkScreen.confirmLinkNow(null, donationUrl),
                 new Vector3f(KOFI_BUTTON_OFFSET, 0, 0), new Vector2f(120, 60)
             )
         );

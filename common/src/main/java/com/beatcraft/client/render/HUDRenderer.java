@@ -480,7 +480,7 @@ public class HUDRenderer {
     }
 
     private void spawnMenuPointerParticle(Vector3f position, Vector3f normal) {
-        BeatcraftParticleRenderer.addParticle(new MenuPointerParticle(position.add(normal.mul(0.01f, new Vector3f()), new Vector3f()), normal));
+        BeatcraftParticleRenderer.addParticle(new MenuPointerParticle(position.sub(normal.mul(0.01f, new Vector3f()), new Vector3f()), normal));
     }
 
     private void renderRank(PoseStack matrices, Font textRenderer, BufferBuilder buffer, Vector3f cameraPos) {
