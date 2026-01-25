@@ -165,6 +165,10 @@ public class GlowingCuboid extends LightObject {
 
             for (var face : faces) {
 
+                if (mirrorDraw && face[0].y <= 0 && face[1].y <= 0 && face[2].y <= 0 && face[3].y <= 0 ) {
+                    continue;
+                }
+
                 var v0 = face[0].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
                 var v1 = face[1].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
                 var v2 = face[2].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);

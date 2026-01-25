@@ -12,6 +12,7 @@ import com.beatcraft.client.lightshow.environment.thefirst.OuterRing;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
+import com.beatcraft.client.render.environment.OriginsRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
 import com.beatcraft.client.render.lights.ParticleCloudLight;
 import com.google.gson.JsonObject;
@@ -31,6 +32,8 @@ public class OriginsEnvironment extends EnvironmentV2 {
     public String getID() {
         return "OriginsEnvironment";
     }
+
+    private final OriginsRenderer renderer = new OriginsRenderer();
 
     private RingLightGroup ringLights;
 
@@ -81,7 +84,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
                 new Vector3f(-0.03f, -0.03f, 0),
                 new Vector3f(0.03f, 0.03f, 500)
             ),
-            new Vector3f(2.5f * sign, 0, 8),
+            new Vector3f(3.5f * sign, 0, 8),
             new Quaternionf()
         );
     }
@@ -282,6 +285,7 @@ public class OriginsEnvironment extends EnvironmentV2 {
         leftSpectrogramTowers.render(t);
         rightSpectrogramTowers.render(t);
 
+        renderer.renderEnv(matrices, camera, mapController, alpha);
     }
 
     @Override
