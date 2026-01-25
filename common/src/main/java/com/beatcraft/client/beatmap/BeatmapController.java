@@ -161,6 +161,7 @@ public class BeatmapController {
             scene = HUDRenderer.MenuScene.InGame;
 
             if (audio != null) {
+                AudioController.remove(audio);
                 audio.close();
             }
 
@@ -343,7 +344,8 @@ public class BeatmapController {
             playing = false;
         }
         if (audio != null) {
-            audio.close();
+            AudioController.remove(audio);
+            audio = null;
         }
     }
 
@@ -454,7 +456,9 @@ public class BeatmapController {
         lastNanoTime = 0;
         currentBeat = 0;
         currentSeconds = 0;
-        if (audio != null) audio.close();
+        if (audio != null) {
+            AudioController.remove(audio);
+        }
         audio = null;
         scene = HUDRenderer.MenuScene.SongSelect;
     }

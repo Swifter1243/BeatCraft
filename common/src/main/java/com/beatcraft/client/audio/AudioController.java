@@ -61,6 +61,7 @@ public class AudioController {
 
 
     public static void remove(Audio audio) {
+        audio.close();
         tracks.remove(audio);
     }
 
