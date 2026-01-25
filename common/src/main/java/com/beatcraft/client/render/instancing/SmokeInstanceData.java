@@ -33,8 +33,8 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
         pos = cameraPos;
         var v = MemoryPool.newVector3f();
         transform = new Matrix4f()
-            //.rotate(cameraRot.conjugate(new Quaternionf()))
-            .translate(cameraPos.negate(v))
+            // .rotate(cameraRot.conjugate(new Quaternionf()))
+            .translate(v)
             .rotate(orientation)
         ;
         MemoryPool.releaseSafe(v);

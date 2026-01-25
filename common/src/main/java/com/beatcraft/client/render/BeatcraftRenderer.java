@@ -7,12 +7,16 @@ import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
+import com.beatcraft.client.render.particle.SmokeParticle;
 import com.beatcraft.common.memory.MemoryPool;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.util.RandomSource;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -116,7 +120,20 @@ public class BeatcraftRenderer {
 
     }
 
+    private static double lastSmokeSpawn = 0;
+    private static final RandomSource random = RandomSource.create();
     public static void renderSmoke() {
+        var t = System.nanoTime() / 1_000_000_000d;
+
+        if ((t - lastSmokeSpawn) > SmokeParticle.SPAWN_INTERVAL) {
+            lastSmokeSpawn = t;
+            BeatcraftParticleRenderer.addParticle(new SmokeParticle(random));
+        }
+        Bloomfog.sceneDepthBuffer = Minecraft.getInstance().getMainRenderTarget().getDepthTextureId();
+
+        var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+
+        MeshLoader.SMOKE_INSTANCED_MESH.render(cameraPos.negate());
 
     }
 
