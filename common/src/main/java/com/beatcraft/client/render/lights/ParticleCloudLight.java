@@ -38,8 +38,8 @@ public class ParticleCloudLight extends LightObject {
 
     public ParticleCloudLight(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox spawnRegion, float density, float minParticleLifetime, float maxParticleLifetime, Vector3f particleDelta) {
         super(map);
-        this.position = position;
-        this.orientation = orientation;
+        this.position = map.worldPosition.add(position.rotateY(map.worldAngle), position);
+        this.orientation = new Quaternionf().rotationY(map.worldAngle).mul(orientation);
         this.spawnRegion = spawnRegion;
         this.density = density;
         this.minParticleLifetime = minParticleLifetime;

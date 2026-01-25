@@ -48,8 +48,8 @@ public class HUDRenderer {
 
     public final BeatmapController controller;
 
-    public final Matrix4f leftPanelTransform = new Matrix4f().translate(3, 1, 0).rotateZ((float) Math.PI);
-    public final Matrix4f rightPanelTransform = new Matrix4f().translate(-3, 1, 0).rotateZ((float) Math.PI);
+    public final Matrix4f leftPanelTransform = new Matrix4f().translate(3, 1.2f, 0).rotateZ((float) Math.PI);
+    public final Matrix4f rightPanelTransform = new Matrix4f().translate(-3, 1.2f, 0).rotateZ((float) Math.PI);
     public final Matrix4f healthBarTransform = new Matrix4f().translate(0, -1.5f, 0).rotateZ((float) Math.PI);
 
     public NoteType pointerSaber = NoteType.BLUE;
