@@ -49,6 +49,8 @@ dependencies {
 
     modImplementation "maven.modrinth:vivecraft:${project.minecraft_version}-${project.vivecraft_version}-neoforge"
 
+    forgeRuntimeLibrary('org.apache.commons:commons-math3:3.6.1')
+
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }

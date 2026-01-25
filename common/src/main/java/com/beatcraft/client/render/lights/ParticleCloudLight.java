@@ -26,15 +26,15 @@ public class ParticleCloudLight extends LightObject {
 
     private final RandomSource random = RandomSource.create();
 
-    private Hitbox spawnRegion;
-    private float density; // 0-1
-    private float minParticleLifetime;
-    private float maxParticleLifetime;
-    private Vector3f particleDelta;
+    private final Hitbox spawnRegion;
+    private final float density; // 0-1
+    private final float minParticleLifetime;
+    private final float maxParticleLifetime;
+    private final Vector3f particleDelta;
     private final ArrayList<CloudParticleSpawner> particleSpawners = new ArrayList<>();
 
-    private float regionVolume;
-    private float averageLifetime;
+    private final float regionVolume;
+    private final float averageLifetime;
 
     public ParticleCloudLight(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox spawnRegion, float density, float minParticleLifetime, float maxParticleLifetime, Vector3f particleDelta) {
         super(map);

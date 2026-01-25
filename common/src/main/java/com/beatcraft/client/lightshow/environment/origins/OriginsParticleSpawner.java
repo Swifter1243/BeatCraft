@@ -27,16 +27,15 @@ public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleS
 
     public static class BarParticle implements Particle {
 
-        private BeatmapController mapController;
+        private final BeatmapController mapController;
 
-        private Vector3f position;
-        private Quaternionf orientation;
-        private Vector3f velocity;
-        private Vector2f dimensions;
-        private LightState sharedLightState;
-        private double spawnTime;
+        private final Vector3f position;
+        private final Quaternionf orientation;
+        private final Vector3f velocity;
+        private final LightState sharedLightState;
+        private final double spawnTime;
 
-        private List<Vector3f[]> tris;
+        private final List<Vector3f[]> tris;
 
 
         public BarParticle(BeatmapController map, Vector3f position, Quaternionf orientation, Vector3f velocity, LightState lightState) {
@@ -45,7 +44,7 @@ public class OriginsParticleSpawner implements ParticleCloudLight.CloudParticleS
             this.position = position;
             this.orientation = orientation;
             sharedLightState = lightState;
-            this.dimensions = new Vector2f(
+            Vector2f dimensions = new Vector2f(
                 (random.nextIntBetweenInclusive(1, 8) / 64f),
                 (random.nextIntBetweenInclusive(2, 7) / 2f)
             );
