@@ -169,10 +169,10 @@ public class GlowingCuboid extends LightObject {
                     continue;
                 }
 
-                var v0 = face[0].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v1 = face[1].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v2 = face[2].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v3 = face[3].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[3].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
+                var v0 = face[0].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                var v1 = face[1].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                var v2 = face[2].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                var v3 = face[3].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
 
                 if (isBloomfog > 0) {
                     v0.rotate(cameraRotation);
@@ -186,14 +186,6 @@ public class GlowingCuboid extends LightObject {
                 buffer.addVertex(v2).setColor(color);
                 buffer.addVertex(v3).setColor(color);
 
-                //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
-                //
-                //for (var quad : sections) {
-                //    buffer.vertex(quad[0]).color(color);
-                //    buffer.vertex(quad[1]).color(color);
-                //    buffer.vertex(quad[2]).color(color);
-                //    buffer.vertex(quad[3]).color(color);
-                //}
             }
         }
 

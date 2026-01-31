@@ -128,7 +128,7 @@ public class RingSpike extends LightObject {
         for (int i = 0; i < 7; i++) {
             mesh.setColor(i+1, states[i]);
         }
-        mesh.draw();
+        mesh.draw(mapController.worldPosition);
     }
 
     @Override

@@ -20,7 +20,7 @@ layout(location = 13) in vec4 c5;
 layout(location = 14) in vec4 c6;
 layout(location = 15) in vec4 c7;
 
-uniform int passType;
+uniform int passType; // 0 = normal, 1 = bloom, 2 = bloomfog
 uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform mat4 world_transform;

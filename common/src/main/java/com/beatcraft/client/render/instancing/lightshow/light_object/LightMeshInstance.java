@@ -58,8 +58,9 @@ public class LightMeshInstance {
         transform.set(mat);
     }
 
-    public void draw() {
-        mesh.draw(transform, colorChannels);
+    public void draw(Vector3f worldPos) {
+
+        mesh.draw(transform, colorChannels, worldPos);
     }
 
 }

@@ -375,21 +375,26 @@ public class LightMesh {
         triangles.add(tri);
     }
 
-    public void draw(Matrix4f transform, LightState[] colors) {
+    public void draw(Matrix4f transform, LightState[] colors, Vector3f worldPos) {
         if (doSolid) draws.add(Draw.create(transform, colors));
         if (doMirroring) {
-            var c = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
             var renderPos = transform.getTranslation(MemoryPool.newVector3f());
             var renderRotation = transform.getUnnormalizedRotation(MemoryPool.newQuaternionf());
             var renderScale = transform.getScale(MemoryPool.newVector3f());
 
-            var flipped = new Matrix4f().scale(1, -1, 1);
-            flipped.translate(0, c.y * 2f, 0);
-            flipped.translate(renderPos);
-            flipped.rotate(renderRotation);
-            flipped.scale(renderScale);
+            var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
-            mirrorDraws.add(Draw.create(transform, colors));
+            var mirrorY = worldPos.y;
+
+            var flipped = new Matrix4f()
+                .translate(0, mirrorY-cameraPos.y, 0)   // move mirror plane to y = 0
+                .scale(1, -1, 1)            // flip over Y
+                .translate(0, -(mirrorY-cameraPos.y), 0)  // move back
+                .translate(renderPos)
+                .rotate(renderRotation)
+                .scale(renderScale);
+
+            mirrorDraws.add(Draw.create(flipped, colors));
         }
         if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors));
         if (doBloom) bloomDraws.add(Draw.create(transform, colors));
@@ -576,11 +581,11 @@ public class LightMesh {
     }
 
     public void renderSolid() {
-        render(draws, false, false, -1);
+        render(draws, false, false, false, -1);
     }
 
     public void renderMirror() {
-        render(mirrorDraws, true, false, -1);
+        render(mirrorDraws, true, false, true, -1);
     }
 
     private void cancelMirrorDraw() {
@@ -588,7 +593,7 @@ public class LightMesh {
     }
 
     public void renderBloom(int sceneDepthBuffer) {
-        render(bloomDraws, false, true, sceneDepthBuffer);
+        render(bloomDraws, false, true, false, sceneDepthBuffer);
     }
 
     private void cancelBloomDraw() {
@@ -596,13 +601,15 @@ public class LightMesh {
     }
 
     public void renderBloomfog() {
-        render(bloomfogDraws, true, false, -1);
+        render(bloomfogDraws, true, false, false, -1);
     }
 
-    private void render(ArrayList<Draw> drawList, boolean preBloomfog, boolean isBloom, int sceneDepthBuffer) {
+    private void render(ArrayList<Draw> drawList, boolean preBloomfog, boolean isBloom, boolean isMirror, int sceneDepthBuffer) {
 
         if (drawList.isEmpty()) return;
 
+
+        // Save ALL GL state that this function touches
         IntBuffer vaoBuf = BufferUtils.createIntBuffer(1);
         GL11.glGetIntegerv(GL30.GL_VERTEX_ARRAY_BINDING, vaoBuf);
         int oldVAO = vaoBuf.get(0);
@@ -610,6 +617,40 @@ public class LightMesh {
         IntBuffer vboBuf = BufferUtils.createIntBuffer(1);
         GL11.glGetIntegerv(GL15.GL_ARRAY_BUFFER_BINDING, vboBuf);
         int oldVBO = vboBuf.get(0);
+
+        IntBuffer programBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL20.GL_CURRENT_PROGRAM, programBuf);
+        int oldProgram = programBuf.get(0);
+
+        boolean oldDepthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+
+        IntBuffer depthMaskBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL11.GL_DEPTH_WRITEMASK, depthMaskBuf);
+        boolean oldDepthMask = depthMaskBuf.get(0) != 0;
+
+        boolean oldCullFace = GL11.glIsEnabled(GL11.GL_CULL_FACE);
+
+        boolean oldBlend = GL11.glIsEnabled(GL11.GL_BLEND);
+
+        IntBuffer blendSrcBuf = BufferUtils.createIntBuffer(1);
+        IntBuffer blendDstBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL14.GL_BLEND_SRC_RGB, blendSrcBuf);
+        GL11.glGetIntegerv(GL14.GL_BLEND_DST_RGB, blendDstBuf);
+        int oldBlendSrc = blendSrcBuf.get(0);
+        int oldBlendDst = blendDstBuf.get(0);
+
+        IntBuffer activeTextureBuf = BufferUtils.createIntBuffer(1);
+        GL11.glGetIntegerv(GL13.GL_ACTIVE_TEXTURE, activeTextureBuf);
+        int oldActiveTexture = activeTextureBuf.get(0);
+
+        IntBuffer[] oldTextures = new IntBuffer[3];
+        int[] oldTexIds = new int[3];
+        for (int i = 0; i < 3; i++) {
+            GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+            oldTextures[i] = BufferUtils.createIntBuffer(1);
+            GL11.glGetIntegerv(GL11.GL_TEXTURE_BINDING_2D, oldTextures[i]);
+            oldTexIds[i] = oldTextures[i].get(0);
+        }
 
         // PHASE 1: enable instancing attributes
         GL30.glBindVertexArray(vao);
@@ -629,37 +670,48 @@ public class LightMesh {
         int currentFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
 
         if (preBloomfog) {
-            // fog.extraBuffer.bindWrite(false);
-            // fog.extraBuffer.setClearColor(0, 0, 0, 1);
-            // fog.extraBuffer.clear(false);
-            // fog.extraBuffer.bindRead();
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorTextureId());
 
         } else {
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorTextureId());
         }
-        var passType = isBloom ? 1 : preBloomfog ? 2 : 0;
+        var passType = isBloom
+            ? 1
+            : preBloomfog
+                ? isMirror
+                    ? 0
+                    : 2
+                : 0;
         GlUtil.uniform1i("passType", passType);
         if (sceneDepthBuffer != -1) {
             GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
         }
 
-         var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
+        var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
         var fogHeights = Bloomfog.getFogHeights(camPos);
         GlUtil.uniform2f("u_fog", fogHeights[0], fogHeights[1]);
 
 
         var q = MemoryPool.newQuaternionf();
-        if (isBloom || preBloomfog) {
-            q.set(MirrorHandler.invCameraRotation);
-        }
+        q.set(MirrorHandler.invCameraRotation);
         var p = MemoryPool.newVector3f();
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         p.set(cameraPos).negate();
+        var client = Minecraft.getInstance();
+        var window = client.getWindow();
+        int width = window.getWidth();
+        int height = window.getHeight();
 
-        var projMat = RenderSystem.getProjectionMatrix();
-        var viewMat = new Matrix4f(RenderSystem.getModelViewMatrix()).rotate(q);
+        var viewMat = new Matrix4f().rotate(q);
+        Matrix4f projMat = RenderSystem.getProjectionMatrix();
+
+        if (isMirror) {
+            GL15.glFrontFace(GL15.GL_CW);
+            // var div = 2f;
+            // projMat = new Matrix4f().ortho(-width/div, width/div, -height/div, height/div, 0.1f, 1000);
+        }
+
         MemoryPool.releaseSafe(q);
         MemoryPool.releaseSafe(p);
         GlUtil.uniformMat4f("u_projection", projMat);
@@ -669,13 +721,16 @@ public class LightMesh {
         Matrix4f worldTransform = new Matrix4f();
         worldTransform.translate(cameraPos);
         worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
-
         GlUtil.setMat4f(shaderProgram, "world_transform", worldTransform);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
-        if (!cullBackfaces) RenderSystem.disableCull();
+        if (!cullBackfaces) {
+            RenderSystem.disableCull();
+        } else if (isMirror) {
+            RenderSystem.enableCull();
+        }
 
         // PHASE 2: setup buffer data
         var instanceBuffer = MemoryUtil.memAllocFloat(drawList.size() * FRAME_SIZE);
@@ -705,14 +760,9 @@ public class LightMesh {
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
-        if (!cullBackfaces) RenderSystem.enableCull();
+        // if (!cullBackfaces) RenderSystem.enableCull();
 
-        if (preBloomfog) {
-            // GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, currentFbo);
-        }
-
-        GL20.glUseProgram(0);
-
+        // PHASE 5: Restore ALL GL state
         for (var loc : Location.ALL_INSTANCED) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
         }
@@ -720,6 +770,39 @@ public class LightMesh {
         GL30.glBindVertexArray(oldVAO);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, oldVBO);
 
+        GL20.glUseProgram(oldProgram);
+
+        // Restore depth state
+        if (oldDepthTest) {
+            RenderSystem.enableDepthTest();
+        } else {
+            RenderSystem.disableDepthTest();
+        }
+        RenderSystem.depthMask(oldDepthMask);
+
+        // Restore cull state
+        if (oldCullFace) {
+            RenderSystem.enableCull();
+        } else {
+            RenderSystem.disableCull();
+        }
+
+        // Restore blend state
+        if (oldBlend) {
+            RenderSystem.enableBlend();
+        } else {
+            RenderSystem.disableBlend();
+        }
+        RenderSystem.blendFunc(oldBlendSrc, oldBlendDst);
+
+        GL15.glFrontFace(GL15.GL_CCW);
+
+        // Restore texture bindings
+        for (int i = 0; i < 3; i++) {
+            GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, oldTexIds[i]);
+        }
+        GL13.glActiveTexture(oldActiveTexture);
 
         drawList.forEach(Draw::free);
         drawList.clear();

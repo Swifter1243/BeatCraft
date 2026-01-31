@@ -1,15 +1,21 @@
 package com.beatcraft.client.lightshow.environment.kaleidoscope;
 
 import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.lightshow.environment.Environment;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.render.environment.KaleidoscopeRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
 
 import java.util.HashMap;
 
 public class KaleidoscopeEnvironment extends EnvironmentV2 {
+
+    private final KaleidoscopeRenderer renderer = new KaleidoscopeRenderer();
 
     private KaleidoscopeRingLights ringLights;
     /*
@@ -107,4 +113,12 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
     public float[] getFogHeights() {
         return FOG_HEIGHTS;
     }
+
+    @Override
+    public void render(PoseStack matrices, Camera camera, float alpha) {
+        super.render(matrices, camera, alpha);
+
+        renderer.render(matrices, camera, mapController, alpha);
+    }
+
 }
