@@ -84,7 +84,7 @@ float cnoise(vec3 P){
     vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
     vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
     float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
-    return 2.2 * n_xyz;
+    return clamp(2.2 * n_xyz, -1.0, 1.0);
 }
 
 
@@ -105,7 +105,8 @@ void main() {
 
     float EDGE_DIST = 0.05;
 
-    float noise = (cnoise(clamped + vec3(0.0, v_index, 0.0)) + 1.0) * 0.5;
+    float noise01 = (cnoise(clamped + vec3(0.0, v_index, 0.0)) + 1.0) * 0.5;
+    float noise = noise01 * (1.0 - EDGE_DIST) + EDGE_DIST;
     vec4 tex = texture(u_texture, v_uv);
 
     c = tex * c;
