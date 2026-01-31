@@ -543,7 +543,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new ContainerWidget(
                 new Vector3f(0, 220, 0), new Vector2f(230, 50),
                 replayToggle,
-                new TextWidget(RECORD_NEXT, new Vector3f(0, -11, -0.01f), 3)
+                new TextWidget(RECORD_NEXT, new Vector3f(0, -11, 0.01f), 3)
             )
         ));
 
