@@ -206,13 +206,13 @@ public class RingLightHandler extends LightObject {
         float offset = currentOffset;
 
         while (offset == currentOffset && rotationOffsets.length > 1) {
-            var i = random.nextInt(0, rotationOffsets.length - 1);
+            var i = random.nextInt(0, rotationOffsets.length);
             offset = rotationOffsets[i];
         }
 
         rotationStep = offset;
 
-        var i = random.nextInt(0, jumpOffsets.length-1);
+        var i = random.nextInt(0, jumpOffsets.length);
 
         ringRotation += jumpOffsets[i];
 
