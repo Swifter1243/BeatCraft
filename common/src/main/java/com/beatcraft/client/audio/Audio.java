@@ -69,10 +69,14 @@ public class Audio {
         this.buffers = buffers;
         this.mode = mode;
 
-        wallFilter = EXTEfx.alGenFilters();
-        EXTEfx.alFilteri(wallFilter, EXTEfx.AL_FILTER_TYPE, EXTEfx.AL_FILTER_LOWPASS);
-        EXTEfx.alFilterf(wallFilter, EXTEfx.AL_LOWPASS_GAIN, 1.0f);
-        EXTEfx.alFilterf(wallFilter, EXTEfx.AL_LOWPASS_GAINHF, 0.1f);
+        if (mode != Mode.ERROR) {
+            wallFilter = EXTEfx.alGenFilters();
+            EXTEfx.alFilteri(wallFilter, EXTEfx.AL_FILTER_TYPE, EXTEfx.AL_FILTER_LOWPASS);
+            EXTEfx.alFilterf(wallFilter, EXTEfx.AL_LOWPASS_GAIN, 1.0f);
+            EXTEfx.alFilterf(wallFilter, EXTEfx.AL_LOWPASS_GAINHF, 0.1f);
+        } else {
+            wallFilter = 0;
+        }
     }
 
     public Audio reload() {
@@ -204,10 +208,12 @@ public class Audio {
         });
     }
 
-    private void waitWhilePaused() {
+    private boolean waitWhilePaused() {
         while (paused && !shouldStopDecoder.get() && !closed) {
+            if (Thread.currentThread().isInterrupted()) return true;
             LockSupport.parkNanos(5_000_000);
         }
+        return false;
     }
 
 
@@ -220,7 +226,8 @@ public class Audio {
                  ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
                 while (!shouldStopDecoder.get() && !closed) {
-                    waitWhilePaused();
+                    if (waitWhilePaused()) return;
+                    if (Thread.currentThread().isInterrupted()) return;
                     ByteBuffer pcm = s.read(STREAM_BUFFER_SIZE);
                     if (!pcm.hasRemaining()) {
                         break;
@@ -236,7 +243,7 @@ public class Audio {
                             pcmQueue.put(copy);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            break;
+                            return;
                         }
                     }
                 }
@@ -251,6 +258,7 @@ public class Audio {
                 }
             }
         });
+
     }
 
     private void startSeekStreamDecodeAsync(float seekSeconds) {
@@ -266,6 +274,7 @@ public class Audio {
                 int skipped = 0;
 
                 while (skipped < bytesToSkip && !shouldStopSeekDecoder.get() && !closed) {
+                    if (Thread.currentThread().isInterrupted()) return;
                     int toRead = Math.min(STREAM_BUFFER_SIZE, bytesToSkip - skipped);
                     ByteBuffer pcm = stream.read(toRead);
                     if (!pcm.hasRemaining()) break;
@@ -273,6 +282,7 @@ public class Audio {
                 }
 
                 while (!shouldStopSeekDecoder.get() && !closed && !fullReady.get()) {
+                    if (Thread.currentThread().isInterrupted()) return;
                     ByteBuffer pcm = stream.read(STREAM_BUFFER_SIZE);
                     if (!pcm.hasRemaining()) break;
 
@@ -497,8 +507,6 @@ public class Audio {
             wasInWall = controller.isInWall;
         }
 
-
-
         if (!playing && loaded) play();
     }
 
@@ -524,9 +532,19 @@ public class Audio {
             seekDecodeFuture = null;
         }
         AL10.alSourceStop(source);
+        int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
+        while (queued-- > 0) {
+            AL10.alSourceUnqueueBuffers(source);
+        }
+        pcmQueue.clear();
+        seekQueue.clear();
         AL10.alDeleteSources(source);
         if (fullBuffer != 0) AL10.alDeleteBuffers(fullBuffer);
         if (buffers.length > 0) AL10.alDeleteBuffers(buffers);
-        EXTEfx.alDeleteFilters(wallFilter);
+        if (wallFilter != 0) EXTEfx.alDeleteFilters(wallFilter);
+        int err = AL10.alGetError();
+        if (err != AL10.AL_NO_ERROR) {
+            Beatcraft.LOGGER.error("OpenAL error: {}", err);
+        }
     }
 }

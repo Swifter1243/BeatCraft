@@ -1,6 +1,7 @@
 package com.beatcraft.client.render.menu;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.audio.AudioController;
 import com.beatcraft.client.logic.InputSystem;
 import com.beatcraft.client.menu.PauseMenu;
 import com.beatcraft.client.render.HUDRenderer;
@@ -34,7 +35,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                     }
                     hudRenderer.controller.difficulty = null;
                     hudRenderer.controller.info = null;
-                    hudRenderer.controller.audio.close();
+                    AudioController.remove(hudRenderer.controller.audio);
                     hudRenderer.controller.audio = null;
                     hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
                     // BeatmapAudioPlayer.unmuteVanillaMusic();
