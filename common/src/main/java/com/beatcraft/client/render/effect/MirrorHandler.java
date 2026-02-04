@@ -224,8 +224,6 @@ public class MirrorHandler {
         depthFramebuffer.setClearColor(0, 0, 0, 1);
         depthFramebuffer.clear(Minecraft.ON_OSX);
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = depthFramebuffer;
         depthFramebuffer.bindWrite(true);
 
         var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
@@ -245,8 +243,6 @@ public class MirrorHandler {
 
         }
 
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
         depthFramebuffer.unbindWrite();
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
     }
@@ -347,8 +343,6 @@ public class MirrorHandler {
         }
 
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = mirrorFramebuffer;
         mirrorFramebuffer.bindWrite(true);
 
         renderEarly(tesselator, cameraPos);
@@ -382,8 +376,6 @@ public class MirrorHandler {
         //RenderSystem.disableCull();
 
 
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
         mirrorFramebuffer.unbindWrite();
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 

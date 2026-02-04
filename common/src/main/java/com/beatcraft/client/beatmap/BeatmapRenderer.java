@@ -84,9 +84,6 @@ public class BeatmapRenderer {
 
     private void renderLightDepth(Tesselator tesselator, Vector3f cameraPos) {
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = Bloomfog.lightDepth;
-
         Bloomfog.lightDepth.bindWrite(true);
         Bloomfog.lightDepth.setClearColor(0, 0, 0, 1);
         Bloomfog.lightDepth.clear(Minecraft.ON_OSX);
@@ -111,8 +108,6 @@ public class BeatmapRenderer {
 
         Bloomfog.lightDepth.unbindWrite();
 
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 
@@ -167,7 +162,7 @@ public class BeatmapRenderer {
 
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
+        // RenderSystem.depthMask(false);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -184,6 +179,7 @@ public class BeatmapRenderer {
             BufferUploader.drawWithShader(buff);
         }
 
+        // RenderSystem.depthMask(true);
         LightMesh.renderAllSolid();
 
         RenderSystem.defaultBlendFunc();

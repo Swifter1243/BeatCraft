@@ -60,9 +60,6 @@ public class Bloomfog {
         }
     }
 
-    public boolean overrideBuffer = false;
-    public RenderTarget overrideFramebuffer = null;
-
     public TextureTarget framebuffer;
     private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls = new ArrayList<>(); // Line renders
     private final ArrayList<QuadConsumer<BufferBuilder, Vector3f, Quaternionf, Boolean>> renderCalls2 = new ArrayList<>(); // Quad renders
@@ -288,8 +285,6 @@ public class Bloomfog {
         }
 
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = framebuffer;
         framebuffer.bindWrite(true);
 
 
@@ -317,9 +312,6 @@ public class Bloomfog {
 
 
         framebuffer.unbindWrite();
-
-        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
 
         MirrorHandler.invCameraRotation = invCameraRotation;
 
@@ -375,7 +367,7 @@ public class Bloomfog {
         var current = framebuffer;
         int l;
         for (l = 0; l < layers; l++) {
-            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true, overrideFramebuffer);
+            applyEffectPass(isMirror, current, pyramidBuffers[l], PassType.DOWNSAMPLE, true);
             //if (l == layers-1) {
             //    applyEffectPass(isMirror, pyramidBuffers[l], pyramidBuffers2[l], PassType.GAUSSIAN_V, true);
             //    applyEffectPass(isMirror, pyramidBuffers2[l], pyramidBuffers[l], PassType.GAUSSIAN_H, true);
@@ -392,10 +384,10 @@ public class Bloomfog {
 
         }
 
-        applyEffectPass(isMirror, current, extraBuffer, PassType.UPSAMPLE, true, overrideFramebuffer);
-        applyEffectPass(isMirror, extraBuffer, framebuffer, PassType.GAUSSIAN_V, true, overrideFramebuffer);
-        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true, overrideFramebuffer);
-        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false, overrideFramebuffer);
+        applyEffectPass(isMirror, current, extraBuffer, PassType.UPSAMPLE, true);
+        applyEffectPass(isMirror, extraBuffer, framebuffer, PassType.GAUSSIAN_V, true);
+        applyEffectPass(isMirror, framebuffer, extraBuffer, PassType.GAUSSIAN_H, true);
+        applyEffectPass(isMirror, extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false);
 
 
 
@@ -413,16 +405,14 @@ public class Bloomfog {
     }
 
     private void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass) {
-        applyEffectPass(isMirror, in, out, pass, false, overrideFramebuffer);
+        applyEffectPass(isMirror, in, out, pass, false);
     }
 
-    public static void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode, @Nullable RenderTarget overrideFramebuffer) {
+    public static void applyEffectPass(boolean isMirror, RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode) {
 
         out.setClearColor(0, 0, 0, 0);
         out.clear(Minecraft.ON_OSX);
         out.bindWrite(true);
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = out;
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -483,9 +473,6 @@ public class Bloomfog {
 
         out.unbindWrite();
 
-        BeatcraftRenderer.bloomfog.overrideBuffer = isMirror;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = isMirror ? overrideFramebuffer : null;
-
     }
 
     /// This passes a triangle:position-color buffer
@@ -545,8 +532,6 @@ public class Bloomfog {
         sceneDepthBuffer = Minecraft.getInstance().getMainRenderTarget().getDepthTextureId();
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
         Minecraft.getInstance().getMainRenderTarget().bindRead();
-        BeatcraftRenderer.bloomfog.overrideBuffer = true;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = bloomInput;
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         bloomInput.setClearColor(0, 0, 0, 0);
@@ -642,8 +627,6 @@ public class Bloomfog {
         LightMesh.renderAllBloom(sceneDepthBuffer);
 
         bloomInput.unbindWrite();
-        BeatcraftRenderer.bloomfog.overrideBuffer = false;
-        BeatcraftRenderer.bloomfog.overrideFramebuffer = null;
         Minecraft.getInstance().getMainRenderTarget().unbindRead();
 
         var r = radius;
@@ -652,8 +635,8 @@ public class Bloomfog {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
 
-        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H, true, overrideFramebuffer);
-        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true, overrideFramebuffer);
+        applyEffectPass(false, bloomInput, bloomSwap, PassType.GAUSSIAN_H, true);
+        applyEffectPass(false, bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true);
 
         //applyEffectPass(false, bloomInput, bloomOutput, PassType.BLIT);
 
