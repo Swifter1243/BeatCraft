@@ -262,7 +262,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, -150, -0.05f),
                     new Vector3f(0.05f, 0, 0.05f)
                 ),
-                new Vector3f(2f, -2, z),
+                new Vector3f(3f, -1, z),
                 new Quaternionf().rotationYXZ(-20 * Mth.DEG_TO_RAD, 30 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, bottomLeftLaser);
@@ -273,7 +273,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, -150, -0.05f),
                     new Vector3f(0.05f, 0, 0.05f)
                 ),
-                new Vector3f(-2f, -2, z),
+                new Vector3f(-3f, -1, z),
                 new Quaternionf().rotationYXZ(20 * Mth.DEG_TO_RAD, 30 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, bottomRightLaser);
