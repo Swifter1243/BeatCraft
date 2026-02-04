@@ -162,7 +162,7 @@ public class BeatmapRenderer {
 
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        // RenderSystem.depthMask(false);
+        RenderSystem.depthMask(false);
 
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
@@ -179,7 +179,7 @@ public class BeatmapRenderer {
             BufferUploader.drawWithShader(buff);
         }
 
-        // RenderSystem.depthMask(true);
+        RenderSystem.depthMask(true);
         LightMesh.renderAllSolid();
 
         RenderSystem.defaultBlendFunc();
@@ -319,12 +319,6 @@ public class BeatmapRenderer {
             difficulty.render(matrices, camera, alpha);
         }
 
-        renderEnvironmentLights(tesselator, cameraPos);
-
-        renderFloorLightsPhase1(tesselator, cameraPos);
-
-        renderFloorLights(tesselator, cameraPos);
-
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(m));
         }
@@ -335,6 +329,12 @@ public class BeatmapRenderer {
 
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();
+
+        renderEnvironmentLights(tesselator, cameraPos);
+
+        renderFloorLightsPhase1(tesselator, cameraPos);
+
+        renderFloorLights(tesselator, cameraPos);
 
         renderObstacles(tesselator, cameraPos);
 

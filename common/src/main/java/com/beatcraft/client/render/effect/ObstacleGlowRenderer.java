@@ -32,33 +32,8 @@ public class ObstacleGlowRenderer {
     }
 
     public static void grabScreen() {
-        Bloomfog.applyEffectPass(false, Minecraft.getInstance().getMainRenderTarget(), framebuffer, Bloomfog.PassType.BLIT, false, null);
+        Bloomfog.applyEffectPass(Minecraft.getInstance().getMainRenderTarget(), framebuffer, Bloomfog.PassType.BLIT, false);
 
-
-        // var scene = Minecraft.getInstance().getMainRenderTarget();
-        //
-        // scene.unbindWrite();
-        // framebuffer.bindWrite(true);
-        // framebuffer.setClearColor(0, 0, 0, 0);
-        // framebuffer.clear(true);
-        //
-        // RenderSystem.setShader(() -> blitShader);
-        // scene.bindRead();
-        // Bloomfog.blitShader.setSampler("Sampler0", scene.getColorTextureId());
-        // RenderSystem.setShaderTexture(0, scene.getColorTextureId());
-        // Tesselator tesselator = Tesselator.getInstance();
-        // BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        //
-        // buffer.addVertex(0, 0, 0);
-        // buffer.addVertex(0, 1, 0);
-        // buffer.addVertex(1, 1, 0);
-        // buffer.addVertex(1, 0, 0);
-        //
-        // BufferUploader.drawWithShader(buffer.buildOrThrow());
-        //
-        // scene.unbindRead();
-        // framebuffer.unbindWrite();
-        //
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
     }
 
