@@ -199,7 +199,7 @@ public class RingLightHandler extends LightObject {
     }
 
     public float getCurrentRotation() {
-        return headRing.rotation;
+        return headRing.targetRotation;
     }
 
     public void spinTo(float angle, float offset, float propagationTime, float spinTime) {

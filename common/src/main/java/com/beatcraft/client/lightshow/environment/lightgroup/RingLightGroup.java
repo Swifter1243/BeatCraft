@@ -157,7 +157,6 @@ public class RingLightGroup extends ActionLightGroupV2 {
             step = innerRing.zoom >= 0.5f ? 0.3f : 1f;
         }
         innerRing.setZoom(step, event.speed);
-        outerRing.setZoom(step, event.speed);
     }
 
     @Override
