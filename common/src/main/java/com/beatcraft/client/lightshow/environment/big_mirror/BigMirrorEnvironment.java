@@ -100,7 +100,7 @@ public class BigMirrorEnvironment extends EnvironmentV2 {
                 new Vector3f(-0.03f, -0.03f, isCenter ? 0 : -500),
                 new Vector3f(0.03f, 0.03f, 500)
             ),
-            (isCenter ? new Vector3f(2 * sign, 0, 8) :
+            (isCenter ? new Vector3f(3.5f * sign, 0, 8) :
                 new Vector3f(16f * sign, 0, 8)
             ),
             new Quaternionf()

@@ -71,7 +71,9 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
                     15 * rpd, -15 * rpd,
                     20 * rpd, -20 * rpd,
                     22.5f * rpd, -22.5f * rpd,
-                    25 * rpd, -25 * rpd
+                    25 * rpd, -25 * rpd,
+                    30 * rpd, -30 * rpd,
+                    45 * rpd, -45 * rpd,
                 }
             )
         );
@@ -100,7 +102,8 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
             )
         );
 
-        innerRing.spinTo(0, 45f/2f * rpd, 0, 0);
+        innerRing.spinTo(0, 45f * rpd, 0, 0);
+
     }
 
 
@@ -154,8 +157,12 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
     }
 
     private void handleRingZoom(RingZoomEvent event) {
-        innerRing.setZoom(event.step, event.speed);
-        outerRing.setZoom(event.step, event.speed);
+        var step = event.step;
+        if (step == null) {
+            step = innerRing.zoom >= 0.5f ? 0.3f : 1f;
+        }
+        innerRing.setZoom(step, event.speed);
+        outerRing.setZoom(step, event.speed);
     }
     @Override
     public void update(float beat, double deltaTime) {

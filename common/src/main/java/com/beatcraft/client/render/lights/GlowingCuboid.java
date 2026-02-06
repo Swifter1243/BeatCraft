@@ -16,6 +16,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GlowingCuboid extends LightObject {
@@ -137,12 +138,83 @@ public class GlowingCuboid extends LightObject {
 
     }
 
+    private List<Vector3f[]> sliceQuadMirror(Vector3f[] quad, Matrix4f mat, Vector3f cameraPos) {
+        float clipY = mapController.worldPosition.y;
+
+        // Transform vertices to world space for clipping
+        // Since mat already has -cameraPos applied, we need to add it back after transformation
+        Vector3f[] worldVerts = new Vector3f[4];
+        for (int i = 0; i < 4; i++) {
+            worldVerts[i] = new Vector3f(quad[i]).mul(1, -1, 1).mulPosition(mat).add(cameraPos);
+        }
+
+        List<Vector3f> clipped = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            Vector3f v1 = worldVerts[i];
+            Vector3f v2 = worldVerts[(i + 1) % 4];
+            Vector3f orig1 = quad[i];
+            Vector3f orig2 = quad[(i + 1) % 4];
+
+            boolean v1Above = v1.y < clipY;
+            boolean v2Above = v2.y < clipY;
+
+            if (v1Above) {
+                clipped.add(new Vector3f(orig1));
+            }
+
+            if (v1Above != v2Above) {
+                float t = (v1.y - clipY) / (v1.y - v2.y);
+                Vector3f intersection = new Vector3f(
+                    orig1.x + t * (orig2.x - orig1.x),
+                    orig1.y + t * (orig2.y - orig1.y),
+                    orig1.z + t * (orig2.z - orig1.z)
+                );
+                clipped.add(intersection);
+            }
+        }
+
+        List<Vector3f[]> outputQuads = new ArrayList<>();
+
+        if (clipped.isEmpty()) {
+            return outputQuads;
+        } else if (clipped.size() == 3) {
+            outputQuads.add(new Vector3f[] {
+                clipped.get(0),
+                clipped.get(1),
+                clipped.get(2),
+                clipped.get(2)
+            });
+        } else if (clipped.size() == 4) {
+            outputQuads.add(new Vector3f[] {
+                clipped.get(0),
+                clipped.get(1),
+                clipped.get(2),
+                clipped.get(3)
+            });
+        } else if (clipped.size() == 5) {
+            outputQuads.add(new Vector3f[] {
+                clipped.get(0),
+                clipped.get(1),
+                clipped.get(2),
+                clipped.get(2)
+            });
+            outputQuads.add(new Vector3f[] {
+                clipped.get(0),
+                clipped.get(2),
+                clipped.get(3),
+                clipped.get(4)
+            });
+        }
+
+        return outputQuads;
+    }
+
     private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
         var color = isBloomfog > 0 ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
-//        if (((color >> 24) & 0xFF) <= 1) {
-//            return;
-//        }
+        // if (((color >> 24) & 0xFF) <= 1) {
+        //     return;
+        // }
         var mat = createTransformMatrix(transform, mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         if (isBloomfog == 1 && !mirrorDraw) {
@@ -163,34 +235,36 @@ public class GlowingCuboid extends LightObject {
             }
         } else {
 
-            for (var face : faces) {
+            for (var quad : faces) {
 
-                if (mirrorDraw &&
-                    ((face[0].y < 0 ? 1 : 0) +
-                     (face[1].y < 0 ? 1 : 0) +
-                     (face[2].y < 0 ? 1 : 0) +
-                     (face[3].y < 0 ? 1 : 0)) >= 3)
-                {
-                    continue;
+                List<Vector3f[]> quads;
+
+                if (mirrorDraw) {
+                    quads = sliceQuadMirror(quad, mat, cameraPos);
+                } else {
+                    quads = new ArrayList<>();
+                    quads.add(quad);
                 }
 
-                var v0 = face[0].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
-                var v1 = face[1].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
-                var v2 = face[2].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
-                var v3 = face[3].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                for (var face : quads) {
 
-                if (isBloomfog > 0) {
-                    v0.rotate(cameraRotation);
-                    v1.rotate(cameraRotation);
-                    v2.rotate(cameraRotation);
-                    v3.rotate(cameraRotation);
+                    var v0 = face[0].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                    var v1 = face[1].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                    var v2 = face[2].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+                    var v3 = face[3].mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+
+                    if (isBloomfog > 0) {
+                        v0.rotate(cameraRotation);
+                        v1.rotate(cameraRotation);
+                        v2.rotate(cameraRotation);
+                        v3.rotate(cameraRotation);
+                    }
+
+                    buffer.addVertex(v0).setColor(color);
+                    buffer.addVertex(v1).setColor(color);
+                    buffer.addVertex(v2).setColor(color);
+                    buffer.addVertex(v3).setColor(color);
                 }
-
-                buffer.addVertex(v0).setColor(color);
-                buffer.addVertex(v1).setColor(color);
-                buffer.addVertex(v2).setColor(color);
-                buffer.addVertex(v3).setColor(color);
-
             }
         }
 

@@ -93,11 +93,19 @@ public class RingLightHandler extends LightObject {
             startRotation = rotation;
             this.firstAngle = firstAngle;
             this.offset = offset;
-            startRotation = firstAngle + (offset * index);
+            targetRotation = firstAngle + (offset * index);
             startRotationTime = startTime;
             endRotationTime = endTime;
             propagationDuration = propTime;
             triggeredPropagation = false;
+            if (propTime == 0 && nextRing != null) {
+                if (startTime == endTime) {
+                    rotation = targetRotation;
+                    startRotation = targetRotation;
+                }
+                triggeredPropagation = true;
+                nextRing.setTarget(firstAngle, offset, startRotationTime+propagationDuration, (startRotationTime+propagationDuration) + (endRotationTime-startRotationTime), propagationDuration);
+            }
         }
 
         protected void update(float songTime) {

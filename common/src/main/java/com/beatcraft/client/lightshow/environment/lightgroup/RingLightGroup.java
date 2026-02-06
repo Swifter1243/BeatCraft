@@ -152,8 +152,12 @@ public class RingLightGroup extends ActionLightGroupV2 {
     }
 
     private void handleRingZoom(RingZoomEvent event) {
-        innerRing.setZoom(event.step, event.speed);
-        outerRing.setZoom(event.step, event.speed);
+        var step = event.step;
+        if (step == null) {
+            step = innerRing.zoom >= 0.5f ? 0.3f : 1f;
+        }
+        innerRing.setZoom(step, event.speed);
+        outerRing.setZoom(step, event.speed);
     }
 
     @Override

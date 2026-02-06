@@ -42,7 +42,7 @@ public class RingRotationEvent extends ValueEvent {
     public RingTarget target = RingTarget.Both;
     public Float rotation = null;
     public Float step = null;
-    public float prop = 100.0f;
+    public float prop = 0.025f;
     public float speed = 1.0f;
     public Direction direction = Direction.Random;
 
@@ -62,7 +62,7 @@ public class RingRotationEvent extends ValueEvent {
             }
 
             if (customData.has("_prop")) {
-                prop = customData.get("_prop").getAsFloat();
+                prop = 1f - (customData.get("_prop").getAsFloat() / 100f);
             }
 
             if (customData.has("_rotation")) {
@@ -112,7 +112,7 @@ public class RingRotationEvent extends ValueEvent {
             }
 
             if (customData.has("prop")) {
-                prop = customData.get("prop").getAsFloat();
+                prop = 1f - (customData.get("prop").getAsFloat() / 100f);
             }
 
             if (customData.has("rotation")) {
@@ -171,7 +171,7 @@ public class RingRotationEvent extends ValueEvent {
             targetStep = step;
         }
 
-        ringLights.spinTo(target, targetStep, 100f / prop, 1f);
+        ringLights.spinTo(target, targetStep, prop, 1f);
 
     }
 

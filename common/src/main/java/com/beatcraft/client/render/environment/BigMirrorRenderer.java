@@ -32,8 +32,8 @@ public class BigMirrorRenderer implements EnvironmentRenderer {
     }
 
     private static final float RUNWAY_TOP = 0;
-    private static final float RUNWAY_START = 10;
-    private static final float RUNWAY_WIDTH = 7;
+    private static final float RUNWAY_START = 8;
+    private static final float RUNWAY_WIDTH = 10;
     private static final float RUNWAY_WIDTH_PILLARS = 2;
     private static final float RUNWAY_END = 800;
     private static final float RUNWAY_BOTTOM = -0.5f;
