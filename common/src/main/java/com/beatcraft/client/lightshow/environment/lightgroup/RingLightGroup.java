@@ -2,6 +2,8 @@ package com.beatcraft.client.lightshow.environment.lightgroup;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
+import com.beatcraft.client.lightshow.event.events.RingRotationEvent;
+import com.beatcraft.client.lightshow.event.events.RingZoomEvent;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
@@ -9,6 +11,7 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import org.apache.commons.lang3.function.TriFunction;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -24,7 +27,7 @@ public class RingLightGroup extends ActionLightGroupV2 {
     private final RingLightHandler innerRing;
     private final RingLightHandler outerRing;
 
-
+    private final RandomSource random = RandomSource.create();
 
 
     private static HashMap<Integer, LightObject> buildRingLights(Callable<LightObject> lightFactory) {
@@ -80,44 +83,47 @@ public class RingLightGroup extends ActionLightGroupV2 {
         super(map, buildRingLights(outerLightFactory));
         mapController = map;
 
-        innerRing = new RingLightHandler(map, innerRingFactory, (m, v, q) -> null, 30, new Vector3f(0, height, 14), 5);
-        outerRing = new RingLightHandler(map, outerRingFactory, this::linkLight, outerRingCount, new Vector3f(0, height, outerRingZ), outerRingSpacing);
-
         var rpd = Mth.DEG_TO_RAD;
 
-        innerRing.jumpOffsets = new float[]{
-            -90 * rpd,
-            90 * rpd
-        };
+        innerRing = new RingLightHandler(
+            map, innerRingFactory,
+            (m, v, q) -> null,
+            30, new Vector3f(0, height, 14), 5,
+            new RingLightHandler.PresetPositions(
+                new float[]{-90 * rpd, 90 * rpd},
+                new float[]{
+                    0,
+                    3 * rpd,
+                    -3 * rpd,
+                    7 * rpd,
+                    -7 * rpd,
+                    11 * rpd,
+                    -11 * rpd
+                }
+            )
+        );
 
-        outerRing.jumpOffsets = new float[]{
-            -90 * rpd,
-            90 * rpd
-        };
-
-        innerRing.rotationOffsets = new float[]{
-            0,
-            3 * rpd,
-            -3 * rpd,
-            7 * rpd,
-            -7 * rpd,
-            11 * rpd,
-            -11 * rpd
-        };
-
-        outerRing.rotationOffsets = new float[]{
-            0,
-            1 * rpd,
-            2 * rpd,
-            3 * rpd,
-            4 * rpd,
-            5 * rpd,
-            -1 * rpd,
-            -2 * rpd,
-            -3 * rpd,
-            -4 * rpd,
-            -5 * rpd
-        };
+        outerRing = new RingLightHandler(
+            map, outerRingFactory,
+            this::linkLight,
+            outerRingCount, new Vector3f(0, height, outerRingZ), outerRingSpacing,
+            new RingLightHandler.PresetPositions(
+                new float[]{-90 * rpd, 90 * rpd},
+                new float[]{
+                    0,
+                    1 * rpd,
+                    2 * rpd,
+                    3 * rpd,
+                    4 * rpd,
+                    5 * rpd,
+                    -1 * rpd,
+                    -2 * rpd,
+                    -3 * rpd,
+                    -4 * rpd,
+                    -5 * rpd
+                }
+            )
+        );
 
     }
 
@@ -125,18 +131,29 @@ public class RingLightGroup extends ActionLightGroupV2 {
     public void handleEvent(ValueEvent event, EventGroup eventGroup) {
         switch (eventGroup)
         {
-            case RING_SPIN -> handleRingSpin();
-            case RING_ZOOM -> handleRingZoom();
+            case RING_SPIN -> handleRingSpin((RingRotationEvent) event);
+            case RING_ZOOM -> handleRingZoom((RingZoomEvent) event);
         }
     }
 
-    private void handleRingSpin() {
-        innerRing.spinRandom();
-        outerRing.spinRandom();
+    private void handleRingSpin(RingRotationEvent event) {
+        switch (event.target) {
+            case Both -> {
+                event.apply(innerRing, random);
+                event.apply(outerRing, random);
+            }
+            case Inner -> {
+                event.apply(innerRing, random);
+            }
+            case Outer -> {
+                event.apply(outerRing, random);
+            }
+        }
     }
 
-    private void handleRingZoom() {
-        innerRing.setZoom(innerRing.getZoom() >= 0.99 ? 0.3f : 1);
+    private void handleRingZoom(RingZoomEvent event) {
+        innerRing.setZoom(event.step, event.speed);
+        outerRing.setZoom(event.step, event.speed);
     }
 
     @Override

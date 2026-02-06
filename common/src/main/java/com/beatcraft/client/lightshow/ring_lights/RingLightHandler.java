@@ -19,8 +19,6 @@ import java.util.function.Function;
 
 public class RingLightHandler extends LightObject {
 
-    RandomSource random = RandomSource.create();
-
     private final RingHandler headRing;
 
     private final float ringGap;
@@ -30,21 +28,41 @@ public class RingLightHandler extends LightObject {
     private float startZoomTime = 0;
     private float endZoomTime = 0;
 
-    private float zoom = 1.0f;
+    public float zoom = 1.0f;
+
+    private float currentRotation = 0;
+
+    public final PresetPositions presets;
 
     private float lerpEffect(
         float currentTime,
         float startTime, float endTime,
         float startFx, float endFx
-//        Function<Float, Float> easing
     ) {
         if (startTime == endTime) {
             return currentTime >= startTime ? endFx : startFx;
         }
         var f = MathUtil.inverseLerp(startTime, endTime, currentTime);
         f = Easing.easeOutExpo(f);
-        return Math.clamp(startFx, endFx, Math.lerp(startFx, endFx, f));
+        var minFx = Math.min(startFx, endFx);
+        var maxFx = Math.max(startFx, endFx);
+        return Math.clamp(minFx, maxFx, Math.lerp(startFx, endFx, f));
     }
+
+    public record PresetPositions(
+        float[] jumpOffsets,
+        float[] rotationOffsets
+    ) {
+        public float getJumpOffset(RandomSource random) {
+            var i = random.nextInt(0, jumpOffsets.length);
+            return jumpOffsets[i];
+        }
+        public float getRotationOffset(RandomSource random) {
+            var i = random.nextInt(0, rotationOffsets.length);
+            return rotationOffsets[i];
+        }
+    }
+
 
 
     protected class RingHandler {
@@ -88,9 +106,9 @@ public class RingLightHandler extends LightObject {
 
             if (nextRing != null) {
                 if (!triggeredPropagation) {
-                    if ( 1 <= Math.lerp(0, 1, MathUtil.inverseLerp(startRotationTime, startRotationTime+propagationDuration, songTime))) {
+                    if (propagationDuration == 0 || 1f <= MathUtil.inverseLerp(startRotationTime, startRotationTime+propagationDuration, songTime)) {
                         triggeredPropagation = true;
-                        nextRing.setTarget(firstAngle, offset, endRotationTime, endRotationTime + (endRotationTime-startRotationTime), propagationDuration);
+                        nextRing.setTarget(firstAngle, offset, startRotationTime+propagationDuration, (startRotationTime+propagationDuration) + (endRotationTime-startRotationTime), propagationDuration);
                     }
                 }
 
@@ -138,11 +156,13 @@ public class RingLightHandler extends LightObject {
         BeatmapController map,
         Function<TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject>, LightObject> ringFactory,
         TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> lightBuilder,
-        int count, Vector3f position, float ringGap
+        int count, Vector3f position, float ringGap,
+        PresetPositions presets
     ) {
         super(map);
         this.position = position;
         this.ringGap = ringGap;
+        this.presets = presets;
 
         headRing = new RingHandler(0, ringFactory.apply(lightBuilder));
 
@@ -170,11 +190,23 @@ public class RingLightHandler extends LightObject {
         endZoomTime = startZoomTime + (1f / speedPercentage);
     }
 
+    public float getCurrentRotation() {
+        return headRing.rotation;
+    }
+
     public void spinTo(float angle, float offset, float propagationTime, float spinTime) {
         var t = mapController.currentSeconds;
+        currentRotation = angle;
         headRing.setTarget(angle, offset, t, t + spinTime, propagationTime);
     }
 
+    public void reset() {
+        startZoom = 1f;
+        targetZoom = 1f;
+        startZoomTime = 0f;
+        endZoomTime = 0f;
+        headRing.reset();
+    }
 
     @Override
     public LightObject cloneOffset(Vector3f offset) {

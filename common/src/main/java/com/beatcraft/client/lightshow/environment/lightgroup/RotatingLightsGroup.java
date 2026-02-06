@@ -2,6 +2,7 @@ package com.beatcraft.client.lightshow.environment.lightgroup;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
+import com.beatcraft.client.lightshow.event.events.SpinningLightEvent;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.BeatcraftRenderer;
@@ -35,19 +36,25 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
         return lights;
     }
 
-    public static Quaternionf getYRotation(int v) {
-        return new Quaternionf().rotationY((float) v);
-    }
-
     @Override
     public void handleEvent(ValueEvent event, EventGroup eventGroup) {
-        int v = event.getValue();
+        var spinEvent = (SpinningLightEvent) event;
+        var speed = spinEvent.direction.apply(spinEvent.speed, random);
         rotations.forEach(rot -> {
-            rot.set(getYRotation(v));
+            rot.rotationY(speed);
         });
-        rotatingLights.forEach(light -> {
-            light.setRotation(v == 0 ? new Quaternionf() : new Quaternionf().rotationY(random.nextIntBetweenInclusive(-180, 180) * Mth.DEG_TO_RAD));
-        });
+
+        if (!spinEvent.lockRotation) {
+            int v = event.getValue();
+            rotatingLights.forEach(light -> {
+                light.setRotation(
+                    v == 0
+                        ? new Quaternionf()
+                        : new Quaternionf()
+                        .rotationY(random.nextIntBetweenInclusive(-180, 180) * Mth.DEG_TO_RAD)
+                );
+            });
+        }
     }
 
     @Override
