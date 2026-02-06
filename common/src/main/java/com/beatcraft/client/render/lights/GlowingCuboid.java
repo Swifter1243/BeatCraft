@@ -140,9 +140,9 @@ public class GlowingCuboid extends LightObject {
     private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
         var color = isBloomfog > 0 ? lightState.getBloomColor() : lightState.getEffectiveColor();
 
-        if (((color >> 24) & 0xFF) <= 1) {
-            return;
-        }
+//        if (((color >> 24) & 0xFF) <= 1) {
+//            return;
+//        }
         var mat = createTransformMatrix(transform, mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         if (isBloomfog == 1 && !mirrorDraw) {
@@ -165,7 +165,12 @@ public class GlowingCuboid extends LightObject {
 
             for (var face : faces) {
 
-                if (mirrorDraw && face[0].y <= 0 && face[1].y <= 0 && face[2].y <= 0 && face[3].y <= 0 ) {
+                if (mirrorDraw &&
+                    ((face[0].y < 0 ? 1 : 0) +
+                     (face[1].y < 0 ? 1 : 0) +
+                     (face[2].y < 0 ? 1 : 0) +
+                     (face[3].y < 0 ? 1 : 0)) >= 3)
+                {
                     continue;
                 }
 

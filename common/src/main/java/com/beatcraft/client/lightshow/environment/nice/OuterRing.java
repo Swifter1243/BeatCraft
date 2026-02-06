@@ -38,8 +38,8 @@ public class OuterRing extends LightObject {
         orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
         lights = List.of(
             lightFactory.apply(map, new Vector3f( 0                           ,  ringRadius-(lightSize+0.01f), lightSize+lightOffset), new Quaternionf()),
-            lightFactory.apply(map, new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)),
             lightFactory.apply(map, new Vector3f( 0                           , -ringRadius+(lightSize+0.01f), lightSize+lightOffset), new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)),
+            lightFactory.apply(map, new Vector3f( ringRadius-(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)),
             lightFactory.apply(map, new Vector3f(-ringRadius+(lightSize+0.01f),  0                           , lightSize+lightOffset), new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD))
         );
     }

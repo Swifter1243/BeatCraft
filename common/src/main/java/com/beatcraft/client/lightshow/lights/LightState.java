@@ -70,7 +70,7 @@ public class LightState {
     }
 
     public int getBloomColor() {
-        return color.lerpBrightness(brightness);
+        return color.lerpBrightness(brightness * 1.2f);
     }
 
     public float getBrightness() {

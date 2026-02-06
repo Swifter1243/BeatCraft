@@ -9,8 +9,8 @@ import com.google.gson.JsonObject;
 
 public class ValueEvent extends BeatmapObject implements IEvent {
 
-    private int value = 0;
-    private float duration = 0;
+    protected int value = 0;
+    protected final float duration = 0;
 
     @Override
     public float getEventBeat() {

@@ -1,4 +1,4 @@
-package com.beatcraft.client.lightshow.environment.nice;
+package com.beatcraft.client.lightshow.environment.big_mirror;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
@@ -26,11 +26,6 @@ public class InnerRing extends LightObject {
 
     @Override
     public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
-
-        var pos = new Vector3f(position);
-        var off = new Vector3f(offset);
-        var ori = new Quaternionf(orientation);
-        var rot = new Quaternionf(rotation);
 
     }
 

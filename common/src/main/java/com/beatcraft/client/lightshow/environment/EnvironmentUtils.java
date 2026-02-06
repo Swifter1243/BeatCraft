@@ -1,6 +1,7 @@
 package com.beatcraft.client.lightshow.environment;
 
 import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.lightshow.environment.big_mirror.BigMirrorEnvironment;
 import com.beatcraft.client.lightshow.environment.kaleidoscope.KaleidoscopeEnvironment;
 import com.beatcraft.client.lightshow.environment.nice.NiceEnvironment;
 import com.beatcraft.client.lightshow.environment.origins.OriginsEnvironment;
@@ -18,6 +19,7 @@ public class EnvironmentUtils {
             case "NiceEnvironment" -> new NiceEnvironment(map);
             case "KaleidoscopeEnvironment" -> new KaleidoscopeEnvironment(map);
             case "WeaveEnvironment" -> new WeaveEnvironment(map);
+            case "BigMirrorEnvironment" -> new BigMirrorEnvironment(map);
             default -> new TheFirstEnvironment(map);
         }).reset();
     }

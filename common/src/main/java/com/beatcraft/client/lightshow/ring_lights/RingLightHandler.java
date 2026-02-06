@@ -1,15 +1,17 @@
 package com.beatcraft.client.lightshow.ring_lights;
 
-import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.Easing;
-import com.beatcraft.common.data.types.Color;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.common.data.types.Color;
+import com.beatcraft.common.memory.MemoryPool;
+import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.apache.commons.lang3.function.TriFunction;
+import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -19,127 +21,118 @@ public class RingLightHandler extends LightObject {
 
     RandomSource random = RandomSource.create();
 
-    private int ringCount;
-    private final float ringOffset;
-    public float zoom = 1;
-    public float ringRotation = 0;
-    public float rotationStep = 0;
+    private final RingHandler headRing;
 
-    /// offset deltas, this is how far the head ring is allowed to jump
-    public float[] jumpOffsets = new float[0];
+    private final float ringGap;
 
-    /// ring offsets, a list of valid rotation offsets between 2 rings
-    public float[] rotationOffsets = new float[0];
+    private float startZoom = 1.0f;
+    private float targetZoom = 1.0f;
+    private float startZoomTime = 0;
+    private float endZoomTime = 0;
 
-    private float currentOffset = 0;
+    private float zoom = 1.0f;
+
+    private float lerpEffect(
+        float currentTime,
+        float startTime, float endTime,
+        float startFx, float endFx
+//        Function<Float, Float> easing
+    ) {
+        if (startTime == endTime) {
+            return currentTime >= startTime ? endFx : startFx;
+        }
+        var f = MathUtil.inverseLerp(startTime, endTime, currentTime);
+        f = Easing.easeOutExpo(f);
+        return Math.clamp(startFx, endFx, Math.lerp(startFx, endFx, f));
+    }
 
 
-    protected static class RingHandler {
-        private final RingLightHandler controller;
-        private float rotation = 0;
-        private Float startTime = null;
-        private Float zoomStart = null;
-        private float startRotation = 0;
-        private float targetRotation = 0;
+    protected class RingHandler {
+
         private RingHandler nextRing = null;
-        private float prevZoom = 1;
         private final int index;
         private final LightObject ringLight;
-        private float cachedRingRotation = 0;
-        private float cachedRotationStep = 0;
 
-        protected RingHandler(RingLightHandler controller, int index, LightObject ringLight) {
-            this.ringLight = ringLight;
-            this.controller = controller;
+        private float startRotation = 0;
+        private float targetRotation = 0;
+        private float startRotationTime = 0;
+        private float endRotationTime = 0;
+
+        private float firstAngle = 0;
+        private float offset = 0;
+
+        private float propagationDuration = 0;
+        private boolean triggeredPropagation = false;
+
+        private float rotation = 0;
+
+        protected RingHandler(int index, LightObject ringLight) {
             this.index = index;
+            this.ringLight = ringLight;
         }
 
-        protected void setTarget(float songTime, float ringRotation, float rotationStep) {
+        protected void setTarget(float firstAngle, float offset, float startTime, float endTime, float propTime) {
             startRotation = rotation;
-            cachedRingRotation = ringRotation;
-            cachedRotationStep = rotationStep;
-            this.targetRotation = ringRotation + (rotationStep * index);
-            startTime = songTime;
-            setNext = true;
+            this.firstAngle = firstAngle;
+            this.offset = offset;
+            startRotation = firstAngle + (offset * index);
+            startRotationTime = startTime;
+            endRotationTime = endTime;
+            propagationDuration = propTime;
+            triggeredPropagation = false;
         }
 
-        protected void setZoomStart(float songTime) {
-            prevZoom = controller.zoom;
-            zoomStart = songTime;
+        protected void update(float songTime) {
+
+            rotation = lerpEffect(songTime, startRotationTime, endRotationTime, startRotation, targetRotation);
+
             if (nextRing != null) {
-                nextRing.setZoomStart(songTime);
+                if (!triggeredPropagation) {
+                    if ( 1 <= Math.lerp(0, 1, MathUtil.inverseLerp(startRotationTime, startRotationTime+propagationDuration, songTime))) {
+                        triggeredPropagation = true;
+                        nextRing.setTarget(firstAngle, offset, endRotationTime, endRotationTime + (endRotationTime-startRotationTime), propagationDuration);
+                    }
+                }
+
+                nextRing.update(songTime);
             }
         }
 
-        private float lerpZoom(float songTime) {
-            if (zoomStart == null) return prevZoom;
+        protected void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
+            if (ringLight != null) {
 
-            var dt = songTime - zoomStart;
-            if (dt >= 1) {
-                prevZoom = controller.zoom;
-                zoomStart = null;
+                var off = new Vector3f();
+                var rot = new Quaternionf();
+
+                off.set(0, 0, ringGap * zoom * index)
+                    .rotate(orientation)
+                    .rotate(RingLightHandler.this.rotation)
+                    .add(position)
+                    .add(RingLightHandler.this.offset)
+                ;
+                rot.rotationZ(rotation)
+                    .mul(orientation)
+                    .mul(RingLightHandler.this.rotation);
+
+                ringLight.setOffset(off);
+                ringLight.setRotation(rot);
+
+                ringLight.render(matrices, camera, alpha, bloomfog);
             }
-
-            return Mth.lerp(Easing.easeOutExpo(dt), prevZoom, controller.zoom);
+            if (nextRing != null) nextRing.render(matrices, camera, alpha, bloomfog);
 
         }
 
         protected void reset() {
-            rotation = 0;
-            startTime = null;
-            zoomStart = null;
             startRotation = 0;
             targetRotation = 0;
-            prevZoom = 1;
-            if (nextRing != null) {
-                nextRing.reset();
-            }
-        }
-
-        private boolean setNext = false;
-
-        protected void update(float songTime) {
-            if (startTime != null) {
-                float dt = songTime - startTime;
-                rotation = Mth.lerp(Easing.easeOutExpo(dt), startRotation, targetRotation);
-
-                if (nextRing != null && dt > 0.01f && setNext) {
-                    nextRing.setTarget(songTime, cachedRingRotation+cachedRotationStep, cachedRotationStep);
-                    setNext = false;
-                }
-
-                if (dt >= 1) {
-                    rotation = targetRotation;
-                    startTime = null;
-                }
-
-            }
-
-            if (nextRing != null) {
-                nextRing.update(songTime);
-            }
-
-        }
-
-        protected void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
-            if (ringLight == null) return;
-            ringLight.setOffset(
-                new Vector3f(0, 0, controller.ringOffset * lerpZoom(controller.mapController.currentSeconds) * index)
-                    .rotate(controller.orientation).rotate(controller.rotation)
-                    .add(controller.position).add(controller.offset)
-            );
-            ringLight.setRotation(
-                new Quaternionf().rotationZ(rotation).mul(controller.orientation).mul(controller.rotation)
-            );
-            ringLight.render(matrices, camera, alpha, bloomfog);
-            if (nextRing != null) {
-                nextRing.render(matrices, camera, alpha, bloomfog);
-            }
+            startRotationTime = 0;
+            endRotationTime = 0;
+            if (nextRing != null) nextRing.reset();
         }
 
     }
 
-    private final RingHandler headRing;
 
     public RingLightHandler(
         BeatmapController map,
@@ -148,40 +141,43 @@ public class RingLightHandler extends LightObject {
         int count, Vector3f position, float ringGap
     ) {
         super(map);
-        ringCount = count;
         this.position = position;
-        ringOffset = ringGap;
+        this.ringGap = ringGap;
 
-        headRing = new RingHandler(this, 0, ringFactory.apply(lightBuilder));
+        headRing = new RingHandler(0, ringFactory.apply(lightBuilder));
 
         var last = headRing;
 
-        for (int i = 1; i < ringCount; i++) {
-            var current = new RingHandler(this, i, ringFactory.apply(lightBuilder));
+        for (int i = 1; i < count; ++i) {
+            var current = new RingHandler(i, ringFactory.apply(lightBuilder));
             last.nextRing = current;
             last = current;
         }
 
     }
 
-    public float rotationReset = 0;
-
-    public void reset() {
-        ringRotation = 0;
-        rotationStep = rotationReset;
-        currentOffset = 0;
-        zoom = 1;
-        headRing.reset();
-        headRing.startTime = 0f;
-        headRing.update(0);
-    }
-
     public void update(float songTime) {
+
+        zoom = lerpEffect(songTime, startZoomTime, endZoomTime, startZoom, targetZoom);
+
         headRing.update(songTime);
     }
 
+    public void setZoom(float value, float speedPercentage) {
+        startZoom = zoom;
+        targetZoom = value;
+        startZoomTime = mapController.currentSeconds;
+        endZoomTime = startZoomTime + (1f / speedPercentage);
+    }
+
+    public void spinTo(float angle, float offset, float propagationTime, float spinTime) {
+        var t = mapController.currentSeconds;
+        headRing.setTarget(angle, offset, t, t + spinTime, propagationTime);
+    }
+
+
     @Override
-    public RingLightHandler cloneOffset(Vector3f offset) {
+    public LightObject cloneOffset(Vector3f offset) {
         return this;
     }
 
@@ -189,7 +185,6 @@ public class RingLightHandler extends LightObject {
     public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
         headRing.render(matrices, camera, alpha, bloomfog);
     }
-
 
     @Override
     public void setBrightness(float value) {
@@ -201,38 +196,5 @@ public class RingLightHandler extends LightObject {
         lightState.setColor(new Color(color));
     }
 
-    public void spinRandom() {
-
-        float offset = currentOffset;
-
-        while (offset == currentOffset && rotationOffsets.length > 1) {
-            var i = random.nextInt(0, rotationOffsets.length);
-            offset = rotationOffsets[i];
-        }
-
-        rotationStep = offset;
-
-        var i = random.nextInt(0, jumpOffsets.length);
-
-        ringRotation += jumpOffsets[i];
-
-        headRing.setTarget(mapController.currentSeconds, ringRotation, rotationStep);
-
-    }
-
-    public void spinTo(float startAngle, float offset, float propagationDuration, float transitionSpeed) {
-        rotationStep = offset;
-        ringRotation = startAngle;
-        headRing.setTarget(0, ringRotation, rotationStep);
-    }
-
-    public void setZoom(float value) {
-        headRing.setZoomStart(mapController.currentSeconds);
-        zoom = value;
-    }
-
-    public float getZoom() {
-        return zoom;
-    }
 
 }

@@ -6,9 +6,7 @@ import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
-import com.beatcraft.client.lightshow.event.events.ColorBoostEvent;
-import com.beatcraft.client.lightshow.event.events.LightEventV2;
-import com.beatcraft.client.lightshow.event.events.ValueEvent;
+import com.beatcraft.client.lightshow.event.events.*;
 import com.beatcraft.client.lightshow.event.handlers.ActionEventHandlerV2;
 import com.beatcraft.client.lightshow.event.handlers.ColorBoostEventHandler;
 import com.beatcraft.client.lightshow.event.handlers.LightGroupEventHandlerV2;
@@ -29,15 +27,15 @@ public abstract class EnvironmentV2 extends Environment {
     private LightGroupEventHandlerV2 leftRotatingLaserLightHandler = null;
     private LightGroupEventHandlerV2 rightRotatingLaserLightHandler = null;
 
-    private ActionEventHandlerV2 leftRotatingLaserValueHandler = null;
-    private ActionEventHandlerV2 rightRotatingLaserValueHandler = null;
+    private ActionEventHandlerV2<SpinningLightEvent> leftRotatingLaserValueHandler = null;
+    private ActionEventHandlerV2<SpinningLightEvent> rightRotatingLaserValueHandler = null;
 
     private LightGroupEventHandlerV2 backLaserLightHandler = null;
     private LightGroupEventHandlerV2 centerLaserLightHandler = null;
 
     private LightGroupEventHandlerV2 ringLightHandler = null;
-    private ActionEventHandlerV2 ringZoomHandler = null;
-    private ActionEventHandlerV2 ringSpinHandler = null;
+    private ActionEventHandlerV2<RingZoomEvent> ringZoomHandler = null;
+    private ActionEventHandlerV2<RingRotationEvent> ringSpinHandler = null;
 
     private HashMap<EventGroup, LightGroupV2> lightGroups;
     private ArrayList<LightGroupV2> uniqueGroups;
@@ -104,13 +102,13 @@ public abstract class EnvironmentV2 extends Environment {
         JsonArray events = json.getAsJsonArray("_events");
         var lrlEvents = new ArrayList<LightEventV2>();
         var rrlEvents = new ArrayList<LightEventV2>();
-        var lrrEvents = new ArrayList<ValueEvent>();
-        var rrrEvents = new ArrayList<ValueEvent>();
+        var lrrEvents = new ArrayList<SpinningLightEvent>();
+        var rrrEvents = new ArrayList<SpinningLightEvent>();
         var backEvents = new ArrayList<LightEventV2>();
         var centerEvents = new ArrayList<LightEventV2>();
         var rlEvents = new ArrayList<LightEventV2>();
-        var rlsEvents = new ArrayList<ValueEvent>();
-        var rlzEvents = new ArrayList<ValueEvent>();
+        var rlsEvents = new ArrayList<RingRotationEvent>();
+        var rlzEvents = new ArrayList<RingZoomEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
         boostEvents.add(new ColorBoostEvent(0, false));
 
@@ -130,13 +128,13 @@ public abstract class EnvironmentV2 extends Environment {
             switch (group) {
                 case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV2(obj, difficulty));
-                case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
-                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV2(obj, difficulty));
+                case LEFT_ROTATING_LASERS -> lrrEvents.add(new SpinningLightEvent().loadV2(obj, difficulty));
+                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new SpinningLightEvent().loadV2(obj, difficulty));
                 case BACK_LASERS -> backEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV2(obj, difficulty));
                 case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV2(obj, difficulty));
-                case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV2(obj, difficulty));
-                case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV2(obj, difficulty));
+                case RING_SPIN -> rlsEvents.add(new RingRotationEvent().loadV2(obj, difficulty));
+                case RING_ZOOM -> rlzEvents.add(new RingZoomEvent().loadV2(obj, difficulty));
                 case null, default -> {}
             }
 
@@ -156,15 +154,15 @@ public abstract class EnvironmentV2 extends Environment {
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
 
-        leftRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
-        rightRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
+        leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
+        rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
         backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
         centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
 
         ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
-        ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
-        ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
+        ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
+        ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
         colorBoostEventHandler = new ColorBoostEventHandler(mapController, boostEvents);
     }
@@ -175,13 +173,13 @@ public abstract class EnvironmentV2 extends Environment {
 
         var lrlEvents = new ArrayList<LightEventV2>();
         var rrlEvents = new ArrayList<LightEventV2>();
-        var lrrEvents = new ArrayList<ValueEvent>();
-        var rrrEvents = new ArrayList<ValueEvent>();
+        var lrrEvents = new ArrayList<SpinningLightEvent>();
+        var rrrEvents = new ArrayList<SpinningLightEvent>();
         var backEvents = new ArrayList<LightEventV2>();
         var centerEvents = new ArrayList<LightEventV2>();
         var rlEvents = new ArrayList<LightEventV2>();
-        var rlsEvents = new ArrayList<ValueEvent>();
-        var rlzEvents = new ArrayList<ValueEvent>();
+        var rlsEvents = new ArrayList<RingRotationEvent>();
+        var rlzEvents = new ArrayList<RingZoomEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
         boostEvents.add(new ColorBoostEvent(0, false));
 
@@ -197,13 +195,13 @@ public abstract class EnvironmentV2 extends Environment {
             switch (group) {
                 case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV3(obj, difficulty));
-                case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
-                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV3(obj, difficulty));
+                case LEFT_ROTATING_LASERS -> lrrEvents.add(new SpinningLightEvent().loadV3(obj, difficulty));
+                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new SpinningLightEvent().loadV3(obj, difficulty));
                 case BACK_LASERS -> backEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV3(obj, difficulty));
                 case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV3(obj, difficulty));
-                case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV3(obj, difficulty));
-                case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV3(obj, difficulty));
+                case RING_SPIN -> rlsEvents.add(new RingRotationEvent().loadV3(obj, difficulty));
+                case RING_ZOOM -> rlzEvents.add(new RingZoomEvent().loadV3(obj, difficulty));
                 case null, default -> {}
             }
 
@@ -224,15 +222,15 @@ public abstract class EnvironmentV2 extends Environment {
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
 
-        leftRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
-        rightRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
+        leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
+        rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
         backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
         centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
 
         ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
-        ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
-        ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
+        ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
+        ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
         colorBoostEventHandler = new ColorBoostEventHandler(mapController, boostEvents);
     }
@@ -246,13 +244,13 @@ public abstract class EnvironmentV2 extends Environment {
 
         var lrlEvents = new ArrayList<LightEventV2>();
         var rrlEvents = new ArrayList<LightEventV2>();
-        var lrrEvents = new ArrayList<ValueEvent>();
-        var rrrEvents = new ArrayList<ValueEvent>();
+        var lrrEvents = new ArrayList<SpinningLightEvent>();
+        var rrrEvents = new ArrayList<SpinningLightEvent>();
         var backEvents = new ArrayList<LightEventV2>();
         var centerEvents = new ArrayList<LightEventV2>();
         var rlEvents = new ArrayList<LightEventV2>();
-        var rlsEvents = new ArrayList<ValueEvent>();
-        var rlzEvents = new ArrayList<ValueEvent>();
+        var rlsEvents = new ArrayList<RingRotationEvent>();
+        var rlzEvents = new ArrayList<RingZoomEvent>();
         var boostEvents = new ArrayList<ColorBoostEvent>();
         boostEvents.add(new ColorBoostEvent(0, false));
 
@@ -273,13 +271,13 @@ public abstract class EnvironmentV2 extends Environment {
             switch (group) {
                 case LEFT_LASERS -> lrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case RIGHT_LASERS -> rrlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
-                case LEFT_ROTATING_LASERS -> lrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
-                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
+                case LEFT_ROTATING_LASERS -> lrrEvents.add(new SpinningLightEvent().loadV4(obj, data, difficulty));
+                case RIGHT_ROTATING_LASERS -> rrrEvents.add(new SpinningLightEvent().loadV4(obj, data, difficulty));
                 case BACK_LASERS -> backEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case CENTER_LASERS -> centerEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
                 case RING_LIGHTS -> rlEvents.add(new LightEventV2().loadV4(obj, data, difficulty));
-                case RING_SPIN -> rlsEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
-                case RING_ZOOM -> rlzEvents.add(new ValueEvent().loadV4(obj, data, difficulty));
+                case RING_SPIN -> rlsEvents.add(new RingRotationEvent().loadV4(obj, data, difficulty));
+                case RING_ZOOM -> rlzEvents.add(new RingZoomEvent().loadV4(obj, data, difficulty));
                 case null, default -> {}
             }
 
@@ -301,15 +299,15 @@ public abstract class EnvironmentV2 extends Environment {
         leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
         rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
 
-        leftRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
-        rightRotatingLaserValueHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
+        leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
+        rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
         backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
         centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
 
         ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
-        ringSpinHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
-        ringZoomHandler = new ActionEventHandlerV2((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
+        ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
+        ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
         colorBoostEventHandler = new ColorBoostEventHandler(mapController, boostEvents);
     }

@@ -3,6 +3,7 @@ package com.beatcraft.client.lightshow.environment.kaleidoscope;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.ActionLightGroupV2;
+import com.beatcraft.client.lightshow.event.events.RingRotationEvent;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
@@ -53,43 +54,43 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
         var rpd = Mth.DEG_TO_RAD;
 
-        innerRing.jumpOffsets = new float[]{
-            -90 * rpd,
-            90 * rpd
-        };
-
-        innerRing.rotationOffsets = new float[]{
-            0,
-            1 * rpd, -1 * rpd,
-            2 * rpd, -2 * rpd,
-            5 * rpd, -5 * rpd,
-            10 * rpd, -10 * rpd,
-            12.5f * rpd, -12.5f * rpd,
-            15 * rpd, -15 * rpd,
-            20 * rpd, -20 * rpd,
-            22.5f * rpd, -22.5f * rpd,
-            25 * rpd, -25 * rpd
-        };
-
-
-        outerRing.jumpOffsets = new float[]{
-            -90 * rpd,
-            90 * rpd
-        };
-
-        outerRing.rotationOffsets = new float[]{
-            0,
-            1 * rpd,
-            2 * rpd,
-            3 * rpd,
-            4 * rpd,
-            5 * rpd,
-            -1 * rpd,
-            -2 * rpd,
-            -3 * rpd,
-            -4 * rpd,
-            -5 * rpd
-        };
+        // innerRing.jumpOffsets = new float[]{
+        //     -90 * rpd,
+        //     90 * rpd
+        // };
+        //
+        // innerRing.rotationOffsets = new float[]{
+        //     0,
+        //     1 * rpd, -1 * rpd,
+        //     2 * rpd, -2 * rpd,
+        //     5 * rpd, -5 * rpd,
+        //     10 * rpd, -10 * rpd,
+        //     12.5f * rpd, -12.5f * rpd,
+        //     15 * rpd, -15 * rpd,
+        //     20 * rpd, -20 * rpd,
+        //     22.5f * rpd, -22.5f * rpd,
+        //     25 * rpd, -25 * rpd
+        // };
+        //
+        //
+        // outerRing.jumpOffsets = new float[]{
+        //     -90 * rpd,
+        //     90 * rpd
+        // };
+        //
+        // outerRing.rotationOffsets = new float[]{
+        //     0,
+        //     1 * rpd,
+        //     2 * rpd,
+        //     3 * rpd,
+        //     4 * rpd,
+        //     5 * rpd,
+        //     -1 * rpd,
+        //     -2 * rpd,
+        //     -3 * rpd,
+        //     -4 * rpd,
+        //     -5 * rpd
+        // };
 
         innerRing.spinTo(0, 45f/2f * rpd, 0, 0);
     }
@@ -121,7 +122,7 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
 
     @Override
-    public void handleEvent(ValueEvent event, EventGroup eventGroup) {
+    public void handleEvent(RingRotationEvent event, EventGroup eventGroup) {
         switch (eventGroup)
         {
             case RING_SPIN -> handleRingSpin();

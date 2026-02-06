@@ -7,28 +7,28 @@ import com.beatcraft.client.lightshow.event.events.ValueEvent;
 
 import java.util.List;
 
-public class ActionEventHandlerV2 extends VoidEventHandler<ValueEvent> {
+public class ActionEventHandlerV2<E extends ValueEvent> extends VoidEventHandler<E> {
     private final ActionLightGroupV2 lightGroup;
     private final EventGroup eventGroup;
 
-    public ActionEventHandlerV2(ActionLightGroupV2 lightGroup, List<ValueEvent> events, EventGroup eventGroup) {
+    public ActionEventHandlerV2(ActionLightGroupV2 lightGroup, List<E> events, EventGroup eventGroup) {
         super(events);
         this.lightGroup = lightGroup;
         this.eventGroup = eventGroup;
     }
 
     @Override
-    public void onEventInterrupted(ValueEvent event, float normalTime) {
+    public void onEventInterrupted(E event, float normalTime) {
         // will never happen
     }
 
     @Override
-    public void onInsideEvent(ValueEvent event, float normalTime) {
+    public void onInsideEvent(E event, float normalTime) {
         // will never happen
     }
 
     @Override
-    public void onEventPassed(ValueEvent event) {
+    public void onEventPassed(E event) {
         lightGroup.handleEvent(event, eventGroup);
     }
 }

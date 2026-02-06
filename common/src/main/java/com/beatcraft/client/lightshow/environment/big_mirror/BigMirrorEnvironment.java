@@ -1,18 +1,18 @@
-package com.beatcraft.client.lightshow.environment.nice;
+package com.beatcraft.client.lightshow.environment.big_mirror;
 
-import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.Easing;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
-import com.beatcraft.client.lightshow.environment.thefirst.InnerRing;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.RingLightGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
+import com.beatcraft.client.lightshow.environment.thefirst.OuterRing;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
-import com.beatcraft.client.render.environment.NiceRenderer;
+import com.beatcraft.client.render.environment.BigMirrorRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -24,22 +24,41 @@ import org.joml.Vector3f;
 import java.io.File;
 import java.util.HashMap;
 
-public class NiceEnvironment extends EnvironmentV2 {
-
-    private final NiceRenderer renderer = new NiceRenderer();
+public class BigMirrorEnvironment extends EnvironmentV2 {
+    /*
+     * Environment notes:
+     * back-lights are ~33 degrees down from vertical
+     *
+     * The First:
+     * 4 lights on left and right each.
+     * ~55 degrees down from vertical
+     * spin speed 1 = 1/2 rev in 9 seconds
+     * spin speed 9 = 1/2 rev in 1 second
+     * current rotation is randomized on speed event
+     *
+     * side lights: roughly at z 16 and 20 and x +- 20. further z is ~2.5 blocks higher starting at Y ~-15 or 20 and maybe 30-50 tall
+     *
+     * ring rotation offsets (roughly): 0, 2, 5, 10, 15 or randomly between -10 and 10 degrees
+     *
+     * aboveTrackX: includes chevron and continues the 10 lasers from belowTrackX
+     *
+     */
 
     private RingLightGroup ringLights;
 
     private SpectrogramTowers leftSpectrogramTowers;
     private SpectrogramTowers rightSpectrogramTowers;
 
-    @Override
-    public String getID() {
-        return "NiceEnvironment";
+    private static final BigMirrorRenderer renderer = new BigMirrorRenderer();
+
+    public BigMirrorEnvironment(BeatmapController map) {
+        super(map);
     }
 
-    public NiceEnvironment(BeatmapController map) {
-        super(map);
+
+    @Override
+    public String getID() {
+        return "BigMirrorEnvironment";
     }
 
     @Override
@@ -69,6 +88,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         leftSpectrogramTowers.baseHeight = 400;
         rightSpectrogramTowers.baseHeight = 400;
 
+
     }
 
     private static GlowingCuboid getRunway(BeatmapController map, boolean isLeft, boolean isCenter) {
@@ -81,11 +101,12 @@ public class NiceEnvironment extends EnvironmentV2 {
                 new Vector3f(0.03f, 0.03f, 500)
             ),
             (isCenter ? new Vector3f(2 * sign, 0, 8) :
-            new Vector3f(16f * sign, 1.5f, 8)
+                new Vector3f(16f * sign, 0, 8)
             ),
             new Quaternionf()
         );
     }
+
     private static GlowingCuboid getTowerLight1(BeatmapController map, boolean isLeft) {
         int sign = isLeft ? 1 : -1;
 
@@ -200,43 +221,33 @@ public class NiceEnvironment extends EnvironmentV2 {
     private static final float ROTATING_LIGHT_Z = 35;
     private static final float MIDDLE_LIGHT_Z = 60;
 
-    private static final float[] angles = new float[]{
-        15f * 1.5f,
-        15f * 0.5f,
-        15f * -0.5f,
-        15f * -1.5f,
-    };
-
     @Override
     protected LightGroupV2 setupLeftLasers() {
         HashMap<Integer, LightObject> rotatingLights = new HashMap<>();
         HashMap<Integer, LightObject> staticLights = new HashMap<>();
         int lightID = 1;
 
-        // TODO: tilted bottom lasers
+        var offset = new Vector3f(0, 0, 8.5f);
+        var left1 = new GlowingCuboid(
+            mapController,
+            new Hitbox(
+                new Vector3f(-0.03f, -10, -0.03f),
+                new Vector3f(0.03f, 800, 0.03f)
+            ),
+            new Vector3f(ROTATING_LIGHT_X, 2, ROTATING_LIGHT_Z),
+            new Quaternionf().rotationZ(55 * Mth.DEG_TO_RAD)
+        );
+        var left2 = left1.cloneOffset(offset);
+        var left3 = left2.cloneOffset(offset);
+        var left4 = left3.cloneOffset(offset);
 
-        for (var angle : angles) {
-
-            var light = new GlowingCuboid(
-                mapController,
-                new Hitbox(
-                    new Vector3f(-300, -0.03f, -0.03f),
-                    new Vector3f(300, 0.03f, 0.03f)
-                ),
-                new Vector3f(0, -10, 45),
-                new Quaternionf()//.rotationZ(angle * MathHelper.RADIANS_PER_DEGREE)
-            );
-
-            light.setRotation2(
-                new Quaternionf().rotationZ(angle * Mth.DEG_TO_RAD)
-            );
-
-            rotatingLights.put(lightID++, light);
-
-        }
+        rotatingLights.put(lightID++, left1);
+        rotatingLights.put(lightID++, left2);
+        rotatingLights.put(lightID++, left3);
+        rotatingLights.put(lightID++, left4);
 
 
-        var leftRunway = getRunway(mapController, true, false);
+        var leftRunway = getRunway(mapController, true, true);
         var leftTowerLight1 = getTowerLight1(mapController, true);
         var leftTowerLight2 = getTowerLight2(mapController, true);
 
@@ -249,6 +260,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         staticLights.put(lightID++, leftTowerLight1);
         staticLights.put(lightID++, leftTowerLight2);
 
+        // TODO: order these lights correctly
         staticLights.put(lightID++, leftTowerLight3);
         staticLights.put(lightID++, leftTowerLight4);
         staticLights.put(lightID++, skyLasers[0]);
@@ -264,30 +276,26 @@ public class NiceEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> staticLights = new HashMap<>();
         int lightID = 1;
 
-        // TODO: tilted top lasers
+        var offset = new Vector3f(0, 0, 8.5f);
+        var right1 = new GlowingCuboid(
+            mapController,
+            new Hitbox(
+                new Vector3f(-0.03f, -10, -0.03f),
+                new Vector3f(0.03f, 800, 0.03f)
+            ),
+            new Vector3f(-ROTATING_LIGHT_X, 2, ROTATING_LIGHT_Z),
+            new Quaternionf().rotationZ(-55 * Mth.DEG_TO_RAD)
+        );
+        var right2 = right1.cloneOffset(offset);
+        var right3 = right2.cloneOffset(offset);
+        var right4 = right3.cloneOffset(offset);
 
+        rotatingLights.put(lightID++, right1);
+        rotatingLights.put(lightID++, right2);
+        rotatingLights.put(lightID++, right3);
+        rotatingLights.put(lightID++, right4);
 
-        for (var angle : angles) {
-
-            var light = new GlowingCuboid(
-                mapController,
-                new Hitbox(
-                    new Vector3f(-300, -0.03f, -0.03f),
-                    new Vector3f(300, 0.03f, 0.03f)
-                ),
-                new Vector3f(0, 15, 45),
-                new Quaternionf()
-            );
-
-            light.setRotation2(
-                new Quaternionf().rotationZ(angle * Mth.DEG_TO_RAD)
-            );
-
-            rotatingLights.put(lightID++, light);
-
-        }
-
-        var rightRunway = getRunway(mapController, false, false);
+        var rightRunway = getRunway(mapController, false, true);
         var rightTowerLight1 = getTowerLight1(mapController, false);
         var rightTowerLight2 = getTowerLight2(mapController, false);
 
@@ -300,6 +308,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         staticLights.put(lightID++, rightTowerLight1);
         staticLights.put(lightID++, rightTowerLight2);
 
+        // TODO: order these lights correctly
         staticLights.put(lightID++, rightTowerLight3);
         staticLights.put(lightID++, rightTowerLight4);
         staticLights.put(lightID++, skyLasers[0]);
@@ -313,7 +322,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> lights = new HashMap<>();
         int lightID = 1;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             float z = MIDDLE_LIGHT_Z + i * 10;
             var bottomLeftLaser = new GlowingCuboid(
                 mapController,
@@ -321,8 +330,8 @@ public class NiceEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, -150, -0.05f),
                     new Vector3f(0.05f, 0, 0.05f)
                 ),
-                new Vector3f(5f, -2, z),
-                new Quaternionf().rotationZ(15 * Mth.DEG_TO_RAD)
+                new Vector3f(2f, -2, z),
+                new Quaternionf().rotationYXZ(20 * Mth.DEG_TO_RAD, 60 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, bottomLeftLaser);
 
@@ -332,8 +341,8 @@ public class NiceEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, -150, -0.05f),
                     new Vector3f(0.05f, 0, 0.05f)
                 ),
-                new Vector3f(-5f, -2, z),
-                new Quaternionf().rotationZ(-15 * Mth.DEG_TO_RAD)
+                new Vector3f(-2f, -2, z),
+                new Quaternionf().rotationYXZ(-20 * Mth.DEG_TO_RAD, 60 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, bottomRightLaser);
         }
@@ -346,7 +355,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         HashMap<Integer, LightObject> lights = new HashMap<>();
         int lightID = 1;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             float z = MIDDLE_LIGHT_Z + i * 10;
             var topLeftLaser = new GlowingCuboid(
                 mapController,
@@ -354,8 +363,8 @@ public class NiceEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, 0, -0.05f),
                     new Vector3f(0.05f, 200, 0.05f)
                 ),
-                new Vector3f(5f, -2, z),
-                new Quaternionf().rotationZ(15 * Mth.DEG_TO_RAD)
+                new Vector3f(2f, -2, z),
+                new Quaternionf().rotationYXZ(20 * Mth.DEG_TO_RAD, 60 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, topLeftLaser);
 
@@ -365,8 +374,8 @@ public class NiceEnvironment extends EnvironmentV2 {
                     new Vector3f(-0.05f, 0, -0.05f),
                     new Vector3f(0.05f, 200, 0.05f)
                 ),
-                new Vector3f(-5f, -2, z),
-                new Quaternionf().rotationZ(-15 * Mth.DEG_TO_RAD)
+                new Vector3f(-2f, -2, z),
+                new Quaternionf().rotationYXZ(-20 * Mth.DEG_TO_RAD, 60 * Mth.DEG_TO_RAD, 0)
             );
             lights.put(lightID++, topRightLaser);
         }
@@ -377,6 +386,7 @@ public class NiceEnvironment extends EnvironmentV2 {
         lights.put(lightID++, lRunway);
         lights.put(lightID++, rRunway);
 
+        // TODO: order these slanted lasers correctly
         var leftSlanted = getSlantedLaser(mapController, true);
         var rightSlanted = getSlantedLaser(mapController, false);
         lights.put(lightID++, leftSlanted);
@@ -416,18 +426,17 @@ public class NiceEnvironment extends EnvironmentV2 {
     protected LightGroupV2 setupRingLights() {
         ringLights = new RingLightGroup(
             mapController,
-            (ignored) -> new InnerRing(mapController),
-            (mod) -> new OuterRing(mapController, mod),
+            (m) -> new InnerRing(mapController),
+            (m) -> new OuterRing(mapController, m),
             () -> new GlowingCuboid(
                 mapController,
                 new Hitbox(
-                    new Vector3f(-lightLength/2, -lightSize, -lightSize),
-                    new Vector3f(lightLength/2, lightSize, lightSize)
+                    new Vector3f(-lightLength / 2, -lightSize, -lightSize),
+                    new Vector3f(lightLength / 2, lightSize, lightSize)
                 ),
-                new Vector3f(0, ringRadius-(lightSize+0.01f), lightSize),
+                new Vector3f(0, ringRadius - (lightSize + 0.01f), lightSize),
                 new Quaternionf()
-            ),
-            4.25f, 10, 30f, 1.25f
+            )
         );
         return ringLights;
     }
@@ -446,7 +455,7 @@ public class NiceEnvironment extends EnvironmentV2 {
     }
 
     @Override
-    public NiceEnvironment reset() {
+    public BigMirrorEnvironment reset() {
         super.reset();
         ringLights.reset();
         return this;
