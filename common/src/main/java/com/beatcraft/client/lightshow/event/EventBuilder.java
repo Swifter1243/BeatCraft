@@ -81,9 +81,9 @@ public class EventBuilder {
         ) {
             var out = new ArrayList<RawLightEventV3>();
             for (var targetSet : filter) {
-                var targets = targetSet.getA();
-                var durationMod = targetSet.getB();
-                var distributionMod = targetSet.getC();
+                var targets = targetSet.lightIDs;
+                var durationMod = targetSet.durationMod;
+                var distributionMod = targetSet.distributionMod;
 
                 durationMod *= beatDistributionValue;
                 if (beatDistributionType == 0) {
@@ -126,9 +126,9 @@ public class EventBuilder {
         ) {
             var out = new ArrayList<RawRotationEventV3>();
             for (var targetSet : filter) {
-                var targets = targetSet.getA();
-                var durationMod = targetSet.getB();
-                var distributionMod = rotationEasing.apply(targetSet.getC());
+                var targets = targetSet.lightIDs;
+                var durationMod = targetSet.durationMod;
+                var distributionMod = rotationEasing.apply(targetSet.distributionMod);
 
                 durationMod *= beatDistributionValue;
                 if (beatDistributionType == 0) {
@@ -168,9 +168,9 @@ public class EventBuilder {
         ) {
             var out = new ArrayList<RawTranslationEvent>();
             for (var targetSet : filter) {
-                var targets = targetSet.getA();
-                var durationMod = targetSet.getB();
-                var distributionMod = gapEasing.apply(targetSet.getC());
+                var targets = targetSet.lightIDs;
+                var durationMod = targetSet.durationMod;
+                var distributionMod = gapEasing.apply(targetSet.distributionMod);
 
                 durationMod *= beatDistributionValue;
                 if (beatDistributionType == 0) {

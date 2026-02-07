@@ -457,7 +457,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNP
             ),
-            new Vector3f(0, (DISTANT_H*2)/9f, 0), 9)
+            new Vector3f(0, (DISTANT_H*2)/7f, 0), 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -480,7 +480,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 CompoundTransformState.Swizzle.ZYX,
                 CompoundTransformState.Polarity.NNN
             ),
-            new Vector3f(0, -(DISTANT_H*2)/9f, 0), 9)
+            new Vector3f(0, -(DISTANT_H*2)/7f, 0), 7)
         ) {
             lights.put(lightID++, light);
         }
@@ -511,7 +511,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     public int getLightCount(int group) {
         if (group < 12) { return 8; }
         else if (group < 14) { return 12; }
-        else { return 10; }
+        else { return 8; }
     }
 
     @Override
