@@ -68,13 +68,10 @@ public class Filter implements Iterable<Filter.FilterTarget> {
         var _rawTargets = new ArrayList<FilterTarget>();
 
         for (int i = 0; i < lightCount; ++i) {
-            _rawTargets.add(
-                new FilterTarget(
-                    new int[]{reverse ? lightCount-1-i : i},
-                    i / (float) lightCount,
-                    reverse ? lightCount-(i / (float) lightCount) : i / (float) lightCount
-                )
-            );
+            _rawTargets.add(new FilterTarget(
+                new int[]{reverse ? lightCount-1-i : i},
+                0, 0
+            ));
         }
 
         var rawTargets = chunk(_rawTargets, chunks);
@@ -107,10 +104,13 @@ public class Filter implements Iterable<Filter.FilterTarget> {
         var preLimitedTargets = targets.collect(Collectors.toCollection(ArrayList::new));
         var preLimitedSize = preLimitedTargets.size();
 
-        var remap = lc / (float) preLimitedSize;
+        var ids = 0;
         for (var target : preLimitedTargets) {
-            target.distributionMod *= remap;
-            target.durationMod *= remap;
+            if (preLimitedSize != 1) {
+                target.distributionMod = ids / (float) (preLimitedSize-1);
+                target.durationMod = ids / (float) (preLimitedSize-1);
+            }
+            ++ids;
         }
 
         var limitedTargets = preLimitedTargets.stream()
@@ -119,7 +119,7 @@ public class Filter implements Iterable<Filter.FilterTarget> {
 
         var targetCount = limitedTargets.size();
 
-        remap = preLimitedSize / (float) targetCount;
+        var remap = preLimitedSize / (float) targetCount;
         for (var target : limitedTargets) {
             if ((limitBehavior & 1) > 0) { // duration
                 target.durationMod *= remap;

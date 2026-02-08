@@ -17,12 +17,8 @@ import java.util.function.Function;
 public class EventBuilder {
 
     public static class GroupKey {
-        private int group;
-        private int id;
-
-        public int getLightId() {
-            return id;
-        }
+        private final int group;
+        private final int id;
 
         public int getGroup() {
             return group;
@@ -98,8 +94,8 @@ public class EventBuilder {
                 for (var target : targets) {
 
                     out.add(new RawLightEventV3(
-                        beat, beatOffset, group, target,
-                        (distributionAffectsFirst || !isFirst) ? durationMod : 0,
+                        beat+(distributionAffectsFirst || !isFirst ? durationMod : 0), beatOffset, group, target,
+                        (distributionAffectsFirst || !isFirst ? 0 : durationMod),
                         brightnessDistributionEasing.apply(1+distributionMod) * brightness,
                         strobeFrequency, strobeBrightness, strobeFade,
                         eventType, color, easing
@@ -142,8 +138,8 @@ public class EventBuilder {
 
                 for (var target : targets) {
                     out.add(new RawRotationEventV3(
-                        beat, beatOffset, group, target, axis,
-                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        beat+(distributionAffectsFirst || !isFirst ? durationMod : 0), beatOffset, group, target, axis,
+                        (distributionAffectsFirst || !isFirst ? 0 : durationMod),
                         (magnitude + distributionMod) * (invertAxis ? -1 : 1),
                         direction, easing, loopCount, eventType
                     ));
@@ -184,8 +180,8 @@ public class EventBuilder {
 
                 for (var target : targets) {
                     out.add(new RawTranslationEvent(
-                        beat, beatOffset, group, target, axis,
-                        distributionAffectsFirst || !isFirst ? durationMod : 0,
+                        beat+(distributionAffectsFirst || !isFirst ? durationMod : 0), beatOffset, group, target, axis,
+                        (distributionAffectsFirst || !isFirst ? 0 : durationMod),
                         (magnitude + distributionMod) * (invertAxis ? -1 : 1),
                         easing, eventType
                     ));
