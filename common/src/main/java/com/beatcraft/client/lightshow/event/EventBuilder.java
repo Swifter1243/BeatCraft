@@ -41,8 +41,34 @@ public class EventBuilder {
         }
     }
 
-    private interface RawEvent {
+    public interface EventId {
+        boolean equals(EventId other);
+    }
+
+    public interface RawEvent {
         float getBeat();
+        float getTrueBeat();
+        EventId getEventId();
+    }
+
+    private record LightEventId(int lightID, int group) implements EventId {
+        @Override
+        public boolean equals(EventId other) {
+            if (other instanceof LightEventId(int id, int group1)) {
+                return lightID == id && group == group1;
+            }
+            return false;
+        }
+    }
+
+    private record TransformEventId(int lightId, int group, TransformState.Axis axis) implements EventId {
+        @Override
+        public boolean equals(EventId other) {
+            if (other instanceof TransformEventId(int id, int group1, TransformState.Axis axis1)) {
+                return lightId == id && group == group1 && axis == axis1;
+            }
+            return false;
+        }
     }
 
     public record BaseLightData(
@@ -204,6 +230,16 @@ public class EventBuilder {
         public float getBeat() {
             return eventBeat;
         }
+
+        @Override
+        public float getTrueBeat() {
+            return eventBeat + beatOffset;
+        }
+
+        @Override
+        public EventId getEventId() {
+            return new LightEventId(lightID, group);
+        }
     }
 
     public record RawRotationEventV3(
@@ -215,6 +251,16 @@ public class EventBuilder {
         @Override
         public float getBeat() {
             return eventBeat;
+        }
+
+        @Override
+        public float getTrueBeat() {
+            return eventBeat + beatOffset;
+        }
+
+        @Override
+        public EventId getEventId() {
+            return new TransformEventId(lightID, group, axis);
         }
     }
 
@@ -228,27 +274,62 @@ public class EventBuilder {
         public float getBeat() {
             return eventBeat;
         }
+
+        @Override
+        public float getTrueBeat() {
+            return eventBeat + beatOffset;
+        }
+
+        @Override
+        public EventId getEventId() {
+            return new TransformEventId(lightID, group, axis);
+        }
     }
 
     private final ArrayList<RawLightEventV3> rawLightEvents = new ArrayList<>();
     private final ArrayList<RawRotationEventV3> rawRotationEvents = new ArrayList<>();
     private final ArrayList<RawTranslationEvent> rawTranslationEvents = new ArrayList<>();
 
-    private HashMap<GroupKey, ArrayList<LightEventV3>> lightEvents = new HashMap<>();
-    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
-    private HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<TranslationEvent>>> translationEvents = new HashMap<>();
+    private final HashMap<GroupKey, ArrayList<LightEventV3>> lightEvents = new HashMap<>();
+    private final HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
+    private final HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<TranslationEvent>>> translationEvents = new HashMap<>();
 
     public void addRawLightEvents(List<RawLightEventV3> events) {
-        rawLightEvents.addAll(events);
+        addRawEvents(rawLightEvents, events);
     }
 
     public void addRawRotationEvents(List<RawRotationEventV3> events) {
-        rawRotationEvents.addAll(events);
+        addRawEvents(rawRotationEvents, events);
     }
 
     public void addRawTranslationEvents(List<RawTranslationEvent> events) {
-        rawTranslationEvents.addAll(events);
+        addRawEvents(rawTranslationEvents, events);
     }
+
+    private <E extends RawEvent> void addRawEvents(
+        ArrayList<E> rawEventsList,
+        List<? extends E> newEvents
+    ) {
+        // for (E event : newEvents) {
+        //     var id = event.getEventId();
+        //     var trueBeat = event.getTrueBeat();
+        //
+        //     for (int i = rawEventsList.size() - 1; i >= 0; --i) {
+        //         E ex = rawEventsList.get(i);
+        //
+        //         if (!ex.getEventId().equals(id)) {
+        //             continue;
+        //         }
+        //
+        //         if (ex.getTrueBeat() > trueBeat) {
+        //             rawEventsList.remove(i);
+        //         } else { break; }
+        //     }
+        // }
+        rawEventsList.addAll(newEvents);
+    }
+
+
 
     public List<LightEventV3> getLightEvents(int group, int lightID) {
         return lightEvents.computeIfAbsent(
@@ -296,10 +377,11 @@ public class EventBuilder {
         return Float.compare(a.getBeat(), b.getBeat());
     }
 
-    public void sortEvents() {
+    public void clipShadowedEvents() {
         rawLightEvents.sort(EventBuilder::rawEventComparator);
         rawRotationEvents.sort(EventBuilder::rawEventComparator);
         rawTranslationEvents.sort(EventBuilder::rawEventComparator);
+
     }
 
 

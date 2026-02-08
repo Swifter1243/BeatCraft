@@ -114,8 +114,6 @@ public abstract class EnvironmentV3 extends Environment {
                 var filter = new Filter(lightCount, coveredIDs, rawFilter);
                 var brightnessEasing = Easing.getEasing(String.valueOf(rawBrightnessEasing));
 
-                //builder.applyLightEventBeatCutoff(group, baseBeat, filter);
-
                 var baseData = new EventBuilder.BaseLightData(
                     baseBeat, group, lightCount, filter,
                     (beatDistributionType % 2), beatDistributionValue,
@@ -188,8 +186,6 @@ public abstract class EnvironmentV3 extends Environment {
                 }
                 var covered = coveredIDs.get(axis);
                 var filter = new Filter(lightCount, covered, rawFilter);
-
-                //builder.applyRotationEventBeatCutoff(group, baseBeat, filter);
 
                 var baseData = new EventBuilder.BaseRotationData(
                     baseBeat, group, lightCount, filter,
@@ -714,7 +710,7 @@ public abstract class EnvironmentV3 extends Environment {
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
         preProcessRotationEventsV3(eventBuilder, rawRotationEvents);
         preProcessTranslationEventsV3(eventBuilder, rawTranslationEvents);
-        eventBuilder.sortEvents();
+        eventBuilder.clipShadowedEvents();
         buildLightEvents(eventBuilder, difficulty);
         buildRotationEvents(eventBuilder, difficulty);
         buildTranslationEvents(eventBuilder, difficulty);
@@ -769,7 +765,7 @@ public abstract class EnvironmentV3 extends Environment {
 
         });
 
-        eventBuilder.sortEvents();
+        eventBuilder.clipShadowedEvents();
         buildLightEvents(eventBuilder, difficulty);
         buildRotationEvents(eventBuilder, difficulty);
         buildTranslationEvents(eventBuilder, difficulty);

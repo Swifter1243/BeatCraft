@@ -119,13 +119,16 @@ public class Filter implements Iterable<Filter.FilterTarget> {
 
         var targetCount = limitedTargets.size();
 
-        var remap = preLimitedSize / (float) targetCount;
-        for (var target : limitedTargets) {
-            if ((limitBehavior & 1) > 0) { // duration
-                target.durationMod *= remap;
-            }
-            if ((limitBehavior & 2) > 0) { // distribution
-                target.distributionMod *= remap;
+        if (targetCount > 1) {
+            var remap = (preLimitedSize - 1) / (float) (targetCount - 1);
+
+            for (var target : limitedTargets) {
+                if ((limitBehavior & 1) > 0) { // duration
+                    target.durationMod *= remap;
+                }
+                if ((limitBehavior & 2) > 0) { // distribution
+                    target.distributionMod *= remap;
+                }
             }
         }
 
