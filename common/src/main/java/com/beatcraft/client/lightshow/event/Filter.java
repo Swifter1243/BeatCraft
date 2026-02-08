@@ -1,6 +1,7 @@
 package com.beatcraft.client.lightshow.event;
 
 import com.beatcraft.common.utils.JsonUtil;
+import com.beatcraft.common.utils.UnityRandom;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +50,31 @@ public class Filter implements Iterable<Filter.FilterTarget> {
         return output;
     }
 
+    private static ArrayList<FilterTarget> randomize(ArrayList<FilterTarget> input, int behavior, int seed) {
+        boolean keepOrder = (behavior & 1) > 0;
+        boolean randomElements = (behavior & 2) > 0;
+
+        if (!(keepOrder || randomElements)) {
+            return input;
+        }
+
+        // WTF DOES KEEP ORDER MEAN?!?!?!?!
+
+        if (randomElements) {
+            var random = new UnityRandom(seed);
+            var targets = new ArrayList<int[]>();
+            for (var t : input) {
+                targets.add(t.lightIDs);
+            }
+            targets = random.shuffle(targets);
+            for (var i = 0; i < input.size(); ++i) {
+                input.get(i).lightIDs = targets.get(i);
+            }
+        }
+
+        return input;
+    }
+
     public Filter(int lightCount, ArrayList<Integer> coveredIDs, JsonObject filter) {
 
         var chunks = JsonUtil.getOrDefault(filter, "c", JsonElement::getAsInt, 0);
@@ -74,7 +100,7 @@ public class Filter implements Iterable<Filter.FilterTarget> {
             ));
         }
 
-        var rawTargets = chunk(_rawTargets, chunks);
+        var rawTargets = randomize(chunk(_rawTargets, chunks), randomBehavior, randomSeed);
 
         // TODO: randomization
 
