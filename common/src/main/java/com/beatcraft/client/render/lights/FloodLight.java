@@ -29,9 +29,30 @@ public class FloodLight extends LightObject {
     private final float fadeLength;
     private final float spread;
     private final float[] segmentLengths;
-    private List<Pair<Vector3f, Float>[]> faces;
-    private List<Pair<Vector3f, Float>[]> fadeFaces;
-    private List<Pair<Vector3f, Float>[]> lines;
+
+    private List<Pair<Vector3f, Float>[]> facesInner;
+    private List<Pair<Vector3f, Float>[]> fadeFacesInner;
+    private List<Pair<Vector3f, Float>[]> linesInner;
+
+    private List<Pair<Vector3f, Float>[]> facesMiddle;
+    private List<Pair<Vector3f, Float>[]> fadeFacesMiddle;
+    private List<Pair<Vector3f, Float>[]> linesMiddle;
+
+    private List<Pair<Vector3f, Float>[]> facesOuter;
+    private List<Pair<Vector3f, Float>[]> fadeFacesOuter;
+    private List<Pair<Vector3f, Float>[]> linesOuter;
+
+    private static final float INNER_WIDTH_SCALE = 0.5f;
+    private static final float INNER_LENGTH_SCALE = 0.2f;
+    private static final float INNER_SPREAD_MULTIPLIER = 1.0f;
+
+    private static final float MIDDLE_WIDTH_SCALE = 0.75f;
+    private static final float MIDDLE_LENGTH_SCALE = 0.85f;
+    private static final float MIDDLE_SPREAD_MULTIPLIER = 1.3f;
+
+    private static final float OUTER_WIDTH_SCALE = 1.0f;
+    private static final float OUTER_LENGTH_SCALE = 1.0f;
+    private static final float OUTER_SPREAD_MULTIPLIER = 1.0f;
 
     public FloodLight cloneOffset(Vector3f offset) {
         return (FloodLight) new FloodLight(mapController, startOffset, width, length, fadeLength, spread, segmentLengths, position.add(offset, new Vector3f()), new Quaternionf(orientation))
@@ -119,6 +140,33 @@ public class FloodLight extends LightObject {
     }
 
     public void setDimensions(float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths) {
+        setupLayer(startOffset, width * INNER_WIDTH_SCALE, length * INNER_LENGTH_SCALE,
+            fadeLength * INNER_LENGTH_SCALE, spread * INNER_SPREAD_MULTIPLIER, segmentLengths,
+            layer -> {
+                facesInner = layer.faces;
+                fadeFacesInner = layer.fadeFaces;
+                linesInner = layer.lines;
+            });
+
+        setupLayer(startOffset, width * MIDDLE_WIDTH_SCALE, length * MIDDLE_LENGTH_SCALE,
+            fadeLength * MIDDLE_LENGTH_SCALE, spread * MIDDLE_SPREAD_MULTIPLIER, segmentLengths,
+            layer -> {
+                facesMiddle = layer.faces;
+                fadeFacesMiddle = layer.fadeFaces;
+                linesMiddle = layer.lines;
+            });
+
+        setupLayer(startOffset, width * OUTER_WIDTH_SCALE, length * OUTER_LENGTH_SCALE,
+            fadeLength * OUTER_LENGTH_SCALE, spread * OUTER_SPREAD_MULTIPLIER, segmentLengths,
+            layer -> {
+                facesOuter = layer.faces;
+                fadeFacesOuter = layer.fadeFaces;
+                linesOuter = layer.lines;
+            });
+    }
+
+    private void setupLayer(float startOffset, float width, float length, float fadeLength, float spread,
+                            float[] segmentLengths, java.util.function.Consumer<LayerGeometry> setter) {
         var maxY = startOffset + length;
         var fadeY = startOffset + fadeLength;
         var delta = width / 2f;
@@ -126,11 +174,6 @@ public class FloodLight extends LightObject {
         var baseDimensions = new Hitbox(
             new Vector3f(-delta, startOffset, -delta),
             new Vector3f(delta, maxY, delta)
-        );
-
-        var fadeDimensions = new Hitbox(
-            new Vector3f(-delta, startOffset, -delta),
-            new Vector3f(delta, fadeY, delta)
         );
 
         var midSpread = spread * fadeLength/length;
@@ -163,11 +206,18 @@ public class FloodLight extends LightObject {
             cy = y;
         }
 
-        faces = getFaces(baseDimensions, spread, true, 0, 1);
+        LayerGeometry layer = new LayerGeometry();
+        layer.faces = getFaces(baseDimensions, spread, true, 0, 1);
+        layer.fadeFaces = List.copyOf(faces0);
+        layer.lines = getLines(baseDimensions, spread);
 
-        fadeFaces = List.copyOf(faces0);
-        lines = getLines(baseDimensions, spread);
+        setter.accept(layer);
+    }
 
+    private static class LayerGeometry {
+        List<Pair<Vector3f, Float>[]> faces;
+        List<Pair<Vector3f, Float>[]> fadeFaces;
+        List<Pair<Vector3f, Float>[]> lines;
     }
 
     @Override
@@ -192,8 +242,6 @@ public class FloodLight extends LightObject {
         Quaternionf wrot4 = MemoryPool.newQuaternionf(worldRotation);
         LightState state = lightState.copy();
         state.clampAlpha();
-
-        //DebugRenderer.renderHitbox(dimensions, new Vector3f(pos).rotate(rot).add(off), new Quaternionf(ori).mul(rot), 0xFFFF0000);
 
         var mat = matrices.last().pose();
 
@@ -238,99 +286,105 @@ public class FloodLight extends LightObject {
 
         var c = new Color(color);
 
-        //var b = (lightState.getBrightness() * 0.25f) + 0.75f;
-        //setDimensions(
-        //    startOffset, width, length * b, fadeLength * b, spread * b
-        //);
+        var brightnessScale = (lightState.getBrightness() * 0.25f) + 0.75f;
 
         var mat = createTransformMatrix(transform, false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
-        for (var face : fadeFaces) {
+        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesOuter, c, brightnessScale);
 
-            var v0 = face[0].getA().mulPosition(mat, new Vector3f());
-            var v1 = face[1].getA().mulPosition(mat, new Vector3f());
-            var v2 = face[2].getA().mulPosition(mat, new Vector3f());
-            var v3 = face[3].getA().mulPosition(mat, new Vector3f());
+        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesMiddle, c, brightnessScale);
+
+        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesInner, c, brightnessScale);
+    }
+
+    private void renderBloomLayer(BufferBuilder buffer, Quaternionf cameraRotation, Matrix4f mat,
+                                  List<Pair<Vector3f, Float>[]> faces, Color color, float brightnessScale) {
+        for (var face : faces) {
+            var v0 = face[0].getA().mul(1, brightnessScale, 1, new Vector3f()).mulPosition(mat, new Vector3f());
+            var v1 = face[1].getA().mul(1, brightnessScale, 1, new Vector3f()).mulPosition(mat, new Vector3f());
+            var v2 = face[2].getA().mul(1, brightnessScale, 1, new Vector3f()).mulPosition(mat, new Vector3f());
+            var v3 = face[3].getA().mul(1, brightnessScale, 1, new Vector3f()).mulPosition(mat, new Vector3f());
             v0.rotate(cameraRotation);
             v1.rotate(cameraRotation);
             v2.rotate(cameraRotation);
             v3.rotate(cameraRotation);
 
-            buffer.addVertex(v0).setColor(c.withAlpha(face[0].getB()).lerpBrightness(face[0].getB()));
-            buffer.addVertex(v1).setColor(c.withAlpha(face[1].getB()).lerpBrightness(face[1].getB()));
-            buffer.addVertex(v2).setColor(c.withAlpha(face[2].getB()).lerpBrightness(face[2].getB()));
+            buffer.addVertex(v0).setColor(color.withAlpha(face[0].getB()).lerpBrightness(face[0].getB()));
+            buffer.addVertex(v1).setColor(color.withAlpha(face[1].getB()).lerpBrightness(face[1].getB()));
+            buffer.addVertex(v2).setColor(color.withAlpha(face[2].getB()).lerpBrightness(face[2].getB()));
 
-            buffer.addVertex(v0).setColor(c.withAlpha(face[0].getB()).lerpBrightness(face[0].getB()));
-            buffer.addVertex(v2).setColor(c.withAlpha(face[2].getB()).lerpBrightness(face[2].getB()));
-            buffer.addVertex(v3).setColor(c.withAlpha(face[3].getB()).lerpBrightness(face[3].getB()));
-
+            buffer.addVertex(v0).setColor(color.withAlpha(face[0].getB()).lerpBrightness(face[0].getB()));
+            buffer.addVertex(v2).setColor(color.withAlpha(face[2].getB()).lerpBrightness(face[2].getB()));
+            buffer.addVertex(v3).setColor(color.withAlpha(face[3].getB()).lerpBrightness(face[3].getB()));
         }
     }
 
     private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, int isBloomfog, Quaternionf cameraRotation, Quaternionf orientation, Quaternionf rotation, Quaternionf worldRotation, Vector3f position, Vector3f offset, LightState lightState, boolean mirrorDraw) {
-        var color = isBloomfog > 0 ? lightState.getBloomColor() : lightState.getEffectiveColor();
+        var color = lightState.getBloomColor();
 
         if (((color >> 24) & 0xFF) <= 1) {
             return;
         }
-
-        //var b = (lightState.getBrightness() * 0.25f) + 0.75f;
-        //setDimensions(
-        //    startOffset, width, length * b, fadeLength * b, spread * b
-        //);
 
         var mat = createTransformMatrix(transform, mirrorDraw, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
         var c = new Color(color);
 
         if (isBloomfog == 1 && !mirrorDraw) {
-            for (var line : lines) {
-                var v0 = line[0].getA().mulPosition(mat, new Vector3f());
-                var v1 = line[1].getA().mulPosition(mat, new Vector3f());
+            renderLines(buffer, cameraRotation, mat, linesOuter, color);
+            renderLines(buffer, cameraRotation, mat, linesMiddle, color);
+            renderLines(buffer, cameraRotation, mat, linesInner, color);
+        } else {
+            var iterFacesOuter = isBloomfog > 0 ? facesOuter : fadeFacesOuter;
+            var iterFacesMiddle = isBloomfog > 0 ? facesMiddle : fadeFacesMiddle;
+            var iterFacesInner = isBloomfog > 0 ? facesInner : fadeFacesInner;
+
+            renderFaces(buffer, cameraRotation, mat, iterFacesOuter, c, isBloomfog, mirrorDraw);
+
+            renderFaces(buffer, cameraRotation, mat, iterFacesMiddle, c, isBloomfog, mirrorDraw);
+
+            renderFaces(buffer, cameraRotation, mat, iterFacesInner, c, isBloomfog, mirrorDraw);
+        }
+    }
+
+    private void renderLines(BufferBuilder buffer, Quaternionf cameraRotation, Matrix4f mat,
+                             List<Pair<Vector3f, Float>[]> lines, int color) {
+        for (var line : lines) {
+            var v0 = line[0].getA().mul(1, 1, 1, new Vector3f()).mulPosition(mat, new Vector3f());
+            var v1 = line[1].getA().mul(1, 1, 1, new Vector3f()).mulPosition(mat, new Vector3f());
+            v0.rotate(cameraRotation);
+            v1.rotate(cameraRotation);
+            var n = v1.sub(v0, new Vector3f());
+
+            List<Pair<Vector3f, Float>[]> segments = RenderUtil.chopEdgeLerp(v0, v1, 5, line[0].getB(), line[1].getB());
+
+            for (var segment : segments) {
+                buffer.addVertex(segment[0].getA()).setColor((new Color(color).withAlpha(segment[0].getB()).lerpBrightness(segment[0].getB()))).setNormal(n.x, n.y, n.z);
+                buffer.addVertex(segment[1].getA()).setColor((new Color(color).withAlpha(segment[1].getB()).lerpBrightness(segment[1].getB()))).setNormal(-n.x, -n.y, -n.z);
+            }
+        }
+    }
+
+    private void renderFaces(BufferBuilder buffer, Quaternionf cameraRotation, Matrix4f mat,
+                             List<Pair<Vector3f, Float>[]> faces, Color color, int isBloomfog,
+                             boolean mirrorDraw) {
+        for (var face : faces) {
+            var v0 = face[0].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+            var v1 = face[1].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+            var v2 = face[2].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+            var v3 = face[3].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat);
+
+            if (isBloomfog > 0) {
                 v0.rotate(cameraRotation);
                 v1.rotate(cameraRotation);
-                var n = v1.sub(v0, new Vector3f());
-
-                List<Pair<Vector3f, Float>[]> segments = RenderUtil.chopEdgeLerp(v0, v1, 5, line[0].getB(), line[1].getB());
-
-
-
-                for (var segment : segments) {
-                    buffer.addVertex(segment[0].getA()).setColor((new Color(color).withAlpha(segment[0].getB()).lerpBrightness(segment[0].getB()))).setNormal(n.x, n.y, n.z);
-                    buffer.addVertex(segment[1].getA()).setColor((new Color(color).withAlpha(segment[1].getB()).lerpBrightness(segment[1].getB()))).setNormal(-n.x, -n.y, -n.z);
-                }
+                v2.rotate(cameraRotation);
+                v3.rotate(cameraRotation);
             }
-        } else {
-            var iterFaces = isBloomfog > 0 ? faces : fadeFaces;
 
-            for (var face : iterFaces) {
-
-                var v0 = face[0].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[0].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v1 = face[1].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[1].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v2 = face[2].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[2].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-                var v3 = face[3].getA().mul(1, mirrorDraw ? -1 : 1, 1, new Vector3f()).mulPosition(mat); // processVertex(face[3].getLeft(), cameraPos, orientation, rotation, worldRotation, position, offset, mirrorDraw);
-
-                if (isBloomfog > 0) {
-                    v0.rotate(cameraRotation);
-                    v1.rotate(cameraRotation);
-                    v2.rotate(cameraRotation);
-                    v3.rotate(cameraRotation);
-                }
-
-                buffer.addVertex(v0).setColor(c.withAlpha((face[0].getB())).lerpBrightness(face[0].getB()));
-                buffer.addVertex(v1).setColor(c.withAlpha((face[1].getB())).lerpBrightness(face[1].getB()));
-                buffer.addVertex(v2).setColor(c.withAlpha((face[2].getB())).lerpBrightness(face[2].getB()));
-                buffer.addVertex(v3).setColor(c.withAlpha((face[3].getB())).lerpBrightness(face[3].getB()));
-
-                //List<Vector3f[]> sections = RenderUtil.sliceQuad(v0, v1, v2, v3, 10);
-                //
-                //for (var quad : sections) {
-                //    buffer.vertex(quad[0]).color(color);
-                //    buffer.vertex(quad[1]).color(color);
-                //    buffer.vertex(quad[2]).color(color);
-                //    buffer.vertex(quad[3]).color(color);
-                //}
-            }
+            buffer.addVertex(v0).setColor(color.withAlpha((face[0].getB())).lerpBrightness(face[0].getB()));
+            buffer.addVertex(v1).setColor(color.withAlpha((face[1].getB())).lerpBrightness(face[1].getB()));
+            buffer.addVertex(v2).setColor(color.withAlpha((face[2].getB())).lerpBrightness(face[2].getB()));
+            buffer.addVertex(v3).setColor(color.withAlpha((face[3].getB())).lerpBrightness(face[3].getB()));
         }
     }
 
