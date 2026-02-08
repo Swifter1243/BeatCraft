@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.event.EventHandler;
 import com.beatcraft.client.lightshow.event.events.RotationEventV3;
@@ -8,8 +9,8 @@ import com.beatcraft.client.lightshow.lights.TransformState;
 import java.util.List;
 
 public class RotationEventHandlerV3 extends EventHandler<TransformState, RotationEventV3> {
-    public RotationEventHandlerV3(List<RotationEventV3> events, TransformState.Axis initialAxis) {
-        super(events, new TransformState(initialAxis, 0));
+    public RotationEventHandlerV3(List<RotationEventV3> events, TransformState.Axis initialAxis, BeatmapController map) {
+        super(events, new TransformState(initialAxis, 0), map);
     }
 
     public void addEvents(List<RotationEventV3> events) {

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SongData {
 
-    public record BeatmapInfo(SongData parent, String mapFile, String lightshowFile, List<String> mappers, List<String> lighters) {
+    public record BeatmapInfo(SongData parent, String mapFile, String lightshowFile, List<String> mappers, List<String> lighters, boolean isExpertPlus) {
         @Override
         public @NotNull String toString() {
             return "BeatmapInfo{" +
@@ -141,6 +141,7 @@ public class SongData {
             difficulties.forEach(o -> {
                 JsonObject obj = o.getAsJsonObject();
                 String diff = obj.get("_difficulty").getAsString().replace("ExpertPlus", "Expert+");
+                var isExpertPlus = (diff.equals("Expert+"));
                 String fileName = obj.get("_beatmapFilename").getAsString();
 
                 if (obj.has("_customData")) {
@@ -152,7 +153,7 @@ public class SongData {
 
                 mappers.add(mapper);
 
-                BeatmapInfo info = new BeatmapInfo(this, fileName, fileName, List.of(mapper), List.of(mapper));
+                BeatmapInfo info = new BeatmapInfo(this, fileName, fileName, List.of(mapper), List.of(mapper), isExpertPlus);
 
                 beatmaps.get(setName).put(diff, info);
 
@@ -197,6 +198,7 @@ public class SongData {
 
             String set = obj.get("characteristic").getAsString();
             String diff = obj.get("difficulty").getAsString().replace("ExpertPlus", "Expert+");
+            var isExpertPlus = (diff.equals("Expert+"));
 
             String mapFile = obj.get("beatmapDataFilename").getAsString();
             String lightFile = obj.get("lightshowDataFilename").getAsString();
@@ -215,7 +217,7 @@ public class SongData {
             this.mappers.addAll(mappers);
             this.mappers.addAll(lighters);
 
-            BeatmapInfo info = new BeatmapInfo(this, mapFile, lightFile, mappers, lighters);
+            BeatmapInfo info = new BeatmapInfo(this, mapFile, lightFile, mappers, lighters, isExpertPlus);
 
             if (!beatmaps.containsKey(set)) {
                 beatmaps.put(set, new LinkedHashMap<>());

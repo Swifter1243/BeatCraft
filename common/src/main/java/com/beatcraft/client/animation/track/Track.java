@@ -3,6 +3,7 @@ package com.beatcraft.client.animation.track;
 import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.event.AnimatedPathEventContainer;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventContainer;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.google.gson.JsonElement;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -11,9 +12,14 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 
 public class Track {
-    private final AnimatedProperties animatedProperties = new AnimatedProperties();
-    private final AnimatedPath animatedPath = new AnimatedPath();
+    private final AnimatedProperties animatedProperties;
+    private final AnimatedPath animatedPath;
     private Track parent;
+
+    public Track(BeatmapController map) {
+        animatedProperties = new AnimatedProperties(map);
+        animatedPath = new AnimatedPath(map);
+    }
 
     public AnimatedProperties getAnimatedProperties() {
         return animatedProperties;

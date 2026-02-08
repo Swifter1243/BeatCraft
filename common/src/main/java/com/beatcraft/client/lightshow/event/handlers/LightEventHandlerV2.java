@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.event.EventHandler;
 import com.beatcraft.client.lightshow.event.events.LightEventV2;
@@ -9,8 +10,8 @@ import net.minecraft.util.Mth;
 import java.util.List;
 
 public class LightEventHandlerV2 extends EventHandler<LightState, LightEventV2> {
-    public LightEventHandlerV2(List<LightEventV2> events) {
-        super(events, new LightState(new Color(0, 0, 0, 0), 0));
+    public LightEventHandlerV2(List<LightEventV2> events, BeatmapController map) {
+        super(events, new LightState(new Color(0, 0, 0, 0), 0), map);
     }
 
     @Override

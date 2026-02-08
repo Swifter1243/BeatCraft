@@ -151,16 +151,16 @@ public abstract class EnvironmentV2 extends Environment {
         rlsEvents.sort(Difficulty::compareObjects);
         rlzEvents.sort(Difficulty::compareObjects);
 
-        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
-        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
+        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents, difficulty.mapController);
+        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents, difficulty.mapController);
 
         leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
         rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
-        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
-        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
+        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents, difficulty.mapController);
+        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents, difficulty.mapController);
 
-        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
+        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents, difficulty.mapController);
         ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
@@ -219,16 +219,16 @@ public abstract class EnvironmentV2 extends Environment {
         boostEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
-        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
-        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
+        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents, difficulty.mapController);
+        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents, difficulty.mapController);
 
         leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
         rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
-        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
-        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
+        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents, difficulty.mapController);
+        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents, difficulty.mapController);
 
-        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
+        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents, difficulty.mapController);
         ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 
@@ -296,16 +296,16 @@ public abstract class EnvironmentV2 extends Environment {
         boostEvents.sort(Difficulty::compareObjects);
 
         // these stay as V2 since it's a V2 environment
-        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents);
-        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents);
+        leftRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.LEFT_LASERS), lrlEvents, difficulty.mapController);
+        rightRotatingLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RIGHT_LASERS), rrlEvents, difficulty.mapController);
 
         leftRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.LEFT_ROTATING_LASERS), lrrEvents, EventGroup.LEFT_ROTATING_LASERS);
         rightRotatingLaserValueHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RIGHT_ROTATING_LASERS), rrrEvents, EventGroup.RIGHT_ROTATING_LASERS);
 
-        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents);
-        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents);
+        backLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.BACK_LASERS), backEvents, difficulty.mapController);
+        centerLaserLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.CENTER_LASERS), centerEvents, difficulty.mapController);
 
-        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents);
+        ringLightHandler = new LightGroupEventHandlerV2(lightGroups.get(EventGroup.RING_LIGHTS), rlEvents, difficulty.mapController);
         ringSpinHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_SPIN), rlsEvents, EventGroup.RING_SPIN);
         ringZoomHandler = new ActionEventHandlerV2<>((ActionLightGroupV2) lightGroups.get(EventGroup.RING_ZOOM), rlzEvents, EventGroup.RING_ZOOM);
 

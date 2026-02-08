@@ -31,7 +31,7 @@ public abstract class Difficulty {
 
     private final Info info;
     private final Info.SetDifficulty setDifficulty;
-    private final TrackLibrary trackLibrary = new TrackLibrary();
+    private final TrackLibrary trackLibrary;
     public final ArrayList<PhysicalColorNote> colorNotes = new ArrayList<>();
     public final ArrayList<PhysicalBombNote> bombNotes = new ArrayList<>();
     public final ArrayList<PhysicalChainNoteHead> chainHeadNotes = new ArrayList<>();
@@ -42,7 +42,7 @@ public abstract class Difficulty {
     public final ArrayList<AnimateTrack> animateTracks = new ArrayList<>();
     public final ArrayList<AssignPathAnimation> assignPathAnimations = new ArrayList<>();
     public final ArrayList<AssignTrackParent> assignTrackParents = new ArrayList<>();
-    public final AssignTrackParentHandler parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
+    public final AssignTrackParentHandler parentHandler;
     public final HashMap<String, JsonArray> pointDefinitions = new HashMap<>();
     public float firstBeat = Float.MAX_VALUE;
 
@@ -52,6 +52,8 @@ public abstract class Difficulty {
         this.mapController = controller;
         this.info = info;
         this.setDifficulty = setDifficulty;
+        trackLibrary = new TrackLibrary(mapController);
+        parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     }
 
     public static int compareObjects(BeatmapObject o1, BeatmapObject o2) {
@@ -98,7 +100,7 @@ public abstract class Difficulty {
     }
 
     private void applyRotationEvents() {
-        EventHandler<Float, RotationEvent> eventHandler = new RotationEventHandler(rotationEvents);
+        EventHandler<Float, RotationEvent> eventHandler = new RotationEventHandler(rotationEvents, mapController);
         applyRotationOnArray(eventHandler, colorNotes);
         applyRotationOnArray(eventHandler, bombNotes);
         applyRotationOnArray(eventHandler, chainHeadNotes);

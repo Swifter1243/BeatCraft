@@ -6,6 +6,7 @@ import com.beatcraft.client.animation.AnimationState;
 import com.beatcraft.client.animation.event.AnimatedPropertyEvent;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventContainer;
 import com.beatcraft.client.animation.event.AnimatedPropertyEventHandler;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -16,20 +17,20 @@ import java.util.ArrayList;
 public class AnimatedProperties extends AnimationPropertyContainer<AnimatedPropertyEventHandler<Float>, AnimatedPropertyEventHandler<Vector3f>, AnimatedPropertyEventHandler<Vector4f>, AnimatedPropertyEventHandler<Quaternionf>, AnimatedPropertyEventHandler<Color>> {
     private final AnimationState currentState = new AnimationState();
 
-    public AnimatedProperties() {
-        offsetPosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        offsetWorldRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        localRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        localPosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        definitePosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        position = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        rotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        scale = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        dissolve = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        dissolveArrow = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        interactable = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        time = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
-        color = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null);
+    public AnimatedProperties(BeatmapController map) {
+        offsetPosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        offsetWorldRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        localRotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        localPosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        definitePosition = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        position = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        rotation = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        scale = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        dissolve = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        dissolveArrow = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        interactable = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        time = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
+        color = new AnimatedPropertyEventHandler<>(new ArrayList<>(), null, map);
     }
 
     public void seek(float beat) {

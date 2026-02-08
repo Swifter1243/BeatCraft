@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV3;
 import com.beatcraft.client.lightshow.event.events.LightEventV3;
 import com.beatcraft.client.lightshow.event.events.RotationEventV3;
@@ -21,19 +22,19 @@ public class GroupEventHandlerV3 {
         lightGroupV3 = group;
     }
 
-    public void linkLightEvents(List<LightEventV3> lightEvents) {
+    public void linkLightEvents(List<LightEventV3> lightEvents, BeatmapController map) {
         lightGroupV3.lights.forEach((lightID, light) -> {
             var relevantEvents = lightEvents.stream().filter(o -> o.containsLightID(lightID)).toList();
             if (lightHandlers.containsKey(lightID)) {
                 lightHandlers.get(lightID).addEvents(relevantEvents);
             } else {
-                lightHandlers.put(lightID, new LightEventHandlerV3(relevantEvents));
+                lightHandlers.put(lightID, new LightEventHandlerV3(relevantEvents, map));
             }
         });
 
     }
 
-    public void linkRotationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> rotationEvents) {
+    public void linkRotationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<RotationEventV3>> rotationEvents, BeatmapController map) {
         if (!lightGroupV3.lights.containsKey(lightID)) return;
         if (!rotationHandlers.containsKey(lightID)) {
             rotationHandlers.put(lightID, new HashMap<>());
@@ -44,13 +45,13 @@ public class GroupEventHandlerV3 {
                 if (axes.containsKey(axis)) {
                     axes.get(axis).addEvents(events);
                 } else {
-                    axes.put(axis, new RotationEventHandlerV3(events, axis));
+                    axes.put(axis, new RotationEventHandlerV3(events, axis, map));
                 }
             });
         }
     }
 
-    public void linkTranslationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<TranslationEvent>> translationEvents) {
+    public void linkTranslationEvents(int lightID, HashMap<TransformState.Axis, ArrayList<TranslationEvent>> translationEvents, BeatmapController map) {
         if (!lightGroupV3.lights.containsKey(lightID)) return;
         if (!translationHandlers.containsKey(lightID)) {
             translationHandlers.put(lightID, new HashMap<>());
@@ -61,7 +62,7 @@ public class GroupEventHandlerV3 {
                 if (axes.containsKey(axis)) {
                     axes.get(axis).addEvents(events);
                 } else {
-                    axes.put(axis, new TranslationEventHandler(events, axis));
+                    axes.put(axis, new TranslationEventHandler(events, axis, map));
                 }
             });
         }

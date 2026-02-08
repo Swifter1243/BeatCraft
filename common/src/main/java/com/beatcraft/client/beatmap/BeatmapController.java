@@ -62,6 +62,7 @@ public class BeatmapController {
     public ReplayHandler replayHandler;
     public Replayer replayer;
     private boolean playing = false;
+    public boolean isExpertPlus = false;
 
     public float playbackSpeed = 1.0f;
     public boolean isInWall = false;
@@ -165,6 +166,7 @@ public class BeatmapController {
                 audio.close();
             }
 
+            isExpertPlus = info.isExpertPlus();
             audio = AudioController.playMapSong(this.info.getSongFilename());
             audio.setSpeed(playbackSpeed);
             setDifficultyFromFile(info.getBeatmapLocation().toString(), this.info);

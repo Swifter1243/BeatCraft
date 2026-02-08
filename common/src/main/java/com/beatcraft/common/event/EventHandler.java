@@ -1,5 +1,6 @@
 package com.beatcraft.common.event;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.utils.MathUtil;
 
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ public abstract class EventHandler<D, E extends IEvent> {
     protected final List<E> upcoming = new ArrayList<>();
     protected final D initialState;
     protected D state;
+
+    protected final BeatmapController map;
 
     public List<E> getEventsInRange(float start, float end) {
         var out = new ArrayList<E>();
@@ -27,9 +30,10 @@ public abstract class EventHandler<D, E extends IEvent> {
         return out;
     }
 
-    public EventHandler(List<E> events, D initialState) {
+    public EventHandler(List<E> events, D initialState, BeatmapController map) {
         this.events = new ArrayList<>(events);
         this.initialState = initialState;
+        this.map = map;
         reset();
     }
 

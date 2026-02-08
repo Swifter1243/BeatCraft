@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.event.events.LightEventV2;
 
@@ -10,11 +11,11 @@ public class LightGroupEventHandlerV2 {
     private final LightGroupV2 lightGroupV2;
     private final HashMap<Integer, LightEventHandlerV2> handlers = new HashMap<>();
 
-    public LightGroupEventHandlerV2(LightGroupV2 group, List<LightEventV2> events) {
+    public LightGroupEventHandlerV2(LightGroupV2 group, List<LightEventV2> events, BeatmapController map) {
         lightGroupV2 = group;
         group.lights.forEach((lightID, light) -> {
             var relevantEvents = events.stream().filter(o -> o.containsLightID(lightID)).toList();
-            handlers.put(lightID, new LightEventHandlerV2(relevantEvents));
+            handlers.put(lightID, new LightEventHandlerV2(relevantEvents, map));
         });
     }
 

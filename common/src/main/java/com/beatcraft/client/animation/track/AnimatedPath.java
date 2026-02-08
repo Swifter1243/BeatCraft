@@ -3,6 +3,7 @@ package com.beatcraft.client.animation.track;
 import com.beatcraft.client.animation.AnimationPropertyContainer;
 import com.beatcraft.client.animation.PathState;
 import com.beatcraft.client.animation.event.*;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -13,20 +14,20 @@ import java.util.ArrayList;
 public class AnimatedPath extends AnimationPropertyContainer<AnimatedPathEventHandler<Float>, AnimatedPathEventHandler<Vector3f>, AnimatedPathEventHandler<Vector4f>, AnimatedPathEventHandler<Quaternionf>, AnimatedPathEventHandler<Color>> {
     private final PathState currentState = new PathState();
 
-    public AnimatedPath() {
-        offsetPosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        offsetWorldRotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        localRotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        localPosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        definitePosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        position = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        rotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        scale = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        dissolve = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        dissolveArrow = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        interactable = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        time = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
-        color = new AnimatedPathEventHandler<>(new ArrayList<>(), null);
+    public AnimatedPath(BeatmapController map) {
+        offsetPosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        offsetWorldRotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        localRotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        localPosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        definitePosition = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        position = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        rotation = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        scale = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        dissolve = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        dissolveArrow = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        interactable = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        time = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
+        color = new AnimatedPathEventHandler<>(new ArrayList<>(), null, map);
     }
 
     public void seek(float beat) {

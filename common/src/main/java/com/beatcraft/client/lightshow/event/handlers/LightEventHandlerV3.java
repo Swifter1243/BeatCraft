@@ -1,5 +1,7 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.BeatcraftClient;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.event.events.LightEventV3;
 import com.beatcraft.client.lightshow.lights.LightState;
@@ -12,8 +14,8 @@ import java.util.List;
 public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> {
 
 
-    public LightEventHandlerV3(List<LightEventV3> events) {
-        super(events, new LightState(new Color(0, 0, 0, 0), 0));
+    public LightEventHandlerV3(List<LightEventV3> events, BeatmapController map) {
+        super(events, new LightState(new Color(0, 0, 0, 0), 0), map);
     }
 
     public void addEvents(List<LightEventV3> events) {
@@ -32,6 +34,12 @@ public class LightEventHandlerV3 extends EventHandler<LightState, LightEventV3> 
     }
 
     private float calcOscillation(float startBeat, float currentBeat, float frequency, boolean fade) {
+        if (
+            (map.isExpertPlus && !BeatcraftClient.playerConfig.preferences.doStrobingEffectsXP())
+            || ((!map.isExpertPlus) && !BeatcraftClient.playerConfig.preferences.doStrobingEffects())
+        ) {
+            return 1.0f;
+        }
         float beatsSinceStart = currentBeat - startBeat;
 
         float totalCycles = beatsSinceStart * frequency;

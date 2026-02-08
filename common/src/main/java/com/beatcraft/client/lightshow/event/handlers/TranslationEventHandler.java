@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.event.handlers;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.common.event.EventHandler;
 import com.beatcraft.client.lightshow.event.events.TranslationEvent;
@@ -9,8 +10,8 @@ import net.minecraft.util.Mth;
 import java.util.List;
 
 public class TranslationEventHandler extends EventHandler<TransformState, TranslationEvent> {
-    public TranslationEventHandler(List<TranslationEvent> events, TransformState.Axis initialAxis) {
-        super(events, new TransformState(initialAxis, 0));
+    public TranslationEventHandler(List<TranslationEvent> events, TransformState.Axis initialAxis, BeatmapController map) {
+        super(events, new TransformState(initialAxis, 0), map);
     }
 
     public void addEvents(List<TranslationEvent> events) {

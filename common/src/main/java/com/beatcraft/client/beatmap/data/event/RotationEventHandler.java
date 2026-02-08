@@ -1,12 +1,13 @@
 package com.beatcraft.client.beatmap.data.event;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.event.EventHandler;
 
 import java.util.ArrayList;
 
 public class RotationEventHandler extends EventHandler<Float, RotationEvent> {
-    public RotationEventHandler(ArrayList<RotationEvent> elements) {
-        super(elements, 0F);
+    public RotationEventHandler(ArrayList<RotationEvent> elements, BeatmapController map) {
+        super(elements, 0F, map);
     }
 
     @Override

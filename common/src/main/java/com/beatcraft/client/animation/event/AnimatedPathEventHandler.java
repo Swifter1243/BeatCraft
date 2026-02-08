@@ -1,6 +1,7 @@
 package com.beatcraft.client.animation.event;
 
 import com.beatcraft.client.animation.pointdefinition.PointDefinition;
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.event.EventHandler;
 
 import java.util.ArrayList;
@@ -8,8 +9,8 @@ import java.util.ArrayList;
 public class AnimatedPathEventHandler<T> extends EventHandler<Path<T>, AnimatedPathEvent<T>> {
     private PointDefinition<T> previousProperty = null;
 
-    public AnimatedPathEventHandler(ArrayList<AnimatedPathEvent<T>> events, Path<T> initialState) {
-        super(events, initialState);
+    public AnimatedPathEventHandler(ArrayList<AnimatedPathEvent<T>> events, Path<T> initialState, BeatmapController map) {
+        super(events, initialState, map);
     }
 
     @Override

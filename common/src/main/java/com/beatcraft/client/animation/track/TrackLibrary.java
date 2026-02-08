@@ -1,5 +1,7 @@
 package com.beatcraft.client.animation.track;
 
+import com.beatcraft.client.beatmap.BeatmapController;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -7,11 +9,17 @@ import java.util.Set;
 public class TrackLibrary {
     private final HashMap<String, Track> trackMap = new HashMap<>();
 
+    private final BeatmapController map;
+
+    public TrackLibrary(BeatmapController map) {
+        this.map = map;
+    }
+
     public Track getOrCreateTrack(String name) {
         if (trackMap.containsKey(name)) {
             return trackMap.get(name);
         } else {
-            Track track = new Track();
+            Track track = new Track(map);
             trackMap.put(name, track);
             return track;
         }

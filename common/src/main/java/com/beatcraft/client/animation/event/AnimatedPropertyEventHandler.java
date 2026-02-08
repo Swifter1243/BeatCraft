@@ -1,12 +1,13 @@
 package com.beatcraft.client.animation.event;
 
+import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.event.EventHandler;
 
 import java.util.ArrayList;
 
 public class AnimatedPropertyEventHandler<T> extends EventHandler<T, AnimatedPropertyEvent<T>> {
-    public AnimatedPropertyEventHandler(ArrayList<AnimatedPropertyEvent<T>> elements, T initialState) {
-        super(elements, initialState);
+    public AnimatedPropertyEventHandler(ArrayList<AnimatedPropertyEvent<T>> elements, T initialState, BeatmapController map) {
+        super(elements, initialState, map);
     }
 
     @Override

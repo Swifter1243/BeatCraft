@@ -58,7 +58,8 @@ public abstract class EnvironmentV3 extends Environment {
         List<LightEventV3> lightEvents,
         HashMap<TransformState.Axis,ArrayList<RotationEventV3>> rotationEvents,
         HashMap<TransformState.Axis,ArrayList<TranslationEvent>> translationEvents,
-        List<Integer> floatFxEvents
+        List<Integer> floatFxEvents,
+        BeatmapController map
     );
 
     private static final TransformState.Axis[] rotationAxes = new TransformState.Axis[]{
@@ -727,7 +728,8 @@ public abstract class EnvironmentV3 extends Environment {
                     eventBuilder.getLightEvents(group, lightID),
                     eventBuilder.getRotationEvents(group, lightID),
                     eventBuilder.getTranslationEvents(group, lightID),
-                    new ArrayList<>()
+                    new ArrayList<>(),
+                    difficulty.mapController
                 );
             }
         }
@@ -782,7 +784,8 @@ public abstract class EnvironmentV3 extends Environment {
                     eventBuilder.getLightEvents(group, lightID),
                     eventBuilder.getRotationEvents(group, lightID),
                     eventBuilder.getTranslationEvents(group, lightID),
-                    new ArrayList<>()
+                    new ArrayList<>(),
+                    difficulty.mapController
                 );
             }
         }

@@ -251,6 +251,8 @@ public class PlayerConfig {
         public Option<Integer> trailIntensity = new Option<>(30, "How many frames to save for saber trails", "[No performance impact]");
         public Option<HealthStyle> healthStyle = new Option<>(HealthStyle.Hearts, "Energy bar style", "Classic: the classic beat saber look\nHearts: minecraft hearts are used instead of a bar");
         public Option<String> selectedSaber = new Option<>("#builtin:default", "", "");
+        public Option<Boolean> doStrobingEffects = new Option<>(true, "Whether to do strobe effects in lightshows", "[No performance impact]");
+        public Option<Boolean> doStrobingEffectsXP = new Option<>(true, "Whether to do strobe effects in lightshows", "[No performance impact]");
 
         public boolean reducedDebris() { return reducedDebris.get(); }
         public void reducedDebris(boolean set) { reducedDebris.set(set); }
@@ -268,6 +270,11 @@ public class PlayerConfig {
         public String selectedSaber() { return selectedSaber.get(); }
         public void selectedSaber(String set) { selectedSaber.set(set); }
 
+        public boolean doStrobingEffects() { return doStrobingEffects.get(); }
+        public void doStrobingEffects(boolean set) { doStrobingEffects.set(set); }
+
+        public boolean doStrobingEffectsXP() { return doStrobingEffectsXP.get(); }
+        public void doStrobingEffectsXP(boolean set) { doStrobingEffectsXP.set(set); }
 
         public JsonObject getJson() {
             var json = new JsonObject();
@@ -276,6 +283,8 @@ public class PlayerConfig {
             json.addProperty("trail_intensity", trailIntensity.value);
             json.addProperty("health_style", healthStyle.value.ordinal());
             json.addProperty("selected_saber", selectedSaber.value);
+            json.addProperty("do_strobing", doStrobingEffects.value);
+            json.addProperty("do_strobing_x+", doStrobingEffectsXP.value);
 
             return json;
         }
@@ -298,6 +307,8 @@ public class PlayerConfig {
             trailIntensity.value = JsonUtil.getOrDefault(json, "trail_intensity", JsonElement::getAsInt, trailIntensity.value);
             healthStyle.value = HealthStyle.values()[Math.clamp(JsonUtil.getOrDefault(json, "health_style", JsonElement::getAsInt, healthStyle.value.ordinal()), 0, HealthStyle.values().length)];
             selectedSaber.value = JsonUtil.getOrDefault(json, "selected_saber", JsonElement::getAsString, selectedSaber.value);
+            doStrobingEffects.value = JsonUtil.getOrDefault(json, "do_strobing", JsonElement::getAsBoolean, doStrobingEffects.value);
+            doStrobingEffectsXP.value = JsonUtil.getOrDefault(json, "do_strobing_x+", JsonElement::getAsBoolean, doStrobingEffectsXP.value);
         }
     }
 
