@@ -73,6 +73,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
 
     private static final Vector3f LIGHT_GAP = new Vector3f(0, 0, 3.5f);
 
+    private static final int LIGHT_LAYERS = 4;
+
     private HashMap<Integer, Pair<LightGroupV3, GroupEventHandlerV3>> eventGroups;
 
     @Override
@@ -117,7 +119,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -140,7 +143,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y-OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -163,7 +167,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -186,7 +191,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, OUTER_LENGTH, OUTER_FADE_LENGTH, OUTER_SPREAD,
                 OUTER_SEGMENTS,
                 new Vector3f(-OUTER_OFFSET_X, CENTER_Y+OUTER_OFFSET_Y, OUTER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -212,7 +218,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf()//.rotationY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -235,7 +242,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y-INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf()//.rotationY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -258,7 +266,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -281,7 +290,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, INNER_LENGTH, INNER_FADE_LENGTH, INNER_SPREAD,
                 INNER_SEGMENTS,
                 new Vector3f(-INNER_OFFSET_X, CENTER_Y+INNER_OFFSET_Y, INNER_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(180 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -306,7 +316,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -329,7 +340,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y-SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -352,7 +364,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(90 * Mth.DEG_TO_RAD)//.rotateY(90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -375,7 +388,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, SIDE_LENGTH, SIDE_FADE_LENGTH, SIDE_SPREAD,
                 SIDE_SEGMENTS,
                 new Vector3f(-SIDE_OFFSET_X, CENTER_Y+SIDE_OFFSET_Y, SIDE_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationZ(-90 * Mth.DEG_TO_RAD)//.rotateY(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -404,7 +418,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                     CENTER_Y+DISTANT_H+(DISTANT_H*2/9f),
                     DISTANT_Z
                 ),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationX(-90 * Mth.DEG_TO_RAD)//.rotateY(180 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -427,7 +442,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(-DISTANT_W, (CENTER_Y-DISTANT_H)-(DISTANT_H*2/9f), DISTANT_Z),
-                new Quaternionf()
+                new Quaternionf(),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotationX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -450,7 +466,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f(DISTANT_W+(DISTANT_W*2/11f), CENTER_Y-DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotateY(90 * Mth.DEG_TO_RAD)
+                new Quaternionf().rotateY(90 * Mth.DEG_TO_RAD),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotateX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(
@@ -473,7 +490,8 @@ public class WeaveEnvironment extends EnvironmentV3 {
                 0.125f, 0.075f, DISTANT_LENGTH, DISTANT_FADE_LENGTH, DISTANT_SPREAD,
                 new float[0],
                 new Vector3f((-DISTANT_W)-(DISTANT_W*2/11f), CENTER_Y+DISTANT_H, DISTANT_Z),
-                new Quaternionf().rotateY(-90 * Mth.DEG_TO_RAD)
+                new Quaternionf().rotateY(-90 * Mth.DEG_TO_RAD),
+                LIGHT_LAYERS
             ).withRotation(
                 new Quaternionf().rotateX(-90 * Mth.DEG_TO_RAD)
             ).withRotationSwizzle(

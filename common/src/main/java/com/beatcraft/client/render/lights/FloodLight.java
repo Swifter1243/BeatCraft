@@ -1,5 +1,6 @@
 package com.beatcraft.client.render.lights;
 
+import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightObject;
@@ -29,39 +30,28 @@ public class FloodLight extends LightObject {
     private final float fadeLength;
     private final float spread;
     private final float[] segmentLengths;
+    private final int layerCount;
 
-    private List<Pair<Vector3f, Float>[]> facesInner;
-    private List<Pair<Vector3f, Float>[]> fadeFacesInner;
-    private List<Pair<Vector3f, Float>[]> linesInner;
+    private Layer[] layers;
 
-    private List<Pair<Vector3f, Float>[]> facesMiddle;
-    private List<Pair<Vector3f, Float>[]> fadeFacesMiddle;
-    private List<Pair<Vector3f, Float>[]> linesMiddle;
+    private static final float MIN_WIDTH_SCALE = 0.5f;
+    private static final float MIN_LENGTH_SCALE = 0.2f;
+    private static final float MIN_SPREAD_MULTIPLIER = 1.0f;
 
-    private List<Pair<Vector3f, Float>[]> facesOuter;
-    private List<Pair<Vector3f, Float>[]> fadeFacesOuter;
-    private List<Pair<Vector3f, Float>[]> linesOuter;
-
-    private static final float INNER_WIDTH_SCALE = 0.5f;
-    private static final float INNER_LENGTH_SCALE = 0.2f;
-    private static final float INNER_SPREAD_MULTIPLIER = 1.0f;
-
-    private static final float MIDDLE_WIDTH_SCALE = 0.75f;
-    private static final float MIDDLE_LENGTH_SCALE = 0.85f;
-    private static final float MIDDLE_SPREAD_MULTIPLIER = 1.3f;
-
-    private static final float OUTER_WIDTH_SCALE = 1.0f;
-    private static final float OUTER_LENGTH_SCALE = 1.0f;
-    private static final float OUTER_SPREAD_MULTIPLIER = 1.0f;
+    private static class Layer {
+        List<Pair<Vector3f, Float>[]> faces;
+        List<Pair<Vector3f, Float>[]> fadeFaces;
+        List<Pair<Vector3f, Float>[]> lines;
+    }
 
     public FloodLight cloneOffset(Vector3f offset) {
-        return (FloodLight) new FloodLight(mapController, startOffset, width, length, fadeLength, spread, segmentLengths, position.add(offset, new Vector3f()), new Quaternionf(orientation))
+        return (FloodLight) new FloodLight(mapController, startOffset, width, length, fadeLength, spread, segmentLengths, position.add(offset, new Vector3f()), new Quaternionf(orientation), layerCount)
             .withRotation(new Quaternionf(rotation))
             .withTranslationSwizzle(translationSwizzle, translationPolarity)
             .withRotationSwizzle(rotationSwizzle, rotationPolarity, quaternionBuilder);
     }
 
-    public FloodLight(BeatmapController map, float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths, Vector3f pos, Quaternionf rot) {
+    public FloodLight(BeatmapController map, float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths, Vector3f pos, Quaternionf rot, int layerCount) {
         super(map);
         this.startOffset = startOffset;
         this.width = width;
@@ -69,6 +59,7 @@ public class FloodLight extends LightObject {
         this.fadeLength = fadeLength;
         this.spread = spread;
         this.segmentLengths = segmentLengths;
+        this.layerCount = Math.max(1, layerCount);
         position = pos;
         orientation = rot;
         setDimensions(startOffset, width, length, fadeLength, spread, segmentLengths);
@@ -140,33 +131,26 @@ public class FloodLight extends LightObject {
     }
 
     public void setDimensions(float startOffset, float width, float length, float fadeLength, float spread, float[] segmentLengths) {
-        setupLayer(startOffset, width * INNER_WIDTH_SCALE, length * INNER_LENGTH_SCALE,
-            fadeLength * INNER_LENGTH_SCALE, spread * INNER_SPREAD_MULTIPLIER, segmentLengths,
-            layer -> {
-                facesInner = layer.faces;
-                fadeFacesInner = layer.fadeFaces;
-                linesInner = layer.lines;
-            });
+        layers = new Layer[layerCount];
 
-        setupLayer(startOffset, width * MIDDLE_WIDTH_SCALE, length * MIDDLE_LENGTH_SCALE,
-            fadeLength * MIDDLE_LENGTH_SCALE, spread * MIDDLE_SPREAD_MULTIPLIER, segmentLengths,
-            layer -> {
-                facesMiddle = layer.faces;
-                fadeFacesMiddle = layer.fadeFaces;
-                linesMiddle = layer.lines;
-            });
+        for (int i = 0; i < layerCount; i++) {
+            float t = layerCount > 1 ? (float) i / (layerCount - 1) : 1.0f;
 
-        setupLayer(startOffset, width * OUTER_WIDTH_SCALE, length * OUTER_LENGTH_SCALE,
-            fadeLength * OUTER_LENGTH_SCALE, spread * OUTER_SPREAD_MULTIPLIER, segmentLengths,
-            layer -> {
-                facesOuter = layer.faces;
-                fadeFacesOuter = layer.fadeFaces;
-                linesOuter = layer.lines;
-            });
+            float widthT = Easing.easeOutQuad(t);
+            float widthScale = Mth.lerp(widthT, MIN_WIDTH_SCALE, 1.0f);
+
+            float lengthT = Easing.easeInOutQuad(t);
+            float lengthScale = Mth.lerp(lengthT, MIN_LENGTH_SCALE, 1.0f);
+
+            float spreadScale = Mth.lerp(t, MIN_SPREAD_MULTIPLIER, 1.0f);
+
+            layers[i] = setupLayer(startOffset, width * widthScale, length * lengthScale,
+                fadeLength * lengthScale, spread * spreadScale, segmentLengths);
+        }
     }
 
-    private void setupLayer(float startOffset, float width, float length, float fadeLength, float spread,
-                            float[] segmentLengths, java.util.function.Consumer<LayerGeometry> setter) {
+    private Layer setupLayer(float startOffset, float width, float length, float fadeLength, float spread,
+                             float[] segmentLengths) {
         var maxY = startOffset + length;
         var fadeY = startOffset + fadeLength;
         var delta = width / 2f;
@@ -206,18 +190,12 @@ public class FloodLight extends LightObject {
             cy = y;
         }
 
-        LayerGeometry layer = new LayerGeometry();
+        Layer layer = new Layer();
         layer.faces = getFaces(baseDimensions, spread, true, 0, 1);
         layer.fadeFaces = List.copyOf(faces0);
         layer.lines = getLines(baseDimensions, spread);
 
-        setter.accept(layer);
-    }
-
-    private static class LayerGeometry {
-        List<Pair<Vector3f, Float>[]> faces;
-        List<Pair<Vector3f, Float>[]> fadeFaces;
-        List<Pair<Vector3f, Float>[]> lines;
+        return layer;
     }
 
     @Override
@@ -290,11 +268,9 @@ public class FloodLight extends LightObject {
 
         var mat = createTransformMatrix(transform, false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
 
-        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesOuter, c, brightnessScale);
-
-        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesMiddle, c, brightnessScale);
-
-        renderBloomLayer(buffer, cameraRotation, mat, fadeFacesInner, c, brightnessScale);
+        for (var layer : layers) {
+            renderBloomLayer(buffer, cameraRotation, mat, layer.fadeFaces, c, brightnessScale);
+        }
     }
 
     private void renderBloomLayer(BufferBuilder buffer, Quaternionf cameraRotation, Matrix4f mat,
@@ -331,19 +307,14 @@ public class FloodLight extends LightObject {
         var c = new Color(color);
 
         if (isBloomfog == 1 && !mirrorDraw) {
-            renderLines(buffer, cameraRotation, mat, linesOuter, color);
-            renderLines(buffer, cameraRotation, mat, linesMiddle, color);
-            renderLines(buffer, cameraRotation, mat, linesInner, color);
+            for (int i = layers.length - 1; i >= 0; i--) {
+                renderLines(buffer, cameraRotation, mat, layers[i].lines, color);
+            }
         } else {
-            var iterFacesOuter = isBloomfog > 0 ? facesOuter : fadeFacesOuter;
-            var iterFacesMiddle = isBloomfog > 0 ? facesMiddle : fadeFacesMiddle;
-            var iterFacesInner = isBloomfog > 0 ? facesInner : fadeFacesInner;
-
-            renderFaces(buffer, cameraRotation, mat, iterFacesOuter, c, isBloomfog, mirrorDraw);
-
-            renderFaces(buffer, cameraRotation, mat, iterFacesMiddle, c, isBloomfog, mirrorDraw);
-
-            renderFaces(buffer, cameraRotation, mat, iterFacesInner, c, isBloomfog, mirrorDraw);
+            for (var layer : layers) {
+                var faces = isBloomfog > 0 ? layer.faces : layer.fadeFaces;
+                renderFaces(buffer, cameraRotation, mat, faces, c, isBloomfog, mirrorDraw);
+            }
         }
     }
 
