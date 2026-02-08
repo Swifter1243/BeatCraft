@@ -294,21 +294,37 @@ public class EventBuilder {
     private final HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<RotationEventV3>>> rotationEvents = new HashMap<>();
     private final HashMap<GroupKey, HashMap<TransformState.Axis, ArrayList<TranslationEvent>>> translationEvents = new HashMap<>();
 
+    private final ArrayList<RawLightEventV3> rawBoxedLightEvents = new ArrayList<>();
+    private final ArrayList<RawRotationEventV3> rawBoxedRotationEvents = new ArrayList<>();
+    private final ArrayList<RawTranslationEvent> rawBoxedTranslationEvents = new ArrayList<>();
+
     public void addRawLightEvents(List<RawLightEventV3> events) {
-        addRawEvents(rawLightEvents, events);
+        rawBoxedLightEvents.addAll(events);
     }
 
     public void addRawRotationEvents(List<RawRotationEventV3> events) {
-        addRawEvents(rawRotationEvents, events);
+        rawBoxedRotationEvents.addAll(events);
     }
 
     public void addRawTranslationEvents(List<RawTranslationEvent> events) {
-        addRawEvents(rawTranslationEvents, events);
+        rawBoxedTranslationEvents.addAll(events);
     }
 
-    private <E extends RawEvent> void addRawEvents(
+    public void collapseRawLightEvents() {
+        collapseRawEvents(rawLightEvents, rawBoxedLightEvents);
+    }
+
+    public void collapseRawRotationEvents() {
+        collapseRawEvents(rawRotationEvents, rawBoxedRotationEvents);
+    }
+
+    public void collapseRawTranslationEvents() {
+        collapseRawEvents(rawTranslationEvents, rawBoxedTranslationEvents);
+    }
+
+    private <E extends RawEvent> void collapseRawEvents(
         ArrayList<E> rawEventsList,
-        List<? extends E> newEvents
+        ArrayList<? extends E> newEvents
     ) {
         // for (E event : newEvents) {
         //     var id = event.getEventId();
@@ -323,13 +339,12 @@ public class EventBuilder {
         //
         //         if (ex.getTrueBeat() > trueBeat) {
         //             rawEventsList.remove(i);
-        //         } else { break; }
+        //         }
         //     }
         // }
         rawEventsList.addAll(newEvents);
+        newEvents.clear();
     }
-
-
 
     public List<LightEventV3> getLightEvents(int group, int lightID) {
         return lightEvents.computeIfAbsent(
@@ -377,7 +392,7 @@ public class EventBuilder {
         return Float.compare(a.getBeat(), b.getBeat());
     }
 
-    public void clipShadowedEvents() {
+    public void sortEvents() {
         rawLightEvents.sort(EventBuilder::rawEventComparator);
         rawRotationEvents.sort(EventBuilder::rawEventComparator);
         rawTranslationEvents.sort(EventBuilder::rawEventComparator);

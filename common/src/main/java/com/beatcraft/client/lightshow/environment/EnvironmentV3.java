@@ -146,6 +146,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                     isFirst.set(false);
                 });
+                builder.collapseRawLightEvents();
 
             });
         });
@@ -218,6 +219,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                     isFirst.set(false);
                 });
+                builder.collapseRawRotationEvents();
 
             });
 
@@ -289,6 +291,7 @@ public abstract class EnvironmentV3 extends Environment {
 
                     isFirst.set(false);
                 });
+                builder.collapseRawTranslationEvents();
 
             });
 
@@ -710,7 +713,7 @@ public abstract class EnvironmentV3 extends Environment {
         preProcessLightEventsV3(eventBuilder, rawColorEventBoxes);
         preProcessRotationEventsV3(eventBuilder, rawRotationEvents);
         preProcessTranslationEventsV3(eventBuilder, rawTranslationEvents);
-        eventBuilder.clipShadowedEvents();
+        eventBuilder.sortEvents();
         buildLightEvents(eventBuilder, difficulty);
         buildRotationEvents(eventBuilder, difficulty);
         buildTranslationEvents(eventBuilder, difficulty);
@@ -765,7 +768,7 @@ public abstract class EnvironmentV3 extends Environment {
 
         });
 
-        eventBuilder.clipShadowedEvents();
+        eventBuilder.sortEvents();
         buildLightEvents(eventBuilder, difficulty);
         buildRotationEvents(eventBuilder, difficulty);
         buildTranslationEvents(eventBuilder, difficulty);
