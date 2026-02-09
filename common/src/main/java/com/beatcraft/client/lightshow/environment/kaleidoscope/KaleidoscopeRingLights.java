@@ -9,6 +9,7 @@ import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.client.render.BeatcraftRenderer;
+import com.beatcraft.client.render.lights.FloodLight;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
@@ -46,6 +47,15 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
             }
         }
 
+        for (int i = 41; i < 61; ++i) {
+            map.put(i, new FloodLight(
+                beatmap,
+                4f, 4, 250, 200, 2f,
+                new float[]{20f},
+                new Vector3f(), new Quaternionf(), 1)
+            );
+        }
+
         return map;
     }
 
@@ -80,11 +90,13 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
 
         outerRing = new RingLightHandler(
             map, this::createOuter, this::linkOuter,
-            10, new Vector3f(), 0,
+            10, new Vector3f(0, 0, 250), 0,
             new RingLightHandler.PresetPositions(
                 new float[]{
                     -90 * rpd,
-                    90 * rpd
+                    -45 * rpd,
+                    90 * rpd,
+                    45 * rpd,
                 },
                 new float[]{
                     0,
@@ -93,16 +105,21 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
                     3 * rpd,
                     4 * rpd,
                     5 * rpd,
+                    10 * rpd,
+                    15 * rpd,
                     -1 * rpd,
                     -2 * rpd,
                     -3 * rpd,
                     -4 * rpd,
-                    -5 * rpd
+                    -5 * rpd,
+                    -10 * rpd,
+                    -15 * rpd,
                 }
             )
         );
 
         innerRing.spinTo(0, 45f * rpd, 0, 0);
+        outerRing.spinTo(0, 10 * rpd, 0, 0);
 
     }
 
@@ -116,8 +133,12 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         return light;
     }
 
+    private int linkOuterIndex = 41;
     private LightObject linkOuter(BeatmapController map, Vector3f pos, Quaternionf ori) {
-        return new DistantLight(mapController, pos, ori);
+        var light = lights.get(linkOuterIndex++);
+        light.setPosition(pos);
+        light.setRotation(ori);
+        return light;
     }
 
     private int fetchIndex = 1;
@@ -127,8 +148,9 @@ public class KaleidoscopeRingLights extends ActionLightGroupV2 {
         return light;
     }
 
+    private int fetchIndexOuter = 41;
     private LightObject createOuter(TriFunction<BeatmapController, Vector3f, Quaternionf, LightObject> f) {
-        return f.apply(mapController, new Vector3f(0, 0, 50), new Quaternionf());
+        return lights.get(fetchIndexOuter++);
     }
 
 

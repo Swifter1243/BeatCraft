@@ -78,6 +78,12 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
         }
 
+        for (int i = 41; i < 61; ++i) {
+            // back.put(bi++, ringLights.lights.get(i)); // TODO: make better lights
+            ringLights.lights.remove(i);
+        }
+
+
         super.setup();
     }
 
