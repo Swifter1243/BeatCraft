@@ -179,6 +179,19 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatcraftClient.playerConfig.quality.renderEnvironment() ? "ON" : "OFF",
                 new Vector3f(-100, -123, 0)),
 
+
+            SettingsMenuPanel.getOptionModifier("Flickering Effects",
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffects(false),
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffects(true),
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffects() ? "ON" : "OFF",
+                new Vector3f(-100, -71, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Flickering Effects X+",
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffectsXP(false),
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffectsXP(true),
+                () -> BeatcraftClient.playerConfig.preferences.doStrobingEffectsXP() ? "ON" : "OFF",
+                new Vector3f(-100, -19, 0)),
+
             SettingsMenuPanel.getOptionModifier("Bloomfog",
                 () -> BeatcraftClient.playerConfig.quality.doBloomfog(false),
                 () -> BeatcraftClient.playerConfig.quality.doBloomfog(true),
