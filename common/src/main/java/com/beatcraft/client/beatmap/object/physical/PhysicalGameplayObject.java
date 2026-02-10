@@ -62,7 +62,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public float getDisappearBeat() {
-        return getData().getBeat() - data.getJumps().halfDuration() * 0.4f;
+        return getData().getBeat() - data.getJumps().halfDuration() * 0.075f;
     }
 
     public float getJumpOutBeat() {
@@ -105,6 +105,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         AnimationState animatedPropertyState = data.getTrackContainer().getAnimatedPropertyState();
 
         beat = applyTimeRemapping(beat, animatedPropertyState);
+        beat = mapController.difficulty.getInfo().getAudioInfo().remapBeat(beat, data.getBeat());
         if (jumpEnded(beat)) {
             despawn();
             return;

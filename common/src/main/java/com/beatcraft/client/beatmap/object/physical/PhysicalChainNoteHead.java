@@ -62,18 +62,19 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
         MemoryPool.release(renderRotation);
 
         var localDissolve = getBaseDissolve();
+        var localArrowDissolve = getArrowDissolve();
         if (mapController.isModifierActive("Ghost Notes")) {
+            var s = this.getJumpInBeat();
+            var e = this.getDisappearBeat();
+            var t = mapController.currentBeat;
             if (mapController.firstBeat < this.data.getBeat()) {
                 localDissolve = 1;
             } else {
-                var s = this.getJumpInBeat();
-                var e = this.getDisappearBeat();
-                var t = mapController.currentBeat;
                 localDissolve = Math.clamp(MathUtil.inverseLerp(s, e, t), 0, 1);
             }
+            localArrowDissolve = Math.clamp(MathUtil.inverseLerp(s, e, t), 0, 1);
         }
 
-        var localArrowDissolve = getArrowDissolve();
         if (mapController.isModifierActive("Disappearing Arrows")) {
             var s = this.getSpawnBeat();
             var e = this.getDisappearBeat();

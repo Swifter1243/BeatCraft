@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AudioInfo {
 
@@ -116,5 +117,21 @@ public class AudioInfo {
 
         return t;
     }
+
+    public float remapBeat(float base, float approx) {
+        float baseTime = getTime(base);
+        float approxTime = getTime(approx);
+
+        float dt = approxTime - baseTime;
+
+        float bpmA = getBpm(approx);
+
+        float secondsPerBeat = 60f / bpmA;
+
+        float beatOffset = dt / secondsPerBeat;
+
+        return approx - beatOffset;
+    }
+
 
 }

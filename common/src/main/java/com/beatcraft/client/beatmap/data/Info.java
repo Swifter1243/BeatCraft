@@ -26,6 +26,10 @@ public class Info {
 
     private final HashMap<String, StyleSet> styleSets = new HashMap<>();
 
+    public AudioInfo getAudioInfo() {
+        return audioInfo;
+    }
+
     public float getBeat(float time) {
         return audioInfo.getBeat(time);
     }
