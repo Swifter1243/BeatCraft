@@ -694,7 +694,7 @@ public class LightMesh {
 
 
         var q = MemoryPool.newQuaternionf();
-        q.set(MirrorHandler.invCameraRotation);
+        q.set(BeatcraftRenderer.fullCameraRotation);
         var p = MemoryPool.newVector3f();
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         p.set(cameraPos).negate();
@@ -720,7 +720,7 @@ public class LightMesh {
 
         Matrix4f worldTransform = new Matrix4f();
         worldTransform.translate(cameraPos);
-        worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
+        worldTransform.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
         GlUtil.setMat4f(shaderProgram, "world_transform", worldTransform);
 
         RenderSystem.enableDepthTest();

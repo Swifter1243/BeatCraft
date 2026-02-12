@@ -33,7 +33,7 @@ public class MirrorHandler {
 
     private static final ArrayList<MirrorHandler> mirrors = new ArrayList<>();
 
-    public static Quaternionf invCameraRotation = new Quaternionf();
+    // public static Quaternionf invCameraRotation = new Quaternionf();
 
     // this is for the solid block faces of mirror blocks, not mirrored objects
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> plainMirrorCalls = new ArrayList<>();
@@ -228,9 +228,11 @@ public class MirrorHandler {
 
         var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
+        var q = BeatcraftRenderer.fullCameraRotation.conjugate(MemoryPool.newQuaternionf());
         for (var call : drawCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
+            call.accept(buffer, cameraPos, q);
         }
+        MemoryPool.release(q);
 
         var buff = buffer.build();
         if (buff != null) {
@@ -297,7 +299,7 @@ public class MirrorHandler {
         Matrix4f worldTransform = new Matrix4f();
         worldTransform.translate(cameraPos);
 
-        var q = MemoryPool.newQuaternionf(invCameraRotation).conjugate();
+        var q = MemoryPool.newQuaternionf(BeatcraftRenderer.fullCameraRotation).conjugate();
         worldTransform.rotate(q);
 
         if (BeatcraftClient.playerConfig.quality.doMirror()) {
@@ -310,7 +312,7 @@ public class MirrorHandler {
         }
         plainMirrorCalls.clear();
         if (!BeatcraftClient.playerConfig.quality.doMirror()) {
-            q.set(invCameraRotation);
+            q.set(BeatcraftRenderer.fullCameraRotation);
             q.conjugate();
             for (var call : drawCalls) {
                 call.accept(buffer, cameraPos, q);
@@ -383,7 +385,7 @@ public class MirrorHandler {
         buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : drawCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation.conjugate(new Quaternionf()));
+            call.accept(buffer, cameraPos, BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
         }
         drawCalls.clear();
 

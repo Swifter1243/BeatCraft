@@ -37,6 +37,8 @@ public class BeatcraftRenderer {
 
     private static final ArrayList<Runnable> saberRenderCalls = new ArrayList<>();
 
+    public static final Quaternionf fullCameraRotation = new Quaternionf();
+
     public static void init() {
         bloomfog = Bloomfog.create();
 
@@ -74,15 +76,15 @@ public class BeatcraftRenderer {
 
         if (ClientDataHolderVR.getInstance().vr != null) {
             var rotationMatrix = RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
-            MirrorHandler.invCameraRotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
+            rotationMatrix.getUnnormalizedRotation(fullCameraRotation);
         } else {
-            MirrorHandler.invCameraRotation = camera.rotation().conjugate(new Quaternionf());
+            fullCameraRotation.set(camera.rotation()).conjugate();
             float pitch = camera.getXRot();
             Vector3f up = camera.getUpVector();
             Vector3f left = camera.getLeftVector();
             float roll = Math.abs(pitch) >= 90 ? 0 : Bloomfog.calculateRoll(up, left);
             Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
-            rollQuat.mul(MirrorHandler.invCameraRotation, MirrorHandler.invCameraRotation);
+            rollQuat.mul(fullCameraRotation, fullCameraRotation);
         }
 
         BeatmapManager.preRenderMaps();

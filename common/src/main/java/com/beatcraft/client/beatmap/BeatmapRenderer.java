@@ -9,6 +9,7 @@ import com.beatcraft.client.render.effect.ObstacleGlowRenderer;
 import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
+import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.common.utils.MathUtil;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -144,7 +145,9 @@ public class BeatmapRenderer {
 
         Matrix4f worldTransform = new Matrix4f();
         worldTransform.translate(cameraPos);
-        worldTransform.rotate(MirrorHandler.invCameraRotation.conjugate(new Quaternionf()));
+        var q = MemoryPool.newQuaternionf();
+        worldTransform.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(q));
+        MemoryPool.releaseSafe(q);
 
         renderLightDepth(tesselator, cameraPos);
 

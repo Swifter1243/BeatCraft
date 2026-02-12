@@ -244,7 +244,7 @@ public class Bloomfog {
         return (float) Math.atan2(left.y, up.y);
     }
 
-    private Quaternionf invCameraRotation = new Quaternionf();
+    // private Quaternionf invCameraRotation = new Quaternionf();
 
     private int[] lastSize = new int[]{1, 1};
     public void render(boolean isMirror, float tickDelta) {
@@ -256,7 +256,6 @@ public class Bloomfog {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
 
         Vector3f cameraPos = camera.getPosition().toVector3f();
-        invCameraRotation = MirrorHandler.invCameraRotation;
 
         if (!BeatcraftClient.playerConfig.quality.doBloomfog()) {
             return;
@@ -284,7 +283,7 @@ public class Bloomfog {
         RenderSystem.enableDepthTest();
 
         for (var call : renderCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation, false);
+            call.accept(buffer, cameraPos, BeatcraftRenderer.fullCameraRotation, false);
             //MirrorHandler.recordMirrorLightDraw(call);
         }
         renderCalls.clear();
@@ -430,7 +429,7 @@ public class Bloomfog {
         float z = 0;
         var q = MemoryPool.newQuaternionf();
         if (out == ObstacleGlowRenderer.framebuffer) {
-            MirrorHandler.invCameraRotation.conjugate(q);
+            BeatcraftRenderer.fullCameraRotation.conjugate(q);
         }
         buffer.addVertex(new Vector3f(-1, -1, z).rotate(q)).setUv(0, 0).setColor(0xFF020200);
         buffer.addVertex(new Vector3f( 1, -1, z).rotate(q)).setUv(1, 0).setColor(0xFF020200);
@@ -508,7 +507,7 @@ public class Bloomfog {
         // untextured renders
         var buffer = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (var call : bloomCalls) {
-            call.accept(buffer, cameraPos, invCameraRotation);
+            call.accept(buffer, cameraPos, BeatcraftRenderer.fullCameraRotation);
         }
         bloomCalls.clear();
         var buff = buffer.build();
@@ -517,7 +516,7 @@ public class Bloomfog {
         if (buff != null) {
             Matrix4f worldTransform = new Matrix4f();
             worldTransform.translate(cameraPos);
-            worldTransform.rotate(invCameraRotation.conjugate(new Quaternionf()));
+            worldTransform.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
 
             RenderSystem.setShader(() -> bloomMaskLightShader);
             RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
@@ -531,18 +530,18 @@ public class Bloomfog {
 
 
         for (var call : miscBloomCalls) {
-            call.accept(cameraPos, invCameraRotation, sceneDepthBuffer);
+            call.accept(cameraPos, BeatcraftRenderer.fullCameraRotation, sceneDepthBuffer);
         }
         miscBloomCalls.clear();
 
-        MeshLoader.COLOR_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.BOMB_NOTE_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.NOTE_ARROW_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.NOTE_DOT_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.CHAIN_DOT_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
-        MeshLoader.HEADSET_INSTANCED_MESH.renderBloom(cameraPos, invCameraRotation);
+        MeshLoader.COLOR_NOTE_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.BOMB_NOTE_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.NOTE_ARROW_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.NOTE_DOT_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.CHAIN_DOT_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
+        MeshLoader.HEADSET_INSTANCED_MESH.renderBloom(cameraPos, BeatcraftRenderer.fullCameraRotation);
         LightMesh.renderAllBloom(sceneDepthBuffer);
 
         bloomInput.unbindWrite();
