@@ -9,14 +9,12 @@ import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.client.render.particle.SmokeParticle;
 import com.beatcraft.common.memory.MemoryPool;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.RandomSource;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -69,10 +67,13 @@ public class BeatcraftRenderer {
         BeatmapManager.renderHUDs(imm);
     }
 
-    public static void renderBeatmap(Camera camera) {
+    public static void prerenderBeatmaps(Camera camera) {
+    }
 
-        BeatmapManager.preRenderMaps();
+    public static void renderBeatmaps(Camera camera) {
+
         var cameraPos = camera.getPosition().toVector3f();
+        BeatmapManager.preRenderMaps();
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);

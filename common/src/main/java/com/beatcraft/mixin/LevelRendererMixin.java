@@ -41,6 +41,7 @@ public abstract class LevelRendererMixin {
         )
     )
     public void renderBloomfog(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
+        BeatcraftRenderer.prerenderBeatmaps(camera);
         BeatcraftRenderer.renderBloomfog(deltaTracker.getGameTimeDeltaPartialTick(true));
     }
 
@@ -67,7 +68,7 @@ public abstract class LevelRendererMixin {
     )
     public void renderBeatmap(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
         var cameraPos = camera.getPosition().toVector3f();
-        BeatcraftRenderer.renderBeatmap(camera);
+        BeatcraftRenderer.renderBeatmaps(camera);
         BeatcraftRenderer.renderDebug(cameraPos);
         BeatcraftRenderer.renderParticles();
         BeatcraftRenderer.renderSabers();

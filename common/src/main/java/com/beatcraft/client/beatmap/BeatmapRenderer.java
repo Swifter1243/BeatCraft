@@ -298,8 +298,6 @@ public class BeatmapRenderer {
         var cameraPos = camera.getPosition().toVector3f();
         var m = matrices.last().pose();
 
-        renderBloomfogPosCol(m, tesselator, cameraPos);
-
         float alpha = 0;
 
         switch (renderStyle) {
@@ -318,6 +316,8 @@ public class BeatmapRenderer {
         if (difficulty != null) {
             difficulty.render(matrices, camera, alpha);
         }
+
+        renderBloomfogPosCol(m, tesselator, cameraPos);
 
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(m));
