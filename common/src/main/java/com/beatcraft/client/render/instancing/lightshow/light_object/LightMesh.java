@@ -344,11 +344,6 @@ public class LightMesh {
 
     private int shaderProgram = 0;
 
-    // TODO: mirror probably needs a different shader to do correct clipping
-    private int mirrorProgram = 0;
-    private int bloomProgram = 0;
-    private int bloomfogProgram = 0;
-
     private int vao;
     private int vertexVbo;
     private int uvVbo;
