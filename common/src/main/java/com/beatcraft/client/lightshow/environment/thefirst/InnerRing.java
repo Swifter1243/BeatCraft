@@ -3,6 +3,7 @@ package com.beatcraft.client.lightshow.environment.thefirst;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.effect.MirrorHandler;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -92,7 +93,19 @@ public class InnerRing extends LightObject {
         // manual mesh building since loading over-sized json model doesn't work >:(
         for (Vector3f mod : modifiers) {
             for (Vector3f vertex : vertices) {
-                buffer.addVertex(cameraPos.negate(new Vector3f()).add(transform.transformPosition(processVertex(vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation)))).setColor(color);
+                buffer.addVertex(
+                    cameraPos
+                        .negate(new Vector3f())
+                        .add(
+                            transform
+                                .transformPosition(
+                                    processVertex(
+                                        vertex.mul(mod, new Vector3f()), position, offset, orientation, rotation
+                                    )
+                                )
+                        )
+                        .add(mapController.worldPosition)
+                ).setColor(color);
             }
         }
 

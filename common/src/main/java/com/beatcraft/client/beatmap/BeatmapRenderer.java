@@ -317,7 +317,6 @@ public class BeatmapRenderer {
             difficulty.render(matrices, camera, alpha);
         }
 
-        renderBloomfogPosCol(m, tesselator, cameraPos);
 
         if (BeatcraftClient.playerConfig.debug.beatmap.renderBeatmapPosition()) {
             MeshLoader.MATRIX_LOCATOR_MESH.draw(TransformationWidgetInstanceData.create(m));
@@ -329,6 +328,9 @@ public class BeatmapRenderer {
 
         var tesselator = Tesselator.getInstance();
         var cameraPos = camera.getPosition().toVector3f();
+        var m = matrices.last().pose();
+
+        renderBloomfogPosCol(m, tesselator, cameraPos);
 
         renderEnvironmentLights(tesselator, cameraPos);
 

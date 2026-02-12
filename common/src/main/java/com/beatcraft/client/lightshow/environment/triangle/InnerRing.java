@@ -3,6 +3,7 @@ package com.beatcraft.client.lightshow.environment.triangle;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.effect.MirrorHandler;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -124,7 +125,12 @@ public class InnerRing extends LightObject {
 
     private void _render(Matrix4f transform, BufferBuilder buffer, Vector3f cameraPos, Vector3f position, Vector3f offset, Quaternionf orientation, Quaternionf rotation, Bloomfog bloomfog) {
         for (var vertex : quads) {
-            buffer.addVertex(cameraPos.negate(new Vector3f()).add(transform.transformPosition(processVertex(vertices[vertex], position, offset, orientation, rotation)))).setColor(color);
+            buffer.addVertex(
+                cameraPos
+                    .negate(new Vector3f())
+                    .add(transform.transformPosition(processVertex(vertices[vertex], position, offset, orientation, rotation)))
+                    .add(mapController.worldPosition)
+            ).setColor(color);
         }
 
 

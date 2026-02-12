@@ -256,18 +256,7 @@ public class Bloomfog {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
 
         Vector3f cameraPos = camera.getPosition().toVector3f();
-        if (ClientDataHolderVR.getInstance().vr != null) {
-            var rotationMatrix = RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
-            invCameraRotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-        } else {
-            invCameraRotation = camera.rotation().conjugate(new Quaternionf());
-            float pitch = camera.getXRot();
-            Vector3f up = camera.getUpVector();
-            Vector3f left = camera.getLeftVector();
-            float roll = Math.abs(pitch) >= 90 ? 0 : calculateRoll(up, left);
-            Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
-            rollQuat.mul(invCameraRotation, invCameraRotation);
-        }
+        invCameraRotation = MirrorHandler.invCameraRotation;
 
         if (!BeatcraftClient.playerConfig.quality.doBloomfog()) {
             return;
@@ -310,8 +299,6 @@ public class Bloomfog {
 
 
         framebuffer.unbindWrite();
-
-        MirrorHandler.invCameraRotation = invCameraRotation;
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);

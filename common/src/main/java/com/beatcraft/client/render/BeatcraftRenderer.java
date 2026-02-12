@@ -15,9 +15,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Mirror;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.render.helpers.RenderHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,12 +71,26 @@ public class BeatcraftRenderer {
     }
 
     public static void prerenderBeatmaps(Camera camera) {
+
+        if (ClientDataHolderVR.getInstance().vr != null) {
+            var rotationMatrix = RenderHelper.getVRModelView(ClientDataHolderVR.getInstance().currentPass);
+            MirrorHandler.invCameraRotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
+        } else {
+            MirrorHandler.invCameraRotation = camera.rotation().conjugate(new Quaternionf());
+            float pitch = camera.getXRot();
+            Vector3f up = camera.getUpVector();
+            Vector3f left = camera.getLeftVector();
+            float roll = Math.abs(pitch) >= 90 ? 0 : Bloomfog.calculateRoll(up, left);
+            Quaternionf rollQuat = new Quaternionf().rotationAxis(roll, new Vector3f(0, 0, 1));
+            rollQuat.mul(MirrorHandler.invCameraRotation, MirrorHandler.invCameraRotation);
+        }
+
+        BeatmapManager.preRenderMaps();
     }
 
     public static void renderBeatmaps(Camera camera) {
 
         var cameraPos = camera.getPosition().toVector3f();
-        BeatmapManager.preRenderMaps();
 
         MeshLoader.COLOR_NOTE_INSTANCED_MESH.render(cameraPos);
         MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH.render(cameraPos);
