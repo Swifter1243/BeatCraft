@@ -33,11 +33,8 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                     } catch (IOException e) {
                         Beatcraft.LOGGER.error("Error saving recording", e);
                     }
-                    hudRenderer.controller.difficulty = null;
-                    hudRenderer.controller.info = null;
                     AudioController.remove(hudRenderer.controller.audio);
-                    hudRenderer.controller.audio = null;
-                    hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
+                    hudRenderer.controller.reset();
                     // BeatmapAudioPlayer.unmuteVanillaMusic();
                     InputSystem.unlockHotbar();
                     // HUDRenderer.sendSceneSync();
