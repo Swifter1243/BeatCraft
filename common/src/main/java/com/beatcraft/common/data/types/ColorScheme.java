@@ -1,17 +1,92 @@
-package com.beatcraft.client.beatmap.data;
+package com.beatcraft.common.data.types;
 
-import com.beatcraft.common.data.types.Color;
+import com.beatcraft.common.utils.JsonUtil;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class ColorScheme {
-    private Color noteLeftColor = new Color(0.75294f, 0.188f, 0.188f); // c03030 // 12595248
-    private Color noteRightColor = new Color(0.1254f, 0.3921f, 0.6588f); // 2064a8 // 2122920
-    private Color obstacleColor = new Color(1, 0.1882f, 0.1882f);
-    private Color environmentLeftColor = new Color(0.7529f, 0.188f, 0.188f);
-    private Color environmentLeftColorBoost = new Color(0.7529f, 0.188f, 0.188f);
-    private Color environmentRightColor = new Color(0.18823f, 0.5960f, 1);
-    private Color environmentRightColorBoost = new Color(0.18823f, 0.5960f, 1);
-    private Color environmentWhiteColor = new Color(1, 1, 1);
-    private Color environmentWhiteColorBoost = new Color(1, 1, 1);
+    private Color noteLeftColor              = new Color(0xFF_BF2F2F);
+    private Color noteRightColor             = new Color(0xFF_1F63A7);
+    private Color obstacleColor              = new Color(0xFF_FF2F2F);
+    private Color environmentLeftColor       = new Color(0xFF_BF2F2F);
+    private Color environmentLeftColorBoost  = new Color(0xFF_BF2F2F);
+    private Color environmentRightColor      = new Color(0xFF_1F63A7);
+    private Color environmentRightColorBoost = new Color(0xFF_1F63A7);
+    private Color environmentWhiteColor      = new Color(0xFF_FFFFFF);
+    private Color environmentWhiteColorBoost = new Color(0xFF_FFFFFF);
+    private boolean isCustom = false;
+
+    public ColorScheme() {
+
+    }
+
+    public ColorScheme(ColorScheme other) {
+        noteLeftColor = new Color(other.noteLeftColor);
+        noteRightColor = new Color(other.noteRightColor);
+        obstacleColor = new Color(other.obstacleColor);
+        environmentLeftColor = new Color(other.environmentLeftColor);
+        environmentLeftColorBoost = new Color(other.environmentLeftColorBoost);
+        environmentRightColor = new Color(other.environmentRightColor);
+        environmentRightColorBoost = new Color(other.environmentRightColorBoost);
+        environmentWhiteColor = new Color(other.environmentWhiteColor);
+        environmentWhiteColorBoost = new Color(other.environmentWhiteColorBoost);
+        isCustom = other.isCustom;
+    }
+
+    public boolean isCustom() {
+        return isCustom;
+    }
+
+    public JsonObject toJson() {
+        var json = new JsonObject();
+
+        json.addProperty("noteLeftColor", noteLeftColor.toHexString());
+        json.addProperty("noteRightColor", noteRightColor.toHexString());
+        json.addProperty("obstacleColor", obstacleColor.toHexString());
+        json.addProperty("environmentLeftColor", environmentLeftColor.toHexString());
+        json.addProperty("environmentLeftColorBoost", environmentLeftColorBoost.toHexString());
+        json.addProperty("environmentRightColor", environmentRightColor.toHexString());
+        json.addProperty("environmentRightColorBoost", environmentRightColorBoost.toHexString());
+        json.addProperty("environmentWhiteColor", environmentWhiteColor.toHexString());
+        json.addProperty("environmentWhiteColorBoost", environmentWhiteColorBoost.toHexString());
+
+        return json;
+    }
+
+    private static Color fromStr(JsonElement in) {
+        return Color.fromHexString(in.getAsString());
+    }
+
+    public static ColorScheme fromJsonOrDefault(JsonObject json, boolean isCustom) {
+        var cs = new ColorScheme();
+        cs.isCustom = isCustom;
+
+        cs.noteLeftColor = JsonUtil.getOrDefault(json, "noteLeftColor", ColorScheme::fromStr, cs.noteLeftColor);
+        cs.noteRightColor = JsonUtil.getOrDefault(json, "noteRightColor", ColorScheme::fromStr, cs.noteRightColor);
+        cs.obstacleColor = JsonUtil.getOrDefault(json, "obstacleColor", ColorScheme::fromStr, cs.obstacleColor);
+        cs.environmentLeftColor = JsonUtil.getOrDefault(json, "environmentLeftColor", ColorScheme::fromStr, cs.environmentLeftColor);
+        cs.environmentLeftColorBoost = JsonUtil.getOrDefault(json, "environmentLeftColorBoost", ColorScheme::fromStr, cs.environmentLeftColorBoost);
+        cs.environmentRightColor = JsonUtil.getOrDefault(json, "environmentRightColor", ColorScheme::fromStr, cs.environmentRightColor);
+        cs.environmentRightColorBoost = JsonUtil.getOrDefault(json, "environmentRightColorBoost", ColorScheme::fromStr, cs.environmentRightColorBoost);
+        cs.environmentWhiteColor = JsonUtil.getOrDefault(json, "environmentWhiteColor", ColorScheme::fromStr, cs.environmentWhiteColor);
+        cs.environmentWhiteColorBoost = JsonUtil.getOrDefault(json, "environmentWhiteColorBoost", ColorScheme::fromStr, cs.environmentWhiteColorBoost);
+
+        return cs;
+    }
+
+    public Color getIndexed(int idx) {
+        return switch (idx) {
+            case 0 -> noteLeftColor;
+            case 1 -> noteRightColor;
+            case 2 -> obstacleColor;
+            case 3 -> environmentLeftColor;
+            case 4 -> environmentRightColor;
+            case 5 -> environmentWhiteColor;
+            case 6 -> environmentLeftColorBoost;
+            case 7 -> environmentRightColorBoost;
+            default -> environmentWhiteColorBoost;
+        };
+    }
 
     public static ColorScheme getEnvironmentColorScheme(String environmentName) {
         return switch (environmentName) {
@@ -62,237 +137,237 @@ public class ColorScheme {
 
     public static ColorScheme getDefaultEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getTriangleEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getNiceEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getBigMirrorEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getDragonsEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getMonstercatEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getPanicEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.7843137f, 0.07843138f, 0.07843138f));
-        colorScheme.setNoteRightColor(new Color(0.1568627f, 0.5568627f, 0.8235294f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.85f, 0.08499997f, 0.08499997f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1882353f, 0.675294f, 1f));
-        colorScheme.setObstacleColor(new Color(1f, 0.1882353f, 0.1882353f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_C71414));
+        colorScheme.setNoteRightColor(new Color(0xFF_278DD1));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D81515));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_30ACFF));
+        colorScheme.setObstacleColor(new Color(0xFF_FF3030));
         return colorScheme;
     }
 
     public static ColorScheme getOriginsEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.6792453f, 0.5712628f, 0f));
-        colorScheme.setNoteRightColor(new Color(0.7075472f, 0f, 0.5364411f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.4910995f, 0.6862745f, 0.7f));
-        colorScheme.setEnvironmentRightColor(new Color(0.03844783f, 0.6862745f, 0.9056604f));
-        colorScheme.setObstacleColor(new Color(0.06167676f, 0.2869513f, 0.3962264f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_AD9100));
+        colorScheme.setNoteRightColor(new Color(0xFF_B40088));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_7DAEB2));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_09AEE6));
+        colorScheme.setObstacleColor(new Color(0xFF_0F4965));
         return colorScheme;
     }
 
     public static ColorScheme getKDAEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.6588235f, 0.2627451f, 0.1607843f));
-        colorScheme.setNoteRightColor(new Color(0.5019608f, 0.08235294f, 0.572549f));
-        colorScheme.setEnvironmentLeftColor(new Color(1f, 0.3960785f, 0.2431373f));
-        colorScheme.setEnvironmentRightColor(new Color(0.7607844f, 0.1254902f, 0.8666667f));
-        colorScheme.setObstacleColor(new Color(1f, 0.3960785f, 0.2431373f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_A74328));
+        colorScheme.setNoteRightColor(new Color(0xFF_801491));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_FF653E));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_C220DD));
+        colorScheme.setObstacleColor(new Color(0xFF_FF653E));
         return colorScheme;
     }
 
     public static ColorScheme getCrabRaveEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0f, 0.7130001f, 0.07806564f));
-        colorScheme.setNoteRightColor(new Color(0.04805952f, 0.5068096f, 0.734f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.134568f, 0.756f, 0.1557533f));
-        colorScheme.setEnvironmentRightColor(new Color(0.05647058f, 0.6211764f, 0.9f));
-        colorScheme.setObstacleColor(new Color(0f, 0.8117648f, 0.09019608f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_00B513));
+        colorScheme.setNoteRightColor(new Color(0xFF_0C81BB));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_22C027));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_0E9EE5));
+        colorScheme.setObstacleColor(new Color(0xFF_00CF17));
         return colorScheme;
     }
 
     public static ColorScheme getRocketEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(1f, 0.4980392f, 0f));
-        colorScheme.setNoteRightColor(new Color(0f, 0.5294118f, 1f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.9f, 0.4866279f, 0.3244186f));
-        colorScheme.setEnvironmentRightColor(new Color(0.4f, 0.7180724f, 1f));
-        colorScheme.setObstacleColor(new Color(0.3176471f, 0.6117647f, 0.7254902f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_FF7E00));
+        colorScheme.setNoteRightColor(new Color(0xFF_0087FF));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_E57C52));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_66B7FF));
+        colorScheme.setObstacleColor(new Color(0xFF_519BB9));
         return colorScheme;
     }
 
     public static ColorScheme getGreenDayEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.2588235f, 0.7843138f, 0.01960784f));
-        colorScheme.setNoteRightColor(new Color(0f, 0.7137255f, 0.6705883f));
-        colorScheme.setEnvironmentLeftColor(new Color(0f, 0.7137255f, 0.6705883f));
-        colorScheme.setEnvironmentRightColor(new Color(0.2588235f, 0.7843137f, 0.01960784f));
-        colorScheme.setObstacleColor(new Color(0f, 0.8117648f, 0.09019608f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_41C804));
+        colorScheme.setNoteRightColor(new Color(0xFF_00B6AB));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_00B6AB));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_41C704));
+        colorScheme.setObstacleColor(new Color(0xFF_00CF17));
         return colorScheme;
     }
 
     public static ColorScheme getTimbalandEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.5019608f, 0.5019608f, 0.5019608f));
-        colorScheme.setNoteRightColor(new Color(0.1f, 0.5517647f, 1f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.1f, 0.5517647f, 1f));
-        colorScheme.setEnvironmentRightColor(new Color(0.1f, 0.5517647f, 1f));
-        colorScheme.setObstacleColor(new Color(0.5f, 0.5f, 0.5f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_808080));
+        colorScheme.setNoteRightColor(new Color(0xFF_198CFF));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_198CFF));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_198CFF));
+        colorScheme.setObstacleColor(new Color(0xFF_7F7F7F));
         return colorScheme;
     }
 
     public static ColorScheme getFitBeatEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.8000001f, 0.6078432f, 0.1568628f));
-        colorScheme.setNoteRightColor(new Color(0.7921569f, 0.1607843f, 0.682353f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.8f, 0.5594772f, 0.5594772f));
-        colorScheme.setEnvironmentRightColor(new Color(0.5594772f, 0.5594772f, 0.8f));
-        colorScheme.setObstacleColor(new Color(0.2784314f, 0.2784314f, 0.4f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_CC9B28));
+        colorScheme.setNoteRightColor(new Color(0xFF_CA28AE));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_CC8E8E));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_8E8ECC));
+        colorScheme.setObstacleColor(new Color(0xFF_474766));
         return colorScheme;
     }
 
     public static ColorScheme getLinkinParkEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.6627451f, 0.1643608f, 0.1690187f));
-        colorScheme.setNoteRightColor(new Color(0.3870196f, 0.5168997f, 0.5568628f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.7529412f, 0.672753f, 0.5925647f));
-        colorScheme.setEnvironmentRightColor(new Color(0.6241197f, 0.6890281f, 0.709f));
-        colorScheme.setObstacleColor(new Color(0.6627451f, 0.1647059f, 0.172549f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.922f, 0.5957885f, 0.255394f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.282353f, 0.4586275f, 0.6235294f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_A9292B));
+        colorScheme.setNoteRightColor(new Color(0xFF_62838E));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_C0AB97));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_9FAFB4));
+        colorScheme.setObstacleColor(new Color(0xFF_A92A2B));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_EB9741));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_48749E));
         return colorScheme;
     }
 
     public static ColorScheme getBTSEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(1f, 0.09019607f, 0.4059771f));
-        colorScheme.setNoteRightColor(new Color(0.8018868f, 0f, 0.7517689f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.7843137f, 0.1254902f, 0.5010797f));
-        colorScheme.setEnvironmentRightColor(new Color(0.6941177f, 0.1254902f, 0.8666667f));
-        colorScheme.setObstacleColor(new Color(0.6698113f, 0.1800908f, 0.5528399f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.9019608f, 0.5411765f, 1f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.3490196f, 0.8078431f, 1f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_FF1667));
+        colorScheme.setNoteRightColor(new Color(0xFF_CC00BF));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_C7207F));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_B120DD));
+        colorScheme.setObstacleColor(new Color(0xFF_AA2D8C));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_E68AFF));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_58CDFF));
         return colorScheme;
     }
 
     public static ColorScheme getKaleidoscopeEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.65882355f, 0.1254902f, 0.1254902f));
-        colorScheme.setNoteRightColor(new Color(0.28235295f, 0.28235295f, 0.28235295f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.65882355f, 0.1254902f, 0.1254902f));
-        colorScheme.setEnvironmentRightColor(new Color(0.47058824f, 0.47058824f, 0.47058824f));
-        colorScheme.setObstacleColor(new Color(0.25098041f, 0.25098041f, 0.25098041f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.50196081f, 0f, 0f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.49244517f, 0f, 0.53725493f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_A82020));
+        colorScheme.setNoteRightColor(new Color(0xFF_484848));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_A82020));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_787878));
+        colorScheme.setObstacleColor(new Color(0xFF_404040));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_800000));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_7D0089));
         return colorScheme;
     }
 
     public static ColorScheme getInterscopeEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.726415f, 0.62691f, 0.31181f));
-        colorScheme.setNoteRightColor(new Color(0.589571f, 0.297888f, 0.723f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.724254f, 0.319804f, 0.913725f));
-        colorScheme.setEnvironmentRightColor(new Color(0.764706f, 0.758971f, 0.913725f));
-        colorScheme.setObstacleColor(new Color(0.588235f, 0.298039f, 0.721569f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.792453f, 0.429686f, 0.429868f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.7038f, 0.715745f, 0.765f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_B99F4F));
+        colorScheme.setNoteRightColor(new Color(0xFF_964BB8));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_B851E8));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_C3C1E8));
+        colorScheme.setObstacleColor(new Color(0xFF_954BB8));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_CA6D6D));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_B3B6C3));
         return colorScheme;
     }
 
     public static ColorScheme getSkrillexEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.69803923f, 0.14117648f, 0.36862746f));
-        colorScheme.setNoteRightColor(new Color(0.32933334f, 0.32299998f, 0.38f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.80000001f, 0.28000003f, 0.58594489f));
-        colorScheme.setEnvironmentRightColor(new Color(0.06525807f, 0.57800001f, 0.56867743f));
-        colorScheme.setObstacleColor(new Color(0.15686275f, 0.60392159f, 0.60392159f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.81176478f, 0.30588236f, 0.30588236f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.27843139f, 0.80000001f, 0.44597632f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_B2245E));
+        colorScheme.setNoteRightColor(new Color(0xFF_535260));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_CC4795));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_109391));
+        colorScheme.setObstacleColor(new Color(0xFF_289A9A));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_CF4E4E));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_47CC71));
         return colorScheme;
     }
 
     public static ColorScheme getBillieEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.8f, 0.64481932f, 0.432f));
-        colorScheme.setNoteRightColor(new Color(0.54808509f, 0.61276591f, 0.64f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.81960785f, 0.442f, 0.184f));
-        colorScheme.setEnvironmentRightColor(new Color(0.94117647f, 0.70677096f, 0.56470591f));
-        colorScheme.setObstacleColor(new Color(0.71325314f, 0.56140977f, 0.78301889f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.8f, 0f, 0f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.55686277f, 0.7019608f, 0.77647066f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_CCA46E));
+        colorScheme.setNoteRightColor(new Color(0xFF_8B9CA3));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_D1702E));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_EFB490));
+        colorScheme.setObstacleColor(new Color(0xFF_B58FC7));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_CC0000));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_8EB3C6));
         return colorScheme;
     }
 
     public static ColorScheme getHalloweenEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.81960785f, 0.49807876f, 0.27702752f));
-        colorScheme.setNoteRightColor(new Color(0.37894738f, 0.35789475f, 0.4f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.90196079f, 0.23009226f, 0f));
-        colorScheme.setEnvironmentRightColor(new Color(0.46005884f, 0.56889427f, 0.92941177f));
-        colorScheme.setObstacleColor(new Color(0.81960791f, 0.44313729f, 0.18431373f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.33768433f, 0.63207543f, 0.33690813f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0.60209066f, 0.3280082f, 0.85849059f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_D17F46));
+        colorScheme.setNoteRightColor(new Color(0xFF_605B66));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_E63A00));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_7591ED));
+        colorScheme.setObstacleColor(new Color(0xFF_D1712F));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_56A155));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_9953DA));
         return colorScheme;
     }
 
     public static ColorScheme getGagaEnvironment() {
         ColorScheme colorScheme = new ColorScheme();
-        colorScheme.setNoteLeftColor(new Color(0.85f, 0.4333333f, 0.7833334f));
-        colorScheme.setNoteRightColor(new Color(0.4705882f, 0.8f, 0.4078431f));
-        colorScheme.setEnvironmentLeftColor(new Color(0.706f, 0.649f, 0.2394706f));
-        colorScheme.setEnvironmentRightColor(new Color(0.894f, 0.1625455f, 0.7485644f));
-        colorScheme.setObstacleColor(new Color(0.9921569f, 0f, 0.7719755f));
-        colorScheme.setEnvironmentLeftColorBoost(new Color(0.754717f, 0.3610244f, 0.22071921f));
-        colorScheme.setEnvironmentRightColorBoost(new Color(0f, 0.7058824f, 1f));
+        colorScheme.setNoteLeftColor(new Color(0xFF_D86EC7));
+        colorScheme.setNoteRightColor(new Color(0xFF_77CC67));
+        colorScheme.setEnvironmentLeftColor(new Color(0xFF_B4A53D));
+        colorScheme.setEnvironmentRightColor(new Color(0xFF_E329BE));
+        colorScheme.setObstacleColor(new Color(0xFF_FD00C4));
+        colorScheme.setEnvironmentLeftColorBoost(new Color(0xFF_C05C38));
+        colorScheme.setEnvironmentRightColorBoost(new Color(0xFF_00B4FF));
         return colorScheme;
     }
 

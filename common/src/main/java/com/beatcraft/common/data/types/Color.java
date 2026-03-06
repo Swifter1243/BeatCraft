@@ -9,6 +9,14 @@ public class Color {
     private float green = 0;
     private float blue = 0;
 
+    public String toHexString() {
+        return Integer.toHexString(toARGB());
+    }
+
+    public static Color fromHexString(String hex) {
+        return new Color(Integer.parseInt(hex, 16));
+    }
+
     public Color(float red, float green, float blue) {
         this.setRed(red);
         this.setGreen(green);
@@ -31,9 +39,9 @@ public class Color {
     }
 
     public Color(int hex) {
-        int a = (hex >> 24) & 0xFF;
-        int r = (hex >> 16) & 0xFF;
-        int g = (hex >> 8) & 0xFF;
+        int a = (hex >>> 24) & 0xFF;
+        int r = (hex >>> 16) & 0xFF;
+        int g = (hex >>> 8) & 0xFF;
         int b = hex & 0xFF;
         float fr = r / 255.0f;
         float fg = g / 255.0f;
@@ -175,6 +183,22 @@ public class Color {
         int intAlpha = (int) (newAlpha * 255);
 
         return (intAlpha << 24) | (intRed << 16) | (intGreen << 8) | intBlue;
+    }
+
+    public float[] toArrayRGBA() {
+        return new float[]{red, green, blue, alpha};
+    }
+
+    public float[] toArrayRGB() {
+        return new float[]{red, green, blue};
+    }
+
+    public static Color fromArray(float[] arr) {
+        if (arr.length == 3) {
+            return new Color(arr[0], arr[1], arr[2]);
+        } else {
+            return new Color(arr[0], arr[1], arr[2], arr[3]);
+        }
     }
 
     @Override

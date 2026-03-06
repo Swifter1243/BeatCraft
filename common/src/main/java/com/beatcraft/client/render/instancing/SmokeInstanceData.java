@@ -120,7 +120,12 @@ public class SmokeInstanceData implements InstancedMesh.InstanceData {
     public void setup(int program) {
         int depthBuffer = Bloomfog.sceneDepthBuffer;
 
+        // RenderSystem.bindTexture(1);
+        // RenderSystem.setShaderTexture(1, depthBuffer);
         GlUtil.setTex(program, "u_depth", 1, depthBuffer);
+
+        // RenderSystem.bindTexture(2);
+        // RenderSystem.setShaderTexture(2, BeatcraftRenderer.bloomfog.getBloomfogColorAttachment());
         GlUtil.setTex(program, "u_bloomfog", 2, BeatcraftRenderer.bloomfog.getBloomfogColorAttachment());
 
         GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);

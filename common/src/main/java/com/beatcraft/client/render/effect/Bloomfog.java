@@ -4,6 +4,7 @@ import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.render.BeatcraftRenderer;
+import com.beatcraft.client.render.RenderUtil;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
@@ -320,7 +323,7 @@ public class Bloomfog {
 
         var oldProjMat = RenderSystem.getProjectionMatrix();
         var oldVertexSort = RenderSystem.getVertexSorting();
-        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
+        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, 0.01f, 1000);
         RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorting.DISTANCE_TO_ORIGIN);
         RenderSystem.setShaderTexture(0, blurredTexId);
         RenderSystem.enableBlend();
@@ -519,9 +522,11 @@ public class Bloomfog {
             worldTransform.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
 
             RenderSystem.setShader(() -> bloomMaskLightShader);
+            GL30.glUseProgram(bloomMaskLightShader.getId());
             RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
             RenderSystem.setShaderTexture(0, sceneDepthBuffer);
             bloomMaskLightShader.setSampler("Sampler0", sceneDepthBuffer);
+            GlUtil.setTex(bloomMaskLightShader.getId(), "Sampler0", 0, sceneDepthBuffer);
             bloomMaskLightShader.safeGetUniform("WorldTransform").set(worldTransform);
             bloomMaskLightShader.safeGetUniform("u_fog").set(getFogHeights(cameraPos));
             BufferUploader.drawWithShader(buff);
@@ -581,7 +586,7 @@ public class Bloomfog {
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
         var oldProjMat = RenderSystem.getProjectionMatrix();
         var oldVertexSort = RenderSystem.getVertexSorting();
-        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, -1000, 1000);
+        var orthoMatrix = new Matrix4f().ortho(0, width, height, 0, 0.01f, 1000);
         RenderSystem.setProjectionMatrix(orthoMatrix, VertexSorting.DISTANCE_TO_ORIGIN);
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());

@@ -1,9 +1,10 @@
 package com.beatcraft.client.beatmap.data;
 
+import com.beatcraft.Beatcraft;
+import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.audio.AudioInfo;
-import com.beatcraft.client.audio.AudioController;
 import com.beatcraft.common.data.types.Color;
-import com.beatcraft.client.beatmap.data.ColorScheme;
+import com.beatcraft.common.data.types.ColorScheme;
 import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -134,39 +135,49 @@ public class Info {
                     setDifficulty.njs = 16.0f;
                 }
             }
-            setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
+
+            var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
+            if (scheme == null) {
+                Beatcraft.LOGGER.info("Fallback to default color scheme");
+                setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
+            } else {
+                setDifficulty.colorScheme = new ColorScheme(scheme);
+            }
 
             setDifficulty.lightshowFile = JsonUtil.getOrDefault(json, "lightshowDataFilename", JsonElement::getAsString, null);
 
             if (json.has("_customData")) {
                 JsonObject customData = json.get("_customData").getAsJsonObject();
+                var cs = setDifficulty.getColorScheme();
 
-                if (customData.has("_colorLeft")) {
-                    setDifficulty.getColorScheme().setNoteLeftColor(Color.fromJsonObject(customData.get("_colorLeft").getAsJsonObject()));
-                }
-                if (customData.has("_colorRight")) {
-                    setDifficulty.getColorScheme().setNoteRightColor(Color.fromJsonObject(customData.get("_colorRight").getAsJsonObject()));
-                }
-                if (customData.has("_obstacleColor")) {
-                    setDifficulty.getColorScheme().setObstacleColor(Color.fromJsonObject(customData.get("_obstacleColor").getAsJsonObject()));
-                }
-                if (customData.has("_envColorLeft")) {
-                    setDifficulty.getColorScheme().setEnvironmentLeftColor(Color.fromJsonObject(customData.get("_envColorLeft").getAsJsonObject()));
-                }
-                if (customData.has("_envColorLeftBoost")) {
-                    setDifficulty.getColorScheme().setEnvironmentLeftColorBoost(Color.fromJsonObject(customData.get("_envColorLeftBoost").getAsJsonObject()));
-                }
-                if (customData.has("_envColorRight")) {
-                    setDifficulty.getColorScheme().setEnvironmentRightColor(Color.fromJsonObject(customData.get("_envColorRight").getAsJsonObject()));
-                }
-                if (customData.has("_envColorRightBoost")) {
-                    setDifficulty.getColorScheme().setEnvironmentRightColorBoost(Color.fromJsonObject(customData.get("_envColorRightBoost").getAsJsonObject()));
-                }
-                if (customData.has("_envColorWhite")) {
-                    setDifficulty.getColorScheme().setEnvironmentWhiteColor(Color.fromJsonObject(customData.get("_envColorWhite").getAsJsonObject()));
-                }
-                if (customData.has("_envColorWhiteBoost")) {
-                    setDifficulty.getColorScheme().setEnvironmentWhiteColorBoost(Color.fromJsonObject(customData.get("_envColorWhiteBoost").getAsJsonObject()));
+                if (!cs.isCustom()) {
+                    if (customData.has("_colorLeft")) {
+                        cs.setNoteLeftColor(Color.fromJsonObject(customData.get("_colorLeft").getAsJsonObject()));
+                    }
+                    if (customData.has("_colorRight")) {
+                        cs.setNoteRightColor(Color.fromJsonObject(customData.get("_colorRight").getAsJsonObject()));
+                    }
+                    if (customData.has("_obstacleColor")) {
+                        cs.setObstacleColor(Color.fromJsonObject(customData.get("_obstacleColor").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorLeft")) {
+                        cs.setEnvironmentLeftColor(Color.fromJsonObject(customData.get("_envColorLeft").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorLeftBoost")) {
+                        cs.setEnvironmentLeftColorBoost(Color.fromJsonObject(customData.get("_envColorLeftBoost").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorRight")) {
+                        cs.setEnvironmentRightColor(Color.fromJsonObject(customData.get("_envColorRight").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorRightBoost")) {
+                        cs.setEnvironmentRightColorBoost(Color.fromJsonObject(customData.get("_envColorRightBoost").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorWhite")) {
+                        cs.setEnvironmentWhiteColor(Color.fromJsonObject(customData.get("_envColorWhite").getAsJsonObject()));
+                    }
+                    if (customData.has("_envColorWhiteBoost")) {
+                        cs.setEnvironmentWhiteColorBoost(Color.fromJsonObject(customData.get("_envColorWhiteBoost").getAsJsonObject()));
+                    }
                 }
             }
 

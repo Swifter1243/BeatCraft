@@ -96,12 +96,9 @@ public class BeatmapRenderer {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-
-
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
         }
-
         var buff = buffer.build();
         if (buff != null) {
             BufferUploader.drawWithShader(buff);
@@ -156,23 +153,20 @@ public class BeatmapRenderer {
         //lightRenderCalls.clear();
         //if (true) return;
 
-        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-        // RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
 
+
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         for (var call : lightRenderCalls) {
             call.accept(buffer, cameraPos);
         }
-
         lightRenderCalls.clear();
-
         var buff = buffer.build();
         if (buff != null) {
             Bloomfog.backlightsPositionColorShader.setSampler("Sampler0", Bloomfog.lightDepth.getDepthTextureId());
@@ -181,6 +175,8 @@ public class BeatmapRenderer {
             Bloomfog.backlightsPositionColorShader.safeGetUniform("u_fog").set(Bloomfog.getFogHeights(mapController.worldPosition));
             BufferUploader.drawWithShader(buff);
         }
+
+        arcRenderCalls.clear();
 
         RenderSystem.depthMask(true);
         LightMesh.renderAllSolid();

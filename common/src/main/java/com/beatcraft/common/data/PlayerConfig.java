@@ -2,12 +2,14 @@ package com.beatcraft.common.data;
 
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.common.data.types.ColorScheme;
 import com.beatcraft.common.data.types.CycleStack;
 import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -247,6 +249,79 @@ public class PlayerConfig {
     }
 
     public class Preferences {
+
+
+        public class ColorSchemeSettings {
+
+            public Option<ColorScheme> scheme1 = new Option<>(new ColorScheme(), "Color scheme 1", "");
+            public Option<ColorScheme> scheme2 = new Option<>(new ColorScheme(), "Color scheme 2", "");
+            public Option<ColorScheme> scheme3 = new Option<>(new ColorScheme(), "Color scheme 3", "");
+            public Option<ColorScheme> scheme4 = new Option<>(new ColorScheme(), "Color scheme 4", "");
+            public Option<ColorScheme> scheme5 = new Option<>(new ColorScheme(), "Color scheme 5", "");
+            public Option<Integer> selected = new Option<>(-1, "Currently selected color scheme", "");
+
+            public ColorScheme scheme1() { return scheme1.get(); }
+            public void scheme1(ColorScheme set) { scheme1.set(set); }
+
+            public ColorScheme scheme2() { return scheme2.get(); }
+            public void scheme2(ColorScheme set) { scheme2.set(set); }
+
+            public ColorScheme scheme3() { return scheme3.get(); }
+            public void scheme3(ColorScheme set) { scheme3.set(set); }
+
+            public ColorScheme scheme4() { return scheme4.get(); }
+            public void scheme4(ColorScheme set) { scheme4.set(set); }
+
+            public ColorScheme scheme5() { return scheme5.get(); }
+            public void scheme5(ColorScheme set) { scheme5.set(set); }
+
+            private final Option<ColorScheme>[] _schemes = new Option[] {
+                scheme1,
+                scheme2,
+                scheme3,
+                scheme4,
+                scheme5,
+            };
+
+            public int selected() { return selected.get(); }
+            public void selected(int set) { selected.set(set); }
+
+            @Nullable
+            public ColorScheme currentScheme() {
+                return (selected.value == -1) ? null : _schemes[selected.get()].get();
+            }
+
+            public JsonObject getJson() {
+                var json = new JsonObject();
+
+                json.add("scheme1", scheme1.value.toJson());
+                json.add("scheme2", scheme2.value.toJson());
+                json.add("scheme3", scheme3.value.toJson());
+                json.add("scheme4", scheme4.value.toJson());
+                json.add("scheme5", scheme5.value.toJson());
+
+                json.addProperty("selected", selected.value);
+
+                return json;
+            }
+
+            public PlayerConfig parent() {
+                return PlayerConfig.this;
+            }
+
+            public void parse$v1(JsonObject json) {
+                scheme1.value = ColorScheme.fromJsonOrDefault(JsonUtil.getOrDefault(json, "scheme1", JsonElement::getAsJsonObject, new JsonObject()), true);
+                scheme2.value = ColorScheme.fromJsonOrDefault(JsonUtil.getOrDefault(json, "scheme2", JsonElement::getAsJsonObject, new JsonObject()), true);
+                scheme3.value = ColorScheme.fromJsonOrDefault(JsonUtil.getOrDefault(json, "scheme3", JsonElement::getAsJsonObject, new JsonObject()), true);
+                scheme4.value = ColorScheme.fromJsonOrDefault(JsonUtil.getOrDefault(json, "scheme4", JsonElement::getAsJsonObject, new JsonObject()), true);
+                scheme5.value = ColorScheme.fromJsonOrDefault(JsonUtil.getOrDefault(json, "scheme5", JsonElement::getAsJsonObject, new JsonObject()), true);
+                selected.value = JsonUtil.getOrDefault(json, "selected", JsonElement::getAsInt, selected.value);
+            }
+
+        }
+
+        public final ColorSchemeSettings colors = this.new ColorSchemeSettings();
+
         public Option<Boolean> reducedDebris = new Option<>(false, "Whether to spawn debris from notes", "[No performance impact]");
         public Option<Integer> trailIntensity = new Option<>(30, "How many frames to save for saber trails", "[No performance impact]");
         public Option<HealthStyle> healthStyle = new Option<>(HealthStyle.Hearts, "Energy bar style", "Classic: the classic beat saber look\nHearts: minecraft hearts are used instead of a bar");
@@ -285,6 +360,7 @@ public class PlayerConfig {
             json.addProperty("selected_saber", selectedSaber.value);
             json.addProperty("do_strobing", doStrobingEffects.value);
             json.addProperty("do_strobing_x+", doStrobingEffectsXP.value);
+            json.add("color_schemes", colors.getJson());
 
             return json;
         }
@@ -309,6 +385,7 @@ public class PlayerConfig {
             selectedSaber.value = JsonUtil.getOrDefault(json, "selected_saber", JsonElement::getAsString, selectedSaber.value);
             doStrobingEffects.value = JsonUtil.getOrDefault(json, "do_strobing", JsonElement::getAsBoolean, doStrobingEffects.value);
             doStrobingEffectsXP.value = JsonUtil.getOrDefault(json, "do_strobing_x+", JsonElement::getAsBoolean, doStrobingEffectsXP.value);
+            colors.parse$v1(JsonUtil.getOrDefault(json, "color_schemes", JsonElement::getAsJsonObject, new JsonObject()));
         }
     }
 

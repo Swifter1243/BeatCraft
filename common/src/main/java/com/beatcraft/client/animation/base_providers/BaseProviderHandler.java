@@ -2,7 +2,7 @@ package com.beatcraft.client.animation.base_providers;
 
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.beatmap.BeatmapController;
-import com.beatcraft.client.beatmap.data.ColorScheme;
+import com.beatcraft.common.data.types.ColorScheme;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.google.gson.JsonArray;

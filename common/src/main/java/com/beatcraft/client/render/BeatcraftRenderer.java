@@ -9,6 +9,8 @@ import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.client.render.particle.SmokeParticle;
 import com.beatcraft.common.memory.MemoryPool;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

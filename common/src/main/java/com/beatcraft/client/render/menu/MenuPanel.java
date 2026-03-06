@@ -2,6 +2,7 @@ package com.beatcraft.client.render.menu;
 
 import com.beatcraft.client.menu.Menu;
 import com.beatcraft.client.render.dynamic_loader.DynamicTexture;
+import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.MathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -384,6 +386,27 @@ public abstract class MenuPanel<T extends Menu> {
         }
     }
 
+    protected static class DynamicColorWidget extends Widget {
+        private final Callable<Integer> col;
+
+        protected DynamicColorWidget(Vector3f position, Vector2f size, Callable<Integer> col) {
+            this.position = position;
+            this.size = size;
+            this.col = col;
+        }
+
+        @Override
+        protected void render(GuiGraphics context, Vector2f pointerPosition, boolean triggerPressed) {
+            context.pose().translate(-position.x, -position.y, -position.z);
+            try {
+                var c = col.call();
+                context.fill((int) -size.x / 2, (int) -size.y / 2, (int) size.x / 2, (int) size.y / 2, c);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     protected static class ContainerWidget extends Widget {
 
         protected ContainerWidget(Vector3f position, Vector2f size, Widget... children) {
@@ -395,6 +418,109 @@ public abstract class MenuPanel<T extends Menu> {
         @Override
         protected void render(GuiGraphics context, Vector2f pointerPosition, boolean triggerPressed) {
             context.pose().translate(-position.x, -position.y, -position.z);
+        }
+    }
+
+    protected static class VisibilityToggledWidget extends Widget {
+
+        private final Callable<Boolean> stateGetter;
+        private final Widget child;
+
+        protected VisibilityToggledWidget(Callable<Boolean> stateGetter, Widget child) {
+            this.stateGetter = stateGetter;
+            this.child = child;
+        }
+
+        @Override
+        protected void render(GuiGraphics context, @Nullable Vector2f pointerPosition, boolean triggerPressed) {
+            try {
+                if (stateGetter.call()) {
+                    child.draw(context, pointerPosition, triggerPressed);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected static class ColorChannelWidget extends Widget {
+
+        protected enum Channel {
+            R, G, B,
+        }
+
+        private final Callable<float[]> getter;
+        private final Consumer<Float> setter;
+        private final Channel channel;
+        private final Color low = new Color();
+        private final Color high = new Color();
+        private final Color current = new Color();
+
+        protected ColorChannelWidget(Channel channel, Callable<float[]> getter, Consumer<Float> setter, Vector3f position, Vector2f size) {
+            this.channel = channel;
+            this.getter = getter;
+            this.setter = setter;
+            this.position = position;
+            this.size = size;
+        }
+
+        @Override
+        protected void render(GuiGraphics context, @Nullable Vector2f pointerPosition, boolean triggerPressed) {
+            try {
+                float r, g, b;
+                var rgb = getter.call();
+                r = rgb[0];
+                g = rgb[1];
+                b = rgb[2];
+                float color;
+                switch (channel) {
+                    case Channel.R -> {
+                        low.set(0, g, b);
+                        high.set(1, g, b);
+                        color = r;
+                    }
+                    case Channel.G -> {
+                        low.set(r, 0, b);
+                        high.set(r, 1, b);
+                        color = g;
+                    }
+                    default -> {
+                        low.set(r, g, 0);
+                        high.set(r, g, 1);
+                        color = b;
+                    }
+                }
+                current.set(r, g, b);
+                if (triggerPressed && pointerPosition != null
+                    && MathUtil.check2DPointCollision(pointerPosition, new Vector2f(), size)) {
+                    float clamped = Mth.clamp(pointerPosition.x, -size.x / 2, size.x / 2);
+                    color = (clamped + size.x / 2) / size.x;
+                    setter.accept(color);
+                }
+
+                context.pose().translate(-position.x, -position.y, -position.z);
+
+                context.pose().mulPose(new Quaternionf().rotationZ(90f * Mth.DEG_TO_RAD));
+                context.fillGradient(
+                    (int) -size.y / 2, (int) -size.x / 2,
+                    (int)  size.y / 2, (int)  size.x / 2,
+                    low.toARGB(), high.toARGB()
+                );
+                context.pose().mulPose(new Quaternionf().rotationZ(-90f * Mth.DEG_TO_RAD));
+
+                context.pose().pushPose();
+                context.pose().translate(0, 0, -0.01f);
+                int indicatorX = (int) (-size.x / 2 + (1 - color) * size.x);
+                int halfH = (int) (size.y / 2);
+                int halfW = 3;
+                context.fill(indicatorX - halfW, -halfH, indicatorX + halfW, halfH, 0xFF_000000);
+                context.pose().translate(0, 0, -0.01f);
+                context.fill(indicatorX - halfW + 1, -halfH + 1, indicatorX + halfW - 1, halfH - 1, 0xFF_FFFFFF);
+                context.pose().popPose();
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

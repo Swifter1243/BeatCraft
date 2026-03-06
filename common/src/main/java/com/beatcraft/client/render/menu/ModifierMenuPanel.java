@@ -9,12 +9,13 @@ import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.client.replay.ReplayHandler;
 import com.beatcraft.client.replay.ReplayInfo;
 import com.beatcraft.common.data.map.SongDownloader;
+import com.beatcraft.common.data.types.Color;
+import com.beatcraft.common.data.types.ColorScheme;
 import com.beatcraft.common.data.types.CycleStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -47,6 +48,8 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private final ContainerWidget replayPageStatic = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
     private final ContainerWidget customSaberPage = new ContainerWidget(new Vector3f(0, 0, -0.01f), new Vector2f());
 
+    private int selectedSchemeColor = 0;
+
     public ModifierMenuPanel(ModifierMenu data) {
         super(data);
         float angle = 60 * Mth.DEG_TO_RAD;
@@ -77,7 +80,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             getOptionButton("Settings", 2, 0, BUTTON_COUNT, this::setSettingsPage, SongSelectPage.Settings),
             getOptionButton("BeatSaver", 0, 1, BUTTON_COUNT, this::setDownloaderPage, SongSelectPage.Downloader),
             getOptionButton("Replay", 1, 1, BUTTON_COUNT, this::setReplayPage, SongSelectPage.Replay),
-            getOptionButton("Custom Sabers", 2, 1, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
+            getOptionButton("Sabers & Colors", 2, 1, BUTTON_COUNT, this::setSabersPage, SongSelectPage.Sabers)
         ));
 
         modifierPage.children.addAll(List.of(
@@ -237,10 +240,150 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new TextWidget("*Vivify maps are not fully supported", new Vector3f(0, 140, 0.01f), 1.5f)
         ));
 
-        customSaberPage.children.add(new TextWidget("WIP. for now use /custom_sabers", new Vector3f(0, -11, 0.01f), 4));
+        customSaberPage.children.addAll(List.of(
+            SettingsMenuPanel.getOptionModifier("Color Scheme",
+                () -> BeatcraftClient.playerConfig.preferences.colors.selected(
+                    Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() - 1, -1, 4)
+                ),
+                () -> BeatcraftClient.playerConfig.preferences.colors.selected(
+                    Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() + 1, -1, 4)
+                ),
+                () -> {
+                    var s = BeatcraftClient.playerConfig.preferences.colors.selected();
+                    return s == -1 ? "--" : String.valueOf(s);
+                },
+                new Vector3f(-100, -175, 0)),
+
+            new VisibilityToggledWidget(
+                () -> BeatcraftClient.playerConfig.preferences.colors.selected() >= 0,
+                new ContainerWidget(new Vector3f(), new Vector2f(),
+                    getColorSelectorWidget(0, "Left"),
+                    getColorSelectorWidget(1, "Right"),
+                    getColorSelectorWidget(2, "Obstacle"),
+                    getColorSelectorWidget(3, "LeftEnv"),
+                    getColorSelectorWidget(4, "RightEnv"),
+                    getColorSelectorWidget(5, "WhiteEnv"),
+                    getColorSelectorWidget(6, "LeftBoost"),
+                    getColorSelectorWidget(7, "RightBoost"),
+                    getColorSelectorWidget(8, "WhiteBoost"),
+                    getChannelSlider(ColorChannelWidget.Channel.R),
+                    getChannelSlider(ColorChannelWidget.Channel.G),
+                    getChannelSlider(ColorChannelWidget.Channel.B),
+                    SettingsMenuPanel.getButton(
+                        new TextWidget("Reset Color", new Vector3f(0, -8, 0.01f), 1.5f),
+                        () -> {
+                            var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
+                            if (scheme == null) {
+                                return;
+                            }
+                            scheme.getIndexed(selectedSchemeColor).set(new ColorScheme().getIndexed(selectedSchemeColor));
+                        },
+                        new Vector3f(205, 50, 0), new Vector2f(200, 20)
+                    ),
+                    new TextWidget(() -> {
+                        var col = getCurrentColorArray();
+                        return "RGB: " + ((int) (col[0] * 255)) + " / " + ((int) (col[1] * 255)) + " / " + ((int) (col[2] * 255));
+                    }, new Vector3f(205, -88, 0.01f), 2.0f)
+                )
+            )
+
+            // new TextWidget("WIP. for now use /custom_sabers", new Vector3f(0, -11, 0.01f), 4)
+
+        ));
 
         setupReplayPageStatic();
         //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
+
+    }
+
+    private static final float SELECTOR_WIDTH = 100f;
+    private static final float SELECTOR_HEIGHT = 20f;
+    private static final float SELECTOR_SPACING = 5f;
+    private static final float SELECTOR_COL_0 = 100f;
+    private static final float SELECTOR_ROW_0 = -175f;
+    private Widget getColorSelectorWidget(int idx, String label) {
+        var row = (int) (idx / 3f);
+        var col = idx % 3;
+
+        var pos = new Vector3f(
+            SELECTOR_COL_0 + (col * (SELECTOR_WIDTH + SELECTOR_SPACING)),
+            SELECTOR_ROW_0 + (row * (SELECTOR_HEIGHT + SELECTOR_SPACING)),
+            0
+        );
+        var size = new Vector2f(SELECTOR_WIDTH, SELECTOR_HEIGHT);
+
+        return new ContainerWidget(new Vector3f(), new Vector2f(),
+            new DynamicColorWidget(pos, size, () -> {
+                var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
+                if (scheme == null) {
+                    return 0;
+                }
+                return scheme.getIndexed(idx).toARGB();
+            }),
+            SettingsMenuPanel.getButton(
+                new TextWidget(label, new Vector3f(0, -8, 0.01f), 1.5f),
+                () -> selectedSchemeColor = idx,
+                pos, size
+            )
+        );
+    }
+
+
+    private Color getCurrentColor() {
+        var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
+        if (scheme == null) {
+            return null;
+        }
+        return scheme.getIndexed(selectedSchemeColor);
+    }
+
+    private static final float[] DEFAULT = new float[]{0, 0, 0};
+    private float[] getCurrentColorArray() {
+        var col = getCurrentColor();
+        if (col == null) return DEFAULT;
+        return col.toArrayRGB();
+    }
+
+    private Widget getChannelSlider(ColorChannelWidget.Channel channel) {
+        Consumer<Float> setter;
+        float yPos;
+        switch (channel) {
+            case R -> {
+                setter = (f) -> {
+                    var c = getCurrentColor();
+                    if (c != null) {
+                        c.setRed(f);
+                    }
+                };
+                yPos = 0;
+            }
+            case G -> {
+                setter = (f) -> {
+                    var c = getCurrentColor();
+                    if (c != null) {
+                        c.setGreen(f);
+                    }
+                };
+                yPos = 1;
+            }
+            default -> {
+                setter = (f) -> {
+                    var c = getCurrentColor();
+                    if (c != null) {
+                        c.setBlue(f);
+                    }
+                };
+                yPos = 2;
+            }
+        }
+
+        return new ColorChannelWidget(
+            channel,
+            this::getCurrentColorArray,
+            setter,
+            new Vector3f(205, -50 + (yPos * 25), 0),
+            new Vector2f(310, 20)
+        );
 
     }
 
@@ -325,34 +468,37 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     private void setModifierPage() {
         currentPage = SongSelectPage.Modifiers;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
-
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     private void setPlayerOptionsPage() {
         currentPage = SongSelectPage.PlayerOptions;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
-
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     private void setSettingsPage() {
         currentPage = SongSelectPage.Settings;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.Settings;
-
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     private void setDownloaderPage() {
         currentPage = SongSelectPage.Downloader;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.Downloader;
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     private void setReplayPage() {
         currentPage = SongSelectPage.Replay;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     private void setSabersPage() {
         currentPage = SongSelectPage.Sabers;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SaberPreview;
+        BeatcraftClient.playerConfig.writeToFile();
     }
 
     // Modifier Toggles

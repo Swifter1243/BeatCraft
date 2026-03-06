@@ -122,6 +122,7 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         vao = GL45C.glCreateVertexArrays();
         GL30.glBindVertexArray(vao);
 
+
         vertexVbo = GL15.glGenBuffers();
         FloatBuffer posBuffer = MemoryUtil.memAllocFloat(vertices.length * 3);
         for (Triplet<Vector3f, Vector2f, Vector3f> vertex : vertices) {
@@ -298,8 +299,6 @@ public class InstancedMesh<I extends InstancedMesh.InstanceData> {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.enableCull();
-
-        GL20.glUseProgram(0);
 
         for (var loc : attrLocations) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 0);
