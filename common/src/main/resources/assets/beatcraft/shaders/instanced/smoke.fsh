@@ -44,7 +44,7 @@ void main() {
 
     float sceneDepth = texture(u_depth, uv).r;
 
-    vec4 tex = texture(u_texture, uv);
+    vec4 tex = texture(u_texture, v_uv);
     vec4 fog = texture(u_bloomfog, (screenUV.xy/(-screenUV.z*4.0))+0.5);
 
     vec3 t = tex.rgb;
