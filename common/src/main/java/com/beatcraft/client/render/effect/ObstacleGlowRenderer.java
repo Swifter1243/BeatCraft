@@ -43,8 +43,8 @@ public class ObstacleGlowRenderer {
         Vector3f p1normal = MemoryPool.newVector3f(pos1).sub(cameraPos).normalize();
         Vector3f p2normal = MemoryPool.newVector3f(pos2).sub(cameraPos).normalize();
 
-        Vector3f p1offset = MemoryPool.newVector3f(lineNormal).cross(p1normal).normalize().mul(0.05f);
-        Vector3f p2offset = lineNormal.cross(p2normal).normalize().mul(0.05f); // lineNormal ownership transfer
+        Vector3f p1offset = MemoryPool.newVector3f(lineNormal).cross(p1normal).normalize().mul(0.025f);
+        Vector3f p2offset = lineNormal.cross(p2normal).normalize().mul(0.025f);
 
         var out = new Vector3f[]{
             MemoryPool.newVector3f(pos1).add(p1offset),
@@ -80,7 +80,7 @@ public class ObstacleGlowRenderer {
 
             var mesh = buildEdge(e0, e1, cameraPos);
 
-            int fadeColor = (0x00FFFFFF & color) | 0x01000000;
+            int fadeColor = (0x00_FFFFFF & color) | 0x01_000000;
 
             buffer.addVertex(e0.x - cameraPos.x, e0.y - cameraPos.y, e0.z - cameraPos.z).setColor(0xFFFFFFFF);
             buffer.addVertex(e1.x - cameraPos.x, e1.y - cameraPos.y, e1.z - cameraPos.z).setColor(0xFFFFFFFF);

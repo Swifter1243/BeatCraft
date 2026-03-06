@@ -221,9 +221,11 @@ public class BeatmapRenderer {
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+        // RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
 
         for (var call : laserRenderCalls) {
             call.accept(buffer, cameraPos);
