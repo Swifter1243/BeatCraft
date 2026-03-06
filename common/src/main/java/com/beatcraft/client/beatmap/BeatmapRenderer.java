@@ -48,6 +48,7 @@ public class BeatmapRenderer {
     public final ArrayList<BiConsumer<BufferBuilder, Vector3f>> lightRenderCalls = new ArrayList<>();
     public final ArrayList<BiConsumer<BufferBuilder, Vector3f>> arcRenderCalls = new ArrayList<>();
 
+    private static final long START = System.nanoTime();
 
     public BeatmapRenderer(BeatmapController map, RenderStyle style) {
         mapController = map;
@@ -277,7 +278,7 @@ public class BeatmapRenderer {
 
             RenderSystem.setShader(() -> ObstacleGlowRenderer.distortionShader);
             RenderSystem.setShaderTexture(0, scene.getColorTextureId());
-            ObstacleGlowRenderer.distortionShader.safeGetUniform("Time").set(System.nanoTime() / 1_000_000_000f);
+            ObstacleGlowRenderer.distortionShader.safeGetUniform("Time").set((START - System.nanoTime()) / 1_000_000_000f);
 
             buff.sortQuads(((BufferBuilderAccessor) buffer).beatcraft$getAllocator(), VertexSorting.DISTANCE_TO_ORIGIN);
 

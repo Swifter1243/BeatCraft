@@ -14,7 +14,7 @@ public class Color {
     }
 
     public static Color fromHexString(String hex) {
-        return new Color(Integer.parseInt(hex, 16));
+        return new Color((int) Long.parseLong(hex, 16));
     }
 
     public Color(float red, float green, float blue) {

@@ -67,13 +67,6 @@ public class ObstacleGlowRenderer {
 
     }
 
-    public static void renderMirrored(BeatmapController map, Vector3f position, Quaternionf orientation, Hitbox bounds, int color) {
-        Vector3f flippedPos = position.mul(1, -1, 1);
-        Quaternionf flippedOrientation = MemoryPool.newQuaternionf(-orientation.x, orientation.y, -orientation.z, orientation.w);
-        MemoryPool.release(orientation);
-        // map.recordMirrorLaserRenderCall((buffer, camera) -> _render(flippedPos, flippedOrientation, bounds, color, buffer, camera, true));
-    }
-
     public static void _render(Vector3f position, Quaternionf orientation, Hitbox bounds, int color, BufferBuilder buffer, Vector3f cameraPos, boolean mirrored) {
         var edges = BeatcraftRenderer.getCubeEdges(bounds.min, bounds.max);
 

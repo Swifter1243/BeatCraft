@@ -60,8 +60,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
         renderMirrored(MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation));
 
         ObstacleGlowRenderer.render(mapController, MemoryPool.newVector3f(localPos), MemoryPool.newQuaternionf(rotation), bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
-        ObstacleGlowRenderer.renderMirrored(mapController, localPos, rotation, bounds, new Color(data.getColor()).withAlpha(alpha).toARGB());
-
     }
 
     @Override
