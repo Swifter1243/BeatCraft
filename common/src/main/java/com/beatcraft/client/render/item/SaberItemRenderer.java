@@ -544,7 +544,7 @@ public class SaberItemRenderer {
     }
 
     public static final ArrayList<SaberModel> models = new ArrayList<>();
-    private static SaberModel active = null;
+    private static SaberModel defaultModel = null;
     private static SaberModel builtin = null;
 
     private static boolean initialized = false;
@@ -565,7 +565,7 @@ public class SaberItemRenderer {
 
         if (modelFolders == null) {
             Beatcraft.LOGGER.error("Failed to load custom sabers");
-            return;
+            modelFolders = new File[]{};
         }
 
         models.forEach(SaberModel::destroy);
@@ -598,6 +598,8 @@ public class SaberItemRenderer {
             }
         }
 
+        builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"));
+        models.add(builtin);
         var legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy.json"), Beatcraft.id("textures/item/saber.png"));
         models.add(legacy);
         legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy_updated.json"), Beatcraft.id("textures/item/saber.png"));
@@ -605,19 +607,28 @@ public class SaberItemRenderer {
 
     }
 
-    public static void selectModel(String id) {
+    public static SaberModel getModel(String id) {
+        for (var model : models) {
+            if (model.id.equals(id)) {
+                return model;
+            }
+        }
+        return defaultModel;
+    }
+
+    public static void selectDefaultModel(String id) {
         var found = false;
         for (var model : models) {
             if (model.id.equals(id)) {
-                active = model;
+                defaultModel = model;
                 found = true;
                 break;
             }
         }
         if (!found) {
-            active = builtin;
+            defaultModel = builtin;
         }
-        BeatcraftClient.playerConfig.preferences.selectedSaber(active.id);
+        BeatcraftClient.playerConfig.preferences.selectedSaber(defaultModel.id);
     }
 
     public static void init() {
@@ -625,10 +636,7 @@ public class SaberItemRenderer {
 
         loadCustomModels();
 
-        builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"));
-        models.add(builtin);
-
-        selectModel(BeatcraftClient.playerConfig.preferences.selectedSaber());
+        selectDefaultModel(BeatcraftClient.playerConfig.preferences.selectedSaber());
 
         initialized = true;
     }
@@ -651,7 +659,16 @@ public class SaberItemRenderer {
             color = BeatmapManager.nearestActiveBeatmapToPlayer().difficulty.getSetDifficulty().getColorScheme().getNoteRightColor().toARGB();
         }
 
-        active.render(matrices.last().pose(), color, cameraPos, mode == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || mode == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || mode == ItemDisplayContext.GUI);
+        var bypassBloom = mode == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+            || mode == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+            || mode == ItemDisplayContext.GUI;
 
+        var model = stack.get(ModComponents.SABER_MODEL.get());
+
+        if (model == null) {
+            defaultModel.render(matrices.last().pose(), color, cameraPos, bypassBloom);
+        } else {
+            getModel(model).render(matrices.last().pose(), color, cameraPos, bypassBloom);
+        }
     }
 }

@@ -32,6 +32,14 @@ public class ModComponents {
                 .build()
         );
 
+    public static final RegistrySupplier<DataComponentType<String>> SABER_MODEL =
+        COMPONENTS.register("saber_model", () ->
+            DataComponentType.<String>builder()
+                .persistent(Codec.STRING)
+                .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                .build()
+        );
+
     public static void register() {
         COMPONENTS.register();
     }
