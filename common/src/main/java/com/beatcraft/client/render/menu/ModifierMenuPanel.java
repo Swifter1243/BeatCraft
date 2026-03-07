@@ -622,6 +622,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
     private void setSabersPage() {
+        refreshSabersList();
         currentPage = SongSelectPage.Sabers;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SaberPreview;
         BeatcraftClient.playerConfig.writeToFile();
