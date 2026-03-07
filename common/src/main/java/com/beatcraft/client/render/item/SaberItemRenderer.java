@@ -598,11 +598,11 @@ public class SaberItemRenderer {
             }
         }
 
-        builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"));
+        builtin = MeshLoader.loadSaberMesh(Beatcraft.id("saber/builtin_saber.json"), Beatcraft.id("textures/item/saber.png"), "#builtin:default");
         models.add(builtin);
-        var legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy.json"), Beatcraft.id("textures/item/saber.png"));
+        var legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy.json"), Beatcraft.id("textures/item/saber.png"), "#builtin:legacy");
         models.add(legacy);
-        legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy_updated.json"), Beatcraft.id("textures/item/saber.png"));
+        legacy = MeshLoader.loadSaberMesh(Beatcraft.id("saber/legacy_updated.json"), Beatcraft.id("textures/item/saber.png"), "#builtin:legacy2");
         models.add(legacy);
 
     }

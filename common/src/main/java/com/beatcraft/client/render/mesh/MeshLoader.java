@@ -415,13 +415,13 @@ public class MeshLoader {
         }
     }
 
-    public static SaberItemRenderer.SaberModel loadSaberMesh(ResourceLocation identifier, ResourceLocation texture) {
+    public static SaberItemRenderer.SaberModel loadSaberMesh(ResourceLocation identifier, ResourceLocation texture, String overrideId) {
         try {
             var reader = Minecraft.getInstance().getResourceManager().getResource(identifier).orElseThrow().openAsReader();
             var rawJson = String.join("\n", reader.lines().toList());
             var json = JsonParser.parseString(rawJson).getAsJsonObject();
             var split = identifier.getPath().split("/");
-            return loadSectionedMesh(json, split[split.length-1], texture);
+            return loadSectionedMesh(json, split[split.length-1], texture, overrideId);
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to load model json!", e);
             throw new RuntimeException(e);
@@ -455,14 +455,15 @@ public class MeshLoader {
             }
 
             var tex = new DynamicTexture(f.getAbsolutePath());
-            return loadSectionedMesh(json, p.getFileName().toString(), tex.id());
+            var fn = p.getFileName().toString();
+            return loadSectionedMesh(json, fn, tex.id(), fn);
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to load model json!", e);
             return null;
         }
     }
 
-    private static SaberItemRenderer.SaberModel loadSectionedMesh(JsonObject json, String fileName, ResourceLocation texture) {
+    private static SaberItemRenderer.SaberModel loadSectionedMesh(JsonObject json, String fileName, ResourceLocation texture, String id) {
         var displayName = JsonUtil.getOrDefault(json, "display_name", JsonElement::getAsString, fileName);
         var authors = JsonUtil.getOrDefault(json, "authors", JsonElement::getAsJsonArray, new JsonArray()).asList().stream().map(JsonElement::getAsString).toList();
 
@@ -626,7 +627,7 @@ public class MeshLoader {
 
         });
 
-        return new SaberItemRenderer.SaberModel(fileName, displayName, authors, meshes, complexityScore.get(), texture);
+        return new SaberItemRenderer.SaberModel(id, displayName, authors, meshes, complexityScore.get(), texture);
 
     }
 

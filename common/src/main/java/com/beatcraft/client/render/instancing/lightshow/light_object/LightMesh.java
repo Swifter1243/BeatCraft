@@ -118,37 +118,39 @@ import java.util.Stack;
 public class LightMesh {
 
     private static final class Location {
-        static final int POSITION = 0;
-        static final int UV = 1;
-        static final int NORMAL = 2;
-        static final int LAYERS = 3;
+        static final int POSITION_U = 0;
+        static final int NORMAL_V = 1;
+        static final int LAYERS = 2;
+        static final int CLIPPING_PLANE = 3;
         static final int TRANSFORM = 4;
         static int color(int channel) {
             return 8 + Math.clamp(channel, 0, 7);
         }
         static final int[] ALL_INSTANCED = new int[]{
+            CLIPPING_PLANE,
             TRANSFORM, TRANSFORM + 1, TRANSFORM + 2, TRANSFORM + 3,
             8, 9, 10, 11,
             12, 13, 14, 15
         };
     }
 
-    private record Draw(Matrix4f transform, LightState[] colors) {
+    private record Draw(Matrix4f transform, LightState[] colors, Vector4f clippingPlane) {
         private static final Stack<Draw> shared = new Stack<>();
 
-        public static Draw create(Matrix4f transform, LightState[] colors) {
+        public static Draw create(Matrix4f transform, LightState[] colors, Vector4f clippingPlane) {
             if (shared.empty()) {
                 var copyColors = new LightState[colors.length];
                 for (int i = 0; i < colors.length; i++) {
                     copyColors[i] = colors[i].copy();
                 }
-                return new Draw(new Matrix4f(transform), copyColors);
+                return new Draw(new Matrix4f(transform), copyColors, clippingPlane);
             } else {
                 var inst = shared.pop();
                 inst.transform.set(transform);
                 for (int i = 0; i < colors.length; i++) {
                     inst.colors[i].set(colors[i]);
                 }
+                inst.clippingPlane.set(clippingPlane);
                 return inst;
             }
         }
@@ -158,6 +160,8 @@ public class LightMesh {
         }
 
         public void upload(FloatBuffer buffer, boolean isBloom) {
+
+            buffer.put(clippingPlane.x).put(clippingPlane.y).put(clippingPlane.z).put(clippingPlane.w);
 
             buffer.put(transform.m00()).put(transform.m01()).put(transform.m02()).put(transform.m03());
             buffer.put(transform.m10()).put(transform.m11()).put(transform.m12()).put(transform.m13());
@@ -260,6 +264,10 @@ public class LightMesh {
             initialized = true;
         }
 
+        for (var mesh : meshes.values()) {
+            mesh.loaded = false;
+        }
+
         meshes.values().forEach(LightMesh::buildMesh);
 
     }
@@ -346,7 +354,6 @@ public class LightMesh {
 
     private int vao;
     private int vertexVbo;
-    private int uvVbo;
     private int normalVbo;
     private int materialVbo;
     private int indicesVbo;
@@ -371,7 +378,7 @@ public class LightMesh {
     }
 
     public void draw(Matrix4f transform, LightState[] colors, Vector3f worldPos) {
-        if (doSolid) draws.add(Draw.create(transform, colors));
+        if (doSolid) draws.add(Draw.create(transform, colors, new Vector4f()));
         if (doMirroring) {
             var renderPos = transform.getTranslation(MemoryPool.newVector3f());
             var renderRotation = transform.getUnnormalizedRotation(MemoryPool.newQuaternionf());
@@ -382,17 +389,17 @@ public class LightMesh {
             var mirrorY = worldPos.y;
 
             var flipped = new Matrix4f()
-                .translate(0, mirrorY-cameraPos.y, 0)   // move mirror plane to y = 0
-                .scale(1, -1, 1)            // flip over Y
-                .translate(0, -(mirrorY-cameraPos.y), 0)  // move back
+                .translate(0, mirrorY-cameraPos.y, 0)
+                .scale(1, -1, 1)
+                .translate(0, -(mirrorY-cameraPos.y), 0)
                 .translate(renderPos)
                 .rotate(renderRotation)
                 .scale(renderScale);
 
-            mirrorDraws.add(Draw.create(flipped, colors));
+            mirrorDraws.add(Draw.create(flipped, colors, new Vector4f(0, -1, 0, mirrorY)));
         }
-        if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors));
-        if (doBloom) bloomDraws.add(Draw.create(transform, colors));
+        if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors, new Vector4f()));
+        if (doBloom) bloomDraws.add(Draw.create(transform, colors, new Vector4f()));
     }
 
 
@@ -403,10 +410,6 @@ public class LightMesh {
 
     private static final ResourceLocation lightObjectVsh = Beatcraft.id("shaders/instanced/light_object.vsh");
     private static final ResourceLocation lightObjectFsh = Beatcraft.id("shaders/instanced/light_object.fsh");
-
-    private void putVec3f(FloatBuffer buf, Vector3f vec) {
-        buf.put(vec.x).put(vec.y).put(vec.z);
-    }
 
     private void putVec3i(IntBuffer buf, int a, int b, int c) {
         buf.put(a).put(b).put(c);
@@ -437,66 +440,44 @@ public class LightMesh {
         GL30.glBindVertexArray(vao);
         vertexVbo = GL15.glGenBuffers();
         indicesVbo = GL15.glGenBuffers();
-        uvVbo = GL15.glGenBuffers();
         normalVbo = GL15.glGenBuffers();
         materialVbo = GL15.glGenBuffers();
 
-        var uvBuffer = MemoryUtil.memAllocFloat(triangles.size() * 3 * 2);
-        var normalBuffer = MemoryUtil.memAllocFloat(triangles.size() * 3 * 3);
-        var materialBuffer = MemoryUtil.memAllocInt(triangles.size() * 3 * 3);
+        int vertexCount = triangles.size() * 3;
+        indicesLength = vertexCount;
 
+        var positionUBuffer = MemoryUtil.memAllocFloat(vertexCount * 4);
+        var normalVBuffer   = MemoryUtil.memAllocFloat(vertexCount * 4);
+        var materialBuffer  = MemoryUtil.memAllocInt(vertexCount * 3);
+        var indexBuffer     = MemoryUtil.memAllocInt(vertexCount);
 
-        var vertices = new ArrayList<Vector3f>();
+        for (int i = 0; i < vertexCount; i++) {
+            indexBuffer.put(i);
+        }
 
         for (var tri : triangles) {
-            vertices.add(tri.a.vertex);
-            vertices.add(tri.b.vertex);
-            vertices.add(tri.c.vertex);
-
             var offset = uvMap.get(meshTextures.get(tri.data.textureId));
 
-            uvBuffer.put(tri.a.uv.x + offset.x).put(tri.a.uv.y + offset.y);
-            uvBuffer.put(tri.b.uv.x + offset.x).put(tri.b.uv.y + offset.y);
-            uvBuffer.put(tri.c.uv.x + offset.x).put(tri.c.uv.y + offset.y);
+            positionUBuffer.put(tri.a.vertex.x).put(tri.a.vertex.y).put(tri.a.vertex.z).put(tri.a.uv.x + offset.x);
+            positionUBuffer.put(tri.b.vertex.x).put(tri.b.vertex.y).put(tri.b.vertex.z).put(tri.b.uv.x + offset.x);
+            positionUBuffer.put(tri.c.vertex.x).put(tri.c.vertex.y).put(tri.c.vertex.z).put(tri.c.uv.x + offset.x);
 
-            putVec3f(normalBuffer, tri.a.normal);
-            putVec3f(normalBuffer, tri.b.normal);
-            putVec3f(normalBuffer, tri.c.normal);
+            normalVBuffer.put(tri.a.normal.x).put(tri.a.normal.y).put(tri.a.normal.z).put(tri.a.uv.y + offset.y);
+            normalVBuffer.put(tri.b.normal.x).put(tri.b.normal.y).put(tri.b.normal.z).put(tri.b.uv.y + offset.y);
+            normalVBuffer.put(tri.c.normal.x).put(tri.c.normal.y).put(tri.c.normal.z).put(tri.c.uv.y + offset.y);
 
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
-
         }
 
-        //var indexedVertices = GlUtil.getDedupedVertices(vertices);
-
-        var vertexBuffer = MemoryUtil.memAllocFloat(vertices.size() * 3);
-        var indexBuffer = MemoryUtil.memAllocInt(vertices.size());
-        indicesLength = vertices.size();
-
-        var verts = new float[vertices.size() * 3];
-        var indices = new int[vertices.size()];
-        var i = 0;
-        for (var vert : vertices) {
-            verts[i * 3] = vert.x;
-            verts[(i * 3) + 1] = vert.y;
-            verts[(i * 3) + 2] = vert.z;
-            indices[i] = i++;
-        }
-
-        vertexBuffer.put(verts);
-        indexBuffer.put(indices);
-
-        vertexBuffer.flip();
+        positionUBuffer.flip();
+        normalVBuffer.flip();
         indexBuffer.flip();
-        uvBuffer.flip();
-        normalBuffer.flip();
         materialBuffer.flip();
 
-        uploadFloatBuffer(vertexVbo, Location.POSITION, 3, vertexBuffer);
-        uploadFloatBuffer(uvVbo, Location.UV, 2, uvBuffer);
-        uploadFloatBuffer(normalVbo, Location.NORMAL, 3, normalBuffer);
+        uploadFloatBuffer(vertexVbo, Location.POSITION_U, 4, positionUBuffer);
+        uploadFloatBuffer(normalVbo, Location.NORMAL_V, 4, normalVBuffer);
         uploadIntBuffer(materialVbo, Location.LAYERS, 3, materialBuffer);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
@@ -512,26 +493,35 @@ public class LightMesh {
     }
 
     private static final int COLOR_COUNT = 8;
-    private static final int FRAME_SIZE = 16 + (4 * COLOR_COUNT);
+    private static final int FRAME_SIZE = 4 + 16 + (4 * COLOR_COUNT);
     private static final int STRIDE = FRAME_SIZE * 4;
+    private static final int CLIP_PLANE_OFFSET = 0;
+    private static final int TRANSFORM_OFFSET = 4 * 4;
+    private static final int COLORS_OFFSET = TRANSFORM_OFFSET + 16 * 4;
     private void setupInstanceBuffer() {
-
         instanceVbo = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
 
+        // Clip plane (vec4, location 3)
+        GL20.glVertexAttribPointer(Location.CLIPPING_PLANE, 4, GL11.GL_FLOAT, false, STRIDE, CLIP_PLANE_OFFSET);
+        GL20.glEnableVertexAttribArray(Location.CLIPPING_PLANE);
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.CLIPPING_PLANE, 1);
+
+        // Transform mat4 (locations 4-7)
         for (int i = 0; i < 4; i++) {
             int location = Location.TRANSFORM + i;
             GL20.glVertexAttribPointer(
-                location, 4, GL11.GL_FLOAT, false, STRIDE, i * 16
+                location, 4, GL11.GL_FLOAT, false, STRIDE, TRANSFORM_OFFSET + i * 16
             );
             GL20.glEnableVertexAttribArray(location);
             ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
         }
 
+        // Colors (locations 8-15)
         for (int i = 0; i < COLOR_COUNT; i++) {
             int location = Location.color(i);
             GL20.glVertexAttribPointer(
-                location, 4, GL11.GL_FLOAT, false, STRIDE, (16 * 4) + (i * 16)
+                location, 4, GL11.GL_FLOAT, false, STRIDE, COLORS_OFFSET + i * 16
             );
             GL20.glEnableVertexAttribArray(location);
             ARBInstancedArrays.glVertexAttribDivisorARB(location, 1);
@@ -650,9 +640,10 @@ public class LightMesh {
         // PHASE 1: enable instancing attributes
         GL30.glBindVertexArray(vao);
 
-        ARBInstancedArrays.glVertexAttribDivisorARB(Location.POSITION, 0);
-        ARBInstancedArrays.glVertexAttribDivisorARB(Location.UV, 0);
-        ARBInstancedArrays.glVertexAttribDivisorARB(Location.NORMAL, 0);
+        GL30.glEnable(GL30.GL_CLIP_DISTANCE0);
+
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.POSITION_U, 0);
+        ARBInstancedArrays.glVertexAttribDivisorARB(Location.NORMAL_V, 0);
 
         for (var loc : Location.ALL_INSTANCED) {
             ARBInstancedArrays.glVertexAttribDivisorARB(loc, 1);
@@ -791,6 +782,7 @@ public class LightMesh {
         RenderSystem.blendFunc(oldBlendSrc, oldBlendDst);
 
         GL15.glFrontFace(GL15.GL_CCW);
+        GL30.glDisable(GL30.GL_CLIP_DISTANCE0);
 
         // Restore texture bindings
         for (int i = 0; i < 3; i++) {
@@ -1004,7 +996,6 @@ public class LightMesh {
 
     public void cleanup() {
         GL15.glDeleteBuffers(vertexVbo);
-        GL15.glDeleteBuffers(uvVbo);
         GL15.glDeleteBuffers(normalVbo);
         GL15.glDeleteBuffers(materialVbo);
         GL15.glDeleteBuffers(indicesVbo);
