@@ -1,6 +1,10 @@
 # User-specific stuff
 .idea/
 test_data/
+.settings/
+.classpath
+.project
+bin/
 
 # Compiled class file
 *.class
