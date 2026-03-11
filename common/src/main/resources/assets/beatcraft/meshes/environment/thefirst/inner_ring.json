@@ -80,11 +80,12 @@
   },
   "mesh": [
     {
-      "part": "left"
+      "part": "left",
+      "rotation": [0, 0, -0.3826834, 0.9238795]
     },
     {
       "part": "left",
-      "rotation": [0, 0, 1, 0]
+      "rotation": [0, 0, 0.9238795, 0.3826834]
     }
   ],
   "textures": {

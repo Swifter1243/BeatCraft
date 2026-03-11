@@ -1,0 +1,63 @@
+{
+  "mesh_format": 1,
+  "credits": ["Beatcraft", "Westbot"],
+  "parts": {
+    "runway": {},
+    "long_light": {},
+    "back_light": {},
+    "chevron": {}
+  },
+  "mesh": [
+    { "part": "runway" },
+    {
+      "part": "long_light",
+      "position": [0, 0, 0]
+    },
+    {
+      "part": "long_light",
+      "position": [0, 0, 0],
+      "remap_data": { "l0": "l1" }
+    },
+    {
+      "part": "long_light",
+      "position": [0, 0, 0],
+      "remap_data": { "l0": "l2" }
+    },
+    {
+      "part": "long_light",
+      "position": [0, 0, 0],
+      "remap_data": { "l0": "l3" }
+    },
+    {
+      "part": "back_light",
+      "position": [0, 0, 0]
+    },
+    {
+      "part": "back_light",
+      "position": [0, 0, 0],
+      "remap_data": { "l4": "l5" }
+    },
+    { "part": "chevron" },
+    {
+      "part": "chevron",
+      "scale": [-1, 1, 1],
+      "remap_data": { "l6": "l7" }
+    }
+  ],
+  "textures": {
+    "1": "beatcraft:textures/block/black_mirror.png",
+    "2": "beatcraft:textures/gameplay_objects/arrow.png"
+  },
+  "data": {
+    "default": { "material": 0, "texture": 1, "color": 0 },
+    "l0": { "material": 2, "texture": 2, "color": 0 },
+    "l1": { "material": 2, "texture": 2, "color": 1 },
+    "l2": { "material": 2, "texture": 2, "color": 2 },
+    "l3": { "material": 2, "texture": 2, "color": 3 },
+    "l4": { "material": 2, "texture": 2, "color": 4 },
+    "l5": { "material": 2, "texture": 2, "color": 5 },
+    "l6": { "material": 2, "texture": 2, "color": 6 },
+    "l7": { "material": 2, "texture": 2, "color": 7 }
+  },
+  "cull": true
+}

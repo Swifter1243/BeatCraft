@@ -85,37 +85,39 @@
   },
   "mesh": [
     {
-      "part": "top"
+      "part": "top",
+      "rotation": [0, 0, 0.3826834, 0.9238795]
     },
     {
       "part": "top",
-      "rotation": [0, 0, 0.7071068, 0.7071068]
+      "rotation": [0, 0, 0.9238795, 0.3826834]
     },
     {
       "part": "top",
-      "rotation": [0, 0, 1, 0]
+      "rotation": [0, 0, -0.9238795, 0.3826834]
     },
     {
       "part": "top",
-      "rotation": [0, 0, 0.7071068, -0.7071068]
+      "rotation": [0, 0, -0.3826834, 0.9238795]
     },
     {
-      "part": "top_light"
+      "part": "top_light",
+      "rotation": [0, 0, 0.3826834, 0.9238795]
     },
     {
       "part": "top_light",
       "remap_data": { "l0": "l1" },
-      "rotation": [0, 0, 0.7071068, 0.7071068]
+      "rotation": [0, 0, 0.9238795, 0.3826834]
     },
     {
       "part": "top_light",
       "remap_data": { "l0": "l2" },
-      "rotation": [0, 0, 1, 0]
+      "rotation": [0, 0, -0.9238795, 0.3826834]
     },
     {
       "part": "top_light",
       "remap_data": { "l0": "l3" },
-      "rotation": [0, 0, 0.7071068, -0.7071068]
+      "rotation": [0, 0, -0.3826834, 0.9238795]
     }
   ],
   "textures": {
@@ -124,10 +126,10 @@
   },
   "data": {
     "default": { "material": 0, "texture": 1, "color": 0 },
-    "l0": { "material": 1, "texture": 2, "color": 0 },
-    "l1": { "material": 1, "texture": 2, "color": 1 },
-    "l2": { "material": 1, "texture": 2, "color": 2 },
-    "l3": { "material": 1, "texture": 2, "color": 3 }
+    "l0": { "material": 2, "texture": 2, "color": 0 },
+    "l1": { "material": 2, "texture": 2, "color": 1 },
+    "l2": { "material": 2, "texture": 2, "color": 2 },
+    "l3": { "material": 2, "texture": 2, "color": 3 }
   },
   "cull": true
 }

@@ -434,7 +434,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                     }
                 ),
                 new Vector3f(0, 2, 14),
-                30, 45 * rpd, 0
+                30, 0, 0
             ),
             new RingLightHandler.RingLightData(
                 MeshLoader.THE_FIRST_OUTER_RING,
@@ -464,7 +464,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                     }
                 ),
                 new Vector3f(0, 2, 7),
-                15, 45 * rpd, 0
+                15, 0, 0
             )
         );
 

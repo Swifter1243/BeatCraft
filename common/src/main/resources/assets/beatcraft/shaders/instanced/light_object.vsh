@@ -40,7 +40,7 @@ void main() {
     vec3 in_normal = in_normal_v.xyz;
     vec2 in_uv = vec2(in_position_u.w, in_normal_v.w);
 
-    if (in_colorLayer_materialLayer_flags.y == 1) {
+    if (in_colorLayer_materialLayer_flags.y == 1 || in_colorLayer_materialLayer_flags.y == 2) {
         vec4 colors[8] = vec4[8](c0, c1, c2, c3, c4, c5, c6, c7);
         v_color = colors[clamp(in_colorLayer_materialLayer_flags.x, 0, 7)];
     } else {

@@ -20,6 +20,7 @@ public class InnerRing extends LightObject {
         orientation = new Quaternionf().rotationZ(45 * Mth.DEG_TO_RAD);
     }
 
+
     @Override
     public InnerRing cloneOffset(Vector3f offset) {
         return this;

@@ -1,0 +1,34 @@
+{
+  "mesh_format": 1,
+  "credits": ["Beatcraft", "Westbot"],
+  "parts": {
+    "top": {
+
+    }
+  },
+  "mesh": [
+    {
+      "part": "top",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0, 1]
+    },
+    {
+      "part": "top",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0, 1]
+    },
+    {
+      "part": "top",
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0, 1]
+    }
+  ],
+  "textures": {
+    "1": "beatcraft:textures/block/black_mirror.png",
+    "2": "beatcraft:textures/gameplay_objects/arrow.png"
+  },
+  "data": {
+    "default": { "material": 0, "texture": 1, "color": 0 }
+  },
+  "cull": true
+}

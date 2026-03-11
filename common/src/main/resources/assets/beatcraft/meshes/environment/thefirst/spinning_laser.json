@@ -1,0 +1,17 @@
+{
+  "mesh_format": 1,
+  "credits": ["Beatcraft", "Westbot"],
+  "parts": {
+    "laser": {}
+  },
+  "mesh": [
+    { "part": "laser" }
+  ],
+  "textures": {
+    "1": "beatcraft:textures/gameplay_objects/arrow.png"
+  },
+  "data": {
+    "default": { "material": 2, "texture": 1, "color": 0 }
+  },
+  "cull": true
+}

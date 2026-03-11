@@ -10,7 +10,7 @@ in vec2 v_uv;
 in vec4 v_color;
 in vec3 v_pos;
 in vec3 v_normal;
-flat in int v_material; // 0 = solid, 1 = light
+flat in int v_material; // 0 = solid, 1 = light/solid, 2 = light/nothing
 in vec3 screenUV;
 
 uniform int passType; // 0 = normal, 1 = bloom, 2 = bloomfog
