@@ -42,6 +42,9 @@ public class BeatmapLogicController {
     public Vector3f playerGlobalPosition = new Vector3f();
     public Quaternionf playerGlobalRotation = new Quaternionf();
 
+    public Quaternionf leftSaberRotationAtCut = new Quaternionf();
+    public Quaternionf rightSaberRotationAtCut = new Quaternionf();
+
     private static final Vector3f SABER_TIP_OFFSET = new Vector3f(0, 1, 0);
 
     private static final int MISS_HP = 15;
@@ -133,7 +136,7 @@ public class BeatmapLogicController {
             left.getRotation(leftSaberRotation);
             left.getPositionalVelocity((float) deltaTime, SABER_TIP_OFFSET, leftSaberTipVelocity);
         } else {
-            leftSaberPos.set(0, -600, 0); // just stick it below the void I guess?
+            leftSaberPos.set(1, -600, 0); // just stick it below the void I guess?
         }
 
         if (rightItem) {
@@ -141,7 +144,7 @@ public class BeatmapLogicController {
             right.getRotation(rightSaberRotation);
             right.getPositionalVelocity((float) deltaTime, SABER_TIP_OFFSET, rightSaberTipVelocity);
         } else {
-            rightSaberPos.set(0, -600, 0);
+            rightSaberPos.set(-1, -600, 0);
         }
 
         head.getPosition(headPos);
@@ -302,23 +305,33 @@ public class BeatmapLogicController {
         return dot >= 0.7071f; // sqrt(0.5)
     }
 
+    private static final Vector3f NORMAL = new Vector3f();
+
+    private static final float MAX_SCORE_VELOCITY = 12.0f;
 
     private void calculateScore(PhysicalScorableObject colorNote, Vector3f velocity, Vector3f base, Vector3f tip) {
 
+        // Cut position accuracy: 0-15 points based on how close to note center
         var normal = getPlaneNormal(base, tip, velocity, new Vector3f());
         var dist = distanceToOrigin(tip, normal);
+        int accPoints = (int) Math.clamp(
+            15 * (1 - MathUtil.inverseLerp(0, 0.25f, dist)),
+            0, 15
+        );
 
-        var angle = (colorNote.score$getMaxSwingInAngle() + colorNote.score$getMaxFollowThroughAngle()) * Mth.DEG_TO_RAD;
-        var angleScore = colorNote.score$getMaxSwingInScore() + colorNote.score$getMaxFollowThroughScore();
+        // Swing score: velocity magnitude as proxy for swing arc
+        float swingT = Math.clamp(localVel.length() / MAX_SCORE_VELOCITY, 0f, 1f);
 
-        int accPoints = (int) Math.clamp(15 * (1 - MathUtil.inverseLerp(0, 0.25f, dist)), 0, 15);
+        int swingPoints  = (int) (colorNote.score$getMaxSwingInScore()        * swingT); // 0-70
+        int followPoints = (int) (colorNote.score$getMaxFollowThroughScore()  * swingT); // 0-30
 
-        int swingPoints = (int) Math.clamp(angleScore * MathUtil.inverseLerp(0, Math.PI * angle, velocity.length()), 0, 100);
+        int totalScore = accPoints + swingPoints + followPoints;
+        int maxScore = colorNote.score$getMaxCutPositionScore()       // 15
+                     + colorNote.score$getMaxSwingInScore()           // 70
+                     + colorNote.score$getMaxFollowThroughScore();    // 30 -> 115
 
-        colorNote.score$setScoreState(ScoreState.goodCut(accPoints + swingPoints));
-
-        processGoodCut(accPoints + swingPoints, angleScore);
-
+        colorNote.score$setScoreState(ScoreState.goodCut(totalScore));
+        processGoodCut(totalScore, maxScore);
     }
 
     private static final Vector3f localHeadPos = new Vector3f();
@@ -363,7 +376,7 @@ public class BeatmapLogicController {
     }
 
     public static float distanceToOrigin(Vector3f planeIncident, Vector3f planeNormal) {
-        return Math.abs(planeNormal.dot(planeIncident)) / planeNormal.length();
+        return Math.abs(planeNormal.dot(planeIncident));
     }
 
 
@@ -546,7 +559,7 @@ public class BeatmapLogicController {
 
     public void addScore(int earned, int possible) {
         score += earned * bonusModifier;
-        maxPossibleScore += possible * bonusModifier;
+        maxPossibleScore += possible;
     }
 
 

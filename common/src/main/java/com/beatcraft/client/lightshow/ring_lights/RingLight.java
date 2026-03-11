@@ -1,11 +1,12 @@
-package com.beatcraft.client.lightshow.environment.thefirst;
+package com.beatcraft.client.lightshow.ring_lights;
 
 import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMeshInstance;
-import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.data.types.Color;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -14,10 +15,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class InnerRing extends LightObject {
+public class RingLight extends LightObject {
 
-    private final LightState[] states = new LightState[3];
+    private final int stateCount;
+    private final LightState[] states;
+    private final LightMesh lightMesh;
 
     public class SubLightController extends LightObject {
 
@@ -30,70 +34,87 @@ public class InnerRing extends LightObject {
 
         @Override
         public LightObject cloneOffset(Vector3f offset) {
+            // sub-controller should never be cloned
             throw new IllegalStateException("SubLightController was cloned.");
         }
 
         @Override
         public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
-
+            // sub-controller does not render
         }
 
         @Override
         public void setBrightness(float value) {
-            InnerRing.this.states[target].setBrightness(value);
+            RingLight.this.states[target].setBrightness(value);
         }
 
         @Override
         public void setColor(int color) {
-            InnerRing.this.states[target].setColor(new Color(color));
+            RingLight.this.states[target].setColor(new Color(color));
         }
 
         @Override
         public void setLightState(LightState state) {
-            InnerRing.this.states[target].set(state);
+            RingLight.this.states[target].set(state);
         }
     }
 
     public LightObject[] getControllers() {
-        return new LightObject[] {
-            new SubLightController(mapController, 0),
-            new SubLightController(mapController, 1),
-            new SubLightController(mapController, 2),
-        };
+        var controllers = new LightObject[stateCount];
+        for (int i = 0; i < stateCount; ++i) {
+            controllers[i] = new SubLightController(mapController, i);
+        }
+        return controllers;
     }
 
     private LightMeshInstance mesh;
 
-    private static final ArrayList<InnerRing> rings = new ArrayList<>();
+    private static final HashMap<LightMesh, ArrayList<RingLight>> rings = new HashMap<>();
 
     public static void clearInstances() {
-        rings.clear();
-    }
-
-    public static void reload() {
-        for (var ring : rings) {
-            ring.mesh = new LightMeshInstance(MeshLoader.THE_FIRST_INNER_RING);
+        for (var arr : rings.values()) {
+            arr.clear();
         }
     }
 
-    public InnerRing(BeatmapController map, Vector3f pos, Quaternionf ori) {
+    public static void clearInstances(LightMesh key) {
+        var arr = rings.get(key);
+        if (arr != null) arr.clear();
+    }
+
+    public static void reload() {
+        for (var key : rings.keySet()) {
+            for (var ring : rings.get(key)) {
+                ring.mesh = new LightMeshInstance(key);
+            }
+        }
+    }
+
+
+    public RingLight(BeatmapController map, Vector3f pos, Quaternionf ori, LightMesh lightMesh, int stateCount) {
         super(map);
-        rings.add(this);
+        if (!rings.containsKey(lightMesh)) {
+            rings.put(lightMesh, new ArrayList<>());
+        }
+        rings.get(lightMesh).add(this);
         position = pos;
         orientation = ori;
+        this.lightMesh = lightMesh;
+        this.stateCount = stateCount;
 
-        mesh = new LightMeshInstance(MeshLoader.THE_FIRST_INNER_RING);
+        mesh = new LightMeshInstance(lightMesh);
 
-        for (int i = 0; i < 3; ++i) {
+        states = new LightState[stateCount];
+
+        for (int i = 0; i < 7; ++i) {
             states[i] = new LightState(new Color(), 0);
         }
         lightState = new LightState(new Color(), 0);
     }
 
-
     @Override
     public LightObject cloneOffset(Vector3f offset) {
-        return new InnerRing(
+        return new RingSpike(
             mapController,
             position.add(offset, new Vector3f()),
             new Quaternionf(orientation)
@@ -107,7 +128,7 @@ public class InnerRing extends LightObject {
         mesh.transform.set(mat);
 
         mesh.setColor(0, lightState);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < stateCount; i++) {
             mesh.setColor(i+1, states[i]);
         }
         mesh.draw(mapController.worldPosition);
@@ -127,4 +148,5 @@ public class InnerRing extends LightObject {
     public void setLightState(LightState state) {
         lightState.set(state);
     }
+
 }

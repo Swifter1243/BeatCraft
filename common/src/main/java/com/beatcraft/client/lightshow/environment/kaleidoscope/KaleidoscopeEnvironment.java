@@ -7,17 +7,24 @@ import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
+import com.beatcraft.client.lightshow.ring_lights.RingLightHandlerOld;
 import com.beatcraft.client.render.environment.KaleidoscopeRenderer;
+import com.beatcraft.client.render.lights.FloodLight;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.util.Mth;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
     private final KaleidoscopeRenderer renderer = new KaleidoscopeRenderer();
 
-    private KaleidoscopeRingLights ringLights;
+    private RingLightHandler ringLights;
     /*
     Lights:
     2 light on opposite sides per segment
@@ -47,8 +54,89 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
     @Override
     public void setup() {
+        var rpd = Mth.DEG_TO_RAD;
 
-        ringLights = new KaleidoscopeRingLights(mapController);
+        AtomicInteger linkI = new AtomicInteger(1);
+        AtomicInteger linkO = new AtomicInteger(41);
+
+        ringLights = new RingLightHandler(
+            mapController,
+            new RingLightHandler.RingLightData(
+                (map, pos) -> new RingSpike(map, pos, new Quaternionf()),
+                (lights) -> {
+                    int idx = linkI.get();
+                    var light = lights.get(idx);
+                    linkI.set(idx + 2);
+                    return light;
+                },
+                new RingLightHandler.LightDelta(
+                    1, 40, 2, 5
+                ),
+                new RingLightHandler.PresetPositions(
+                    new float[]{
+                        -90 * rpd,
+                        90 * rpd
+                    },
+                    new float[]{
+                        0,
+                        1 * rpd, -1 * rpd,
+                        2 * rpd, -2 * rpd,
+                        5 * rpd, -5 * rpd,
+                        10 * rpd, -10 * rpd,
+                        12.5f * rpd, -12.5f * rpd,
+                        15 * rpd, -15 * rpd,
+                        20 * rpd, -20 * rpd,
+                        22.5f * rpd, -22.5f * rpd,
+                        25 * rpd, -25 * rpd,
+                        30 * rpd, -30 * rpd,
+                        45 * rpd, -45 * rpd,
+                    }
+                ),
+                new Vector3f(0, 0, 12),
+                20,
+                0, 45f * rpd
+            ),
+            new RingLightHandler.RingLightData(
+                (map, pos) -> new FloodLight(
+                    map,
+                    4f, 4, 250, 200, 2f,
+                    new float[]{20f},
+                    pos, new Quaternionf(), 1
+                ),
+                (lights) -> lights.get(linkO.getAndIncrement()),
+                new RingLightHandler.LightDelta(
+                    41, 61, 1, 0
+                ),
+                new RingLightHandler.PresetPositions(
+                    new float[]{
+                        -90 * rpd,
+                        -45 * rpd,
+                        90 * rpd,
+                        45 * rpd,
+                    },
+                    new float[]{
+                        0,
+                        1 * rpd,
+                        2 * rpd,
+                        3 * rpd,
+                        4 * rpd,
+                        5 * rpd,
+                        10 * rpd,
+                        15 * rpd,
+                        -1 * rpd,
+                        -2 * rpd,
+                        -3 * rpd,
+                        -4 * rpd,
+                        -5 * rpd,
+                        -10 * rpd,
+                        -15 * rpd,
+                    }
+                ),
+                new Vector3f(0, 0, 250),
+                10,
+                0, 10f * rpd
+            )
+        );
 
         middle = new HashMap<>();
         left = new HashMap<>();

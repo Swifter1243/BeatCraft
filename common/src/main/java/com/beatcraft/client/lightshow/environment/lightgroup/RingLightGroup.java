@@ -6,7 +6,7 @@ import com.beatcraft.client.lightshow.event.events.RingRotationEvent;
 import com.beatcraft.client.lightshow.event.events.RingZoomEvent;
 import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
-import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
+import com.beatcraft.client.lightshow.ring_lights.RingLightHandlerOld;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -24,8 +24,8 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
     private BeatmapController mapController;
 
-    private final RingLightHandler innerRing;
-    private final RingLightHandler outerRing;
+    private final RingLightHandlerOld innerRing;
+    private final RingLightHandlerOld outerRing;
 
     private final RandomSource random = RandomSource.create();
 
@@ -85,11 +85,11 @@ public class RingLightGroup extends ActionLightGroupV2 {
 
         var rpd = Mth.DEG_TO_RAD;
 
-        innerRing = new RingLightHandler(
+        innerRing = new RingLightHandlerOld(
             map, innerRingFactory,
             (m, v, q) -> null,
             30, new Vector3f(0, height, 14), 5,
-            new RingLightHandler.PresetPositions(
+            new RingLightHandlerOld.PresetPositions(
                 new float[]{-90 * rpd, 90 * rpd},
                 new float[]{
                     0,
@@ -103,11 +103,11 @@ public class RingLightGroup extends ActionLightGroupV2 {
             )
         );
 
-        outerRing = new RingLightHandler(
+        outerRing = new RingLightHandlerOld(
             map, outerRingFactory,
             this::linkLight,
             outerRingCount, new Vector3f(0, height, outerRingZ), outerRingSpacing,
-            new RingLightHandler.PresetPositions(
+            new RingLightHandlerOld.PresetPositions(
                 new float[]{-90 * rpd, 90 * rpd},
                 new float[]{
                     0,

@@ -416,7 +416,7 @@ public class NiceEnvironment extends EnvironmentV2 {
     protected LightGroupV2 setupRingLights() {
         ringLights = new RingLightGroup(
             mapController,
-            (ignored) -> new InnerRing(mapController),
+            (ignored) -> new InnerRing(mapController, new Vector3f(), new Quaternionf()),
             (mod) -> new OuterRing(mapController, mod),
             () -> new GlowingCuboid(
                 mapController,

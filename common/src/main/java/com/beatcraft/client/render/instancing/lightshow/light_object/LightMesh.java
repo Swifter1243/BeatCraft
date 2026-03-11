@@ -367,7 +367,10 @@ public class LightMesh {
     private final ArrayList<Draw> bloomfogDraws = new ArrayList<>();
     private final ArrayList<Draw> bloomDraws = new ArrayList<>();
 
-    protected LightMesh(HashMap<Integer, ResourceLocation> unloadedTextures) {
+    private final String id;
+
+    protected LightMesh(String id, HashMap<Integer, ResourceLocation> unloadedTextures) {
+        this.id = id;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
         LightMesh.unloadedTextures.addAll(unloadedTextures.values());
@@ -1136,7 +1139,7 @@ public class LightMesh {
         }
 
         var rawMesh = json.getAsJsonArray("mesh");
-        var mesh = new LightMesh(textures);
+        var mesh = new LightMesh(name, textures);
         meshes.put(name, mesh);
 
         mesh.cullBackfaces = JsonUtil.getOrDefault(json, "cull", JsonElement::getAsBoolean, mesh.cullBackfaces);
@@ -1179,4 +1182,17 @@ public class LightMesh {
         }
     }
 
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LightMesh other) {
+            return id.equals(other.id);
+        }
+        return false;
+    }
 }

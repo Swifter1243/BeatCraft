@@ -411,7 +411,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     protected LightGroupV2 setupRingLights() {
         ringLights = new RingLightGroup(
             mapController,
-            (m) -> new InnerRing(mapController),
+            (m) -> new InnerRing(mapController, new Vector3f(), new Quaternionf()),
             (m) -> new OuterRing(mapController, m),
             () -> new GlowingCuboid(
                 mapController,

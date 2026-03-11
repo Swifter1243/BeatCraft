@@ -20,10 +20,6 @@ public class RingSpike extends LightObject {
     // use default light state + 7 extra
     private final LightState[] states = new LightState[7];
 
-    public RingSpike(BeatmapController map) {
-        super(map);
-    }
-
     public class SubLightController extends LightObject {
 
         private final int target;
@@ -63,27 +59,20 @@ public class RingSpike extends LightObject {
 
     /// This returns controllers for all the additional lights on the ring spike
     public LightObject[] getControllers() {
-
-        var rightTip = new SubLightController(mapController, 0);
-        var leftRing = new SubLightController(mapController, 1);
-        var rightRing = new SubLightController(mapController, 2);
-        var left = new SubLightController(mapController, 3);
-        var right = new SubLightController(mapController, 4);
-        var leftBack = new SubLightController(mapController, 5);
-        var rightBack = new SubLightController(mapController, 6);
-
-        return new LightObject[]{
-            rightTip,
-            leftRing, rightRing,
-            left, right,
-            leftBack, rightBack
+        return new LightObject[] {
+            new SubLightController(mapController, 0),
+            new SubLightController(mapController, 1),
+            new SubLightController(mapController, 2),
+            new SubLightController(mapController, 3),
+            new SubLightController(mapController, 4),
+            new SubLightController(mapController, 5),
+            new SubLightController(mapController, 6),
         };
-
     }
 
     private LightMeshInstance mesh;
 
-    private static ArrayList<RingSpike> spikes = new ArrayList<>();
+    private static final ArrayList<RingSpike> spikes = new ArrayList<>();
 
     public static void clearInstances() {
         spikes.clear();
@@ -103,7 +92,7 @@ public class RingSpike extends LightObject {
 
         mesh = new LightMeshInstance(MeshLoader.KALEIDOSCOPE_SPIKE);
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 7; ++i) {
             states[i] = new LightState(new Color(), 0);
         }
         lightState = new LightState(new Color(), 0);

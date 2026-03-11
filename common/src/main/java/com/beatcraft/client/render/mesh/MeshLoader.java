@@ -71,6 +71,9 @@ public class MeshLoader {
 
     public static LightMesh KALEIDOSCOPE_SPIKE;
 
+    public static LightMesh THE_FIRST_INNER_RING;
+    public static LightMesh THE_FIRST_OUTER_RING;
+
     public static void loadMeshes() {
         COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
         CHAIN_HEAD_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note_chain_head.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
@@ -97,6 +100,8 @@ public class MeshLoader {
 
         try {
             KALEIDOSCOPE_SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("meshes/environment/kaleidoscope/spikes.json"));
+            THE_FIRST_INNER_RING = LightMesh.load("thefirst_inner_ring", Beatcraft.id("meshes/environment/thefirst/inner_ring.json"));
+            THE_FIRST_OUTER_RING = LightMesh.load("thefirst_outer_ring", Beatcraft.id("meshes/environment/thefirst/outer_ring.json"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

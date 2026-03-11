@@ -2,6 +2,7 @@ package com.beatcraft.client.lightshow.event.events;
 
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
+import com.beatcraft.client.lightshow.ring_lights.RingLightHandlerOld;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -154,7 +155,28 @@ public class RingRotationEvent extends ValueEvent {
     }
 
 
-    public void apply(RingLightHandler ringLights, RandomSource random) {
+    public void apply(RingLightHandlerOld ringLights, RandomSource random) {
+
+        float target = ringLights.getCurrentRotation();
+        float targetStep;
+
+        if (rotation == null) {
+            target += ringLights.presets.getJumpOffset(random);
+        } else {
+            target += direction.apply(rotation, random);
+        }
+
+        if (step == null) {
+            targetStep = ringLights.presets.getRotationOffset(random);
+        } else {
+            targetStep = step;
+        }
+
+        ringLights.spinTo(target, targetStep, prop, 1f);
+
+    }
+
+    public void apply(RingLightHandler.IndividualRingLightHandler ringLights, RandomSource random) {
 
         float target = ringLights.getCurrentRotation();
         float targetStep;

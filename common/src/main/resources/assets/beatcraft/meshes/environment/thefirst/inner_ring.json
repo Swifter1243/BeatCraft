@@ -1,0 +1,98 @@
+{
+  "mesh_format": 1,
+  "credits": ["Beatcraft", "Westbot"],
+  "parts": {
+    "left": {
+      "uvs": [
+        [0.01, 0.01],
+        [0.01, 0.49],
+        [0.49, 0.01]
+      ],
+      "named_normals": {
+        "up": [0, 1, 0],
+        "down": [0, -1, 0],
+        "left": [1, 0, 0],
+        "right": [-1, 0, 0],
+        "front": [0, 0, -1],
+        "back": [0, 0, 1]
+      },
+      "named_vertices": {
+        "o-ftl": [7.3, 7.3, 0],
+        "o-ftr": [2, 7.3, 0],
+        "o-fbl": [7.3, -7.3, 0],
+        "o-fbr": [2, -7.3, 0],
+        "i-ftl": [7, 7, 0],
+        "i-ftr": [2, 7, 0],
+        "i-fbl": [7, -7, 0],
+        "i-fbr": [2, -7, 0],
+
+        "o-btl": [7.3, 7.3, 0.1],
+        "o-btr": [2, 7.3, 0.1],
+        "o-bbl": [7.3, -7.3, 0.1],
+        "o-bbr": [2, -7.3, 0.1],
+        "i-btl": [7, 7, 0.1],
+        "i-btr": [2, 7, 0.1],
+        "i-bbl": [7, -7, 0.1],
+        "i-bbr": [2, -7, 0.1]
+      },
+      "triangles": [
+        { "uv": 0, "normal": "front" },
+        [ "o-ftl", ["i-ftl", 1], ["i-ftr", 2] ],
+        [ "o-ftl", ["i-ftr", 1], ["o-ftr", 2] ],
+        [ "o-ftl", ["o-fbl", 1], ["i-fbl", 2] ],
+        [ "o-ftl", ["i-fbl", 1], ["i-ftl", 2] ],
+        [ "o-fbl", ["o-fbr", 1], ["i-fbr", 2] ],
+        [ "o-fbl", ["i-fbr", 1], ["i-fbl", 2] ],
+
+        { "uv": 0, "normal": "back" },
+        [ "o-btl", ["i-btr", 1], ["i-btl", 2] ],
+        [ "o-btl", ["o-btr", 1], ["i-btr", 2] ],
+        [ "o-btl", ["i-bbl", 1], ["o-bbl", 2] ],
+        [ "o-btl", ["i-btl", 1], ["i-bbl", 2] ],
+        [ "o-bbl", ["i-bbr", 1], ["o-bbr", 2] ],
+        [ "o-bbl", ["i-bbl", 1], ["i-bbr", 2] ],
+
+        { "uv": 0, "normal": "left" },
+        [ "o-ftl", ["o-btl", 1], ["o-bbl", 2] ],
+        [ "o-ftl", ["o-bbl", 1], ["o-fbl", 2] ],
+
+        { "uv": 0, "normal": "right" },
+        [ "o-ftr", ["i-ftr", 1], ["i-btr", 2] ],
+        [ "o-ftr", ["i-btr", 1], ["o-btr", 2] ],
+        [ "o-fbr", ["o-bbr", 1], ["i-bbr", 2] ],
+        [ "o-fbr", ["i-bbr", 1], ["i-fbr", 2] ],
+        [ "i-ftl", ["i-fbl", 1], ["i-bbl", 2] ],
+        [ "i-ftl", ["i-bbl", 1], ["i-btl", 2] ],
+
+        { "uv": 0, "normal": "down" },
+        [ "i-ftl", ["i-btl", 1], ["i-btr", 2] ],
+        [ "i-ftl", ["i-btr", 1], ["i-ftr", 2] ],
+        [ "o-fbl", ["o-bbl", 1], ["o-bbr", 2] ],
+        [ "o-fbl", ["o-bbr", 1], ["o-fbr", 2] ],
+
+        { "uv": 0, "normal": "up" },
+        [ "o-ftl", ["o-ftr", 1], ["o-btr", 2] ],
+        [ "o-ftl", ["o-btr", 1], ["o-btl", 2] ],
+        [ "i-fbl", ["i-fbr", 1], ["i-bbr", 2] ],
+        [ "i-fbl", ["i-bbr", 1], ["i-bbl", 2] ]
+      ]
+    }
+  },
+  "mesh": [
+    {
+      "part": "left"
+    },
+    {
+      "part": "left",
+      "rotation": [0, 0, 1, 0]
+    }
+  ],
+  "textures": {
+    "1": "beatcraft:textures/block/black_mirror.png",
+    "2": "beatcraft:textures/gameplay_objects/arrow.png"
+  },
+  "data": {
+    "default": { "material": 0, "texture": 1, "color": 0 }
+  },
+  "cull": true
+}
