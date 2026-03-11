@@ -6,7 +6,6 @@ import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMeshInstance;
 import com.beatcraft.client.render.mesh.MeshLoader;
-import com.beatcraft.common.data.types.Color;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -17,50 +16,6 @@ import java.util.ArrayList;
 
 public class InnerRing extends LightObject {
 
-    private final LightState[] states = new LightState[3];
-
-    public class SubLightController extends LightObject {
-
-        private final int target;
-
-        public SubLightController(BeatmapController map, int target) {
-            super(map);
-            this.target = target;
-        }
-
-        @Override
-        public LightObject cloneOffset(Vector3f offset) {
-            throw new IllegalStateException("SubLightController was cloned.");
-        }
-
-        @Override
-        public void render(PoseStack matrices, Camera camera, float alpha, Bloomfog bloomfog) {
-
-        }
-
-        @Override
-        public void setBrightness(float value) {
-            InnerRing.this.states[target].setBrightness(value);
-        }
-
-        @Override
-        public void setColor(int color) {
-            InnerRing.this.states[target].setColor(new Color(color));
-        }
-
-        @Override
-        public void setLightState(LightState state) {
-            InnerRing.this.states[target].set(state);
-        }
-    }
-
-    public LightObject[] getControllers() {
-        return new LightObject[] {
-            new SubLightController(mapController, 0),
-            new SubLightController(mapController, 1),
-            new SubLightController(mapController, 2),
-        };
-    }
 
     private LightMeshInstance mesh;
 
@@ -84,10 +39,6 @@ public class InnerRing extends LightObject {
 
         mesh = new LightMeshInstance(MeshLoader.THE_FIRST_INNER_RING);
 
-        for (int i = 0; i < 3; ++i) {
-            states[i] = new LightState(new Color(), 0);
-        }
-        lightState = new LightState(new Color(), 0);
     }
 
 
@@ -106,25 +57,21 @@ public class InnerRing extends LightObject {
         var mat = createTransformMatrix(matrices.last().pose(), false, orientation, rotation, transformState, position, worldRotation, offset, cameraPos);
         mesh.transform.set(mat);
 
-        mesh.setColor(0, lightState);
-        for (int i = 0; i < 3; i++) {
-            mesh.setColor(i+1, states[i]);
-        }
         mesh.draw(mapController.worldPosition);
     }
 
     @Override
     public void setBrightness(float value) {
-        lightState.setBrightness(value);
+
     }
 
     @Override
     public void setColor(int color) {
-        lightState.setColor(new Color(color));
+
     }
 
     @Override
     public void setLightState(LightState state) {
-        lightState.set(state);
+
     }
 }

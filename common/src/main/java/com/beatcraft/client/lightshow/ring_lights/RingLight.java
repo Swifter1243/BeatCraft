@@ -1,7 +1,6 @@
 package com.beatcraft.client.lightshow.ring_lights;
 
 import com.beatcraft.client.beatmap.BeatmapController;
-import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.render.effect.Bloomfog;
@@ -91,7 +90,7 @@ public class RingLight extends LightObject {
     }
 
 
-    public RingLight(BeatmapController map, Vector3f pos, Quaternionf ori, LightMesh lightMesh, int stateCount) {
+    public RingLight(BeatmapController map, Vector3f pos, Quaternionf ori, LightMesh lightMesh, int extraStatesCount) {
         super(map);
         if (!rings.containsKey(lightMesh)) {
             rings.put(lightMesh, new ArrayList<>());
@@ -100,13 +99,13 @@ public class RingLight extends LightObject {
         position = pos;
         orientation = ori;
         this.lightMesh = lightMesh;
-        this.stateCount = stateCount;
+        this.stateCount = extraStatesCount;
 
         mesh = new LightMeshInstance(lightMesh);
 
-        states = new LightState[stateCount];
+        states = new LightState[extraStatesCount];
 
-        for (int i = 0; i < 7; ++i) {
+        for (int i = 0; i < stateCount; ++i) {
             states[i] = new LightState(new Color(), 0);
         }
         lightState = new LightState(new Color(), 0);
@@ -114,10 +113,12 @@ public class RingLight extends LightObject {
 
     @Override
     public LightObject cloneOffset(Vector3f offset) {
-        return new RingSpike(
+        return new RingLight(
             mapController,
             position.add(offset, new Vector3f()),
-            new Quaternionf(orientation)
+            new Quaternionf(orientation),
+            lightMesh,
+            stateCount
         );
     }
 

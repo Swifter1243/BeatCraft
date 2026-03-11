@@ -7,10 +7,12 @@ import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.lightshow.ring_lights.RingLight;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandlerOld;
 import com.beatcraft.client.render.environment.KaleidoscopeRenderer;
 import com.beatcraft.client.render.lights.FloodLight;
+import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
@@ -56,18 +58,18 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
     public void setup() {
         var rpd = Mth.DEG_TO_RAD;
 
-        AtomicInteger linkI = new AtomicInteger(1);
-        AtomicInteger linkO = new AtomicInteger(41);
+        var linkI = new AtomicInteger(1);
+        var linkO = new AtomicInteger(41);
 
         ringLights = new RingLightHandler(
             mapController,
             new RingLightHandler.RingLightData(
-                (map, pos) -> new RingSpike(map, pos, new Quaternionf()),
+                MeshLoader.KALEIDOSCOPE_SPIKE,
+                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.KALEIDOSCOPE_SPIKE, 7),
                 (lights) -> {
                     int idx = linkI.get();
-                    var light = lights.get(idx);
                     linkI.set(idx + 2);
-                    return light;
+                    return lights.get(idx);
                 },
                 new RingLightHandler.LightDelta(
                     1, 40, 2, 5
@@ -97,8 +99,9 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
                 0, 45f * rpd
             ),
             new RingLightHandler.RingLightData(
-                (map, pos) -> new FloodLight(
-                    map,
+                null,
+                (pos) -> new FloodLight(
+                    mapController,
                     4f, 4, 250, 200, 2f,
                     new float[]{20f},
                     pos, new Quaternionf(), 1
@@ -149,7 +152,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
         var bi = 1;
 
         for (int i = 1; i < 40; i += 2) {
-            var baseLight = (RingSpike) ringLights.lights.get(i);
+            var baseLight = (RingLight) ringLights.lights.get(i);
             var controllers = baseLight.getControllers();
 
             // add the missing spike tip lights

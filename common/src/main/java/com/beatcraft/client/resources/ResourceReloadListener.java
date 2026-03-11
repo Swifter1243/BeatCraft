@@ -3,9 +3,8 @@ package com.beatcraft.client.resources;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
-import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
+import com.beatcraft.client.lightshow.ring_lights.RingLight;
 import com.beatcraft.client.render.BeatcraftRenderer;
-import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.InstancedMesh;
@@ -51,7 +50,7 @@ public class ResourceReloadListener implements ResourceManagerReloadListener {
 
         RenderSystem.recordRenderCall(() -> {
             LightMesh.buildMeshes();
-            RingSpike.reload();
+            RingLight.reload();
         });
 
 

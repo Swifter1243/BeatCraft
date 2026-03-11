@@ -1,7 +1,6 @@
 package com.beatcraft.client.render.mesh;
 
 import com.beatcraft.Beatcraft;
-import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
 import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
 import com.beatcraft.client.render.dynamic_loader.DynamicTexture;
@@ -13,7 +12,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockModel;

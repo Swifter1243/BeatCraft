@@ -3,7 +3,6 @@ package com.beatcraft.client.lightshow.ring_lights;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.EventGroup;
-import com.beatcraft.client.lightshow.environment.kaleidoscope.RingSpike;
 import com.beatcraft.client.lightshow.environment.lightgroup.ActionLightGroupV2;
 import com.beatcraft.client.lightshow.event.events.RingRotationEvent;
 import com.beatcraft.client.lightshow.event.events.RingZoomEvent;
@@ -11,6 +10,7 @@ import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
+import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -45,10 +45,11 @@ public class RingLightHandler extends ActionLightGroupV2 {
 
     @FunctionalInterface
     public interface LightFactory {
-        LightObject invoke(BeatmapController map, Vector3f pos);
+        LightObject invoke(Vector3f pos);
     }
 
     public record RingLightData(
+        LightMesh mesh,
         LightFactory factory,
         Function<HashMap<Integer, LightObject>, LightObject> linker,
         LightDelta delta,
@@ -269,29 +270,31 @@ public class RingLightHandler extends ActionLightGroupV2 {
     private final RandomSource random = RandomSource.create();
 
     protected static HashMap<Integer, LightObject> buildRingLights(
-        BeatmapController beatmap,
-        LightFactory innerFactory,
-        LightFactory outerFactory,
-        LightDelta innerDelta,
-        LightDelta outerDelta
+        RingLightData innerData,
+        RingLightData outerData
     ) {
         var map = new HashMap<Integer, LightObject>();
 
         var pos = new Vector3f(0, 0, 8);
 
-        RingSpike.clearInstances();
-        for (int i = innerDelta.startId; i < innerDelta.endId; i += innerDelta.idStep) {
+        if (innerData.mesh != null) {
+            RingLight.clearInstances(innerData.mesh);
+        }
+        if (outerData.mesh != null) {
+            RingLight.clearInstances(outerData.mesh);
+        }
+        for (int i = innerData.delta.startId; i < innerData.delta.endId; i += innerData.delta.idStep) {
             try {
-                map.put(i, innerFactory.invoke(beatmap, new Vector3f(pos)));
-                pos.add(0, 0, innerDelta.deltaZ);
+                map.put(i, innerData.factory.invoke(new Vector3f(pos)));
+                pos.add(0, 0, innerData.delta.deltaZ);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
         pos.set(0, 0, 8);
-        for (int i = outerDelta.startId; i < outerDelta.endId; i += outerDelta.idStep) {
-            map.put(i, outerFactory.invoke(beatmap, new Vector3f(pos)));
-            pos.add(0, 0, outerDelta.deltaZ);
+        for (int i = outerData.delta.startId; i < outerData.delta.endId; i += outerData.delta.idStep) {
+            map.put(i, outerData.factory.invoke(new Vector3f(pos)));
+            pos.add(0, 0, outerData.delta.deltaZ);
         }
 
         return map;
@@ -302,10 +305,7 @@ public class RingLightHandler extends ActionLightGroupV2 {
         RingLightData innerData,
         RingLightData outerData
     ) {
-        super(map, buildRingLights(
-            map, innerData.factory, outerData.factory,
-            innerData.delta, outerData.delta
-        ));
+        super(map, buildRingLights(innerData, outerData));
 
         innerRing = new IndividualRingLightHandler(
             map, innerData.linker, innerData.count,
@@ -324,6 +324,10 @@ public class RingLightHandler extends ActionLightGroupV2 {
 
     }
 
+    public void reset() {
+        innerRing.reset();
+        outerRing.reset();
+    }
 
     @Override
     public void handleEvent(ValueEvent event, EventGroup eventGroup) {

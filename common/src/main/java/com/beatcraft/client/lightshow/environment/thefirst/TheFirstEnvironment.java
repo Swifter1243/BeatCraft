@@ -5,14 +5,16 @@ import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.data.Difficulty;
 import com.beatcraft.client.lightshow.environment.EnvironmentV2;
 import com.beatcraft.client.lightshow.environment.lightgroup.LightGroupV2;
-import com.beatcraft.client.lightshow.environment.lightgroup.RingLightGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup;
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
+import com.beatcraft.client.lightshow.ring_lights.RingLight;
+import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.environment.TheFirstRenderer;
 import com.beatcraft.client.render.lights.GlowingCuboid;
+import com.beatcraft.client.render.mesh.MeshLoader;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -22,6 +24,7 @@ import org.joml.Vector3f;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TheFirstEnvironment extends EnvironmentV2 {
     /*
@@ -43,7 +46,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
      *
      */
 
-    private RingLightGroup ringLights;
+    private RingLightHandler ringLights;
 
     private SpectrogramTowers leftSpectrogramTowers;
     private SpectrogramTowers rightSpectrogramTowers;
@@ -402,27 +405,79 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         return new StaticLightsGroup(mapController, lights);
     }
 
-
-    private static final float ringRadius = 27;
-    private static final float lightLength = 6;
-    private static final float lightSize = 0.2f;
-
     @Override
     protected LightGroupV2 setupRingLights() {
-        ringLights = new RingLightGroup(
+        var rpd = Mth.DEG_TO_RAD;
+
+        var linkI = new AtomicInteger(30*4+1);
+        var linkO = new AtomicInteger(1);
+
+        ringLights = new RingLightHandler(
             mapController,
-            (m) -> new InnerRing(mapController, new Vector3f(), new Quaternionf()),
-            (m) -> new OuterRing(mapController, m),
-            () -> new GlowingCuboid(
-                mapController,
-                new Hitbox(
-                    new Vector3f(-lightLength / 2, -lightSize, -lightSize),
-                    new Vector3f(lightLength / 2, lightSize, lightSize)
+            new RingLightHandler.RingLightData(
+                MeshLoader.THE_FIRST_INNER_RING,
+                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.THE_FIRST_INNER_RING, 0),
+                (lights) -> lights.get(linkI.getAndIncrement()),
+                new RingLightHandler.LightDelta(
+                    30*4+1, 30*4+31, 1, 5f
                 ),
-                new Vector3f(0, ringRadius - (lightSize + 0.01f), lightSize),
-                new Quaternionf()
+                new RingLightHandler.PresetPositions(
+                    new float[]{-90 * rpd, 90 * rpd},
+                    new float[]{
+                        0,
+                        3 * rpd,
+                        -3 * rpd,
+                        7 * rpd,
+                        -7 * rpd,
+                        11 * rpd,
+                        -11 * rpd
+                    }
+                ),
+                new Vector3f(0, 2, 14),
+                30, 45 * rpd, 0
+            ),
+            new RingLightHandler.RingLightData(
+                MeshLoader.THE_FIRST_OUTER_RING,
+                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.THE_FIRST_OUTER_RING, 3),
+                (lights) -> {
+                    var idx = linkO.get();
+                    linkO.set(idx + 4);
+                    return lights.get(idx);
+                },
+                new RingLightHandler.LightDelta(
+                    1, 30*4+1, 4, 8.75f
+                ),
+                new RingLightHandler.PresetPositions(
+                    new float[]{-90 * rpd, 90 * rpd},
+                    new float[]{
+                        0,
+                        1 * rpd,
+                        2 * rpd,
+                        3 * rpd,
+                        4 * rpd,
+                        5 * rpd,
+                        -1 * rpd,
+                        -2 * rpd,
+                        -3 * rpd,
+                        -4 * rpd,
+                        -5 * rpd
+                    }
+                ),
+                new Vector3f(0, 2, 7),
+                15, 45 * rpd, 0
             )
         );
+
+        for (int i = 1; i < 30*4+1; i += 4) {
+            var base = (RingLight) ringLights.lights.get(i);
+            var controllers = base.getControllers();
+
+            ringLights.lights.put(i + 1, controllers[0]);
+            ringLights.lights.put(i + 2, controllers[1]);
+            ringLights.lights.put(i + 3, controllers[2]);
+
+        }
+
         return ringLights;
     }
 
