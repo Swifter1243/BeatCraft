@@ -153,6 +153,7 @@ public class BeatmapRenderer {
         //
         //lightRenderCalls.clear();
         //if (true) return;
+        LightMesh.renderAllSolid();
 
 
         RenderSystem.setShader(() -> Bloomfog.backlightsPositionColorShader);
@@ -180,7 +181,6 @@ public class BeatmapRenderer {
         arcRenderCalls.clear();
 
         RenderSystem.depthMask(true);
-        LightMesh.renderAllSolid();
 
         RenderSystem.defaultBlendFunc();
     }
