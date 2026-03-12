@@ -27,7 +27,7 @@ public class InnerRing extends LightObject {
 
     public static void reload() {
         for (var ring : rings) {
-            ring.mesh = new LightMeshInstance(MeshLoader.THE_FIRST_INNER_RING);
+            ring.mesh = new LightMeshInstance(MeshLoader.TheFirst.INNER_RING);
         }
     }
 
@@ -37,7 +37,7 @@ public class InnerRing extends LightObject {
         position = pos;
         orientation = ori;
 
-        mesh = new LightMeshInstance(MeshLoader.THE_FIRST_INNER_RING);
+        mesh = new LightMeshInstance(MeshLoader.TheFirst.INNER_RING);
 
     }
 

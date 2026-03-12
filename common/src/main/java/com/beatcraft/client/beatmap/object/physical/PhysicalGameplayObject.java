@@ -8,6 +8,7 @@ import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.data.ScoreState;
 import com.beatcraft.client.beatmap.object.data.SpawnQuaternionPool;
+import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.WorldRenderer;
@@ -18,6 +19,7 @@ import com.beatcraft.client.render.particle.Debris;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.joml.Math;
@@ -417,7 +419,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
     }
 
     public Vector3f getWorldPos(Vector3f dest) {
-        return worldTransform.transformPosition(dest.zero());
+        return worldTransform.transformPosition(dest);
     }
 
 
@@ -464,9 +466,14 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         var m = getMesh();
         if (m == null) return;
+        assert Minecraft.getInstance().cameraEntity != null;
+        var basePos = new Matrix4f().translate(mapController.worldPosition)
+            .rotate(new Quaternionf().rotationY(mapController.worldAngle));
+        var notePos = basePos.mul(matrix).transformPosition(new Vector3f());
 
-        var notePos = this.getWorldPos(new Vector3f()).add(-0.25f, -0.25f, -0.25f);
         var noteOrientation = this.getWorldTransform().getUnnormalizedRotation(new Quaternionf());
+        BeatcraftRenderer.fullCameraRotation/* might need to be this? .conjugate(new Quaternionf()) */.mul(noteOrientation, noteOrientation);
+        // new Quaternionf().rotationY(mapController.worldAngle).mul(noteOrientation, noteOrientation);
         if (!(this instanceof PhysicalColorNote)) return;
         var color = ((PhysicalColorNote) this).getData().getColor();
 
@@ -475,7 +482,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         var slice = new Vector4f(planeNormal, d);
         var slice2 = new Vector4f(planeNormal.negate(), d);
 
-        float velocity = -mapController.difficulty.getSetDifficulty().getNjs(mapController.currentBeat);
+        float velocity = -mapController.difficulty.getSetDifficulty().getNjs(mapController.currentBeat) * mapController.playbackSpeed;
 
         Debris left = new Debris(
             mapController,

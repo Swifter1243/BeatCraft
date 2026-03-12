@@ -67,10 +67,44 @@ public class MeshLoader {
 
     private static ModelLoaderAccessor modelLoader;
 
-    public static LightMesh KALEIDOSCOPE_SPIKE;
+    public static class TheFirst {
+        /// 4 Lights: 0-3
+        public static LightMesh INNER_RING;
+        /// 0 Lights
+        public static LightMesh OUTER_RING;
+        /// 1 Light: 0
+        public static LightMesh SPINNING_LIGHT;
+        /// 8 Lights:
+        /// 0,1: runway
+        /// 2,3: sides
+        /// 4,5: back slants
+        /// 6,7: chevron parts
+        public static LightMesh STATIC_1;
+        /// 8 Lights:
+        /// 0-3: top Left slants
+        /// 4-7: top right slants
+        public static LightMesh STATIC_2;
+        /// 8 Lights:
+        /// 0-3: bottom left slants
+        /// 4-7: bottom right slants
+        public static LightMesh STATIC_3;
+        /// 4 Lights:
+        /// 0: top left slant
+        /// 1: top right slant
+        /// 2: bottom left slant
+        /// 3: bottom right slant
+        public static LightMesh STATIC_4;
+        /// 8 Lights:
+        /// 0,1: back left tower lights
+        /// 2,3: back right tower lights
+        /// 4,5: front left tower lights
+        /// 6,7: front right tower lights
+        public static LightMesh TOWERS;
+    }
 
-    public static LightMesh THE_FIRST_INNER_RING;
-    public static LightMesh THE_FIRST_OUTER_RING;
+    public static class Kaleidoscope {
+        public static LightMesh SPIKE;
+    }
 
     public static void loadMeshes() {
         COLOR_NOTE_INSTANCED_MESH = loadInstancedMesh(Beatcraft.id("models/item/color_note.json"), NOTE_TEXTURE, "instanced/color_note", 1f);
@@ -97,9 +131,9 @@ public class MeshLoader {
 
 
         try {
-            KALEIDOSCOPE_SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("meshes/environment/kaleidoscope/spikes.json"));
-            THE_FIRST_INNER_RING = LightMesh.load("thefirst_inner_ring", Beatcraft.id("meshes/environment/thefirst/inner_ring.json"));
-            THE_FIRST_OUTER_RING = LightMesh.load("thefirst_outer_ring", Beatcraft.id("meshes/environment/thefirst/outer_ring.json"));
+            Kaleidoscope.SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("environments/kaleidoscope/meshes/spikes.json"));
+            TheFirst.INNER_RING = LightMesh.load("thefirst_inner_ring", Beatcraft.id("environments/thefirst/meshes/inner_ring.json"));
+            TheFirst.OUTER_RING = LightMesh.load("thefirst_outer_ring", Beatcraft.id("environments/thefirst/meshes/outer_ring.json"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

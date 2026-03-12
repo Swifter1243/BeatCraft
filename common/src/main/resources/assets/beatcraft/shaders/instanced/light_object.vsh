@@ -52,7 +52,7 @@ void main() {
     gl_ClipDistance[0] = dot(wp, clipping_plane);
 
     vec4 final = u_projection * pos;
-    if (passType == 2) {
+    if (passType == 2 /* Bloomfog */) {
         final = vec4(final.xyz/2.0, final.w);
     }
     gl_Position = final;

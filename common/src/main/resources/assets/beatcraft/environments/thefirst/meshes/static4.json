@@ -11,13 +11,13 @@
       "position": [0, 0, 0]
     },
     {
-      "part": "bottom_diagonal",
+      "part": "top_diagonal",
+      "scale": [-1, 1, 1],
       "position": [0, 0, 0],
       "remap_data": { "l0": "l1" }
     },
     {
-      "part": "top_diagonal",
-      "scale": [-1, 1, 1],
+      "part": "bottom_diagonal",
       "position": [0, 0, 0],
       "remap_data": { "l0": "l2" }
     },

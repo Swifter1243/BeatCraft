@@ -415,8 +415,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         ringLights = new RingLightHandler(
             mapController,
             new RingLightHandler.RingLightData(
-                MeshLoader.THE_FIRST_INNER_RING,
-                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.THE_FIRST_INNER_RING, 0),
+                MeshLoader.TheFirst.INNER_RING,
+                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TheFirst.INNER_RING, 0),
                 (lights) -> lights.get(linkI.getAndIncrement()),
                 new RingLightHandler.LightDelta(
                     30*4+1, 30*4+31, 1, 5f
@@ -437,8 +437,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
                 30, 0, 0
             ),
             new RingLightHandler.RingLightData(
-                MeshLoader.THE_FIRST_OUTER_RING,
-                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.THE_FIRST_OUTER_RING, 3),
+                MeshLoader.TheFirst.OUTER_RING,
+                (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TheFirst.OUTER_RING, 3),
                 (lights) -> {
                     var idx = linkO.get();
                     linkO.set(idx + 4);

@@ -13,6 +13,8 @@ import com.beatcraft.common.items.ModItems;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -79,7 +81,14 @@ public class BeatcraftClient {
             }
         } else if (newWearingHeadset && !wearingHeadset) { // put on
             if (headsetLinkedBeatmap == null) {
-                headsetLinkedBeatmap = new BeatmapController(player.clientLevel, player.blockPosition().getBottomCenter().toVector3f(), snapAngle(-player.getViewYRot(tickDelta)), BeatmapRenderer.RenderStyle.HEADSET);
+                var p = player.position();
+                var v = new Vec3i((int) p.x, (int) p.y, (int) p.z);
+                headsetLinkedBeatmap = new BeatmapController(
+                    player.clientLevel,
+                    new BlockPos(v).getBottomCenter().toVector3f(),
+                    snapAngle(-player.getViewYRot(tickDelta)),
+                    BeatmapRenderer.RenderStyle.HEADSET
+                );
                 BeatmapManager.beatmaps.add(headsetLinkedBeatmap);
                 headsetLinkedBeatmap.trackPlayer(player.getUUID());
             }

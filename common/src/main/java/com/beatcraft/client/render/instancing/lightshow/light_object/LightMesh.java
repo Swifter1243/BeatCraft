@@ -366,6 +366,8 @@ public class LightMesh {
     private final ArrayList<Draw> mirrorDraws = new ArrayList<>();
     private final ArrayList<Draw> bloomfogDraws = new ArrayList<>();
     private final ArrayList<Draw> bloomDraws = new ArrayList<>();
+    private final ArrayList<Draw> lateLightDraws = new ArrayList<>();
+    private final ArrayList<Draw> mirrorLateLightDraws = new ArrayList<>();
 
     private final String id;
 
@@ -381,7 +383,10 @@ public class LightMesh {
     }
 
     public void draw(Matrix4f transform, LightState[] colors, Vector3f worldPos) {
-        if (doSolid) draws.add(Draw.create(transform, colors, new Vector4f()));
+        if (doSolid) {
+            draws.add(Draw.create(transform, colors, new Vector4f()));
+            lateLightDraws.add(Draw.create(transform, colors, new Vector4f()));
+        }
         if (doMirroring) {
             var renderPos = transform.getTranslation(MemoryPool.newVector3f());
             var renderRotation = transform.getUnnormalizedRotation(MemoryPool.newQuaternionf());
@@ -400,6 +405,7 @@ public class LightMesh {
                 .scale(renderScale);
 
             mirrorDraws.add(Draw.create(flipped, colors, new Vector4f(0, -1, 0, mirrorY)));
+            mirrorLateLightDraws.add(Draw.create(flipped, colors, new Vector4f(0, -1, 0, mirrorY)));
         }
         if (bloomfogStyle < 2) bloomfogDraws.add(Draw.create(transform, colors, new Vector4f()));
         if (doBloom) bloomDraws.add(Draw.create(transform, colors, new Vector4f()));
@@ -536,11 +542,17 @@ public class LightMesh {
         for (var mesh : meshes.values()) {
             mesh.renderSolid();
         }
+        for (var mesh : meshes.values()) {
+            mesh.renderLateLights();
+        }
     }
 
     public static void renderAllMirror() {
         for (var mesh : meshes.values()) {
             mesh.renderMirror();
+        }
+        for (var mesh : meshes.values()) {
+            mesh.renderMirrorLateLights();
         }
     }
 
@@ -569,19 +581,28 @@ public class LightMesh {
     }
 
     public void renderSolid() {
-        render(draws, false, false, false, -1);
+        render(draws, false, false, false, false, 0);
+    }
+
+    public void renderLateLights() {
+        render(lateLightDraws, false, false, false, true, 0);
     }
 
     public void renderMirror() {
-        render(mirrorDraws, true, false, true, -1);
+        render(mirrorDraws, true, false, true, false, 0);
+    }
+
+    public void renderMirrorLateLights() {
+        render(mirrorLateLightDraws, true, false, true, true, 0);
     }
 
     private void cancelMirrorDraw() {
         mirrorDraws.clear();
+        mirrorLateLightDraws.clear();
     }
 
     public void renderBloom(int sceneDepthBuffer) {
-        render(bloomDraws, false, true, false, sceneDepthBuffer);
+        render(bloomDraws, false, true, false, false, sceneDepthBuffer);
     }
 
     private void cancelBloomDraw() {
@@ -589,10 +610,10 @@ public class LightMesh {
     }
 
     public void renderBloomfog() {
-        render(bloomfogDraws, true, false, false, -1);
+        render(bloomfogDraws, true, false, false, false, 0);
     }
 
-    private void render(ArrayList<Draw> drawList, boolean preBloomfog, boolean isBloom, boolean isMirror, int sceneDepthBuffer) {
+    private void render(ArrayList<Draw> drawList, boolean preBloomfog, boolean isBloom, boolean isMirror, boolean isLateLights, int sceneDepthBuffer) {
 
         if (drawList.isEmpty()) return;
 
@@ -660,19 +681,20 @@ public class LightMesh {
 
         if (preBloomfog) {
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.extraBuffer.getColorTextureId());
-
         } else {
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorTextureId());
         }
-        var passType = isBloom
-            ? 1
-            : preBloomfog
-                ? isMirror
-                    ? 0
-                    : 2
-                : 0;
+        var passType = isLateLights
+            ? 3
+            : isBloom
+                ? 1
+                : preBloomfog
+                    ? isMirror
+                        ? 0
+                        : 2
+                    : 0;
         GlUtil.uniform1i("passType", passType);
-        if (sceneDepthBuffer != -1) {
+        if (sceneDepthBuffer != 0) {
             GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
         }
 

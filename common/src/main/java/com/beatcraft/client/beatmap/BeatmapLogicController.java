@@ -185,7 +185,7 @@ public class BeatmapLogicController {
     private static final Vector3f wp = new Vector3f();
     public void checkNote(PhysicalGameplayObject<? extends GameplayObject> obj) {
 
-        obj.getWorldPos(wp);
+        obj.getWorldPos(wp.zero());
         var cd = 1.2 + obj.getCollisionDistance(); // 1.2 == distance that extends beyond the length of the saber
 
         if (rightSaberPos.distance(wp) <= cd) {
