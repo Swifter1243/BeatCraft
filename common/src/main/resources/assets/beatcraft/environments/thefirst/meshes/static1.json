@@ -2,13 +2,11 @@
   "mesh_format": 1,
   "credits": ["Beatcraft", "Westbot"],
   "parts": {
-    "runway": {},
     "long_light": {},
     "back_light": {},
     "chevron": {}
   },
   "mesh": [
-    { "part": "runway" },
     {
       "part": "long_light",
       "position": [0, 0, 0]

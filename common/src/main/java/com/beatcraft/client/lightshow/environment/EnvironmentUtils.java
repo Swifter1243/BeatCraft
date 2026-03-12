@@ -27,6 +27,7 @@ public class EnvironmentUtils {
     public static Environment load(BeatmapController map, JsonObject json) {
         Environment env = setupEnvironment(map.difficulty.getInfo().getEnvironmentName(), map);
         env.loadLightshow(map.difficulty, json);
+        if (env.meshes != null) env.meshes.load();
         return env;
     }
 

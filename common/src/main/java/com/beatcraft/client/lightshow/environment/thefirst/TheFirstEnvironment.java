@@ -55,6 +55,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
 
     public TheFirstEnvironment(BeatmapController map) {
         super(map);
+        meshes = MeshLoader.TheFirst.loader;
     }
 
     @Override

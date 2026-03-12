@@ -67,6 +67,41 @@ public class MeshLoader {
 
     private static ModelLoaderAccessor modelLoader;
 
+    @FunctionalInterface
+    public interface Callback {
+        void call();
+    }
+
+    /// "Reference counted" loader that
+    /// keeps track of loads vs unloads so it won't
+    /// accidentally unload resources that are still in use
+    public static class MeshSetLoader {
+        private final AtomicInteger rc;
+        private final Callback _load;
+        private final Callback _unload;
+        public MeshSetLoader(Callback _load, Callback _unload) {
+            rc = new AtomicInteger(0);
+            this._load = _load;
+            this._unload = _unload;
+        }
+
+        public void load() {
+            var x = rc.incrementAndGet();
+            if (x == 1) {
+                _load.call();
+            }
+        }
+
+        public void unload() {
+            var x = rc.decrementAndGet();
+            if (x == 0) {
+                _unload.call();
+            } else if (x < 0) {
+                rc.set(0);
+            }
+        }
+    }
+
     public static class TheFirst {
         /// 4 Lights: 0-3
         public static LightMesh INNER_RING;
@@ -100,10 +135,64 @@ public class MeshLoader {
         /// 4,5: front left tower lights
         /// 6,7: front right tower lights
         public static LightMesh TOWERS;
+
+        public static final MeshSetLoader loader = new MeshSetLoader(TheFirst::load, TheFirst::unload);
+
+        protected static void init() throws IOException {
+            INNER_RING     = LightMesh.load("thefirst_inner_ring",     Beatcraft.id("environments/thefirst/meshes/inner_ring.json"));
+            OUTER_RING     = LightMesh.load("thefirst_outer_ring",     Beatcraft.id("environments/thefirst/meshes/outer_ring.json"));
+            SPINNING_LIGHT = LightMesh.load("thefirst_spinning_light", Beatcraft.id("environments/thefirst/meshes/spinning_laser.json"));
+            STATIC_1       = LightMesh.load("thefirst_static_1",       Beatcraft.id("environments/thefirst/meshes/static1.json"));
+            STATIC_2       = LightMesh.load("thefirst_static_2",       Beatcraft.id("environments/thefirst/meshes/static2.json"));
+            STATIC_3       = LightMesh.load("thefirst_static_3",       Beatcraft.id("environments/thefirst/meshes/static3.json"));
+            STATIC_4       = LightMesh.load("thefirst_static_4",       Beatcraft.id("environments/thefirst/meshes/static4.json"));
+            TOWERS         = LightMesh.load("thefirst_towers",         Beatcraft.id("environments/thefirst/meshes/towers.json"));
+        }
+
+        public static void load() {
+            INNER_RING.buildMesh();
+            OUTER_RING.buildMesh();
+            SPINNING_LIGHT.buildMesh();
+            STATIC_1.buildMesh();
+            STATIC_2.buildMesh();
+            STATIC_3.buildMesh();
+            STATIC_4.buildMesh();
+            TOWERS.buildMesh();
+        }
+
+        public static void unload() {
+            INNER_RING.cleanup();
+            OUTER_RING.cleanup();
+            SPINNING_LIGHT.cleanup();
+            STATIC_1.cleanup();
+            STATIC_2.cleanup();
+            STATIC_3.cleanup();
+            STATIC_4.cleanup();
+            TOWERS.cleanup();
+        }
+
     }
 
     public static class Kaleidoscope {
+        /// 8 Lights:
+        /// l0 -> 0, l1 -> 2, l2 -> 4, l3 -> 6,
+        /// l4 -> 1, l5 -> 3, l6 -> 5, l7 -> 7
         public static LightMesh SPIKE;
+
+
+        public static final MeshSetLoader loader = new MeshSetLoader(Kaleidoscope::load, Kaleidoscope::unload);
+
+        protected static void init() throws IOException {
+            SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("environments/kaleidoscope/meshes/spikes.json"));
+        }
+
+        public static void load() {
+            SPIKE.buildMesh();
+        }
+
+        public static void unload() {
+            SPIKE.cleanup();
+        }
     }
 
     public static void loadMeshes() {
@@ -131,9 +220,8 @@ public class MeshLoader {
 
 
         try {
-            Kaleidoscope.SPIKE = LightMesh.load("kaleidoscope_spike", Beatcraft.id("environments/kaleidoscope/meshes/spikes.json"));
-            TheFirst.INNER_RING = LightMesh.load("thefirst_inner_ring", Beatcraft.id("environments/thefirst/meshes/inner_ring.json"));
-            TheFirst.OUTER_RING = LightMesh.load("thefirst_outer_ring", Beatcraft.id("environments/thefirst/meshes/outer_ring.json"));
+            TheFirst.init();
+            Kaleidoscope.init();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -338,7 +426,7 @@ public class MeshLoader {
 
             });
 
-
+            @SuppressWarnings("unchecked")
             Triplet<Vector3f, Vector2f, Vector3f>[] arr = new Triplet[vertices.size()];
             for (int i = 0; i < vertices.size(); i++) {
                 arr[i] = vertices.get(i);

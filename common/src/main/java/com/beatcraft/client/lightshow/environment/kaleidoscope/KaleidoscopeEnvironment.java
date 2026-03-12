@@ -47,6 +47,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
 
     public KaleidoscopeEnvironment(BeatmapController map) {
         super(map);
+        meshes = MeshLoader.Kaleidoscope.loader;
     }
 
     @Override

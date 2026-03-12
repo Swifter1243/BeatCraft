@@ -265,7 +265,7 @@ public class LightMesh {
         }
 
         for (var mesh : meshes.values()) {
-            mesh.loaded = false;
+            mesh.cleanup();
         }
 
         meshes.values().forEach(LightMesh::buildMesh);
@@ -440,7 +440,7 @@ public class LightMesh {
         MemoryUtil.memFree(buffer);
     }
 
-    private void buildMesh() {
+    public void buildMesh() {
         if (loaded) return;
 
         shaderProgram = GlUtil.createShaderProgram(lightObjectVsh, lightObjectFsh, this::processShaderSource);
@@ -1020,13 +1020,15 @@ public class LightMesh {
     }
 
     public void cleanup() {
-        GL15.glDeleteBuffers(vertexVbo);
-        GL15.glDeleteBuffers(normalVbo);
-        GL15.glDeleteBuffers(materialVbo);
-        GL15.glDeleteBuffers(indicesVbo);
-        GL15.glDeleteBuffers(instanceVbo);
-        GL30.glDeleteVertexArrays(vao);
-        GlUtil.destroyShaderProgram(shaderProgram);
+        if (!loaded) return;
+        if (vertexVbo != 0) GL15.glDeleteBuffers(vertexVbo);
+        if (normalVbo != 0) GL15.glDeleteBuffers(normalVbo);
+        if (materialVbo != 0) GL15.glDeleteBuffers(materialVbo);
+        if (indicesVbo != 0) GL15.glDeleteBuffers(indicesVbo);
+        if (instanceVbo != 0) GL15.glDeleteBuffers(instanceVbo);
+        if (vao != 0) GL30.glDeleteVertexArrays(vao);
+        if (shaderProgram != 0) GlUtil.destroyShaderProgram(shaderProgram);
+        loaded = false;
     }
 
     public static void cleanupAll() {
@@ -1106,58 +1108,60 @@ public class LightMesh {
 
             var triangleDataList = partData.getAsJsonArray("triangles");
 
-            var defaultUv = builder.getUv(0);
-            Object defaultUvi = 0;
-            var defaultNormal = builder.getNormal(0);
-            Object defaultNormali = 0;
+            if (triangleDataList != null && !triangleDataList.isEmpty()) {
+                var defaultUv = builder.getUv(0);
+                Object defaultUvi;
+                var defaultNormal = builder.getNormal(0);
+                Object defaultNormali;
 
-            for (var item : triangleDataList) {
-                if (item.isJsonObject()) {
-                    var obj = item.getAsJsonObject();
-                    var uv = obj.get("uv");
-                    if (uv.isJsonPrimitive() && uv.getAsJsonPrimitive().isNumber()) {
-                        defaultUvi = uv.getAsInt();
-                    } else {
-                        defaultUvi = uv.getAsString();
-                    }
-                    defaultUv = builder.getUv(defaultUvi);
-
-                    var n = obj.get("normal");
-                    if (n.isJsonPrimitive() && n.getAsJsonPrimitive().isNumber()) {
-                        defaultNormali = n.getAsInt();
-                    } else {
-                        defaultNormali = n.getAsString();
-                    }
-                    defaultNormal = builder.getNormal(defaultNormali);
-                } else if (item.isJsonArray()) {
-                    var arr = item.getAsJsonArray();
-                    var ra = arr.get(0);
-                    var rb = arr.get(1);
-                    var rc = arr.get(2);
-
-                    var a = parseData(builder, ra, defaultUv, defaultNormal);
-                    var b = parseData(builder, rb, defaultUv, defaultNormal);
-                    var c = parseData(builder, rc, defaultUv, defaultNormal);
-
-                    if (arr.size() == 4) {
-                        var mat = arr.get(3);
-                        if (mat.isJsonObject()) {
-                            var dat = defaultData.extend(mat.getAsJsonObject());
-                            builder.addTriangle(new Triangle(a, b, c, dat, null));
+                for (var item : triangleDataList) {
+                    if (item.isJsonObject()) {
+                        var obj = item.getAsJsonObject();
+                        var uv = obj.get("uv");
+                        if (uv.isJsonPrimitive() && uv.getAsJsonPrimitive().isNumber()) {
+                            defaultUvi = uv.getAsInt();
                         } else {
-                            builder.addTriangle(new Triangle(a, b, c, data.get(mat.getAsString()), mat.getAsString()));
+                            defaultUvi = uv.getAsString();
                         }
-                    } else if (arr.size() == 5) {
-                        var baseMat = arr.get(3);
-                        var modifier = arr.get(4);
-                        builder.addTriangle(new Triangle(a, b, c, data.get(baseMat.getAsString()).extend(modifier.getAsJsonObject()), baseMat.getAsString()));
-                    } else {
-                        builder.addTriangle(new Triangle(a, b, c, defaultData, "default"));
+                        defaultUv = builder.getUv(defaultUvi);
+
+                        var n = obj.get("normal");
+                        if (n.isJsonPrimitive() && n.getAsJsonPrimitive().isNumber()) {
+                            defaultNormali = n.getAsInt();
+                        } else {
+                            defaultNormali = n.getAsString();
+                        }
+                        defaultNormal = builder.getNormal(defaultNormali);
+                    } else if (item.isJsonArray()) {
+                        var arr = item.getAsJsonArray();
+                        var ra = arr.get(0);
+                        var rb = arr.get(1);
+                        var rc = arr.get(2);
+
+                        var a = parseData(builder, ra, defaultUv, defaultNormal);
+                        var b = parseData(builder, rb, defaultUv, defaultNormal);
+                        var c = parseData(builder, rc, defaultUv, defaultNormal);
+
+                        if (arr.size() == 4) {
+                            var mat = arr.get(3);
+                            if (mat.isJsonObject()) {
+                                var dat = defaultData.extend(mat.getAsJsonObject());
+                                builder.addTriangle(new Triangle(a, b, c, dat, null));
+                            } else {
+                                builder.addTriangle(new Triangle(a, b, c, data.get(mat.getAsString()), mat.getAsString()));
+                            }
+                        } else if (arr.size() == 5) {
+                            var baseMat = arr.get(3);
+                            var modifier = arr.get(4);
+                            builder.addTriangle(new Triangle(a, b, c, data.get(baseMat.getAsString()).extend(modifier.getAsJsonObject()), baseMat.getAsString()));
+                        } else {
+                            builder.addTriangle(new Triangle(a, b, c, defaultData, "default"));
+                        }
+
                     }
-
                 }
-            }
 
+            }
         }
 
         var rawMesh = json.getAsJsonArray("mesh");

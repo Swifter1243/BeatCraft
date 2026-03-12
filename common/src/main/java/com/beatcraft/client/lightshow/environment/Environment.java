@@ -2,6 +2,7 @@ package com.beatcraft.client.lightshow.environment;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
+import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.data.types.Color;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,6 +11,7 @@ import net.minecraft.client.Camera;
 public abstract class Environment {
 
     public BeatmapController mapController;
+    public MeshLoader.MeshSetLoader meshes;
 
     public static Color DEFAULT_FOG_COLOR = new Color(0.18823f, 0.5960f, 1);
 
@@ -51,4 +53,9 @@ public abstract class Environment {
         return DEFAULT_FOG_HEIGHTS;
     }
 
+    public void cleanup() {
+        if (meshes != null) {
+            meshes.unload();
+        }
+    }
 }
