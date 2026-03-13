@@ -14,17 +14,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.vivecraft.client_vr.ClientDataHolderVR;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
+
 
     @Inject(
         method = "startAttack",
         at = @At("HEAD"),
         cancellable = true
     )
-    private void fpfcInputOverride(CallbackInfoReturnable<Boolean> cir) {
+    private void inputOverride(CallbackInfoReturnable<Boolean> cir) {
         var ths = ((Minecraft) ((Object) this));
         assert ths.player != null;
         if (BeatmapManager.isTracked(ths.player.getUUID()) && ths.player.getMainHandItem().is(ModItems.SABER_ITEM)) {
@@ -34,6 +34,21 @@ public abstract class MinecraftMixin {
             map.hudRenderer.pointerSaber = NoteType.BLUE;
             cir.setReturnValue(true);
             cir.cancel();
+        }
+    }
+
+    @Inject(
+        method = "continueAttack",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private void inputOverride2(boolean bl, CallbackInfo ci) {
+        var ths = ((Minecraft) ((Object) this));
+        assert ths.player != null;
+        if (BeatmapManager.isTracked(ths.player.getUUID()) && ths.player.getMainHandItem().is(ModItems.SABER_ITEM)) {
+            var map = BeatmapManager.getNearestFiltered(ths.player.position().toVector3f(), (bc) -> bc.trackedPlayer != null && bc.trackedPlayer.equals(ths.player.getUUID()));
+            if (map == null) return;
+            ci.cancel();
         }
     }
 
