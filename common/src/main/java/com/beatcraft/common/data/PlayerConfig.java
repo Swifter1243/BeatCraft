@@ -96,7 +96,7 @@ public class PlayerConfig {
     public class QualitySettings {
 
         public Option<Boolean> doBloomfog = new Option<>(true, "Toggles the Bloomfog render effect", "[Medium performance impact]");
-        public Option<Boolean> stereoBloomfog = new Option<>(true, "Whether to render bloomfog per-eye or only once per frame.", "[High performance impact]");
+        public Option<Integer> bloomfogMethod = new Option<>(0, "How Bloomfog is rendered", "[High performance impact]");
         public Option<Boolean> doBloom = new Option<>(true, "Toggles Bloom post effect", "[Low performance impact]");
         public Option<Integer> mirrorLimit = new Option<>(1, "How many unique mirrors should be rendered?", "1: [Medium performance impact]\n2: [High performance impact]\n3+: [Extreme performance impact]\n-1: No limit. [Extreme performance impact]\n0: OFF. [No performance impact]");
         public Option<Boolean> skyFog = new Option<>(true, "Replace minecraft sky with a black, starless skybox", "[No performance impact]");
@@ -108,8 +108,8 @@ public class PlayerConfig {
         public boolean doBloomfog() { return doBloomfog.get(); }
         public void doBloomfog(boolean set) { doBloomfog.set(set); }
 
-        public boolean stereoBloomfog() { return stereoBloomfog.get(); }
-        public void stereoBloomfog(boolean set) { stereoBloomfog.set(set); }
+        public int bloomfogMethod() { return bloomfogMethod.get(); }
+        public void bloomfogMethod(int set) { bloomfogMethod.set(set); }
 
         public boolean doBloom() { return doBloom.get(); }
         public void doBloom(boolean set) { doBloom.set(set); }
@@ -138,7 +138,7 @@ public class PlayerConfig {
             var json = new JsonObject();
 
             json.addProperty("bloomfog", doBloomfog.value);
-            json.addProperty("stereo_bloomfog", stereoBloomfog.value);
+            json.addProperty("bloomfog_method", bloomfogMethod.value);
             json.addProperty("bloom", doBloom.value);
             json.addProperty("mirror_limit", mirrorLimit.value);
             json.addProperty("sky_fog", skyFog.value);
@@ -167,7 +167,7 @@ public class PlayerConfig {
         public void parse$v1(JsonObject json) {
             if (json == null) return;
             doBloomfog.value = JsonUtil.getOrDefault(json, "bloomfog", JsonElement::getAsBoolean, doBloomfog.value);
-            stereoBloomfog.value = JsonUtil.getOrDefault(json, "stereo_bloomfog", JsonElement::getAsBoolean, stereoBloomfog.value);
+            bloomfogMethod.value = Math.clamp(JsonUtil.getOrDefault(json, "bloomfog_method", JsonElement::getAsInt, bloomfogMethod.value), 0, 2);
             doBloom.value = JsonUtil.getOrDefault(json, "bloom", JsonElement::getAsBoolean, doBloom.value);
             mirrorLimit.value = Math.min(1, JsonUtil.getOrDefault(json, "mirror_limit", JsonElement::getAsInt, mirrorLimit.value));
             skyFog.value = JsonUtil.getOrDefault(json, "sky_fog", JsonElement::getAsBoolean, skyFog.value);

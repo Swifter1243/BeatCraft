@@ -20,6 +20,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import oshi.util.tuples.Triplet;
 
@@ -36,6 +37,8 @@ public class BeatcraftClient {
     public static final HashMap<UUID, Triplet<PhysicsTransform, PhysicsTransform, PhysicsTransform>> controllerTransforms = new HashMap<>();
 
     public static BeatmapController headsetLinkedBeatmap = null;
+
+    public static Vector3f playerPos = new Vector3f();
 
     public static void earlyInit() {
         Beatcraft.LOGGER.info("Initializing Beatcraft");
@@ -81,12 +84,12 @@ public class BeatcraftClient {
             }
         } else if (newWearingHeadset && !wearingHeadset) { // put on
             if (headsetLinkedBeatmap == null) {
-                var p = player.position();
-                var y = p.y;
-                if (vr != null && vr.isActive()) {
-                    y -= 2; // hacky fix for now
-                }
-                var v = new Vec3i((int) p.x, (int) y, (int) p.z);
+                var p = playerPos;
+                // var y = p.y;
+                // if (vr != null && vr.isActive()) {
+                //     y -= 2; // hacky fix for now
+                // }
+                var v = new Vec3i((int) p.x, (int) p.y, (int) p.z);
                 headsetLinkedBeatmap = new BeatmapController(
                     player.clientLevel,
                     new BlockPos(v).getBottomCenter().toVector3f(),

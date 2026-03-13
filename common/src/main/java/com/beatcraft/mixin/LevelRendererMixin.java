@@ -42,7 +42,7 @@ public abstract class LevelRendererMixin {
     )
     public void renderBloomfog(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
         BeatcraftRenderer.prerenderBeatmaps(camera);
-        BeatcraftRenderer.renderBloomfog(deltaTracker.getGameTimeDeltaPartialTick(true));
+        BeatcraftRenderer.renderBloomfog();
     }
 
 

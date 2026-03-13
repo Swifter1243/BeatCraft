@@ -268,11 +268,15 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatcraftClient.playerConfig.quality.skyFog() ? "ON" : "OFF",
                 new Vector3f(230, -19, 0)),
 
-            booleanSetting("Bloomfog Method",
-                BeatcraftClient.playerConfig.quality::stereoBloomfog,
-                BeatcraftClient.playerConfig.quality::stereoBloomfog,
-                "STEREO", "MONO",
-                new Vector3f(230, 33, 0))
+            SettingsMenuPanel.getOptionModifier("Mirror Limit",
+                () -> BeatcraftClient.playerConfig.quality.bloomfogMethod(Math.max(0, BeatcraftClient.playerConfig.quality.bloomfogMethod() - 1)),
+                () -> BeatcraftClient.playerConfig.quality.bloomfogMethod(Math.min(2, BeatcraftClient.playerConfig.quality.bloomfogMethod() + 1)),
+                () -> switch (BeatcraftClient.playerConfig.quality.mirrorLimit()) {
+                    case 0 -> "STEREO";
+                    case 1 -> "MONO";
+                    default -> "DESKTOP";
+                },
+                new Vector3f(230, 23, 0))
 
         ));
 
@@ -302,6 +306,16 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
                 () -> BeatcraftClient.playerConfig.quality.skyFog(true),
                 () -> BeatcraftClient.playerConfig.quality.skyFog() ? "ON" : "OFF",
                 new Vector3f(-100, -19, 0)),
+
+            SettingsMenuPanel.getOptionModifier("Bloomfog Method",
+                () -> BeatcraftClient.playerConfig.quality.mirrorLimit(Math.max(-1, BeatcraftClient.playerConfig.quality.mirrorLimit() - 1)),
+                () -> BeatcraftClient.playerConfig.quality.mirrorLimit(BeatcraftClient.playerConfig.quality.mirrorLimit() + 1),
+                () -> switch (BeatcraftClient.playerConfig.quality.mirrorLimit()) {
+                    case -1 -> "INF";
+                    case 0 -> "OFF";
+                    default -> String.valueOf(BeatcraftClient.playerConfig.quality.mirrorLimit());
+                },
+                new Vector3f(-100, 33, 0)),
 
             booleanSetting("Smoke",
                 BeatcraftClient.playerConfig.quality::smokeGraphics,

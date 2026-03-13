@@ -29,6 +29,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
+import org.vivecraft.api.client.data.RenderPass;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
 //import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -247,10 +248,8 @@ public class Bloomfog {
         return (float) Math.atan2(left.y, up.y);
     }
 
-    // private Quaternionf invCameraRotation = new Quaternionf();
-
     private int[] lastSize = new int[]{1, 1};
-    public void render(boolean isMirror, float tickDelta) {
+    public void render() {
         Minecraft client = Minecraft.getInstance();
         var window = client.getWindow();
         int width = window.getWidth();
@@ -266,7 +265,12 @@ public class Bloomfog {
             return;
         }
 
-        var skipRecalc = (!BeatcraftClient.playerConfig.quality.stereoBloomfog()) && inst.vr != null && inst.vr.isActive() && !inst.isFirstPass;
+        var isVrActive = inst.vr != null && inst.vr.isActive();
+        var method = BeatcraftClient.playerConfig.quality.bloomfogMethod();
+        var isSkippedMono = (method == 1) && isVrActive && !inst.isFirstPass;
+        var isSkippedDesktop = (method == 2) && isVrActive && inst.currentPass != RenderPass.MIRROR;
+        var skipRecalc = isSkippedMono || isSkippedDesktop;
+
         Tesselator tesselator = Tesselator.getInstance();
 
         if (!skipRecalc) {
@@ -371,8 +375,6 @@ public class Bloomfog {
         applyEffectPass(framebuffer, extraBuffer, PassType.GAUSSIAN_H, true);
         applyEffectPass(extraBuffer, blurredBuffer, PassType.BLUE_NOISE, false);
 
-
-
     }
 
 
@@ -439,7 +441,6 @@ public class Bloomfog {
             shader.safeGetUniform("texelSize").set(radius / w, radius / h);
         }
         RenderSystem.enableBlend();
-        //RenderSystem.defaultBlendFunc();
 
         float z = 0;
         var q = MemoryPool.newQuaternionf();
@@ -573,8 +574,6 @@ public class Bloomfog {
         applyEffectPass(bloomInput, bloomSwap, PassType.GAUSSIAN_H, true);
         applyEffectPass(bloomSwap, bloomOutput, PassType.GAUSSIAN_V, true);
 
-        //applyEffectPass(false, bloomInput, bloomOutput, PassType.BLIT);
-
         radius = r;
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
@@ -583,14 +582,11 @@ public class Bloomfog {
 
         buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
-
-        // var cr = invCameraRotation.conjugate(new Quaternionf());
         float z = 0;
         buffer.addVertex(new Vector3f(-1, -1, z)).setUv(0.0f, 0.0f).setColor(0xFF020200);
         buffer.addVertex(new Vector3f( 1, -1, z)).setUv(1.0f, 0.0f).setColor(0xFF020200);
         buffer.addVertex(new Vector3f( 1,  1, z)).setUv(1.0f, 1.0f).setColor(0xFF020200);
         buffer.addVertex(new Vector3f(-1,  1, z)).setUv(0.0f, 1.0f).setColor(0xFF020200);
-
 
         RenderSystem.setShader(() -> blitShader);
         RenderSystem.setShaderTexture(0, bloomOutput.getColorTextureId());

@@ -4,13 +4,13 @@ import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.resources.ResourceReloadListener;
 import com.beatcraft.neoforge.client.services.CommandManager;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = Beatcraft.MOD_ID)
 public class ClientModEvents {
@@ -24,6 +24,13 @@ public class ClientModEvents {
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
         CommandManager.dispatcher = event.getDispatcher();
         BeatcraftClient.initCommands();
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent event) {
+        var pl = Minecraft.getInstance().player;
+        if (pl == null) return;
+        BeatcraftClient.playerPos = pl.position().toVector3f();
     }
 
 }

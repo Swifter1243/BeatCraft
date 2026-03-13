@@ -62,8 +62,8 @@ public class BeatcraftRenderer {
         }
     }
 
-    public static void renderBloomfog(float tickDelta) {
-        BeatcraftRenderer.bloomfog.render(false, tickDelta);
+    public static void renderBloomfog() {
+        BeatcraftRenderer.bloomfog.render();
     }
 
     public static void renderMirror() {
