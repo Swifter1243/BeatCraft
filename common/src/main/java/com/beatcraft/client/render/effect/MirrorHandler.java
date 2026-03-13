@@ -351,9 +351,9 @@ public class MirrorHandler {
 
         renderNotes(tesselator, cameraPos);
 
-        renderFloorLights(tesselator, cameraPos);
-
         LightMesh.renderAllMirror();
+
+        renderFloorLights(tesselator, cameraPos);
 
         buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
