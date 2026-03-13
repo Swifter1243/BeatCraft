@@ -145,6 +145,12 @@ public class BeatcraftRenderer {
     private static double lastSmokeSpawn = 0;
     private static final RandomSource random = RandomSource.create();
     public static void renderSmoke() {
+
+        if ((!BeatcraftClient.playerConfig.quality.doBloom()) || (!BeatcraftClient.playerConfig.quality.smokeGraphics())) {
+            MeshLoader.SMOKE_INSTANCED_MESH.cancelDraws();
+            return;
+        }
+
         var t = System.nanoTime() / 1_000_000_000d;
 
         if ((t - lastSmokeSpawn) > SmokeParticle.SPAWN_INTERVAL) {

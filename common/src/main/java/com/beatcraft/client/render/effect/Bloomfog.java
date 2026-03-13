@@ -260,59 +260,65 @@ public class Bloomfog {
 
         Vector3f cameraPos = camera.getPosition().toVector3f();
 
-        if (!BeatcraftClient.playerConfig.quality.doBloomfog()) {
+        var inst = ClientDataHolderVR.getInstance();
+        if ((!BeatcraftClient.playerConfig.quality.doBloomfog())) {
+            renderCalls.clear();
             return;
         }
 
-        framebuffer.setClearColor(0, 0, 0, 0);
-        framebuffer.clear(Minecraft.ON_OSX);
+        var skipRecalc = (!BeatcraftClient.playerConfig.quality.stereoBloomfog()) && inst.vr != null && inst.vr.isActive() && !inst.isFirstPass;
+        Tesselator tesselator = Tesselator.getInstance();
+
+        if (!skipRecalc) {
+            framebuffer.setClearColor(0, 0, 0, 0);
+            framebuffer.clear(Minecraft.ON_OSX);
 
 
-        if (width != lastSize[0] || height != lastSize[1]) {
-            lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
-            resize(Math.max(1, width), Math.max(1, height), true);
+            if (width != lastSize[0] || height != lastSize[1]) {
+                lastSize = new int[]{Math.max(1, width), Math.max(1, height)};
+                resize(Math.max(1, width), Math.max(1, height), true);
+            }
+
+            Minecraft.getInstance().getMainRenderTarget().unbindWrite();
+            framebuffer.bindWrite(true);
+
+
+            BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+
+            for (var call : renderCalls) {
+                call.accept(buffer, cameraPos, BeatcraftRenderer.fullCameraRotation, false);
+            }
+            var buff = buffer.build();
+            if (buff != null) {
+                RenderSystem.setShader(() -> bloomfogLineShader);
+                RenderSystem.lineWidth(window.getWidth() / 225f);
+                BufferUploader.drawWithShader(buff);
+            }
+
+            LightMesh.renderAllBloomfog();
+
+
+            framebuffer.unbindWrite();
+
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+
+
+            applyPyramidBlur();
         }
 
-        Minecraft.getInstance().getMainRenderTarget().unbindWrite();
-        framebuffer.bindWrite(true);
-
-
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-
-        for (var call : renderCalls) {
-            call.accept(buffer, cameraPos, BeatcraftRenderer.fullCameraRotation, false);
-            //MirrorHandler.recordMirrorLightDraw(call);
-        }
         renderCalls.clear();
-        var buff = buffer.build();
-        if (buff != null) {
-            RenderSystem.setShader(() -> bloomfogLineShader);
-            RenderSystem.lineWidth(window.getWidth()/225f);
-            BufferUploader.drawWithShader(buff);
-        }
-
-        LightMesh.renderAllBloomfog();
-
-
-        framebuffer.unbindWrite();
-
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-
-
-        applyPyramidBlur();
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 
         RenderSystem.depthMask(false);
 
-        buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         float z = 0;
         buffer.addVertex(-2, -2, z).setUv(0.0f, 0.0f);
@@ -381,9 +387,15 @@ public class Bloomfog {
     }
 
     public static void applyEffectPass(RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode) {
+        applyEffectPass(in, out, pass, overrideSampleMode, true);
+    }
 
-        out.setClearColor(0, 0, 0, 0);
-        out.clear(Minecraft.ON_OSX);
+    public static void applyEffectPass(RenderTarget in, RenderTarget out, PassType pass, boolean overrideSampleMode, boolean clearOutput) {
+
+        if (clearOutput) {
+            out.setClearColor(0, 0, 0, 0);
+            out.clear(Minecraft.ON_OSX);
+        }
         out.bindWrite(true);
 
         Tesselator tessellator = Tesselator.getInstance();

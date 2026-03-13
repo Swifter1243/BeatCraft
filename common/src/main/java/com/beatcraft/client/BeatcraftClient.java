@@ -82,7 +82,11 @@ public class BeatcraftClient {
         } else if (newWearingHeadset && !wearingHeadset) { // put on
             if (headsetLinkedBeatmap == null) {
                 var p = player.position();
-                var v = new Vec3i((int) p.x, (int) p.y, (int) p.z);
+                var y = p.y;
+                if (vr != null && vr.isActive()) {
+                    y -= 2; // hacky fix for now
+                }
+                var v = new Vec3i((int) p.x, (int) y, (int) p.z);
                 headsetLinkedBeatmap = new BeatmapController(
                     player.clientLevel,
                     new BlockPos(v).getBottomCenter().toVector3f(),

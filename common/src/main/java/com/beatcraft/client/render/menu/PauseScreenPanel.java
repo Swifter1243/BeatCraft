@@ -64,6 +64,7 @@ public class PauseScreenPanel extends MenuPanel<PauseMenu> {
                 () -> {
                     hudRenderer.controller.resume();
                     hudRenderer.controller.scene = HUDRenderer.MenuScene.InGame;
+                    InputSystem.lockHotbar();
                 },
                 new HoverWidget(new Vector3f(), new Vector2f(150, 50), List.of(
                     new GradientWidget(new Vector3f(), new Vector2f(150, 50), 0x7F7F7F7F, 0x7F7F7F7F, 0)

@@ -40,9 +40,12 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
         super.render(immediate, pointerPosition, triggerPressed);
         if (refresh) {
             refresh = false;
+            BeatcraftClient.playerConfig.writeToFile();
             initLayout();
         }
     }
+
+    private static final float MAX_OFFSET = 0.5f;
 
     private void initLayout() {
         widgets.clear();
@@ -52,13 +55,25 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
         TextWidget selectedProfileDisplay = new TextWidget(
             selected == -1 ? "DEFAULT" : String.valueOf(selected),
-            new Vector3f(0, 200-11, 0)
-        ).withScale(3);
+            new Vector3f(0, 210-9, 0)
+        ).withScale(3).withDynamicScaling((int) (100f / 3f));
 
-        ButtonWidget profileBack = getButton(new TextWidget("<", new Vector3f(0, -11, 0.05f)).withScale(3), this::back, new Vector3f(-100, 200, 0), new Vector2f(50, 50));
-        ButtonWidget profileNext = getButton(new TextWidget(">", new Vector3f(0, -11, 0.05f)).withScale(3), this::next, new Vector3f(100, 200, 0), new Vector2f(50, 50));
+        ButtonWidget profileBack = getButton(
+            new TextWidget("<", new Vector3f(0, -11, 0.05f)).withScale(3),
+            this::back,
+            new Vector3f(-85, 210, 0), new Vector2f(50, 50)
+        );
+        ButtonWidget profileNext = getButton(
+            new TextWidget(">", new Vector3f(0, -11, 0.05f)).withScale(3),
+            this::next,
+            new Vector3f(85, 210, 0), new Vector2f(50, 50)
+        );
 
-        ButtonWidget newProfile = getButton(new TextWidget("NEW PROFILE", new Vector3f(0, -11, 0.05f)).withScale(3), this::addProfile, new Vector3f(270, 200, 0), new Vector2f(200, 50));
+        ButtonWidget newProfile = getButton(
+            new TextWidget("NEW PROFILE", new Vector3f(0, -11, 0.05f)).withScale(3),
+            this::addProfile,
+            new Vector3f(245, 210, 0), new Vector2f(250, 50)
+        );
 
         widgets.addAll(List.of(
             new TextWidget("CONTROLLER PROFILES", new Vector3f(0, -200, 0), 3),
@@ -73,20 +88,27 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
             int LEFT = -100;
             int RIGHT = 250;
 
+            ButtonWidget deleteProfile = getButton(
+                new TextWidget("DELETE PROFILE", new Vector3f(0, -11, 0.05f)).withScale(3),
+                this::deleteProfile,
+                new Vector3f(-245, 210, 0), new Vector2f(250, 50)
+            );
+
             widgets.addAll(List.of(
+                deleteProfile,
                 getOptionModifier("Left position X",
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(-0.01f, 0, 0), 0, -0.1f, 0.1f)),
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0.01f, 0, 0), 0, -0.1f, 0.1f)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(-0.01f, 0, 0), 0, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0.01f, 0, 0), 0, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getLeftTranslation().x),
                     new Vector3f(LEFT, -100, -0.01f)),
                 getOptionModifier("Left position Y",
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, -0.01f, 0), 1, -0.1f, 0.1f)),
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0.01f, 0), 1, -0.1f, 0.1f)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, -0.01f, 0), 1, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0.01f, 0), 1, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getLeftTranslation().y),
                     new Vector3f(LEFT, -50, -0.01f)),
                 getOptionModifier("Left position Z",
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0, -0.01f), 2, -0.1f, 0.1f)),
-                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0, 0.01f), 2, -0.1f, 0.1f)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0, -0.01f), 2, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setLeftTranslation(clampVector3(profile.getLeftTranslation().add(0, 0, 0.01f), 2, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getLeftTranslation().z),
                     new Vector3f(LEFT, 0, -0.01f)),
                 getOptionModifier("Left rotation X",
@@ -106,18 +128,18 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
                     new Vector3f(LEFT, 150, -0.01f)),
 
                 getOptionModifier("right position X",
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(-0.01f, 0, 0), 0, -0.1f, 0.1f)),
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0.01f, 0, 0), 0, -0.1f, 0.1f)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(-0.01f, 0, 0), 0, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0.01f, 0, 0), 0, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getRightTranslation().x),
                     new Vector3f(RIGHT, -100, -0.01f)),
                 getOptionModifier("right position Y",
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, -0.01f, 0), 1, -0.1f, 0.1f)),
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0.01f, 0), 1, -0.1f, 0.1f)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, -0.01f, 0), 1, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0.01f, 0), 1, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getRightTranslation().y),
                     new Vector3f(RIGHT, -50, -0.01f)),
                 getOptionModifier("right position Z",
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0, -0.01f), 2, -0.1f, 0.1f)),
-                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0, 0.01f), 2, -0.1f, 0.1f)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0, -0.01f), 2, -MAX_OFFSET, MAX_OFFSET)),
+                    () -> profile.setRightTranslation(clampVector3(profile.getRightTranslation().add(0, 0, 0.01f), 2, -MAX_OFFSET, MAX_OFFSET)),
                     () -> String.format("%.2f", profile.getRightTranslation().z),
                     new Vector3f(RIGHT, 0, -0.01f)),
                 getOptionModifier("right rotation X",
@@ -162,7 +184,7 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
         try {
             //var initial = getter.call();
-            TextWidget valueDisplay = new TextWidget(getter, new Vector3f(0, -11, 0)).withScale(3);
+            TextWidget valueDisplay = new TextWidget(getter, new Vector3f(0, -11, 0)).withScale(3).withDynamicScaling((int) (65f / 3f));
 
             Runnable left = () -> {
                 try {
@@ -182,10 +204,10 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
 
             return new ContainerWidget(
                 position, new Vector2f(SIZE),
-                new TextWidget(label, new Vector3f(-160, -11, -0.01f)).withScale(1.5f),
-                getButton(new TextWidget("<", new Vector3f(0, -11, 0.05f), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50)),
+                new TextWidget(label, new Vector3f(-160 - 75, -11, -0.01f)).withScale(2f).alignedLeft().withDynamicScaling((int) (150f / 2f)),
+                getButton(new TextWidget("<", new Vector3f(0, -11, 0.05f), 3), left, new Vector3f(-60, 0, 0), new Vector2f(50, 50), 0, 0x5F444444),
                 valueDisplay,
-                getButton(new TextWidget(">", new Vector3f(0, -11, 0.05f), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50))
+                getButton(new TextWidget(">", new Vector3f(0, -11, 0.05f), 3), right, new Vector3f(60, 0, 0), new Vector2f(50, 50), 0, 0x5F444444)
             );
         } catch (Exception e) {
             return new TextWidget("ERROR creating widget!", new Vector3f());
@@ -207,5 +229,10 @@ public class SettingsMenuPanel extends MenuPanel<SettingsMenu> {
         BeatcraftClient.playerConfig.controller.selectProfile(BeatcraftClient.playerConfig.controller.getProfileCount()-1);
     }
 
+    private void deleteProfile() {
+        BeatcraftClient.playerConfig.controller.profiles.remove(selected--);
+        BeatcraftClient.playerConfig.controller.selectProfile(selected);
+        refresh = true;
+    }
 
 }

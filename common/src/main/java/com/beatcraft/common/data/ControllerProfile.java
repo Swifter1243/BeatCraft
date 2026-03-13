@@ -137,4 +137,32 @@ public class ControllerProfile {
         rightRotation = euler;
     }
 
+    public static ControllerProfile match$v1() {
+        var profile = new ControllerProfile();
+        profile.convert$v1$v2();
+        return profile;
+    }
+
+    public void convert$v1$v2() {
+        leftRotation.x += 30;
+        rightRotation.x += 30;
+        leftTranslation.z -= 0.1f;
+        rightTranslation.z -= 0.1f;
+    }
+
+    public boolean isZero() {
+        return leftRotation.x == 0
+            && leftRotation.y == 0
+            && leftRotation.z == 0
+            && rightRotation.x == 0
+            && rightRotation.y == 0
+            && rightRotation.z == 0
+            && leftTranslation.x == 0
+            && leftTranslation.y == 0
+            && leftTranslation.z == 0
+            && rightTranslation.x == 0
+            && rightTranslation.y == 0
+            && rightTranslation.z == 0;
+    }
+
 }

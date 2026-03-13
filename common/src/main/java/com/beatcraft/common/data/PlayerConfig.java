@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 
 public class PlayerConfig {
@@ -39,7 +40,7 @@ public class PlayerConfig {
         }
     }
 
-    public static final int FORMAT = 1;
+    public static final int FORMAT = 2;
 
     public class AudioSettings {
         public Option<Float> volume = new Option<>(1.0f, "Beatmap song volume", "");
@@ -94,8 +95,8 @@ public class PlayerConfig {
 
     public class QualitySettings {
 
-
         public Option<Boolean> doBloomfog = new Option<>(true, "Toggles the Bloomfog render effect", "[Medium performance impact]");
+        public Option<Boolean> stereoBloomfog = new Option<>(true, "Whether to render bloomfog per-eye or only once per frame.", "[High performance impact]");
         public Option<Boolean> doBloom = new Option<>(true, "Toggles Bloom post effect", "[Low performance impact]");
         public Option<Integer> mirrorLimit = new Option<>(1, "How many unique mirrors should be rendered?", "1: [Medium performance impact]\n2: [High performance impact]\n3+: [Extreme performance impact]\n-1: No limit. [Extreme performance impact]\n0: OFF. [No performance impact]");
         public Option<Boolean> skyFog = new Option<>(true, "Replace minecraft sky with a black, starless skybox", "[No performance impact]");
@@ -106,6 +107,9 @@ public class PlayerConfig {
 
         public boolean doBloomfog() { return doBloomfog.get(); }
         public void doBloomfog(boolean set) { doBloomfog.set(set); }
+
+        public boolean stereoBloomfog() { return stereoBloomfog.get(); }
+        public void stereoBloomfog(boolean set) { stereoBloomfog.set(set); }
 
         public boolean doBloom() { return doBloom.get(); }
         public void doBloom(boolean set) { doBloom.set(set); }
@@ -134,6 +138,7 @@ public class PlayerConfig {
             var json = new JsonObject();
 
             json.addProperty("bloomfog", doBloomfog.value);
+            json.addProperty("stereo_bloomfog", stereoBloomfog.value);
             json.addProperty("bloom", doBloom.value);
             json.addProperty("mirror_limit", mirrorLimit.value);
             json.addProperty("sky_fog", skyFog.value);
@@ -162,6 +167,7 @@ public class PlayerConfig {
         public void parse$v1(JsonObject json) {
             if (json == null) return;
             doBloomfog.value = JsonUtil.getOrDefault(json, "bloomfog", JsonElement::getAsBoolean, doBloomfog.value);
+            stereoBloomfog.value = JsonUtil.getOrDefault(json, "stereo_bloomfog", JsonElement::getAsBoolean, stereoBloomfog.value);
             doBloom.value = JsonUtil.getOrDefault(json, "bloom", JsonElement::getAsBoolean, doBloom.value);
             mirrorLimit.value = Math.min(1, JsonUtil.getOrDefault(json, "mirror_limit", JsonElement::getAsInt, mirrorLimit.value));
             skyFog.value = JsonUtil.getOrDefault(json, "sky_fog", JsonElement::getAsBoolean, skyFog.value);
@@ -210,13 +216,28 @@ public class PlayerConfig {
             parseProfiles$v1(json.getAsJsonArray("controller.profiles"));
         }
 
-        public void parse$v1(JsonObject json) {
+        public void parse(JsonObject json, Consumer<JsonArray> profileVersionParser) {
             if (json == null) return;
             selectedProfile = JsonUtil.getOrDefault(json, "selected_profile", JsonElement::getAsInt, selectedProfile);
-            parseProfiles$v1(json.getAsJsonArray("profiles"));
+            profileVersionParser.accept(json.getAsJsonArray("profiles"));
         }
 
         private void parseProfiles$v1(JsonArray profiles) {
+            parseProfiles$v2(profiles);
+            for (var profile : this.profiles) {
+                profile.convert$v1$v2();
+            }
+            if (selectedProfile == -1) {
+                this.profiles.add(ControllerProfile.match$v1());
+                selectedProfile = this.profiles.size() - 1;
+            }
+            if (selectedProfile >= 0 && this.profiles.get(selectedProfile).isZero()) {
+                this.profiles.remove(selectedProfile);
+                selectedProfile = -1;
+            }
+        }
+
+        private void parseProfiles$v2(JsonArray profiles) {
             for (var data : profiles) {
                 var profile = new ControllerProfile(data.getAsJsonObject());
                 this.profiles.add(profile);
@@ -562,10 +583,20 @@ public class PlayerConfig {
         if (json.has("version")) {
             var ver = json.get("version").getAsInt();
 
-            if (ver == 1) {
+            if (ver == 1 || ver == 2) {
                 audio.parse$v1(json.getAsJsonObject("audio"));
                 quality.parse$v1(json.getAsJsonObject("quality"));
-                controller.parse$v1(json.getAsJsonObject("controller"));
+                if (ver == 1) {
+                    controller.parse(
+                        json.getAsJsonObject("controller"),
+                        controller::parseProfiles$v1
+                    );
+                } else {
+                    controller.parse(
+                        json.getAsJsonObject("controller"),
+                        controller::parseProfiles$v2
+                    );
+                }
                 preferences.parse$v1(json.getAsJsonObject("preferences"));
                 debug.parse$v1(json.getAsJsonObject("debug"));
                 misc.parse$v1(json.getAsJsonObject("misc"));

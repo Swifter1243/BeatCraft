@@ -11,6 +11,7 @@ import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.common.data.types.CycleStack;
 import com.beatcraft.common.items.ModItems;
 import com.beatcraft.common.items.data.ItemStackWithSaberTrailStack;
+import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.common.replay.PlayFrame;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -182,11 +183,16 @@ public class SaberRenderer {
     public static void renderTrail(boolean doCollisionCheck, PoseStack matrix, boolean mainHand, AbstractClientPlayer player, float tickDelta, ItemStack stack) {
         if (stack.is(ModItems.SABER_ITEM)) {
 
+            var q = MemoryPool.newQuaternionf();
             // Step 1: initial transform to get saber into the default position.
             matrix.scale(0.3333f, 0.3333f, 0.3333f);
             matrix.translate(0, -0.25, 0.35);
-            matrix.mulPose((new Quaternionf()).rotationXYZ(-45 * Mth.DEG_TO_RAD, 0, 0));
+            matrix.mulPose(q.rotationXYZ(-45 * Mth.DEG_TO_RAD, 0, 0));
 
+            matrix.translate(0, 0, 0.1f);
+            matrix.mulPose(q.rotationX(-30 * Mth.DEG_TO_RAD));
+
+            MemoryPool.releaseSafe(q);
 
             // Step 2: modify rotation and translation based on user settings
             Vector3f translation;

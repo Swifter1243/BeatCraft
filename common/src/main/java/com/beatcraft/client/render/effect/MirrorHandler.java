@@ -349,6 +349,12 @@ public class MirrorHandler {
 
         renderEarly(tesselator, cameraPos);
 
+        renderNotes(tesselator, cameraPos);
+
+        renderFloorLights(tesselator, cameraPos);
+
+        LightMesh.renderAllMirror();
+
         buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (var call : mirrorDraws) {
@@ -367,13 +373,7 @@ public class MirrorHandler {
             RenderSystem.enableCull();
         }
 
-        renderNotes(tesselator, cameraPos);
-
-        renderFloorLights(tesselator, cameraPos);
-
         renderObstacles(tesselator, cameraPos);
-
-        LightMesh.renderAllMirror();
         //RenderSystem.depthMask(false);
         //RenderSystem.disableCull();
 
