@@ -311,7 +311,6 @@ public class BeatmapLogicController {
 
     private void calculateScore(PhysicalScorableObject colorNote, Vector3f velocity, Vector3f base, Vector3f tip) {
 
-        // Cut position accuracy: 0-15 points based on how close to note center
         var normal = getPlaneNormal(base, tip, velocity, new Vector3f());
         var dist = distanceToOrigin(tip, normal);
         int accPoints = (int) Math.clamp(
@@ -319,16 +318,15 @@ public class BeatmapLogicController {
             0, 15
         );
 
-        // Swing score: velocity magnitude as proxy for swing arc
         float swingT = Math.clamp(localVel.length() / MAX_SCORE_VELOCITY, 0f, 1f);
 
-        int swingPoints  = (int) (colorNote.score$getMaxSwingInScore()        * swingT); // 0-70
-        int followPoints = (int) (colorNote.score$getMaxFollowThroughScore()  * swingT); // 0-30
+        int swingPoints = (int) (colorNote.score$getMaxSwingInScore() * swingT);
+        int followPoints = (int) (colorNote.score$getMaxFollowThroughScore() * swingT);
 
         int totalScore = accPoints + swingPoints + followPoints;
-        int maxScore = colorNote.score$getMaxCutPositionScore()       // 15
-                     + colorNote.score$getMaxSwingInScore()           // 70
-                     + colorNote.score$getMaxFollowThroughScore();    // 30 -> 115
+        int maxScore = colorNote.score$getMaxCutPositionScore()
+            + colorNote.score$getMaxSwingInScore()
+            + colorNote.score$getMaxFollowThroughScore();
 
         colorNote.score$setScoreState(ScoreState.goodCut(totalScore));
         processGoodCut(totalScore, maxScore);
