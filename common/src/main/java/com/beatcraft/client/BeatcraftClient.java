@@ -38,7 +38,7 @@ public class BeatcraftClient {
 
     public static BeatmapController headsetLinkedBeatmap = null;
 
-    public static Vector3f playerPos = new Vector3f();
+    public static Vector3f playerPos;
 
     public static void earlyInit() {
         Beatcraft.LOGGER.info("Initializing Beatcraft");
@@ -84,6 +84,9 @@ public class BeatcraftClient {
             }
         } else if (newWearingHeadset && !wearingHeadset) { // put on
             if (headsetLinkedBeatmap == null) {
+                if (playerPos == null) {
+                    return;
+                }
                 var p = playerPos;
                 // var y = p.y;
                 // if (vr != null && vr.isActive()) {

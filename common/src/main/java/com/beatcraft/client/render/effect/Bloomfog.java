@@ -502,7 +502,7 @@ public class Bloomfog {
 
         sceneDepthBuffer = Minecraft.getInstance().getMainRenderTarget().getDepthTextureId();
         Minecraft.getInstance().getMainRenderTarget().unbindWrite();
-        Minecraft.getInstance().getMainRenderTarget().bindRead();
+        GlStateManager._bindTexture(sceneDepthBuffer);
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         bloomInput.setClearColor(0, 0, 0, 0);

@@ -10,10 +10,13 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.mesh.TriangleMesh;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -130,8 +133,8 @@ public class SaberItemRenderer {
         public boolean matchesAttributes(AttributedMesh other) {
             return (
                 swivel == other.swivel &&
-                    swivelAxis == other.swivelAxis &&
-                    pivot == other.pivot &&
+                    (swivelAxis == other.swivelAxis || (swivelAxis != null && other.swivelAxis != null) && swivelAxis.equals(other.swivelAxis)) &&
+                    (pivot == other.pivot || (pivot != null && other.pivot != null) && pivot.equals(other.pivot)) &&
                     doBloom == other.doBloom &&
                     tinted == other.tinted &&
                     Objects.equals(shader, other.shader)
@@ -441,10 +444,17 @@ public class SaberItemRenderer {
                         var buff = b.build();
 
                         if (buff != null) {
-
+                            TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+                            AbstractTexture abstractTexture = textureManager.getTexture(texture);
                             RenderSystem.setShaderTexture(0, texture);
+                            GlStateManager._bindTexture(abstractTexture.getId());
                             RenderSystem.setShaderTexture(1, depthBuffer);
-                            RenderSystem.enableBlend();
+                            GlStateManager._bindTexture(depthBuffer);
+                            GlUtil.useProgram(Bloomfog.bloomMaskLightTextureShader.getId());
+                            GlUtil.setTex(Bloomfog.bloomMaskLightTextureShader.getId(), "Sampler0", 0, abstractTexture.getId());
+                            GlUtil.setTex(Bloomfog.bloomMaskLightTextureShader.getId(), "Sampler1", 1, depthBuffer);
+
+                            // RenderSystem.enableBlend();
                             RenderSystem.setShader(() -> Bloomfog.bloomMaskLightTextureShader);
                             BufferUploader.drawWithShader(buff);
 
