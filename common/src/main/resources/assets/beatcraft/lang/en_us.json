@@ -19,6 +19,7 @@
   "gui.beatcraft.reset": "Reset changes",
   "gui.beatcraft.next": "Next",
 
+  "hud.beatcraft.fpfc_warning": "FPFC ENABLED",
   "hud.beatcraft.combo": "COMBO",
   "hud.beatcraft.miss": "MISS",
 

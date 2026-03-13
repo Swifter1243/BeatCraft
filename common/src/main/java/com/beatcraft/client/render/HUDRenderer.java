@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.*;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 
 import java.lang.Math;
 
@@ -749,6 +750,20 @@ public class HUDRenderer {
 
 
     private void renderPlayerHealth(PoseStack matrices, Font textRenderer, Vector3f cameraPos) {
+
+
+        var inst = ClientDataHolderVR.getInstance();
+        if (BeatcraftClient.FPFC && inst.vr != null && inst.vr.isActive()) {
+            var txt = Component.translatable("hud.beatcraft.fpfc_warning");
+            int w = textRenderer.width(txt.getString());
+            textRenderer.drawInBatch(
+                txt,
+                -w / 2f, -30, 0xFF_FF8888, false,
+                matrices.last().pose(), buffers,
+                TEXT_LAYER, 0, TEXT_LIGHT
+            );
+        }
+
         float progress = controller.logic.getHealthPercentage();
 
         switch (BeatcraftClient.playerConfig.preferences.healthStyle()) {
