@@ -1,52 +1,302 @@
 {
   "mesh_format": 1,
-  "credits": ["Beatcraft", "Westbot"],
+  "credits": [
+    "Beatcraft",
+    "Westbot"
+  ],
   "parts": {
-    "diagonal_light": {}
+    "diagonal_light": {
+      "named_vertices": {
+        "v0": [
+          -0.05,
+          200.0,
+          0.05
+        ],
+        "v1": [
+          0.05,
+          200.0,
+          0.05
+        ],
+        "v2": [
+          0.05,
+          200.0,
+          -0.05
+        ],
+        "v3": [
+          -0.05,
+          200.0,
+          -0.05
+        ],
+        "v4": [
+          -0.05,
+          0.0,
+          0.05
+        ],
+        "v5": [
+          0.05,
+          0.0,
+          0.05
+        ],
+        "v6": [
+          0.05,
+          0.0,
+          -0.05
+        ],
+        "v7": [
+          -0.05,
+          0.0,
+          -0.05
+        ]
+      },
+      "triangles": [
+        [
+          "v6",
+          "v3",
+          "v2",
+          "l0"
+        ],
+        [
+          "v7",
+          "v3",
+          "v6",
+          "l0"
+        ],
+        [
+          "v7",
+          "v0",
+          "v3",
+          "l0"
+        ],
+        [
+          "v4",
+          "v0",
+          "v7",
+          "l0"
+        ],
+        [
+          "v4",
+          "v1",
+          "v0",
+          "l0"
+        ],
+        [
+          "v5",
+          "v1",
+          "v4",
+          "l0"
+        ],
+        [
+          "v5",
+          "v2",
+          "v1",
+          "l0"
+        ],
+        [
+          "v6",
+          "v2",
+          "v5",
+          "l0"
+        ],
+        [
+          "v4",
+          "v6",
+          "v5",
+          "l0"
+        ],
+        [
+          "v4",
+          "v7",
+          "v6",
+          "l0"
+        ],
+        [
+          "v3",
+          "v1",
+          "v2",
+          "l0"
+        ],
+        [
+          "v3",
+          "v0",
+          "v1",
+          "l0"
+        ]
+      ]
+    }
   },
   "mesh": [
     {
       "part": "diagonal_light",
-      "position": [0, 0, 0]
+      "position": [
+        2.0,
+        -2.0,
+        60.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.49240387650610395,
+        0.15038373318043527,
+        -0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l1" }
+      "position": [
+        2.0,
+        -2.0,
+        70.0
+      ],
+      "remap_data": {
+        "l0": "l1"
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.49240387650610395,
+        0.15038373318043527,
+        -0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l2" }
+      "position": [
+        2.0,
+        -2.0,
+        80.0
+      ],
+      "remap_data": {
+        "l0": "l2"
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.49240387650610395,
+        0.15038373318043527,
+        -0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l3" }
+      "position": [
+        2.0,
+        -2.0,
+        90.0
+      ],
+      "remap_data": {
+        "l0": "l3"
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.49240387650610395,
+        0.15038373318043527,
+        -0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "scale": [-1, 1, 1],
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l4" }
+      "scale": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "position": [
+        -2.0,
+        -2.0,
+        60.0
+      ],
+      "remap_data": {
+        "l0": "l4"
+      },
+      "rotation": [
+        0.49240387650610395,
+        -0.15038373318043527,
+        0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "scale": [-1, 1, 1],
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l5" }
+      "scale": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "position": [
+        -2.0,
+        -2.0,
+        70.0
+      ],
+      "remap_data": {
+        "l0": "l5"
+      },
+      "rotation": [
+        0.49240387650610395,
+        -0.15038373318043527,
+        0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "scale": [-1, 1, 1],
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l6" }
+      "scale": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "position": [
+        -2.0,
+        -2.0,
+        80.0
+      ],
+      "remap_data": {
+        "l0": "l6"
+      },
+      "rotation": [
+        0.49240387650610395,
+        -0.15038373318043527,
+        0.08682408883346514,
+        0.8528685319524433
+      ]
     },
     {
       "part": "diagonal_light",
-      "scale": [-1, 1, 1],
-      "position": [0, 0, 0],
-      "remap_data": { "l0": "l7" }
+      "scale": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "position": [
+        -2.0,
+        -2.0,
+        90.0
+      ],
+      "remap_data": {
+        "l0": "l7"
+      },
+      "rotation": [
+        0.49240387650610395,
+        -0.15038373318043527,
+        0.08682408883346514,
+        0.8528685319524433
+      ]
     }
   ],
   "textures": {
@@ -54,15 +304,51 @@
     "2": "beatcraft:textures/gameplay_objects/arrow.png"
   },
   "data": {
-    "default": { "material": 0, "texture": 1, "color": 0 },
-    "l0": { "material": 2, "texture": 2, "color": 0 },
-    "l1": { "material": 2, "texture": 2, "color": 1 },
-    "l2": { "material": 2, "texture": 2, "color": 2 },
-    "l3": { "material": 2, "texture": 2, "color": 3 },
-    "l4": { "material": 2, "texture": 2, "color": 4 },
-    "l5": { "material": 2, "texture": 2, "color": 5 },
-    "l6": { "material": 2, "texture": 2, "color": 6 },
-    "l7": { "material": 2, "texture": 2, "color": 7 }
+    "default": {
+      "material": 0,
+      "texture": 1,
+      "color": 0
+    },
+    "l0": {
+      "material": 2,
+      "texture": 2,
+      "color": 0
+    },
+    "l1": {
+      "material": 2,
+      "texture": 2,
+      "color": 1
+    },
+    "l2": {
+      "material": 2,
+      "texture": 2,
+      "color": 2
+    },
+    "l3": {
+      "material": 2,
+      "texture": 2,
+      "color": 3
+    },
+    "l4": {
+      "material": 2,
+      "texture": 2,
+      "color": 4
+    },
+    "l5": {
+      "material": 2,
+      "texture": 2,
+      "color": 5
+    },
+    "l6": {
+      "material": 2,
+      "texture": 2,
+      "color": 6
+    },
+    "l7": {
+      "material": 2,
+      "texture": 2,
+      "color": 7
+    }
   },
   "cull": true
 }

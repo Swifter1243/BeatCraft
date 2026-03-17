@@ -109,11 +109,10 @@ public class MeshLoader {
         public static LightMesh OUTER_RING;
         /// 1 Light: 0
         public static LightMesh SPINNING_LIGHT;
-        /// 8 Lights:
+        /// 6 Lights:
         /// 0,1: runway
-        /// 2,3: sides
-        /// 4,5: back slants
-        /// 6,7: chevron parts
+        /// 2,3: back slants
+        /// 4,5: chevron parts
         public static LightMesh STATIC_1;
         /// 8 Lights:
         /// 0-3: top Left slants
@@ -123,17 +122,20 @@ public class MeshLoader {
         /// 0-3: bottom left slants
         /// 4-7: bottom right slants
         public static LightMesh STATIC_3;
-        /// 4 Lights:
+        /// 8 Lights:
         /// 0: top left slant
         /// 1: top right slant
         /// 2: bottom left slant
         /// 3: bottom right slant
+        /// 4-7: tower skylights
         public static LightMesh STATIC_4;
+        /// No lights.
+        public static LightMesh STRUCTURE;
         /// 8 Lights:
-        /// 0,1: back left tower lights
-        /// 2,3: back right tower lights
-        /// 4,5: front left tower lights
-        /// 6,7: front right tower lights
+        /// 0,1: front left tower lights
+        /// 2,3: front right tower lights
+        /// 4,5: back left tower lights
+        /// 6,7: back right tower lights
         public static LightMesh TOWERS;
 
         public static final MeshSetLoader loader = new MeshSetLoader(TheFirst::load, TheFirst::unload);
@@ -146,6 +148,7 @@ public class MeshLoader {
             STATIC_2       = LightMesh.load("thefirst_static_2",       Beatcraft.id("environments/thefirst/meshes/static2.json"));
             STATIC_3       = LightMesh.load("thefirst_static_3",       Beatcraft.id("environments/thefirst/meshes/static3.json"));
             STATIC_4       = LightMesh.load("thefirst_static_4",       Beatcraft.id("environments/thefirst/meshes/static4.json"));
+            STRUCTURE      = LightMesh.load("thefirst_structure",      Beatcraft.id("environments/thefirst/meshes/structure.json"));
             TOWERS         = LightMesh.load("thefirst_towers",         Beatcraft.id("environments/thefirst/meshes/towers.json"));
         }
 
@@ -157,6 +160,7 @@ public class MeshLoader {
             STATIC_2.buildMesh();
             STATIC_3.buildMesh();
             STATIC_4.buildMesh();
+            STRUCTURE.buildMesh();
             TOWERS.buildMesh();
         }
 
@@ -168,6 +172,155 @@ public class MeshLoader {
             STATIC_2.cleanup();
             STATIC_3.cleanup();
             STATIC_4.cleanup();
+            STRUCTURE.cleanup();
+            TOWERS.cleanup();
+        }
+
+    }
+
+    public static class TriangleEnv {
+        /// 4 Lights: 0-3
+        public static LightMesh INNER_RING;
+        /// 0 Lights
+        public static LightMesh OUTER_RING;
+        /// 1 Light: 0
+        public static LightMesh SPINNING_LIGHT;
+        /// 4 Lights:
+        /// 0,1: runway
+        /// 2,3: back slants
+        public static LightMesh STATIC_1;
+        /// 8 Lights:
+        /// 0-3: top Left slants
+        /// 4-7: top right slants
+        public static LightMesh STATIC_2;
+        /// 8 Lights:
+        /// 0-3: bottom left slants
+        /// 4-7: bottom right slants
+        public static LightMesh STATIC_3;
+        /// 6 Lights:
+        /// 0: top left slant
+        /// 1: top right slant
+        /// 2: bottom left slant
+        /// 3: bottom right slant
+        /// 4,5: tower skylights
+        public static LightMesh STATIC_4;
+        /// No lights.
+        public static LightMesh STRUCTURE;
+        /// 8 Lights:
+        /// 0,1: front left tower lights
+        /// 2,3: front right tower lights
+        public static LightMesh TOWERS;
+
+        public static final MeshSetLoader loader = new MeshSetLoader(TheFirst::load, TheFirst::unload);
+
+        protected static void init() throws IOException {
+            INNER_RING     = LightMesh.load("triangle_inner_ring",     Beatcraft.id("environments/triangle/meshes/inner_ring.json"));
+            OUTER_RING     = LightMesh.load("triangle_outer_ring",     Beatcraft.id("environments/triangle/meshes/outer_ring.json"));
+            SPINNING_LIGHT = LightMesh.load("triangle_spinning_light", Beatcraft.id("environments/triangle/meshes/spinning_laser.json"));
+            STATIC_1       = LightMesh.load("triangle_static_1",       Beatcraft.id("environments/triangle/meshes/static1.json"));
+            STATIC_2       = LightMesh.load("triangle_static_2",       Beatcraft.id("environments/triangle/meshes/static2.json"));
+            STATIC_3       = LightMesh.load("triangle_static_3",       Beatcraft.id("environments/triangle/meshes/static3.json"));
+            STATIC_4       = LightMesh.load("triangle_static_4",       Beatcraft.id("environments/triangle/meshes/static4.json"));
+            STRUCTURE      = LightMesh.load("triangle_structure",      Beatcraft.id("environments/triangle/meshes/structure.json"));
+            TOWERS         = LightMesh.load("triangle_towers",         Beatcraft.id("environments/triangle/meshes/towers.json"));
+        }
+
+        public static void load() {
+            INNER_RING.buildMesh();
+            OUTER_RING.buildMesh();
+            SPINNING_LIGHT.buildMesh();
+            STATIC_1.buildMesh();
+            STATIC_2.buildMesh();
+            STATIC_3.buildMesh();
+            STATIC_4.buildMesh();
+            STRUCTURE.buildMesh();
+            TOWERS.buildMesh();
+        }
+
+        public static void unload() {
+            INNER_RING.cleanup();
+            OUTER_RING.cleanup();
+            SPINNING_LIGHT.cleanup();
+            STATIC_1.cleanup();
+            STATIC_2.cleanup();
+            STATIC_3.cleanup();
+            STATIC_4.cleanup();
+            STRUCTURE.cleanup();
+            TOWERS.cleanup();
+        }
+    }
+
+    public static class Nice {
+        /// 4 Lights: 0-3
+        public static LightMesh INNER_RING;
+        /// 0 Lights
+        public static LightMesh OUTER_RING;
+        /// 1 Light: 0
+        public static LightMesh SPINNING_LIGHT;
+        /// 6 Lights:
+        /// 0,1: runway
+        /// 2,3: back slants
+        /// 4,5: chevron parts
+        public static LightMesh STATIC_1;
+        /// 8 Lights:
+        /// 0-3: top Left slants
+        /// 4-7: top right slants
+        public static LightMesh STATIC_2;
+        /// 8 Lights:
+        /// 0-3: bottom left slants
+        /// 4-7: bottom right slants
+        public static LightMesh STATIC_3;
+        /// 8 Lights:
+        /// 0: top left slant
+        /// 1: top right slant
+        /// 2: bottom left slant
+        /// 3: bottom right slant
+        /// 4-7: tower skylights
+        public static LightMesh STATIC_4;
+        /// No lights.
+        public static LightMesh STRUCTURE;
+        /// 8 Lights:
+        /// 0,1: front left tower lights
+        /// 2,3: front right tower lights
+        /// 4,5: back left tower lights
+        /// 6,7: back right tower lights
+        public static LightMesh TOWERS;
+
+        public static final MeshSetLoader loader = new MeshSetLoader(TheFirst::load, TheFirst::unload);
+
+        protected static void init() throws IOException {
+            INNER_RING     = LightMesh.load("thefirst_inner_ring",     Beatcraft.id("environments/thefirst/meshes/inner_ring.json"));
+            OUTER_RING     = LightMesh.load("thefirst_outer_ring",     Beatcraft.id("environments/thefirst/meshes/outer_ring.json"));
+            SPINNING_LIGHT = LightMesh.load("thefirst_spinning_light", Beatcraft.id("environments/thefirst/meshes/spinning_laser.json"));
+            STATIC_1       = LightMesh.load("thefirst_static_1",       Beatcraft.id("environments/thefirst/meshes/static1.json"));
+            STATIC_2       = LightMesh.load("thefirst_static_2",       Beatcraft.id("environments/thefirst/meshes/static2.json"));
+            STATIC_3       = LightMesh.load("thefirst_static_3",       Beatcraft.id("environments/thefirst/meshes/static3.json"));
+            STATIC_4       = LightMesh.load("thefirst_static_4",       Beatcraft.id("environments/thefirst/meshes/static4.json"));
+            STRUCTURE      = LightMesh.load("thefirst_structure",      Beatcraft.id("environments/thefirst/meshes/structure.json"));
+            TOWERS         = LightMesh.load("thefirst_towers",         Beatcraft.id("environments/thefirst/meshes/towers.json"));
+        }
+
+        public static void load() {
+            INNER_RING.buildMesh();
+            OUTER_RING.buildMesh();
+            SPINNING_LIGHT.buildMesh();
+            STATIC_1.buildMesh();
+            STATIC_2.buildMesh();
+            STATIC_3.buildMesh();
+            STATIC_4.buildMesh();
+            STRUCTURE.buildMesh();
+            TOWERS.buildMesh();
+        }
+
+        public static void unload() {
+            INNER_RING.cleanup();
+            OUTER_RING.cleanup();
+            SPINNING_LIGHT.cleanup();
+            STATIC_1.cleanup();
+            STATIC_2.cleanup();
+            STATIC_3.cleanup();
+            STATIC_4.cleanup();
+            STRUCTURE.cleanup();
             TOWERS.cleanup();
         }
 
