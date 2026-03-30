@@ -32,7 +32,7 @@ public class FabricItemsGroup {
             group.accept(FabricItems.HEADSET_ITEM);
             var redSaber = new ItemStack(Holder.direct(FabricItems.SABER_ITEM), 1, DataComponentPatch.builder()
                 .set(ModComponents.SABER_COLOR_COMPONENT.get(), 12595248)
-                .set(ModComponents.AUTO_SYNC_COLOR.get(), 1)
+                .set(ModComponents.AUTO_SYNC_COLOR.get(), 0)
                 .build()
             );
             var blueSaber = new ItemStack(Holder.direct(FabricItems.SABER_ITEM), 1, DataComponentPatch.builder()
