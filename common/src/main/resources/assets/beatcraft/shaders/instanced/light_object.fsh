@@ -1,10 +1,4 @@
-#PC
 #version 330 core
-#ENDPC
-#QUEST
-#version 300 es
-precision mediump float;
-#ENDQUEST
 
 in vec2 v_uv;
 in vec4 v_color;

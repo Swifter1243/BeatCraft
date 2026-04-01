@@ -68,13 +68,14 @@ Mesh format:
         "light": { "material": 1 } // missing keys fallback to 'default'
     },
     "cull": false, // whether to do backface culling
-    "bloom_pass": true,  // defaults to true if absent; set to false to disable the bloom render pass
-    "mirror_pass": true, // defaults to true; whether to draw this mesh in the runway mirror
-    "solid_pass": true,  // defaults to true; set to false to disable the regular visible pass
-    "bloomfog_style": 0  // defaults to 0;
-    // 0 = anything that renders to bloom will also render to bloomfog
-    // 1 = everything renders to bloomfog. note: the pass that draws to bloomfog will supply a blank texture as the mesh's u_bloomfog sampler
-    // 2 = don't render to bloomfog
+    "bloom_pass": true,         // defaults to true if absent; set to false to disable the bloom render pass
+    "mirror_pass": true,        // defaults to true; whether to draw this mesh in the runway mirror
+    "solid_pass": true,         // defaults to true; set to false to disable the regular visible pass
+    "bloomfog_style": 0,        // defaults to 0;
+                                    // 0 = anything that renders to bloom will also render to bloomfog
+                                    // 1 = everything renders to bloomfog. note: the pass that draws to bloomfog will supply a blank texture as the mesh's u_bloomfog sampler
+                                    // 2 = don't render to bloomfog
+    "set_clipping_plane": true, // defaults to true
 
 }
 
@@ -178,13 +179,6 @@ public class LightMesh {
 
     }
 
-    public static final HashMap<String, LightMesh> meshes = new HashMap<>();
-
-    private static final ArrayList<ResourceLocation> unloadedTextures = new ArrayList<>();
-    private static final HashMap<ResourceLocation, Vector2f> uvMap = new HashMap<>();
-    public static boolean initialized = false;
-    private static int atlasGlId;
-
     protected static class AtlasBuilder {
         public final int maxWidth;
         public final int maxHeight;
@@ -204,72 +198,6 @@ public class LightMesh {
             }
             return false;
         }
-    }
-
-    public static void buildMeshes() {
-        if (initialized) return;
-
-        uvMap.clear();
-
-        var atlasBuilder = new AtlasBuilder(1024);
-        try (var atlas = new NativeImage(1024, 1024, false)) {
-
-            var manager = Minecraft.getInstance().getResourceManager();
-
-            for (var ident : unloadedTextures) {
-                var in = manager.getResource(ident).orElseThrow(() -> new RuntimeException("File '" + ident + "' could not be loaded"));
-                try (var input = in.open()) {
-                    var tex = NativeImage.read(NativeImage.Format.RGBA, input);
-                    var w = tex.getWidth();
-                    var h = tex.getHeight();
-
-                    var pos = new Vector2i();
-
-                    if (atlasBuilder.add(new Vector2i(w, h), pos)) {
-                        var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
-                        Beatcraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
-                        uvMap.put(ident, uv);
-                        tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
-                    } else {
-                        throw new RuntimeException("Atlas size exceeded");
-                    }
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            atlasGlId = GL31.glGenTextures();
-            GL31.glBindTexture(GL31.GL_TEXTURE_2D, atlasGlId);
-
-            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
-            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_LINEAR);
-            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_S, GL31.GL_CLAMP_TO_EDGE);
-            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_T, GL31.GL_CLAMP_TO_EDGE);
-
-            GL11.glTexImage2D(
-                GL11.GL_TEXTURE_2D, 0,
-                GL11.GL_RGBA8, 1024, 1024, 0,
-                GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null
-            );
-
-            //try {
-            //    atlas.writeTo(Path.of(MinecraftClient.getInstance().runDirectory.getPath() + "/beatcraft_lightmesh_atlas.png"));
-            //} catch (IOException e) {
-            //    throw new RuntimeException(e);
-            //}
-            atlas.upload(0, 0, 0, 0, 0, 1024, 1024, false, true);
-
-
-            initialized = true;
-        }
-
-        for (var mesh : meshes.values()) {
-            mesh.cleanup();
-        }
-
-        meshes.values().forEach(LightMesh::buildMesh);
-
     }
 
     protected record VertexData(Vector3f vertex, Vector2f uv, Vector3f normal) {
@@ -342,6 +270,14 @@ public class LightMesh {
 
     }
 
+
+    public static final HashMap<String, LightMesh> meshes = new HashMap<>();
+
+    private static final ArrayList<ResourceLocation> unloadedTextures = new ArrayList<>();
+    private static final HashMap<ResourceLocation, Vector2f> uvMap = new HashMap<>();
+    public static boolean initialized = false;
+    private static int atlasGlId;
+
     private final ArrayList<Triangle> triangles;
     private final HashMap<Integer, ResourceLocation> meshTextures;
     private boolean doBloom = true;
@@ -349,6 +285,7 @@ public class LightMesh {
     private boolean doMirroring = true;
     private int bloomfogStyle = 0;
     private boolean cullBackfaces = false;
+    private boolean setClippingPlane = true;
 
     private int shaderProgram = 0;
 
@@ -370,6 +307,86 @@ public class LightMesh {
     private final ArrayList<Draw> mirrorLateLightDraws = new ArrayList<>();
 
     private final String id;
+
+    private static final ResourceLocation lightObjectVsh = Beatcraft.id("shaders/instanced/light_object.vsh");
+    private static final ResourceLocation lightObjectFsh = Beatcraft.id("shaders/instanced/light_object.fsh");
+
+    private ResourceLocation vshOverride = null;
+    private ResourceLocation fshOverride = null;
+
+    private static final int COLOR_COUNT = 8;
+    private static final int FRAME_SIZE = 4 + 16 + (4 * COLOR_COUNT);
+    private static final int STRIDE = FRAME_SIZE * 4;
+    private static final int CLIP_PLANE_OFFSET = 0;
+    private static final int TRANSFORM_OFFSET = 4 * 4;
+    private static final int COLORS_OFFSET = TRANSFORM_OFFSET + 16 * 4;
+
+
+    public static void buildMeshes() {
+        if (initialized) return;
+
+        uvMap.clear();
+
+        var atlasBuilder = new AtlasBuilder(1024);
+        try (var atlas = new NativeImage(1024, 1024, false)) {
+
+            var manager = Minecraft.getInstance().getResourceManager();
+
+            for (var ident : unloadedTextures) {
+                var in = manager.getResource(ident).orElseThrow(() -> new RuntimeException("File '" + ident + "' could not be loaded"));
+                try (var input = in.open()) {
+                    var tex = NativeImage.read(NativeImage.Format.RGBA, input);
+                    var w = tex.getWidth();
+                    var h = tex.getHeight();
+
+                    var pos = new Vector2i();
+
+                    if (atlasBuilder.add(new Vector2i(w, h), pos)) {
+                        var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
+                        Beatcraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
+                        uvMap.put(ident, uv);
+                        tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
+                    } else {
+                        throw new RuntimeException("Atlas size exceeded");
+                    }
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            atlasGlId = GL31.glGenTextures();
+            GL31.glBindTexture(GL31.GL_TEXTURE_2D, atlasGlId);
+
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_LINEAR);
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_S, GL31.GL_CLAMP_TO_EDGE);
+            GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_T, GL31.GL_CLAMP_TO_EDGE);
+
+            GL11.glTexImage2D(
+                GL11.GL_TEXTURE_2D, 0,
+                GL11.GL_RGBA8, 1024, 1024, 0,
+                GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null
+            );
+
+            //try {
+            //    atlas.writeTo(Path.of(MinecraftClient.getInstance().runDirectory.getPath() + "/beatcraft_lightmesh_atlas.png"));
+            //} catch (IOException e) {
+            //    throw new RuntimeException(e);
+            //}
+            atlas.upload(0, 0, 0, 0, 0, 1024, 1024, false, true);
+
+
+            initialized = true;
+        }
+
+        for (var mesh : meshes.values()) {
+            mesh.cleanup();
+        }
+
+        meshes.values().forEach(LightMesh::buildMesh);
+
+    }
 
     protected LightMesh(String id, HashMap<Integer, ResourceLocation> unloadedTextures) {
         this.id = id;
@@ -417,9 +434,6 @@ public class LightMesh {
         return GlUtil.reProcess(source);
     }
 
-    private static final ResourceLocation lightObjectVsh = Beatcraft.id("shaders/instanced/light_object.vsh");
-    private static final ResourceLocation lightObjectFsh = Beatcraft.id("shaders/instanced/light_object.fsh");
-
     private void putVec3i(IntBuffer buf, int a, int b, int c) {
         buf.put(a).put(b).put(c);
     }
@@ -440,10 +454,19 @@ public class LightMesh {
         MemoryUtil.memFree(buffer);
     }
 
+    public void setOverrideShaders(ResourceLocation vsh, ResourceLocation fsh) {
+        vshOverride = vsh;
+        fshOverride = fsh;
+    }
+
     public void buildMesh() {
         if (loaded) return;
 
-        shaderProgram = GlUtil.createShaderProgram(lightObjectVsh, lightObjectFsh, this::processShaderSource);
+        shaderProgram = GlUtil.createShaderProgram(
+            vshOverride == null ? lightObjectVsh : vshOverride,
+            fshOverride == null ? lightObjectFsh : fshOverride,
+            this::processShaderSource
+        );
 
         vao = GL45C.glCreateVertexArrays();
         GL30.glBindVertexArray(vao);
@@ -501,12 +524,6 @@ public class LightMesh {
         loaded = true;
     }
 
-    private static final int COLOR_COUNT = 8;
-    private static final int FRAME_SIZE = 4 + 16 + (4 * COLOR_COUNT);
-    private static final int STRIDE = FRAME_SIZE * 4;
-    private static final int CLIP_PLANE_OFFSET = 0;
-    private static final int TRANSFORM_OFFSET = 4 * 4;
-    private static final int COLORS_OFFSET = TRANSFORM_OFFSET + 16 * 4;
     private void setupInstanceBuffer() {
         instanceVbo = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, instanceVbo);
@@ -664,7 +681,9 @@ public class LightMesh {
         // PHASE 1: enable instancing attributes
         GL30.glBindVertexArray(vao);
 
-        GL30.glEnable(GL30.GL_CLIP_DISTANCE0);
+        if (setClippingPlane) {
+            GL30.glEnable(GL30.GL_CLIP_DISTANCE0);
+        }
 
         ARBInstancedArrays.glVertexAttribDivisorARB(Location.POSITION_U, 0);
         ARBInstancedArrays.glVertexAttribDivisorARB(Location.NORMAL_V, 0);
@@ -685,14 +704,14 @@ public class LightMesh {
             GlUtil.setTex(shaderProgram, "u_bloomfog", 1, fog.blurredBuffer.getColorTextureId());
         }
         var passType = isLateLights
-            ? 3
+            ? 3 // Late Lights
             : isBloom
-                ? 1
+                ? 1 // Bloom
                 : preBloomfog
                     ? isMirror
-                        ? 0
-                        : 2
-                    : 0;
+                        ? 0 // Normal
+                        : 2 // Bloomfog
+                    : 0; // Normal
         GlUtil.uniform1i("passType", passType);
         if (sceneDepthBuffer != 0) {
             GlUtil.setTex(shaderProgram, "u_depth", 2, sceneDepthBuffer);
@@ -709,18 +728,12 @@ public class LightMesh {
         var p = MemoryPool.newVector3f();
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         p.set(cameraPos).negate();
-        var client = Minecraft.getInstance();
-        var window = client.getWindow();
-        int width = window.getWidth();
-        int height = window.getHeight();
 
         var viewMat = new Matrix4f().rotate(q);
         Matrix4f projMat = RenderSystem.getProjectionMatrix();
 
         if (isMirror) {
             GL15.glFrontFace(GL15.GL_CW);
-            // var div = 2f;
-            // projMat = new Matrix4f().ortho(-width/div, width/div, -height/div, height/div, 0.1f, 1000);
         }
 
         MemoryPool.releaseSafe(q);
@@ -807,7 +820,10 @@ public class LightMesh {
         RenderSystem.blendFunc(oldBlendSrc, oldBlendDst);
 
         GL15.glFrontFace(GL15.GL_CCW);
-        GL30.glDisable(GL30.GL_CLIP_DISTANCE0);
+
+        if (setClippingPlane) {
+            GL30.glDisable(GL30.GL_CLIP_DISTANCE0);
+        }
 
         // Restore texture bindings
         for (int i = 0; i < 3; i++) {
@@ -1173,6 +1189,7 @@ public class LightMesh {
         mesh.doMirroring = JsonUtil.getOrDefault(json, "mirror_pass", JsonElement::getAsBoolean, mesh.doMirroring);
         mesh.bloomfogStyle = JsonUtil.getOrDefault(json, "bloomfog_style", JsonElement::getAsInt, mesh.bloomfogStyle);
         mesh.doSolid = JsonUtil.getOrDefault(json, "solid_pass", JsonElement::getAsBoolean, mesh.doSolid);
+        mesh.setClippingPlane = JsonUtil.getOrDefault(json, "set_clipping_plane", JsonElement::getAsBoolean, mesh.setClippingPlane);
 
         for (var dat : rawMesh) {
             var transform = dat.getAsJsonObject();
