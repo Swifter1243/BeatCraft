@@ -489,6 +489,7 @@ public class LightMesh {
 
         for (var tri : triangles) {
             var offset = uvMap.get(meshTextures.get(tri.data.textureId));
+            if (offset == null) offset = new Vector2f(0);
 
             positionUBuffer.put(tri.a.vertex.x).put(tri.a.vertex.y).put(tri.a.vertex.z).put(tri.a.uv.x + offset.x);
             positionUBuffer.put(tri.b.vertex.x).put(tri.b.vertex.y).put(tri.b.vertex.z).put(tri.b.uv.x + offset.x);
@@ -874,6 +875,7 @@ public class LightMesh {
 
         protected Vector3f getNormal(Object idxOrName) {
             if (idxOrName instanceof Integer i) {
+                if (i >= normals.size()) return new Vector3f(0, 1, 0);
                 return normals.get(i);
             } else if (idxOrName instanceof String s) {
                 var idx = namedNormals.get(s);
@@ -887,6 +889,7 @@ public class LightMesh {
 
         protected Vector2f getUv(Object idxOrName) {
             if (idxOrName instanceof Integer i) {
+                if (i >= uvs.size()) return new Vector2f(0, 0);
                 return uvs.get(i);
             } else if (idxOrName instanceof String s) {
                 var idx = namedUvs.get(s);
@@ -1126,15 +1129,17 @@ public class LightMesh {
 
             if (triangleDataList != null && !triangleDataList.isEmpty()) {
                 var defaultUv = builder.getUv(0);
-                Object defaultUvi;
+                Object defaultUvi = null;
                 var defaultNormal = builder.getNormal(0);
-                Object defaultNormali;
+                Object defaultNormali = null;
 
                 for (var item : triangleDataList) {
                     if (item.isJsonObject()) {
                         var obj = item.getAsJsonObject();
                         var uv = obj.get("uv");
-                        if (uv.isJsonPrimitive() && uv.getAsJsonPrimitive().isNumber()) {
+                        if (uv == null) {
+                            if (defaultUvi == null) defaultUvi = 0;
+                        } else if (uv.isJsonPrimitive() && uv.getAsJsonPrimitive().isNumber()) {
                             defaultUvi = uv.getAsInt();
                         } else {
                             defaultUvi = uv.getAsString();
@@ -1142,7 +1147,9 @@ public class LightMesh {
                         defaultUv = builder.getUv(defaultUvi);
 
                         var n = obj.get("normal");
-                        if (n.isJsonPrimitive() && n.getAsJsonPrimitive().isNumber()) {
+                        if (n == null) {
+                            if (defaultNormali == null) defaultNormali = 0;
+                        } else if (n.isJsonPrimitive() && n.getAsJsonPrimitive().isNumber()) {
                             defaultNormali = n.getAsInt();
                         } else {
                             defaultNormali = n.getAsString();
