@@ -114,6 +114,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Stack;
 
 public class LightMesh {
@@ -273,7 +274,7 @@ public class LightMesh {
 
     public static final HashMap<String, LightMesh> meshes = new HashMap<>();
 
-    private static final ArrayList<ResourceLocation> unloadedTextures = new ArrayList<>();
+    private static final HashSet<ResourceLocation> unloadedTextures = new HashSet<>();
     private static final HashMap<ResourceLocation, Vector2f> uvMap = new HashMap<>();
     public static boolean initialized = false;
     private static int atlasGlId;
@@ -333,6 +334,7 @@ public class LightMesh {
             var manager = Minecraft.getInstance().getResourceManager();
 
             for (var ident : unloadedTextures) {
+                Beatcraft.LOGGER.info("Loading texture: {}", ident);
                 var in = manager.getResource(ident).orElseThrow(() -> new RuntimeException("File '" + ident + "' could not be loaded"));
                 try (var input = in.open()) {
                     var tex = NativeImage.read(NativeImage.Format.RGBA, input);
@@ -389,6 +391,7 @@ public class LightMesh {
     }
 
     protected LightMesh(String id, HashMap<Integer, ResourceLocation> unloadedTextures) {
+        Beatcraft.LOGGER.info("Adding textures {} from mesh {}", unloadedTextures, id);
         this.id = id;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;

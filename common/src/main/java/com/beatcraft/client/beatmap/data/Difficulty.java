@@ -56,6 +56,12 @@ public abstract class Difficulty {
         parentHandler = new AssignTrackParentHandler(assignTrackParents, trackLibrary);
     }
 
+    public void cleanup() {
+        if (lightShowEnvironment != null) {
+            lightShowEnvironment.cleanup();
+        }
+    }
+
     public static int compareObjects(BeatmapObject o1, BeatmapObject o2) {
         float a = o1.getBeat();
         float b = o2.getBeat();

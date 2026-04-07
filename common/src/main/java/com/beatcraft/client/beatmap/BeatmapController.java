@@ -453,7 +453,7 @@ public class BeatmapController {
     public void reset() {
         info = null;
         if (difficulty != null) {
-            difficulty.lightShowEnvironment.cleanup();
+            difficulty.cleanup();
         }
         difficulty = null;
         playing = false;

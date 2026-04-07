@@ -33,8 +33,6 @@ public class MirrorHandler {
 
     private static final ArrayList<MirrorHandler> mirrors = new ArrayList<>();
 
-    // public static Quaternionf invCameraRotation = new Quaternionf();
-
     // this is for the solid block faces of mirror blocks, not mirrored objects
     private static final ArrayList<BiConsumer<BufferBuilder, Vector3f>> plainMirrorCalls = new ArrayList<>();
 

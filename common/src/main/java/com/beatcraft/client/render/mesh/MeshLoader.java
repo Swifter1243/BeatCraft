@@ -451,8 +451,7 @@ public class MeshLoader {
 
         protected UnboundJsonModel(ResourceLocation identifier) throws IOException {
             var reader = Minecraft.getInstance().getResourceManager().getResource(identifier).orElseThrow().openAsReader();
-            var rawJson = String.join("\n", reader.lines().toList());
-            var json = JsonParser.parseString(rawJson).getAsJsonObject();
+            var json = JsonParser.parseReader(reader).getAsJsonObject();
 
             var arr = new ArrayList<UnboundJsonElement>();
 

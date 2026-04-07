@@ -410,7 +410,11 @@ public class TheFirstEnvironment extends EnvironmentV2 {
     protected LightGroupV2 setupRingLights() {
         var rpd = Mth.DEG_TO_RAD;
 
+        // Need to be placed in map but not use
+        // an actual chroma id,
+        // but also still needs a unique id to not delete other instances
         var linkI = new AtomicInteger(30*4+1);
+
         var linkO = new AtomicInteger(1);
 
         ringLights = new RingLightHandler(
