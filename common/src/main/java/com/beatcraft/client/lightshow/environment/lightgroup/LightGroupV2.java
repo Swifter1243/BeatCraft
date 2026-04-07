@@ -9,13 +9,16 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 // V2 has no step/offset pattern stuff, just pre-set motion algorithms (that I don't know)
 //
 public abstract class LightGroupV2 extends LightGroup {
 
     public final HashMap<Integer, LightObject> lights;
+    public ArrayList<LightObject> unmappedLights = new ArrayList<>();
 
     public LightGroupV2(BeatmapController map, HashMap<Integer, LightObject> lights) {
         super(map);
@@ -36,5 +39,8 @@ public abstract class LightGroupV2 extends LightGroup {
         lights.forEach((key, light) -> {
             light.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
         });
+        for (var obj : unmappedLights) {
+            obj.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
+        }
     }
 }

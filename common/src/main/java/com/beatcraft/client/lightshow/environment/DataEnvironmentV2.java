@@ -42,13 +42,13 @@ public class DataEnvironmentV2 extends EnvironmentV2 {
     @Override
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
         super.loadLightshow(difficulty, json);
-        // TODO: load meshes
+        layout.setup();
     }
 
     @Override
     public void cleanup() {
         super.cleanup();
-        // TODO: unload meshes
+        layout.cleanup();
     }
 
     @Override

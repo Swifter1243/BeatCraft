@@ -342,7 +342,7 @@ public class TriangleEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.TriangleEnv.INNER_RING,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TriangleEnv.INNER_RING, 0),
-                (lights) -> lights.get(linkI.getAndIncrement()),
+                (lights, unmapped) -> lights.get(linkI.getAndIncrement()),
                 new RingLightHandler.LightDelta(
                     30*4+1, 30*4+31, 1, 5f
                 ),

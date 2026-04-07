@@ -67,7 +67,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.Kaleidoscope.SPIKE,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.Kaleidoscope.SPIKE, 7),
-                (lights) -> {
+                (lights, _u) -> {
                     int idx = linkI.get();
                     linkI.set(idx + 2);
                     return lights.get(idx);
@@ -107,7 +107,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
                     new float[]{20f},
                     pos, new Quaternionf(), 1
                 ),
-                (lights) -> lights.get(linkO.getAndIncrement()),
+                (lights, _u) -> lights.get(linkO.getAndIncrement()),
                 new RingLightHandler.LightDelta(
                     41, 61, 1, 0
                 ),

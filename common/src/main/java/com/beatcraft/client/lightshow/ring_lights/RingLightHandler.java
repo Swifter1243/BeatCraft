@@ -20,14 +20,20 @@ import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RingLightHandler extends ActionLightGroupV2 {
 
     public record LightDelta(
-        int startId, int endId, int idStep, float deltaZ
-    ) {}
+        Integer startId, int endId, int idStep, float deltaZ
+    ) {
+        public static LightDelta unmapped(float deltaZ) {
+            return new LightDelta(null, 0, 0, deltaZ);
+        }
+    }
 
     public record PresetPositions(
         float[] jumpOffsets,
@@ -51,7 +57,7 @@ public class RingLightHandler extends ActionLightGroupV2 {
     public record RingLightData(
         LightMesh mesh,
         LightFactory factory,
-        Function<HashMap<Integer, LightObject>, LightObject> linker,
+        BiFunction<HashMap<Integer, LightObject>, ArrayList<LightObject>, LightObject> linker,
         LightDelta delta,
         PresetPositions presets,
         Vector3f startPosition,
@@ -188,7 +194,7 @@ public class RingLightHandler extends ActionLightGroupV2 {
 
         public IndividualRingLightHandler(
             BeatmapController map,
-            Function<HashMap<Integer, LightObject>, LightObject> linker,
+            BiFunction<HashMap<Integer, LightObject>, ArrayList<LightObject>, LightObject> linker,
             int count, Vector3f position, float ringGap,
             PresetPositions presets
         ) {
@@ -197,12 +203,12 @@ public class RingLightHandler extends ActionLightGroupV2 {
             this.ringGap = ringGap;
             this.presets = presets;
 
-            headRing = new IndividualRingLightHandler.RingHandler(0, linker.apply(lights));
+            headRing = new IndividualRingLightHandler.RingHandler(0, linker.apply(lights, unmappedLights));
 
             var last = headRing;
 
             for (int i = 1; i < count; ++i) {
-                var current = new IndividualRingLightHandler.RingHandler(i, linker.apply(lights));
+                var current = new IndividualRingLightHandler.RingHandler(i, linker.apply(lights, unmappedLights));
                 last.nextRing = current;
                 last = current;
             }
@@ -274,6 +280,7 @@ public class RingLightHandler extends ActionLightGroupV2 {
         RingLightData outerData
     ) {
         var map = new HashMap<Integer, LightObject>();
+        var list = new ArrayList<LightObject>();
 
         var pos = new Vector3f(0, 0, 8);
 
@@ -283,21 +290,51 @@ public class RingLightHandler extends ActionLightGroupV2 {
         if (outerData.mesh != null) {
             RingLight.clearInstances(outerData.mesh);
         }
-        for (int i = innerData.delta.startId; i < innerData.delta.endId; i += innerData.delta.idStep) {
-            try {
-                map.put(i, innerData.factory.invoke(new Vector3f(pos)));
-                pos.add(0, 0, innerData.delta.deltaZ);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        if (innerData.delta.startId == null) {
+            for (int i = 0; i < innerData.count; ++i) {
+                try {
+                    list.add(innerData.factory.invoke(new Vector3f(pos)));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            for (int i = innerData.delta.startId; i < innerData.delta.endId; i += innerData.delta.idStep) {
+                try {
+                    map.put(i, innerData.factory.invoke(new Vector3f(pos)));
+                    pos.add(0, 0, innerData.delta.deltaZ);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
+
         pos.set(0, 0, 8);
-        for (int i = outerData.delta.startId; i < outerData.delta.endId; i += outerData.delta.idStep) {
-            map.put(i, outerData.factory.invoke(new Vector3f(pos)));
-            pos.add(0, 0, outerData.delta.deltaZ);
+
+        if (outerData.delta.startId == null) {
+            for (int i = 0; i < outerData.count; ++i) {
+                try {
+                    list.add(outerData.factory.invoke(new Vector3f(pos)));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            for (int i = outerData.delta.startId; i < outerData.delta.endId; i += outerData.delta.idStep) {
+                map.put(i, outerData.factory.invoke(new Vector3f(pos)));
+                pos.add(0, 0, outerData.delta.deltaZ);
+            }
         }
 
-        return map;
+        return new HashMapAndList(map, list);
+    }
+
+    private static class HashMapAndList extends HashMap<Integer, LightObject> {
+        private final ArrayList<LightObject> list;
+        private HashMapAndList(HashMap<Integer, LightObject> map, ArrayList<LightObject> list) {
+            super(map);
+            this.list = list;
+        }
     }
 
     public RingLightHandler(
@@ -305,7 +342,10 @@ public class RingLightHandler extends ActionLightGroupV2 {
         RingLightData innerData,
         RingLightData outerData
     ) {
+        // OOP at it's worst:
         super(map, buildRingLights(innerData, outerData));
+        // OOP at it's finest:
+        unmappedLights = ((HashMapAndList) lights).list;
 
         innerRing = new IndividualRingLightHandler(
             map, innerData.linker, innerData.count,

@@ -13,8 +13,8 @@ import org.joml.Vector3f;
 
 public class MultiLightObject extends LightObject {
 
-    public final int stateCount;
-    public final LightState[] states;
+    public int stateCount;
+    public LightState[] states;
     public final LightMesh lightMesh;
 
     public class SubLightController extends LightObject {
@@ -74,6 +74,13 @@ public class MultiLightObject extends LightObject {
             states[i] = new LightState(new Color(), 0);
         }
         lightState = new LightState(new Color(), 0);
+    }
+
+    public void truncate(int newSize) {
+        stateCount = newSize;
+        var old = states;
+        states = new LightState[newSize];
+        System.arraycopy(old, 0, states, 0, newSize);
     }
 
     @Override

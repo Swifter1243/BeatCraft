@@ -413,7 +413,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
         // Need to be placed in map but not use
         // an actual chroma id,
         // but also still needs a unique id to not delete other instances
-        var linkI = new AtomicInteger(30*4+1);
+        var linkI = new AtomicInteger(0);
 
         var linkO = new AtomicInteger(1);
 
@@ -422,10 +422,8 @@ public class TheFirstEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.TheFirst.INNER_RING,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TheFirst.INNER_RING, 0),
-                (lights) -> lights.get(linkI.getAndIncrement()),
-                new RingLightHandler.LightDelta(
-                    30*4+1, 30*4+31, 1, 5f
-                ),
+                (_lights, unmapped) -> unmapped.get(linkI.getAndIncrement()),
+                RingLightHandler.LightDelta.unmapped(5f),
                 new RingLightHandler.PresetPositions(
                     new float[]{-90 * rpd, 90 * rpd},
                     new float[]{
@@ -444,7 +442,7 @@ public class TheFirstEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.TheFirst.OUTER_RING,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TheFirst.OUTER_RING, 3),
-                (lights) -> {
+                (lights, _unmapped) -> {
                     var idx = linkO.get();
                     linkO.set(idx + 4);
                     return lights.get(idx);
