@@ -19,7 +19,12 @@ public abstract class Environment {
 
     public Environment(BeatmapController map) {
         mapController = map;
-        setup();
+        setup(null);
+    }
+
+    public Environment(BeatmapController map, Object o) {
+        mapController = map;
+        setup(o);
     }
 
     public String getID() {
@@ -38,7 +43,7 @@ public abstract class Environment {
 
     }
 
-    public abstract void setup();
+    public abstract void setup(Object o);
 
     public abstract Environment reset();
 

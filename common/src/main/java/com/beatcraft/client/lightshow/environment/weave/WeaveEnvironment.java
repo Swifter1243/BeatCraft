@@ -92,7 +92,7 @@ public class WeaveEnvironment extends EnvironmentV3 {
     }
 
     @Override
-    public void setup() {
+    public void setup(Object _o) {
         eventGroups = new HashMap<>();
         setupOuterLights();
         setupInnerLights();

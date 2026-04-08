@@ -56,7 +56,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
     }
 
     @Override
-    public void setup() {
+    public void setup(Object _o) {
         var rpd = Mth.DEG_TO_RAD;
 
         var linkI = new AtomicInteger(1);
@@ -73,7 +73,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
                     return lights.get(idx);
                 },
                 new RingLightHandler.LightDelta(
-                    1, 40, 2, 5
+                    1, 2, 5
                 ),
                 new RingLightHandler.PresetPositions(
                     new float[]{
@@ -109,7 +109,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
                 ),
                 (lights, _u) -> lights.get(linkO.getAndIncrement()),
                 new RingLightHandler.LightDelta(
-                    41, 61, 1, 0
+                    41, 1, 0
                 ),
                 new RingLightHandler.PresetPositions(
                     new float[]{
@@ -176,7 +176,7 @@ public class KaleidoscopeEnvironment extends EnvironmentV2 {
         }
 
 
-        super.setup();
+        super.setup(null);
     }
 
     @Override

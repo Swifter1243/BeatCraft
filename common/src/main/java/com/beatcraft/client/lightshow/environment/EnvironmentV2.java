@@ -43,6 +43,9 @@ public abstract class EnvironmentV2 extends Environment {
     public EnvironmentV2(BeatmapController map) {
         super(map);
     }
+    public EnvironmentV2(BeatmapController map, Object o) {
+        super(map, o);
+    }
 
     @Override
     public float getVersion() {
@@ -57,7 +60,7 @@ public abstract class EnvironmentV2 extends Environment {
     }
 
     @Override
-    public void setup() {
+    public void setup(Object _o) {
         lightGroups = new HashMap<>();
         uniqueGroups = new ArrayList<>();
 

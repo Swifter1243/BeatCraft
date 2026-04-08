@@ -22,16 +22,17 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RingLightHandler extends ActionLightGroupV2 {
 
     public record LightDelta(
-        Integer startId, int endId, int idStep, float deltaZ
+        Integer startId, int idStep, float deltaZ
     ) {
         public static LightDelta unmapped(float deltaZ) {
-            return new LightDelta(null, 0, 0, deltaZ);
+            return new LightDelta(null, 0, deltaZ);
         }
     }
 
@@ -203,12 +204,33 @@ public class RingLightHandler extends ActionLightGroupV2 {
             this.ringGap = ringGap;
             this.presets = presets;
 
-            headRing = new IndividualRingLightHandler.RingHandler(0, linker.apply(lights, unmappedLights));
-
+            headRing = new RingHandler(0, linker.apply(lights, unmappedLights));
             var last = headRing;
 
             for (int i = 1; i < count; ++i) {
-                var current = new IndividualRingLightHandler.RingHandler(i, linker.apply(lights, unmappedLights));
+                var current = new RingHandler(i, linker.apply(lights, unmappedLights));
+                last.nextRing = current;
+                last = current;
+            }
+        }
+
+        public IndividualRingLightHandler(
+            BeatmapController map,
+            Vector3f position,
+            float ringGap,
+            PresetPositions presets,
+            List<LightObject> rings
+        ) {
+            super(map);
+            this.position = position;
+            this.ringGap = ringGap;
+            this.presets = presets;
+
+            headRing = new RingHandler(0, rings.getFirst());
+            RingHandler last = headRing;
+
+            for (int i = 1; i < rings.size(); ++i) {
+                var current = new RingHandler(i, rings.get(i));
                 last.nextRing = current;
                 last = current;
             }
@@ -299,7 +321,8 @@ public class RingLightHandler extends ActionLightGroupV2 {
                 }
             }
         } else {
-            for (int i = innerData.delta.startId; i < innerData.delta.endId; i += innerData.delta.idStep) {
+            var endId = innerData.delta.startId + (innerData.count * innerData.delta.idStep);
+            for (int i = innerData.delta.startId; i < endId; i += innerData.delta.idStep) {
                 try {
                     map.put(i, innerData.factory.invoke(new Vector3f(pos)));
                     pos.add(0, 0, innerData.delta.deltaZ);
@@ -320,7 +343,8 @@ public class RingLightHandler extends ActionLightGroupV2 {
                 }
             }
         } else {
-            for (int i = outerData.delta.startId; i < outerData.delta.endId; i += outerData.delta.idStep) {
+            var endId = outerData.delta.startId + (outerData.count * outerData.delta.idStep);
+            for (int i = outerData.delta.startId; i < endId; i += outerData.delta.idStep) {
                 map.put(i, outerData.factory.invoke(new Vector3f(pos)));
                 pos.add(0, 0, outerData.delta.deltaZ);
             }
@@ -361,6 +385,42 @@ public class RingLightHandler extends ActionLightGroupV2 {
 
         innerRing.spinTo(innerData.startAngle, innerData.startOffset, 0, 0);
         outerRing.spinTo(outerData.startAngle, outerData.startOffset, 0, 0);
+
+    }
+
+    public RingLightHandler(
+        BeatmapController map,
+        HashMap<Integer, LightObject> lights,
+        ArrayList<LightObject> unmapped,
+        List<LightObject> innerRings,
+        Vector3f innerPos,
+        float innerGap,
+        PresetPositions innerPresets,
+        Vector3f outerPos,
+        float outerGap,
+        PresetPositions outerPresets,
+        List<LightObject> outerRings,
+        float[] startAngles
+    ) {
+        super(map, lights);
+        unmappedLights = unmapped;
+        innerRing = new IndividualRingLightHandler(
+            map,
+            innerPos,
+            innerGap,
+            innerPresets,
+            innerRings
+        );
+        outerRing = new IndividualRingLightHandler(
+            map,
+            outerPos,
+            outerGap,
+            outerPresets,
+            outerRings
+        );
+
+        innerRing.spinTo(startAngles[0], startAngles[1], 0, 0);
+        outerRing.spinTo(startAngles[2], startAngles[3], 0, 0);
 
     }
 

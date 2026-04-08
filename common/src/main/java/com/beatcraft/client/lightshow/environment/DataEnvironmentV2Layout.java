@@ -1,11 +1,14 @@
 package com.beatcraft.client.lightshow.environment;
 
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
+import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -17,7 +20,7 @@ import java.util.Iterator;
 
 public class DataEnvironmentV2Layout {
 
-    private enum IdGroup {
+    protected enum IdGroup {
         LEFT_LASERS,
         RIGHT_LASERS,
         CENTER_LASERS,
@@ -36,7 +39,7 @@ public class DataEnvironmentV2Layout {
         }
     }
 
-    private enum EventGroup {
+    protected enum EventGroup {
         None,
         OuterRing,
         InnerRing,
@@ -54,14 +57,14 @@ public class DataEnvironmentV2Layout {
         }
     }
 
-    private static class IdIter implements Iterable<IdIter.Id>, Iterator<IdIter.Id> {
+    protected static class IdIter implements Iterable<IdIter.Id>, Iterator<IdIter.Id> {
 
         record Id(IdGroup group, int id) {}
 
-        private final Object[] arr;
+        protected final Object[] arr;
 
-        private IdGroup currentGroup = null;
-        private int idx = 0;
+        protected IdGroup currentGroup = null;
+        protected int idx = 0;
 
         IdIter(JsonArray data) {
             arr = new Object[data.size()];
@@ -104,8 +107,8 @@ public class DataEnvironmentV2Layout {
         }
     }
 
-    private static class MeshRef {
-        private int refs = 0;
+    protected static class MeshRef {
+        protected int refs = 0;
         public final LightMesh mesh;
 
         public MeshRef(LightMesh mesh) {
@@ -127,19 +130,26 @@ public class DataEnvironmentV2Layout {
         }
     }
 
-    private static class LightGroup {
-        private static class SubGroup {
-            private ArrayList<IdIter> ids = new ArrayList<>();
-            private ArrayList<ArrayList<Integer>> idOffsets = new ArrayList<>();
-            private Vector3f position = new Vector3f();
-            private Quaternionf rotation = new Quaternionf();
-            private Vector3f spinAxis = new Vector3f();
-            private int count = 0;
+    protected static class LightGroup {
+        protected static class SubGroup {
+            protected IdIter ids = null;
+            protected ArrayList<Integer> idOffsets = new ArrayList<>();
+            protected Vector3f position = new Vector3f();
+            protected Quaternionf rotation = new Quaternionf();
+
+            protected int count = 1;
+            protected Vector3f offset = new Vector3f();
+            protected Quaternionf rotOffset = new Quaternionf();
+
+            protected Vector3f spinAxis = new Vector3f(0, 1, 0);
+
+            protected float[] anglesRadians = new float[0];
+            protected float[] deltasRadians = new float[0];
         }
 
-        private final HashMap<EventGroup, ArrayList<SubGroup>> subGroups = new HashMap<>();
+        protected final HashMap<EventGroup, ArrayList<SubGroup>> subGroups = new HashMap<>();
 
-        private void addPlacement(JsonObject json) {
+        protected void addPlacement(JsonObject json) {
             var rawType = json.get("type");
             var ids = new IdIter(json.getAsJsonArray("ids"));
 
@@ -154,22 +164,75 @@ public class DataEnvironmentV2Layout {
             }
             var ls = subGroups.get(type);
             var sub = new SubGroup();
-            sub.ids.add(ids);
-            sub.idOffsets.add(null);
+            sub.ids = ids;
 
+            if (type != EventGroup.None) {
+                var pos = json.getAsJsonArray("position");
+                var off = json.getAsJsonArray("offset");
+                var count = json.get("count");
+                var rot = json.getAsJsonArray("rotation");
+                var rotOff = json.getAsJsonArray("rotation-offset");
+                var idOffsets = json.getAsJsonArray("id-step");
+
+                if (pos != null) {
+                    sub.position = JsonUtil.getVector3(pos);
+                }
+                if (off != null) {
+                    sub.offset = JsonUtil.getVector3(off);
+                }
+                if (count != null) {
+                    sub.count = count.getAsInt();
+                }
+                if (rot != null) {
+                    sub.rotation = JsonUtil.getQuaternion(rot);
+                }
+                if (rotOff != null) {
+                    sub.rotation = JsonUtil.getQuaternion(rotOff);
+                }
+                if (idOffsets == null) {
+                    sub.idOffsets.add(null);
+                } else {
+                    for (var x : idOffsets) {
+                        sub.idOffsets.add(x.getAsInt());
+                    }
+                }
+            } else {
+                sub.idOffsets.add(null);
+            }
+
+            if (type == EventGroup.InnerRing || type == EventGroup.OuterRing) {
+                var angles = json.getAsJsonArray("angles");
+                var deltas = json.getAsJsonArray("deltas");
+
+                sub.anglesRadians = new float[angles.size()];
+                sub.deltasRadians = new float[deltas.size()];
+
+                for (var i = 0; i < angles.size(); ++i) {
+                    sub.anglesRadians[i] = angles.get(i).getAsFloat() * Mth.DEG_TO_RAD;
+                }
+                for (var i = 0; i < deltas.size(); ++i) {
+                    sub.deltasRadians[i] = angles.get(i).getAsFloat() * Mth.DEG_TO_RAD;
+                }
+
+            } else if (type == EventGroup.LeftSpinning || type == EventGroup.RightSpinning) {
+                var axis = json.getAsJsonArray("axis");
+                if (axis != null) {
+                    sub.spinAxis = JsonUtil.getVector3(axis);
+                }
+            }
 
             ls.add(sub);
         }
 
     }
 
-    private static HashMap<ResourceLocation, MeshRef> meshes;
+    protected static HashMap<ResourceLocation, MeshRef> meshes;
 
-    private final ResourceLocation envId;
-    private final ArrayList<MeshRef> meshRefs = new ArrayList<>();
+    protected final ResourceLocation envId;
+    protected final ArrayList<MeshRef> meshRefs = new ArrayList<>();
 
-    private final ArrayList<LightMesh> statics = new ArrayList<>();
-    private final HashMap<LightMesh, LightGroup> lights = new HashMap<>();
+    protected final ArrayList<LightMesh> statics = new ArrayList<>();
+    protected final HashMap<LightMesh, LightGroup> lights = new HashMap<>();
 
     public DataEnvironmentV2Layout(ResourceLocation envId) throws IOException {
         this.envId = envId;
@@ -217,7 +280,7 @@ public class DataEnvironmentV2Layout {
 
     }
 
-    private MeshRef loadMesh(ResourceLocation loc) throws IOException {
+    protected MeshRef loadMesh(ResourceLocation loc) throws IOException {
         if (meshes.containsKey(loc)) {
             return meshes.get(loc);
         }

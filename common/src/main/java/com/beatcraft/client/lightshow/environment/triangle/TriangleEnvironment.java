@@ -334,7 +334,6 @@ public class TriangleEnvironment extends EnvironmentV2 {
     protected LightGroupV2 setupRingLights() {
         var rpd = Mth.DEG_TO_RAD;
 
-        var linkI = new AtomicInteger(30*4+1);
         var linkO = new AtomicInteger(1);
 
         ringLights = new RingLightHandler(
@@ -342,10 +341,8 @@ public class TriangleEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.TriangleEnv.INNER_RING,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TriangleEnv.INNER_RING, 0),
-                (lights, unmapped) -> lights.get(linkI.getAndIncrement()),
-                new RingLightHandler.LightDelta(
-                    30*4+1, 30*4+31, 1, 5f
-                ),
+                (lights, unmapped) -> unmapped.getLast(),
+                RingLightHandler.LightDelta.unmapped(5f),
                 new RingLightHandler.PresetPositions(
                     new float[]{-90 * rpd, 90 * rpd},
                     new float[]{
@@ -364,13 +361,13 @@ public class TriangleEnvironment extends EnvironmentV2 {
             new RingLightHandler.RingLightData(
                 MeshLoader.TriangleEnv.OUTER_RING,
                 (pos) -> new RingLight(mapController, pos, new Quaternionf(), MeshLoader.TriangleEnv.OUTER_RING, 3),
-                (lights) -> {
+                (lights, _u) -> {
                     var idx = linkO.get();
                     linkO.set(idx + 4);
                     return lights.get(idx);
                 },
                 new RingLightHandler.LightDelta(
-                    1, 30*4+1, 4, 8.75f
+                    1, 4, 8.75f
                 ),
                 new RingLightHandler.PresetPositions(
                     new float[]{-90 * rpd, 90 * rpd},
