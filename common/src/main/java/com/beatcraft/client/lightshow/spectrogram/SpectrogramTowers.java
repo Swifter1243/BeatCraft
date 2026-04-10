@@ -15,7 +15,11 @@ import java.util.function.Function;
 public class SpectrogramTowers {
 
     public enum TowerStyle {
-        Cuboid
+        Cuboid;
+
+        public static TowerStyle fromString(String _s) {
+            return Cuboid;
+        }
     }
 
     private BeatmapController mapController;

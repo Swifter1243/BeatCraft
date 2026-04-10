@@ -1,5 +1,9 @@
 package com.beatcraft.client.lightshow.environment;
 
+import com.beatcraft.Beatcraft;
+import com.beatcraft.client.animation.Easing;
+import com.beatcraft.client.beatmap.BeatmapController;
+import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
 import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonArray;
@@ -10,13 +14,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.function.Function;
 
 public class DataEnvironmentV2Layout {
 
@@ -261,6 +270,83 @@ public class DataEnvironmentV2Layout {
 
     }
 
+    protected record SpectrogramPair(
+        SpectrogramTowers a,
+        @Nullable SpectrogramTowers b
+    ) {}
+
+    protected record SpectrogramData(
+        Vector3f position,
+        Quaternionf rotation,
+        Vector3f offset,
+        int count,
+        SpectrogramTowers.TowerStyle style,
+        boolean halfSplit,
+        float levelModifier,
+        float baseHeight,
+        Function<Float, Float> easing,
+        @Nullable Vector4f mirror
+    ) {
+
+        private static Vector3f mirrorVector(Vector3f v, Vector4f plane) {
+            Vector3f normal = new Vector3f(plane.x, plane.y, plane.z);
+            float dist = v.dot(normal) - plane.w;
+            return v.sub(normal.mul(2 * dist, new Vector3f()), new Vector3f());
+        }
+
+        private static Quaternionf mirrorQuaternion(Quaternionf q, Vector4f plane) {
+            Vector3f normal = new Vector3f(plane.x, plane.y, plane.z);
+
+            java.util.function.UnaryOperator<Vector3f> reflect = (v) -> {
+                float dot = v.dot(normal);
+                return v.sub(normal.mul(2 * dot, new Vector3f()), new Vector3f());
+            };
+
+            Vector3f right = reflect.apply(q.transform(new Vector3f(1, 0, 0)));
+            Vector3f up = reflect.apply(q.transform(new Vector3f(0, 1, 0)));
+            Vector3f forward = reflect.apply(q.transform(new Vector3f(0, 0, 1)));
+
+            right.negate();
+
+            Matrix3f mat = new Matrix3f(
+                right.x,   right.y,   right.z,
+                up.x,      up.y,      up.z,
+                forward.x, forward.y, forward.z
+            );
+
+            return mat.getNormalizedRotation(new Quaternionf());
+        }
+
+        protected SpectrogramPair build(BeatmapController map, File f) {
+            var a = new SpectrogramTowers(
+                map,
+                position,
+                rotation,
+                offset,
+                count,
+                f,
+                style,
+                halfSplit
+            );
+            a.levelModifier = levelModifier;
+            a.baseHeight = baseHeight;
+            a.levelEasing = easing;
+            if (mirror == null) {
+                return new SpectrogramPair(a, null);
+            } else {
+                var b = a.copyTo(
+                    mirrorVector(position, mirror),
+                    mirrorQuaternion(rotation, mirror)
+                );
+                b.levelModifier = levelModifier;
+                b.baseHeight = baseHeight;
+                b.levelEasing = easing;
+                return new SpectrogramPair(a, b);
+            }
+        }
+
+    }
+
     protected static final HashMap<ResourceLocation, MeshRef> meshes = new HashMap<>();
 
     protected final ResourceLocation envId;
@@ -270,6 +356,7 @@ public class DataEnvironmentV2Layout {
     protected final HashMap<LightMesh, LightGroup> lights = new HashMap<>();
     protected float[] fogHeights = new float[]{-50, -30};
     protected float[][] mirrorTris = new float[0][];
+    protected SpectrogramData spectrogramData = null;
 
     public DataEnvironmentV2Layout(ResourceLocation envId) throws IOException {
         this.envId = envId;
@@ -284,6 +371,7 @@ public class DataEnvironmentV2Layout {
         var layout = json.getAsJsonObject("layout").entrySet();
         var fog = json.getAsJsonArray("fog-heights");
         var mirrorId = json.get("mirror");
+        var spect = json.getAsJsonObject("spectrogram");
 
         for (var entry : layout) {
             var id = entry.getKey();
@@ -337,6 +425,21 @@ public class DataEnvironmentV2Layout {
                     tri.get(2).getAsFloat(),
                 };
             }
+        }
+
+        if (spect != null) {
+            spectrogramData = new SpectrogramData(
+                JsonUtil.getOrDefault(spect, "position", JsonUtil::getVector3, new Vector3f()),
+                JsonUtil.getOrDefault(spect, "rotation", JsonUtil::getQuaternion, new Quaternionf()),
+                JsonUtil.getOrDefault(spect, "offset", JsonUtil::getVector3, new Vector3f(0, 0, 2)),
+                JsonUtil.getOrDefault(spect, "count", JsonElement::getAsInt, 127),
+                JsonUtil.getOrDefault(spect, "style", (x) -> SpectrogramTowers.TowerStyle.fromString(x.getAsString()), SpectrogramTowers.TowerStyle.Cuboid),
+                JsonUtil.getOrDefault(spect, "half-split", JsonElement::getAsBoolean, true),
+                JsonUtil.getOrDefault(spect, "level-modifier", JsonElement::getAsFloat, 1f),
+                JsonUtil.getOrDefault(spect, "base-height", JsonElement::getAsFloat, 0f),
+                Easing.getEasing(JsonUtil.getOrDefault(spect, "easing", JsonElement::getAsString, "easeLinear")),
+                JsonUtil.getOrDefault(spect, "mirror", JsonUtil::getVector4, null)
+            );
         }
 
     }

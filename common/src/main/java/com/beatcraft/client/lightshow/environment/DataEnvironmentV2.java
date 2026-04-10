@@ -1,5 +1,6 @@
 package com.beatcraft.client.lightshow.environment;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
@@ -9,6 +10,7 @@ import com.beatcraft.client.lightshow.environment.lightgroup.RotatingLightsGroup
 import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
+import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
 import com.beatcraft.client.render.instancing.lightshow.light_object.MultiLightObject;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
@@ -19,6 +21,7 @@ import net.minecraft.client.Camera;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,6 +31,9 @@ public class DataEnvironmentV2 extends EnvironmentV2 {
 
     private float[] fogHeights;
     private float[][] mirrorTris;
+
+    private SpectrogramTowers leftSpectrogramTowers;
+    private SpectrogramTowers rightSpectrogramTowers;
 
     public DataEnvironmentV2(BeatmapController map, DataEnvironmentV2Layout layout) {
         super(map, layout);
@@ -385,6 +391,15 @@ public class DataEnvironmentV2 extends EnvironmentV2 {
     @Override
     public void loadLightshow(Difficulty difficulty, JsonObject json) {
         super.loadLightshow(difficulty, json);
+
+        if (layout.spectrogramData != null) {
+            var f = new File(difficulty.getInfo().getSongFilename());
+
+            var pair = layout.spectrogramData.build(mapController, f);
+            leftSpectrogramTowers = pair.a();
+            rightSpectrogramTowers = pair.b();
+        }
+
         layout.setup();
     }
 
@@ -411,6 +426,15 @@ public class DataEnvironmentV2 extends EnvironmentV2 {
                 renderMesh(buffer, matrices2, alpha, mirrorTris);
             });
         }
+        var t = mapController.currentSeconds;
+
+        if (leftSpectrogramTowers != null) {
+            leftSpectrogramTowers.render(t);
+        }
+        if (rightSpectrogramTowers != null) {
+            rightSpectrogramTowers.render(t);
+        }
+
     }
 
     @Override
