@@ -65,7 +65,7 @@ public class MultiLightObject extends LightObject {
         stateCount = additionalStateCount;
         lightMesh = mesh;
         position = pos;
-        orientation = ori;
+        rotation2 = ori;
         this.mesh = new LightMeshInstance(lightMesh);
 
         states = new LightState[stateCount];

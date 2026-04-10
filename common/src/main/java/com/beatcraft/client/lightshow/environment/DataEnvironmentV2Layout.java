@@ -29,10 +29,10 @@ public class DataEnvironmentV2Layout {
 
         static IdGroup fromString(String s) {
             return switch (s) {
-                case "left-lasers" -> LEFT_LASERS;
-                case "right-lasers" -> RIGHT_LASERS;
-                case "center-lasers" -> CENTER_LASERS;
-                case "back-lasers" -> BACK_LASERS;
+                case "left-lasers", "left-lights" -> LEFT_LASERS;
+                case "right-lasers", "right-lights" -> RIGHT_LASERS;
+                case "center-lasers", "center-lights" -> CENTER_LASERS;
+                case "back-lasers", "back-lights" -> BACK_LASERS;
                 case "ring-lights" -> RING_LIGHTS;
                 default -> throw new RuntimeException("Invalid id group: " + s);
             };
@@ -59,12 +59,24 @@ public class DataEnvironmentV2Layout {
 
     protected static class IdIter implements Iterable<IdIter.Id>, Iterator<IdIter.Id> {
 
-        record Id(IdGroup group, int id) {}
+        public record Id(IdGroup group, int id) {}
 
         protected final Object[] arr;
 
         protected IdGroup currentGroup = null;
         protected int idx = 0;
+        protected int length = 0;
+
+        IdIter(Object[] arr, IdGroup group, int length) {
+            this.arr = arr;
+            this.currentGroup = group;
+            this.length = length;
+        }
+
+        IdIter() {
+            arr = new Object[0];
+            currentGroup = IdGroup.CENTER_LASERS;
+        }
 
         IdIter(JsonArray data) {
             arr = new Object[data.size()];
@@ -77,6 +89,7 @@ public class DataEnvironmentV2Layout {
                         currentGroup = group;
                     }
                 } else {
+                    ++length;
                     var x = v.getAsInt();
                     arr[i] = x;
                 }
@@ -85,7 +98,7 @@ public class DataEnvironmentV2Layout {
 
         @Override
         public @NotNull Iterator<Id> iterator() {
-            return this;
+            return new IdIter(this.arr, this.currentGroup, this.length);
         }
 
         @Override
@@ -136,22 +149,32 @@ public class DataEnvironmentV2Layout {
             protected ArrayList<Integer> idOffsets = new ArrayList<>();
             protected Vector3f position = new Vector3f();
             protected Quaternionf rotation = new Quaternionf();
+            protected Quaternionf orientation = new Quaternionf();
 
             protected int count = 1;
             protected Vector3f offset = new Vector3f();
             protected Quaternionf rotOffset = new Quaternionf();
+            protected Quaternionf oriOffset = new Quaternionf();
 
             protected Vector3f spinAxis = new Vector3f(0, 1, 0);
 
             protected float[] anglesRadians = new float[0];
             protected float[] deltasRadians = new float[0];
+            protected float startAngleRadians = 0;
+            protected float startDeltaRadians = 0;
         }
 
         protected final HashMap<EventGroup, ArrayList<SubGroup>> subGroups = new HashMap<>();
 
         protected void addPlacement(JsonObject json) {
             var rawType = json.get("type");
-            var ids = new IdIter(json.getAsJsonArray("ids"));
+            IdIter ids;
+            var rawIds = json.getAsJsonArray("ids");
+            if (rawIds != null) {
+                ids = new IdIter(rawIds);
+            } else {
+                ids = new IdIter();
+            }
 
             EventGroup type;
             if (rawType == null) {
@@ -166,43 +189,55 @@ public class DataEnvironmentV2Layout {
             var sub = new SubGroup();
             sub.ids = ids;
 
-            if (type != EventGroup.None) {
-                var pos = json.getAsJsonArray("position");
-                var off = json.getAsJsonArray("offset");
-                var count = json.get("count");
-                var rot = json.getAsJsonArray("rotation");
-                var rotOff = json.getAsJsonArray("rotation-offset");
-                var idOffsets = json.getAsJsonArray("id-step");
+            var pos = json.getAsJsonArray("position");
+            var off = json.getAsJsonArray("offset");
+            var count = json.get("count");
+            var rot = json.getAsJsonArray("rotation");
+            var rotOff = json.getAsJsonArray("rotation-offset");
+            var ori = json.getAsJsonArray("orientation");
+            var oriOff = json.getAsJsonArray("orientation-offset");
+            var idOffsets = json.getAsJsonArray("id-step");
 
-                if (pos != null) {
-                    sub.position = JsonUtil.getVector3(pos);
-                }
-                if (off != null) {
-                    sub.offset = JsonUtil.getVector3(off);
-                }
-                if (count != null) {
-                    sub.count = count.getAsInt();
-                }
-                if (rot != null) {
-                    sub.rotation = JsonUtil.getQuaternion(rot);
-                }
-                if (rotOff != null) {
-                    sub.rotation = JsonUtil.getQuaternion(rotOff);
-                }
-                if (idOffsets == null) {
-                    sub.idOffsets.add(null);
-                } else {
-                    for (var x : idOffsets) {
-                        sub.idOffsets.add(x.getAsInt());
-                    }
+            if (pos != null) {
+                sub.position = JsonUtil.getVector3(pos);
+            }
+            if (off != null) {
+                sub.offset = JsonUtil.getVector3(off);
+            }
+            if (count != null) {
+                sub.count = count.getAsInt();
+            }
+            if (rot != null) {
+                sub.rotation = JsonUtil.getQuaternion(rot);
+            }
+            if (rotOff != null) {
+                sub.rotOffset = JsonUtil.getQuaternion(rotOff);
+            }
+            if (ori != null) {
+                sub.orientation = JsonUtil.getQuaternion(ori);
+            }
+            if (oriOff != null) {
+                sub.oriOffset = JsonUtil.getQuaternion(oriOff);
+            }
+            if (idOffsets == null) {
+                for (var i = 0; i < ids.length; ++i) {
+                    sub.idOffsets.add(0);
                 }
             } else {
-                sub.idOffsets.add(null);
+                for (var x : idOffsets) {
+                    sub.idOffsets.add(x.getAsInt());
+                }
             }
 
             if (type == EventGroup.InnerRing || type == EventGroup.OuterRing) {
                 var angles = json.getAsJsonArray("angles");
                 var deltas = json.getAsJsonArray("deltas");
+                var starts = json.getAsJsonArray("start");
+
+                if (starts != null) {
+                    sub.startAngleRadians = starts.get(0).getAsFloat() * Mth.DEG_TO_RAD;
+                    sub.startDeltaRadians = starts.get(1).getAsFloat() * Mth.DEG_TO_RAD;
+                }
 
                 sub.anglesRadians = new float[angles.size()];
                 sub.deltasRadians = new float[deltas.size()];
@@ -211,7 +246,7 @@ public class DataEnvironmentV2Layout {
                     sub.anglesRadians[i] = angles.get(i).getAsFloat() * Mth.DEG_TO_RAD;
                 }
                 for (var i = 0; i < deltas.size(); ++i) {
-                    sub.deltasRadians[i] = angles.get(i).getAsFloat() * Mth.DEG_TO_RAD;
+                    sub.deltasRadians[i] = deltas.get(i).getAsFloat() * Mth.DEG_TO_RAD;
                 }
 
             } else if (type == EventGroup.LeftSpinning || type == EventGroup.RightSpinning) {
@@ -226,13 +261,15 @@ public class DataEnvironmentV2Layout {
 
     }
 
-    protected static HashMap<ResourceLocation, MeshRef> meshes;
+    protected static final HashMap<ResourceLocation, MeshRef> meshes = new HashMap<>();
 
     protected final ResourceLocation envId;
     protected final ArrayList<MeshRef> meshRefs = new ArrayList<>();
 
     protected final ArrayList<LightMesh> statics = new ArrayList<>();
     protected final HashMap<LightMesh, LightGroup> lights = new HashMap<>();
+    protected float[] fogHeights = new float[]{-50, -30};
+    protected float[][] mirrorTris = new float[0][];
 
     public DataEnvironmentV2Layout(ResourceLocation envId) throws IOException {
         this.envId = envId;
@@ -245,13 +282,15 @@ public class DataEnvironmentV2Layout {
         var json = JsonParser.parseReader(reader).getAsJsonObject();
 
         var layout = json.getAsJsonObject("layout").entrySet();
+        var fog = json.getAsJsonArray("fog-heights");
+        var mirrorId = json.get("mirror");
 
         for (var entry : layout) {
             var id = entry.getKey();
             var data = entry.getValue().getAsJsonObject();
             var parts = id.split(":", 2);
             var namespace = parts[0];
-            var path = "environments/" + parts[1];
+            var path = "environments/" + parts[1] + ".json";
             var loc = ResourceLocation.tryBuild(namespace, path);
             var meshRef = loadMesh(loc);
             meshRefs.add(meshRef);
@@ -269,13 +308,35 @@ public class DataEnvironmentV2Layout {
                     for (var placement : placements) {
                         group.addPlacement(placement.getAsJsonObject());
                     }
-                } else if (ids != null) {
-                    group.addPlacement(data);
                 } else {
-                    throw new RuntimeException("data should specify 'placement' or 'ids'");
+                    group.addPlacement(data);
                 }
             }
 
+        }
+
+        if (fog != null) {
+            fogHeights[0] = fog.get(0).getAsFloat();
+            fogHeights[1] = fog.get(1).getAsFloat();
+        }
+
+        if (mirrorId != null) {
+            var id = mirrorId.getAsString();
+            var parts = id.split(":", 2);
+            var namespace = parts[0];
+            var path = "environments/" + parts[1] + ".json";
+            var loc = ResourceLocation.tryBuild(namespace, path);
+            var reader2 = rm.getResource(loc).orElseThrow().openAsReader();
+            var mirror = JsonParser.parseReader(reader2).getAsJsonArray();
+            mirrorTris = new float[mirror.size()][];
+            for (var i = 0; i < mirror.size(); ++i) {
+                var tri = mirror.get(i).getAsJsonArray();
+                mirrorTris[i] = new float[]{
+                    tri.get(0).getAsFloat(),
+                    tri.get(1).getAsFloat(),
+                    tri.get(2).getAsFloat(),
+                };
+            }
         }
 
     }

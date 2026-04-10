@@ -22,23 +22,23 @@ import java.util.HashMap;
 
 public abstract class EnvironmentV2 extends Environment {
 
-    private ColorBoostEventHandler colorBoostEventHandler = null;
+    protected ColorBoostEventHandler colorBoostEventHandler = null;
 
-    private LightGroupEventHandlerV2 leftRotatingLaserLightHandler = null;
-    private LightGroupEventHandlerV2 rightRotatingLaserLightHandler = null;
+    protected LightGroupEventHandlerV2 leftRotatingLaserLightHandler = null;
+    protected LightGroupEventHandlerV2 rightRotatingLaserLightHandler = null;
 
-    private ActionEventHandlerV2<SpinningLightEvent> leftRotatingLaserValueHandler = null;
-    private ActionEventHandlerV2<SpinningLightEvent> rightRotatingLaserValueHandler = null;
+    protected ActionEventHandlerV2<SpinningLightEvent> leftRotatingLaserValueHandler = null;
+    protected ActionEventHandlerV2<SpinningLightEvent> rightRotatingLaserValueHandler = null;
 
-    private LightGroupEventHandlerV2 backLaserLightHandler = null;
-    private LightGroupEventHandlerV2 centerLaserLightHandler = null;
+    protected LightGroupEventHandlerV2 backLaserLightHandler = null;
+    protected LightGroupEventHandlerV2 centerLaserLightHandler = null;
 
-    private LightGroupEventHandlerV2 ringLightHandler = null;
-    private ActionEventHandlerV2<RingZoomEvent> ringZoomHandler = null;
-    private ActionEventHandlerV2<RingRotationEvent> ringSpinHandler = null;
+    protected LightGroupEventHandlerV2 ringLightHandler = null;
+    protected ActionEventHandlerV2<RingZoomEvent> ringZoomHandler = null;
+    protected ActionEventHandlerV2<RingRotationEvent> ringSpinHandler = null;
 
-    private HashMap<EventGroup, LightGroupV2> lightGroups;
-    private ArrayList<LightGroupV2> uniqueGroups;
+    protected HashMap<EventGroup, LightGroupV2> lightGroups;
+    protected ArrayList<LightGroupV2> uniqueGroups;
 
     public EnvironmentV2(BeatmapController map) {
         super(map);

@@ -321,18 +321,18 @@ public class MirrorHandler {
 
 
         var buff = buffer.build();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
 
         if (buff != null) {
-            RenderSystem.disableCull();
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
             RenderSystem.setShader(() -> Bloomfog.bloomfogPositionColor);
             Bloomfog.bloomfogPositionColor.safeGetUniform("WorldTransform").set(worldTransform);
             Bloomfog.bloomfogPositionColor.safeGetUniform("u_fog").set(Bloomfog.getFogHeights(cameraPos));
             BeatcraftRenderer.bloomfog.loadTex();
             BufferUploader.drawWithShader(buff);
-            RenderSystem.enableCull();
         }
+        RenderSystem.enableCull();
 
         mirrorFramebuffer.setClearColor(0, 0, 0, 1);
         mirrorFramebuffer.clear(Minecraft.ON_OSX);

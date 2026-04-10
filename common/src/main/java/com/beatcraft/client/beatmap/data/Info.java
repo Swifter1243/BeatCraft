@@ -138,7 +138,6 @@ public class Info {
 
             var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
             if (scheme == null) {
-                Beatcraft.LOGGER.info("Fallback to default color scheme");
                 setDifficulty.colorScheme = ColorScheme.getEnvironmentColorScheme(info.getEnvironmentName());
             } else {
                 setDifficulty.colorScheme = new ColorScheme(scheme);

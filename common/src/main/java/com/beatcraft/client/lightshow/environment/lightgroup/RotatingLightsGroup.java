@@ -11,6 +11,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,12 +22,22 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
     private final List<Quaternionf> rotations;
     private final List<LightObject> rotatingLights;
     private final List<LightObject> staticLights;
+    private final Vector3f spinAxis;
 
     public RotatingLightsGroup(BeatmapController map, HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
         super(map, collectLights(rotatingLights, staticLights));
         this.rotatingLights = rotatingLights.values().stream().toList();
         this.staticLights = staticLights.values().stream().toList();
         this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
+        this.spinAxis = new Vector3f(0, 1, 0);
+    }
+
+    public RotatingLightsGroup(BeatmapController map, HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights, Vector3f spinAxis) {
+        super(map, collectLights(rotatingLights, staticLights));
+        this.rotatingLights = rotatingLights.values().stream().toList();
+        this.staticLights = staticLights.values().stream().toList();
+        this.rotations = rotatingLights.values().stream().map(o -> new Quaternionf()).toList();
+        this.spinAxis = spinAxis;
     }
 
     private static HashMap<Integer, LightObject> collectLights(HashMap<Integer, LightObject> rotatingLights, HashMap<Integer, LightObject> staticLights) {
@@ -41,7 +52,7 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
         var spinEvent = (SpinningLightEvent) event;
         var speed = spinEvent.direction.apply(spinEvent.speed, random);
         rotations.forEach(rot -> {
-            rot.rotationY(speed);
+            rot.rotationAxis(speed, spinAxis);
         });
 
         if (!spinEvent.lockRotation) {
@@ -51,7 +62,7 @@ public class RotatingLightsGroup extends ActionLightGroupV2 {
                     v == 0
                         ? new Quaternionf()
                         : new Quaternionf()
-                        .rotationY(random.nextIntBetweenInclusive(-180, 180) * Mth.DEG_TO_RAD)
+                        .rotationAxis(random.nextIntBetweenInclusive(-180, 180) * Mth.DEG_TO_RAD, spinAxis)
                 );
             });
         }

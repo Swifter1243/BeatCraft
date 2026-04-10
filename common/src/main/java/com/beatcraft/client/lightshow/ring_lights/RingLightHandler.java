@@ -226,6 +226,10 @@ public class RingLightHandler extends ActionLightGroupV2 {
             this.ringGap = ringGap;
             this.presets = presets;
 
+            if (rings.isEmpty()) {
+                headRing = new RingHandler(0, null);
+                return;
+            }
             headRing = new RingHandler(0, rings.getFirst());
             RingHandler last = headRing;
 
@@ -391,19 +395,17 @@ public class RingLightHandler extends ActionLightGroupV2 {
     public RingLightHandler(
         BeatmapController map,
         HashMap<Integer, LightObject> lights,
-        ArrayList<LightObject> unmapped,
         List<LightObject> innerRings,
         Vector3f innerPos,
         float innerGap,
         PresetPositions innerPresets,
+        List<LightObject> outerRings,
         Vector3f outerPos,
         float outerGap,
         PresetPositions outerPresets,
-        List<LightObject> outerRings,
         float[] startAngles
     ) {
         super(map, lights);
-        unmappedLights = unmapped;
         innerRing = new IndividualRingLightHandler(
             map,
             innerPos,
@@ -455,7 +457,6 @@ public class RingLightHandler extends ActionLightGroupV2 {
             step = innerRing.zoom >= 0.5f ? 0.3f : 1f;
         }
         innerRing.setZoom(step, event.speed);
-        outerRing.setZoom(step, event.speed);
     }
     @Override
     public void update(float beat, double deltaTime) {

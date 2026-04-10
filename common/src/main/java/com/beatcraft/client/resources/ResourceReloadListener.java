@@ -3,6 +3,7 @@ package com.beatcraft.client.resources;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.lightshow.environment.EnvironmentUtils;
 import com.beatcraft.client.lightshow.ring_lights.RingLight;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
@@ -41,6 +42,12 @@ public class ResourceReloadListener implements ResourceManagerReloadListener {
         BeatcraftClient.songs.loadSongs();
         // TODO: load song and replay info from local system AND request from server
         BeatmapManager.loadBeatmaps();
+
+        try {
+            EnvironmentUtils.reload();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
 
         MeshLoader.loadMeshes();
 

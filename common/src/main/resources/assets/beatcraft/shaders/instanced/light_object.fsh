@@ -55,9 +55,8 @@ void main() {
         }
     } else if (passType == 3 /* Late Lights */ && v_material == 2 /* Light/Nothing */) {
         vec4 tex = texture(u_texture, v_uv) * v_color;
-        vec4 fog = texture(u_bloomfog, (screenUV.xy/(-screenUV.z*4.0))+0.5);
         float fadeHeight = clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
-        fragColor = lerpColor(tex * fadeHeight, fog, clampF(abs(screenUV.z)));
+        fragColor = lerpColor(tex * fadeHeight, vec4(0.0), clampF(abs(screenUV.z)));
     } else {
         discard;
     }

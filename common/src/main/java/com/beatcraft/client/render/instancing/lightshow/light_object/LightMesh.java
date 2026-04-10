@@ -334,7 +334,6 @@ public class LightMesh {
             var manager = Minecraft.getInstance().getResourceManager();
 
             for (var ident : unloadedTextures) {
-                Beatcraft.LOGGER.info("Loading texture: {}", ident);
                 var in = manager.getResource(ident).orElseThrow(() -> new RuntimeException("File '" + ident + "' could not be loaded"));
                 try (var input = in.open()) {
                     var tex = NativeImage.read(NativeImage.Format.RGBA, input);
@@ -345,7 +344,6 @@ public class LightMesh {
 
                     if (atlasBuilder.add(new Vector2i(w, h), pos)) {
                         var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
-                        Beatcraft.LOGGER.info("Texture {} starts at UV {}", ident, uv);
                         uvMap.put(ident, uv);
                         tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
                     } else {
@@ -391,7 +389,6 @@ public class LightMesh {
     }
 
     protected LightMesh(String id, HashMap<Integer, ResourceLocation> unloadedTextures) {
-        Beatcraft.LOGGER.info("Adding textures {} from mesh {}", unloadedTextures, id);
         this.id = id;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
@@ -638,6 +635,10 @@ public class LightMesh {
 
         if (drawList.isEmpty()) return;
 
+        if (!loaded) {
+            drawList.clear();
+            return;
+        }
 
         // Save ALL GL state that this function touches
         IntBuffer vaoBuf = BufferUtils.createIntBuffer(1);

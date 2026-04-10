@@ -39,8 +39,8 @@ public abstract class LightGroupV2 extends LightGroup {
         lights.forEach((key, light) -> {
             light.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
         });
-        for (var obj : unmappedLights) {
-            obj.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
+        for (var light : unmappedLights) {
+            light.render(matrices, camera, alpha, BeatcraftRenderer.bloomfog);
         }
     }
 }
