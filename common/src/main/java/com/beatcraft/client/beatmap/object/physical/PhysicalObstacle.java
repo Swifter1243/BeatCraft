@@ -37,12 +37,6 @@ public class PhysicalObstacle extends PhysicalGameplayObject<Obstacle> {
     }
 
 
-    private static final Vector3f MODEL_OFFSET = new Vector3f();
-    @Override
-    protected Vector3f getModelOffset() {
-        return MODEL_OFFSET;
-    }
-
     @Override
     protected void objectRender(PoseStack matrices, Camera camera, AnimationState animationState, float alpha) {
         var localPos = matrices.last().pose().getTranslation(MemoryPool.newVector3f());

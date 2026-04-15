@@ -1,6 +1,10 @@
 package com.beatcraft.client.render;
 
 import com.beatcraft.Beatcraft;
+import com.beatcraft.client.BeatcraftClient;
+import com.beatcraft.client.beatmap.BeatmapLogicController;
+import com.beatcraft.client.beatmap.BeatmapManager;
+import com.beatcraft.client.logic.PhysicsTransform;
 import com.beatcraft.common.data.types.ISplinePath;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.dynamic_loader.DynamicTexture;
@@ -11,6 +15,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -204,6 +209,22 @@ public class DebugRenderer {
     }
 
     public static void render() {
+
+        var map = BeatmapManager.getNearestFiltered(Minecraft.getInstance().player.position().toVector3f(), (map2) -> true);
+        if (map != null) {
+            var sabersL = new PhysicsTransform[]{map.logic.leftSaber, map.logic.rightSaber};
+            for (var saber : sabersL) {
+                if (BeatcraftClient.playerConfig.debug.beatmap.renderSaberColliders()) {
+                    var base = saber.getPosition(new Vector3f());
+                    var tip = saber.getPosition(BeatmapLogicController.SABER_TIP_OFFSET, new Vector3f());
+                    var turn = saber.getTurnaround(new Matrix4f());
+                    var turnBase = turn.transformPosition(new Vector3f());
+                    var turnTip = turn.transformPosition(new Vector3f(0, 1, 0));
+                    DebugRenderer.renderLine(turnBase, turnTip, 0x7FFF2222, 0x7FFF2222);
+                    DebugRenderer.renderLine(base, tip, 0x7F22FF22, 0x7F22FF22);
+                }
+            }
+        }
 
         for (Runnable renderCall : renderCalls) {
             try {

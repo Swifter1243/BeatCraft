@@ -565,6 +565,10 @@ public class MeshLoader {
 
                     }
 
+                    for (var vert : verts) {
+                        vert.sub(0.5f, 0.5f, 0.5f);
+                    }
+
                     vertices.addAll(List.of(
                         new Triplet<>(verts.get(3), uvs[3], new Vector3f(normal)),
                         new Triplet<>(verts.get(2), uvs[2], new Vector3f(normal)),

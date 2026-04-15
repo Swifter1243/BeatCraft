@@ -35,7 +35,7 @@ public class HeadsetItemRenderer {
 
         var cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
 
-        var m = new Matrix4f().translate(cameraPos.x, cameraPos.y, cameraPos.z).mul(poseStack.last().pose());
+        var m = new Matrix4f().translate(cameraPos.x, cameraPos.y, cameraPos.z).mul(poseStack.last().pose()).translate(0.5f, 0.5f, 0.5f);
 
         MeshLoader.HEADSET_INSTANCED_MESH.draw(HeadsetInstanceData.create(m));
         MeshLoader.HEADSET_INSTANCED_MESH.copyDrawToBloom();

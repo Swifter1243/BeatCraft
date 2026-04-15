@@ -40,6 +40,8 @@ public class BeatcraftClient {
 
     public static Vector3f playerPos;
 
+    public static float deltaTime;
+
     public static void earlyInit() {
         Beatcraft.LOGGER.info("Initializing Beatcraft");
         playerConfig = PlayerConfig.loadFromFile();
@@ -59,8 +61,15 @@ public class BeatcraftClient {
         return (float) Math.toRadians(angle);
     }
 
+    private static double last = System.nanoTime() / 1_000_000_000d;
 
     public static void updatePlayerHeadPosAndFPFC(float tickDelta) {
+
+        var next = System.nanoTime() / 1_000_000_000d;
+        float dt = (float) (next - last);
+        last = next;
+        deltaTime = dt;
+
         var vr = ClientDataHolderVR.getInstance().vr;
         var player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -115,13 +124,13 @@ public class BeatcraftClient {
 
         if (vr != null && vr.isActive()) {
             mat4.identity().translate(headPos).rotate(rot);
-            sabers.getB().update(mat4, tickDelta);
+            //sabers.getB().update(mat4, dt);
         } else if (FPFC) {
             rot.rotateX(90 * Mth.DEG_TO_RAD);
             mat4.identity().translate(headPos).rotate(rot);
-            sabers.getA().update(mat4, tickDelta);
-            sabers.getB().update(mat4, tickDelta);
-            sabers.getC().update(mat4, tickDelta);
+            sabers.getA().update(mat4, dt);
+            //sabers.getB().update(mat4, dt);
+            sabers.getC().update(mat4, dt);
         }
 
         // TODO: send update packet to server so other players know the saber locations

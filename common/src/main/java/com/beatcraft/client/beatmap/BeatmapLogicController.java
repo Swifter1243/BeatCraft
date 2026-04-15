@@ -35,7 +35,7 @@ public class BeatmapLogicController {
     // is made instead of when the class first loads
     private final double START_TIME = System.nanoTime() / 1_000_000_000d;
 
-    private static final Vector3f SABER_TIP_OFFSET = new Vector3f(0, 1, 0);
+    public static final Vector3f SABER_TIP_OFFSET = new Vector3f(0, 1, 0);
 
     protected static class HitCalculation {
         private static final double TIMEOUT = 0.5;
@@ -167,8 +167,8 @@ public class BeatmapLogicController {
     public Vector3f headPos = new Vector3f();
     public Quaternionf headRot = new Quaternionf();
 
-    private PhysicsTransform leftSaber = new PhysicsTransform(0, 0, 0);
-    private PhysicsTransform rightSaber = new PhysicsTransform(0, 0, 0);
+    public PhysicsTransform leftSaber = new PhysicsTransform(0, 0, 0);
+    public PhysicsTransform rightSaber = new PhysicsTransform(0, 0, 0);
 
     private final Matrix4f lastRight = new Matrix4f();
     private final Matrix4f currentRight = new Matrix4f();
@@ -369,39 +369,35 @@ public class BeatmapLogicController {
         if (obj.score$getData().score$getNoteType() == expectedNoteType) {
             if (cd == CutDirection.DOT) {
                 if (gc.checkCollision(localBase, localTip)) {
-                    Beatcraft.LOGGER.info("Dot note");
                     calculateScore(obj, saber, expectedNoteType);
                     obj.score$cutNote();
                     getPlaneNormal(localBase, localTip, vel, dir);
-                    obj.score$spawnDebris(localBase.add(0.25f, 0.25f, 0.25f, new Vector3f()), dir);
+                    obj.score$spawnDebris(new Vector3f(localBase), dir);
                 }
             } else {
                 if (isPointingDown(localVel)) {
                     if (gc.checkCollision(localBase, localTip)) {
-                        Beatcraft.LOGGER.info("Pointing down");
                         calculateScore(obj, saber, expectedNoteType);
                         obj.score$cutNote();
                         getPlaneNormal(localBase, localTip, vel, dir);
-                        obj.score$spawnDebris(localBase.add(0.25f, 0.25f, 0.25f, new Vector3f()), dir);
+                        obj.score$spawnDebris(new Vector3f(localBase), dir);
                     }
                 } else {
                     if (bc.checkCollision(localBase, localTip)) {
-                        Beatcraft.LOGGER.info("Not pointing down");
                         obj.score$setScoreState(ScoreState.badCut());
                         obj.score$cutNote();
                         getPlaneNormal(localBase, localTip, vel, dir);
-                        obj.score$spawnDebris(localBase.add(0.25f, 0.25f, 0.25f, new Vector3f()), dir);
+                        obj.score$spawnDebris(new Vector3f(localBase), dir);
                         processBadCut(obj.score$getMaxFollowThroughScore() + obj.score$getMaxSwingInScore() + 15);
                     }
                 }
             }
         } else {
             if (bc.checkCollision(localBase, localTip)) {
-                Beatcraft.LOGGER.info("Wrong saber");
                 obj.score$setScoreState(ScoreState.badCut());
                 obj.score$cutNote();
                 getPlaneNormal(localBase, localTip, vel, dir);
-                obj.score$spawnDebris(localBase.add(0.25f, 0.25f, 0.25f, new Vector3f()), dir);
+                obj.score$spawnDebris(new Vector3f(localBase), dir);
                 processBadCut(obj.score$getMaxFollowThroughScore() + obj.score$getMaxSwingInScore() + 15);
             }
         }
@@ -428,15 +424,6 @@ public class BeatmapLogicController {
         var bc = obj.getBadCutBounds();
         var ac = obj.getAccurateHitbox();
 
-        if (BeatcraftClient.playerConfig.debug.beatmap.renderSaberColliders()) {
-            var base = saber.getPosition(new Vector3f());
-            var tip = saber.getPosition(SABER_TIP_OFFSET, new Vector3f());
-            var turn = saber.getTurnaround(new Matrix4f());
-            var turnBase = turn.transformPosition(new Vector3f());
-            var turnTip = turn.transformPosition(new Vector3f(0, 1, 0));
-            DebugRenderer.renderLine(turnBase, turnTip, 0x7FFF2222, 0x7FFF2222);
-            DebugRenderer.renderLine(base, tip, 0x7F22FF22, 0x7F22FF22);
-        }
         if (BeatcraftClient.playerConfig.debug.beatmap.renderHitboxes()) {
             var wt = obj.getWorldTransform();
             var wp = wt.getTranslation(new Vector3f());
@@ -479,14 +466,14 @@ public class BeatmapLogicController {
 
     private void calculateScore(PhysicalScorableObject colorNote, PhysicsTransform saber, NoteType noteType) {
 
-        var base = saber.getPosition(new Vector3f());
-        var tip = saber.getPosition(SABER_TIP_OFFSET, new Vector3f());
-        var velocity = saber.getPositionalVelocity(1, SABER_TIP_OFFSET, new Vector3f());
+        var base = saber.getPosition(new Vector3f()).sub(controller.worldPosition).rotateY(-controller.worldAngle);
+        var tip = saber.getPosition(SABER_TIP_OFFSET, new Vector3f()).sub(controller.worldPosition).rotateY(-controller.worldAngle);
+        var velocity = saber.getPositionalVelocity(0.01f, SABER_TIP_OFFSET, new Vector3f());
 
         var normal = getPlaneNormal(base, tip, velocity, new Vector3f());
         var dist = distanceToOrigin(tip, normal);
         int accPoints = (int) Math.clamp(
-            15 * (1 - MathUtil.inverseLerp(0, 0.25f, dist)),
+            15 * (1 - MathUtil.inverseLerp(0, 1f, dist)),
             0, 15
         );
 
@@ -502,6 +489,7 @@ public class BeatmapLogicController {
             controller.worldPosition.add(vel, new Vector3f()),
             colorNote.score$getLaneRotation().rotateY(-controller.worldAngle, new Quaternionf())
         );
+        incrementCombo();
         hits.add(HitCalculation.create(
             saber.getTurnaround(new Matrix4f()),
             saber.copyCurrent(new Matrix4f()),
@@ -658,14 +646,14 @@ public class BeatmapLogicController {
         failAnim = false;
         globalDissolve = 0;
         globalArrowDissolve = 0;
+        maxPossibleModifier = 1;
+        maxModifierProgress = 0;
     }
 
     public void processGoodCut(int score, int maxScore) {
         addGoodCut();
-        incrementCombo();
         addScore(score, maxScore);
 
-        // push score display to HUD
     }
 
     public void processBombCut() {
@@ -740,9 +728,18 @@ public class BeatmapLogicController {
         }
     }
 
+    private int maxPossibleModifier = 1;
+    private int maxModifierProgress = 0;
     public void addScore(int earned, int possible) {
         score += earned * bonusModifier;
-        maxPossibleScore += possible;
+        maxPossibleScore += possible * maxPossibleModifier;
+        if (maxPossibleModifier < 8) {
+            maxModifierProgress++;
+            if (maxModifierProgress == maxPossibleModifier) {
+                maxPossibleModifier *= 2;
+                maxModifierProgress = 0;
+            }
+        }
     }
 
 

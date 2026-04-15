@@ -20,12 +20,13 @@ public class ObstacleGlowRenderer {
 
     public static ShaderInstance distortionShader;
     public static ShaderInstance blitShader;
-    public static TextureTarget framebuffer = new TextureTarget(1920, 1080, true, true);
+    public static TextureTarget framebuffer;
 
     public static void init() {
         try {
             distortionShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "col_distortion", DefaultVertexFormat.POSITION_TEX_COLOR);
             blitShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "blit_screen", DefaultVertexFormat.POSITION_TEX);
+            framebuffer = new TextureTarget(1920, 1080, true, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
