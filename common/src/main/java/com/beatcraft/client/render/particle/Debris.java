@@ -56,11 +56,11 @@ public class Debris implements Particle {
 
         var pos = new Matrix4f().identity();
         pos.translate(position);
-        pos.translate(new Vector3f(cameraPos).negate());
         pos.rotate(orientation);
 
         pos.scale(0.5f);
 
+        persistent = false;
         var t = MathUtil.inverseLerp(spawnTime, spawnTime+DISSOLVE_TIME, System.nanoTime()/1_000_000_000d);
 
         mesh.draw(ColorNoteInstanceData.create(

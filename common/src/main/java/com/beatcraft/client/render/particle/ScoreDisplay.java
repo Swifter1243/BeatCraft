@@ -1,6 +1,7 @@
 package com.beatcraft.client.render.particle;
 
 import com.beatcraft.client.animation.Easing;
+import com.beatcraft.client.beatmap.BeatmapLogicController;
 import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -15,18 +16,37 @@ import java.util.function.Function;
 
 public class ScoreDisplay implements Particle {
 
-    private final int score;
+    private int score;
+    private final ScoreLink scoreLink;
     private final double spawnTime;
     private final Vector3f position;
     private final Vector3f endPoint;
     private final Quaternionf orientation;
 
+    public class ScoreLink {
+        private int syncedScore;
+        public ScoreLink(int score) {
+            syncedScore = score;
+        }
+        public void set(int score) {
+            syncedScore = score;
+        }
+        private void sync() {
+            score = syncedScore;
+        }
+    }
+
     public ScoreDisplay(int score, Vector3f position, Vector3f endPoint, Quaternionf orientation) {
         this.score = score;
+        this.scoreLink = new ScoreLink(score);
         this.position = position;
         this.endPoint = endPoint;
         this.spawnTime = System.nanoTime() / 1_000_000_000d;
         this.orientation = orientation;
+    }
+
+    public ScoreLink getLink() {
+        return scoreLink;
     }
 
     private static final Function<Float, Float> easing = Easing.getEasing("easeOutExpo");
@@ -35,6 +55,7 @@ public class ScoreDisplay implements Particle {
 
     @Override
     public void update(float deltaTime, BufferBuilder buffer, Vector3f cameraPos) {
+        scoreLink.sync();
 
         float f = (float) MathUtil.inverseLerp(spawnTime, spawnTime+1.25d, System.nanoTime() / 1_000_000_000d);
         f = Math.clamp(f, 0, 1);
@@ -57,10 +78,10 @@ public class ScoreDisplay implements Particle {
             int w = textRenderer.width(display);
 
             textRenderer.drawInBatch(
-                    Component.literal(display),
-                    -w/2f, 0, color, false,
-                    matrix, HUDRenderer.buffers, Font.DisplayMode.NORMAL,
-                    0, HUDRenderer.TEXT_LIGHT
+                Component.literal(display),
+                -w/2f, 0, color, false,
+                matrix, HUDRenderer.buffers, Font.DisplayMode.NORMAL,
+                0, HUDRenderer.TEXT_LIGHT
             );
 
         }
@@ -71,6 +92,7 @@ public class ScoreDisplay implements Particle {
     @Override
     public boolean shouldRemove() {
         float f = (float) MathUtil.inverseLerp(spawnTime, spawnTime+1.25d, System.nanoTime() / 1_000_000_000d);
-        return f >= 1.25;
+        var r = f >= 1.25;
+        return r;
     }
 }

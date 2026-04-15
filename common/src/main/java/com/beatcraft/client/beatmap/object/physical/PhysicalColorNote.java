@@ -261,6 +261,11 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
     }
 
     @Override
+    public Vector3f score$getInverseVelocity() {
+        return worldVelocity.negate(new Vector3f());
+    }
+
+    @Override
     public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return MeshLoader.COLOR_NOTE_INSTANCED_MESH;
     }

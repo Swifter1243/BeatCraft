@@ -5,6 +5,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class PhysicsTransform {
+    private final Matrix4f turnaround = new Matrix4f();
     private final Matrix4f currentTransform = new Matrix4f();
     private final Matrix4f previousTransform = new Matrix4f();
     private final Vector3f v0 = new Vector3f();
@@ -19,7 +20,27 @@ public class PhysicsTransform {
         previousTransform.translate(v0);
     }
 
-    public void update(Matrix4f newTransform) {
+    protected float turnaroundVelocityThreshold = 0.05f;
+
+    public void update(Matrix4f newTransform, float dt) {
+        Vector3f prevTip = new Vector3f(
+            previousTransform.m30() + previousTransform.m10(),
+            previousTransform.m31() + previousTransform.m11(),
+            previousTransform.m32() + previousTransform.m12()
+        );
+        Vector3f currTip = new Vector3f(
+            newTransform.m30() + newTransform.m10(),
+            newTransform.m31() + newTransform.m11(),
+            newTransform.m32() + newTransform.m12()
+        );
+
+        Vector3f tipDelta = currTip.sub(prevTip, new Vector3f());
+        float tipSpeed = tipDelta.length() / dt;
+
+        if (tipSpeed < turnaroundVelocityThreshold) {
+            turnaround.set(newTransform);
+        }
+
         previousTransform.set(currentTransform);
         currentTransform.set(newTransform);
     }
@@ -30,23 +51,20 @@ public class PhysicsTransform {
         return v1.sub(v0, dest).div(deltaTime);
     }
 
-    public Vector3f getPositionalVelocity(float deltaTime, Vector3f dest) {
-        return getPositionalVelocity(deltaTime, ZERO, dest);
+    public void copy(Matrix4f lastMat, Matrix4f currentMat) {
+        lastMat.set(previousTransform);
+        currentMat.set(currentTransform);
     }
 
-    public Vector3f getAngularVelocity(float deltaTime, Vector3f dest) {
-        previousTransform.getNormalizedRotation(q0);
-        currentTransform.getNormalizedRotation(q1);
-
-        q0.conjugate();
-        q1.mul(q0, q1);
-
-        float scale = 2.0f / deltaTime;
-        dest.set(q1.x * scale, q1.y * scale, q1.z * scale);
-
+    public Matrix4f copyCurrent(Matrix4f dest) {
+        dest.set(currentTransform);
         return dest;
     }
 
+    public Matrix4f getTurnaround(Matrix4f dest) {
+        dest.set(turnaround);
+        return dest;
+    }
 
     public Vector3f getPosition(Vector3f offset, Vector3f dest) {
         return currentTransform.transformPosition(offset, dest);

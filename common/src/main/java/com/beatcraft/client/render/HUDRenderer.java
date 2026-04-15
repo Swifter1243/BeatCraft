@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
@@ -112,9 +113,12 @@ public class HUDRenderer {
         showKeyboard = false;
     }
 
-    public void postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
-        if (!showHUD) return;
-        BeatcraftParticleRenderer.addParticle(new ScoreDisplay(score, position, endpoint, orientation));
+    @Nullable
+    public ScoreDisplay.ScoreLink postScore(int score, Vector3f position, Vector3f endpoint, Quaternionf orientation) {
+        if (!showHUD) return null;
+        var particle = new ScoreDisplay(score, position, endpoint, orientation);
+        BeatcraftParticleRenderer.addParticle(particle);
+        return particle.getLink();
     }
 
     public void render(MultiBufferSource imm) {

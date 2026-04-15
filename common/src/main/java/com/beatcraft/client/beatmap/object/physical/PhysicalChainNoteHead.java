@@ -198,6 +198,11 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
     }
 
     @Override
+    public Vector3f score$getInverseVelocity() {
+        return worldVelocity.negate(new Vector3f());
+    }
+
+    @Override
     public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return MeshLoader.CHAIN_HEAD_NOTE_INSTANCED_MESH;
     }

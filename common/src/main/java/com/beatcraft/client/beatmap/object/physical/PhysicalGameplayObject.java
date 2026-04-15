@@ -378,6 +378,7 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return DEFAULT_MODEL_OFFSET;
     }
 
+    private final Vector3f scratch = new Vector3f();
     @Override
     protected void worldRender(PoseStack matrices, Camera camera, float alpha) {
         matrices.pushPose();
@@ -385,6 +386,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
 
         previousTransform.set(worldTransform);
         worldTransform.set(matrices.last().pose());
+        previousTransform.transformPosition(scratch.set(-0.5));
+        worldTransform.transformPosition(worldVelocity.set(-0.5));
+        worldVelocity.sub(scratch, worldVelocity).normalize();
         mapController.checkNote(this);
         matrices.scale(SIZE_SCALAR, SIZE_SCALAR, SIZE_SCALAR);
         var v = getModelOffset();
@@ -467,12 +471,11 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         var m = getMesh();
         if (m == null) return;
         assert Minecraft.getInstance().cameraEntity != null;
-        var basePos = new Matrix4f().translate(mapController.worldPosition)
-            .rotate(new Quaternionf().rotationY(mapController.worldAngle));
-        var notePos = basePos.mul(matrix).transformPosition(new Vector3f());
+        var notePos = worldTransform.transformPosition(new Vector3f());
 
-        var noteOrientation = this.getWorldTransform().getUnnormalizedRotation(new Quaternionf());
-        BeatcraftRenderer.fullCameraRotation/* might need to be this? .conjugate(new Quaternionf()) */.mul(noteOrientation, noteOrientation);
+        var noteOrientation = worldTransform.getUnnormalizedRotation(new Quaternionf());
+        var con = BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf());
+        // BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()).mul(noteOrientation, noteOrientation);
         // new Quaternionf().rotationY(mapController.worldAngle).mul(noteOrientation, noteOrientation);
         if (!(this instanceof PhysicalColorNote)) return;
         var color = ((PhysicalColorNote) this).getData().getColor();
@@ -488,7 +491,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             mapController,
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(2f, new Vector3f())).rotateY(mapController.worldAngle).rotate(laneRotation.invert(new Quaternionf())),
+            new Vector3f(0f, 0, velocity)
+                .add(planeNormal.mul(2f, new Vector3f()))
+                .rotateY(mapController.worldAngle)
+                .rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(-0.02f).rotateX(-0.03f),
             slice, color, m
         );
@@ -497,7 +503,10 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
             mapController,
             new Vector3f(notePos),
             new Quaternionf(noteOrientation),
-            new Vector3f(0f, 0, velocity).add(planeNormal.mul(-2f, new Vector3f())).rotateY(mapController.worldAngle).rotate(laneRotation.invert(new Quaternionf())),
+            new Vector3f(0f, 0, velocity)
+                .add(planeNormal.mul(-2f, new Vector3f()))
+                .rotateY(mapController.worldAngle)
+                .rotate(laneRotation.invert(new Quaternionf())),
             new Quaternionf().rotateY(0.02f).rotateX(-0.03f),
             slice2, color, m
         );

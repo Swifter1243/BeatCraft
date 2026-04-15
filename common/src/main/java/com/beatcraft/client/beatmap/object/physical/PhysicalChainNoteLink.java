@@ -210,6 +210,11 @@ public class PhysicalChainNoteLink extends PhysicalGameplayObject<ChainNoteLink>
     }
 
     @Override
+    public Vector3f score$getInverseVelocity() {
+        return worldVelocity.negate(new Vector3f());
+    }
+
+    @Override
     public InstancedMesh<ColorNoteInstanceData> getMesh() {
         return MeshLoader.CHAIN_LINK_NOTE_INSTANCED_MESH;
     }

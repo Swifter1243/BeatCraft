@@ -115,13 +115,13 @@ public class BeatcraftClient {
 
         if (vr != null && vr.isActive()) {
             mat4.identity().translate(headPos).rotate(rot);
-            sabers.getB().update(mat4);
+            sabers.getB().update(mat4, tickDelta);
         } else if (FPFC) {
             rot.rotateX(90 * Mth.DEG_TO_RAD);
             mat4.identity().translate(headPos).rotate(rot);
-            sabers.getA().update(mat4);
-            sabers.getB().update(mat4);
-            sabers.getC().update(mat4);
+            sabers.getA().update(mat4, tickDelta);
+            sabers.getB().update(mat4, tickDelta);
+            sabers.getC().update(mat4, tickDelta);
         }
 
         // TODO: send update packet to server so other players know the saber locations

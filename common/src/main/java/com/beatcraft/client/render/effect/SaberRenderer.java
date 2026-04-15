@@ -143,9 +143,9 @@ public class SaberRenderer {
         var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f();
         var mat = new Matrix4f().translate(camPos).mul(matrices.last().pose());
         if (hand == right) {
-            sabers.getC().update(mat);
+            sabers.getC().update(mat, tickDelta);
         } else {
-            sabers.getA().update(mat);
+            sabers.getA().update(mat, tickDelta);
         }
 
 

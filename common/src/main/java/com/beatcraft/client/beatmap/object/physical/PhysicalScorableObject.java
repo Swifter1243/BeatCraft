@@ -21,4 +21,5 @@ public interface PhysicalScorableObject {
     Quaternionf score$getLaneRotation();
     CutDirection score$getCutDirection();
     void score$spawnDebris(Vector3f point, Vector3f normal);
+    Vector3f score$getInverseVelocity();
 }
