@@ -421,8 +421,8 @@ public class DataEnvironmentV2Layout {
                 var tri = mirror.get(i).getAsJsonArray();
                 mirrorTris[i] = new float[]{
                     tri.get(0).getAsFloat(),
+                    0,
                     tri.get(1).getAsFloat(),
-                    tri.get(2).getAsFloat(),
                 };
             }
         }
