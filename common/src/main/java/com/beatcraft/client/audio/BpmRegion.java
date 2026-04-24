@@ -73,7 +73,6 @@ public class BpmRegion {
             json.get("_startBeat").getAsFloat(),
             json.get("_endBeat").getAsFloat()
         );
-        Beatcraft.LOGGER.info("BPM Region made V2: {}, {}, {}, {}", region.startIndex, region.endIndex, region.startBeat, region.endBeat);
         return region;
     }
 
@@ -85,7 +84,6 @@ public class BpmRegion {
             json.get("sb").getAsFloat(),
             json.get("eb").getAsFloat()
         );
-        Beatcraft.LOGGER.info("BPM Region made V4: {}, {}, {}, {}", region.startIndex, region.endIndex, region.startBeat, region.endBeat);
         return region;
     }
 

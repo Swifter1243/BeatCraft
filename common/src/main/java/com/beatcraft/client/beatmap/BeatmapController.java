@@ -271,7 +271,6 @@ public class BeatmapController {
 
                 if (info == null || currentSeconds > info.getSongDuration()) {
                     reset();
-                    Beatcraft.LOGGER.info("Song ended");
                 }
             }
 

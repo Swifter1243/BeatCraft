@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -46,6 +47,8 @@ public class DynamicTexture {
         try {
             img = NativeImage.read(new FileInputStream(this.path.replace("\\", "/")));
             tex = new net.minecraft.client.renderer.texture.DynamicTexture(img);
+        } catch (FileNotFoundException _e) {
+            // do nothing, this happens after deleting a song and before clicking another song.
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to reload texture '{}'", this.path, e);
         }
