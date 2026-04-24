@@ -27,7 +27,7 @@ public class ClientModEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent event) {
+    public static void onClientTick(ClientTickEvent.Pre event) {
         var pl = Minecraft.getInstance().player;
         if (pl == null) return;
         BeatcraftClient.playerPos = pl.position().toVector3f();
