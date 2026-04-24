@@ -213,7 +213,6 @@ public class BeatmapLogicController {
     private boolean failAnim = false;
     public float globalDissolve = 0;
     public float globalArrowDissolve = 0;
-    public float ghostNoteDissolve = 0;
 
     private double failTime = 0;
     private static final double DISSOLVE_TIME = 2.5;
@@ -389,6 +388,15 @@ public class BeatmapLogicController {
                         getPlaneNormal(localBase, localTip, vel, dir);
                         obj.score$spawnDebris(new Vector3f(localBase), dir);
                         processBadCut(obj.score$getMaxFollowThroughScore() + obj.score$getMaxSwingInScore() + 15);
+                        var vel = obj.score$getInverseVelocity().mul(4);
+                        var pos = ((PhysicalGameplayObject<?>) obj).getWorldTransform().getTranslation(new Vector3f());
+                        pos.y = controller.worldPosition.y;
+                        var end = pos.add(vel, new Vector3f());
+                        controller.hudRenderer.postBadcut(
+                            pos,
+                            end,
+                            obj.score$getLaneRotation().rotateY(-controller.worldAngle, new Quaternionf())
+                        );
                     }
                 }
             }
@@ -399,6 +407,15 @@ public class BeatmapLogicController {
                 getPlaneNormal(localBase, localTip, vel, dir);
                 obj.score$spawnDebris(new Vector3f(localBase), dir);
                 processBadCut(obj.score$getMaxFollowThroughScore() + obj.score$getMaxSwingInScore() + 15);
+                var vel = obj.score$getInverseVelocity().mul(4);
+                var pos = ((PhysicalGameplayObject<?>) obj).getWorldTransform().getTranslation(new Vector3f());
+                pos.y = controller.worldPosition.y;
+                var end = pos.add(vel, new Vector3f());
+                controller.hudRenderer.postBadcut(
+                    pos,
+                    end,
+                    obj.score$getLaneRotation().rotateY(-controller.worldAngle, new Quaternionf())
+                );
             }
         }
     }
@@ -436,11 +453,19 @@ public class BeatmapLogicController {
         if (failAnim) return;
 
         if (obj instanceof PhysicalScorableObject scorable) {
-            processNote(scorable, gc, bc, expectedNoteType, saber);
-        } else if (obj instanceof PhysicalBombNote) {
+            if (scorable.score$getScoreState().isUnchecked()) {
+                processNote(scorable, gc, bc, expectedNoteType, saber);
+            }
+        } else if (obj instanceof PhysicalBombNote bomb) {
             if (bc.isPointInHitbox(localTip)) {
                 obj.cutNote();
                 processBombCut();
+                var vel = bomb.getInverseVelocity().mul(4);
+                controller.hudRenderer.postBadcut(
+                    new Vector3f(controller.worldPosition),
+                    controller.worldPosition.add(vel, new Vector3f()),
+                    bomb.getLaneRotation().rotateY(-controller.worldAngle, new Quaternionf())
+                );
             }
         }
 
@@ -459,10 +484,6 @@ public class BeatmapLogicController {
 
         return dot >= 0.7071f; // sqrt(0.5)
     }
-
-    private static final Vector3f NORMAL = new Vector3f();
-
-    private static final float MAX_SCORE_VELOCITY = 12.0f;
 
     private void calculateScore(PhysicalScorableObject colorNote, PhysicsTransform saber, NoteType noteType) {
 
@@ -483,10 +504,13 @@ public class BeatmapLogicController {
 
         colorNote.score$setScoreState(ScoreState.goodCut(accPoints));
         var vel = colorNote.score$getInverseVelocity().mul(4);
+        var pos = ((PhysicalGameplayObject<?>) colorNote).getWorldTransform().getTranslation(new Vector3f());
+        pos.y = controller.worldPosition.y;
+        var end = pos.add(vel, new Vector3f());
         var link = controller.hudRenderer.postScore(
             accPoints,
-            new Vector3f(controller.worldPosition),
-            controller.worldPosition.add(vel, new Vector3f()),
+            pos,
+            end,
             colorNote.score$getLaneRotation().rotateY(-controller.worldAngle, new Quaternionf())
         );
         incrementCombo();

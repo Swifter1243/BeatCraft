@@ -1,5 +1,6 @@
 package com.beatcraft.client.beatmap.object.physical;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
@@ -118,6 +119,16 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
                 if (scorable.score$getScoreState().isUnchecked()) {
                     scorable.score$setScoreState(ScoreState.missed());
                     this.mapController.logic.processNoCut(scorable.score$getMaxFollowThroughScore() + scorable.score$getMaxSwingInScore() + 15);
+
+                    var vel = scorable.score$getInverseVelocity().mul(5);
+                    var pos = worldTransform.getTranslation(new Vector3f());
+                    pos.y = mapController.worldPosition.y;
+                    var end = pos.add(vel, new Vector3f());
+                    mapController.hudRenderer.postMiss(
+                        pos,
+                        end,
+                        scorable.score$getLaneRotation().rotateY(-mapController.worldAngle, new Quaternionf())
+                    );
                 }
             }
         }
@@ -455,6 +466,9 @@ public abstract class PhysicalGameplayObject<T extends GameplayObject> extends W
         return null;
     }
 
+    public Vector3f getInverseVelocity() {
+        return worldVelocity.negate(new Vector3f());
+    }
 
     public void spawnDebris(Vector3f planeIncident, Vector3f planeNormal) {
         if (BeatcraftClient.playerConfig.preferences.reducedDebris()) return;

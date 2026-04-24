@@ -1,6 +1,5 @@
 package com.beatcraft.client.logic;
 
-import com.beatcraft.Beatcraft;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -11,48 +10,67 @@ public class PhysicsTransform {
     private final Matrix4f previousTransform = new Matrix4f();
     private final Vector3f v0 = new Vector3f();
     private final Vector3f v1 = new Vector3f();
-    private final Quaternionf q0 = new Quaternionf();
-    private final Quaternionf q1 = new Quaternionf();
     private static final Vector3f ZERO = new Vector3f();
 
     public PhysicsTransform(float x, float y, float z) {
         v0.set(x, y, z);
         currentTransform.translate(v0);
         previousTransform.translate(v0);
+        for (int i = 0; i < WINDOW; ++i) {
+            deltaBuffer[i] = new Vector3f();
+        }
     }
 
-    protected float turnaroundAngleThreshold = -0.75f;
-    protected float turnaroundRestThreshold = 0.0005f;
-    protected float turnaroundSpeedUpFactor = 0.01f;
+    private static final int WINDOW = 8;
+    private final Vector3f[] deltaBuffer = new Vector3f[WINDOW];
+    private int currentDelta = 0;
+    private final Vector3f committedAxis = new Vector3f(0, 1, 0);
+
+    private static final float MIN_SWING_SPEED = 1.0f;
+    private static final float AXIS_CHANGE_COS = 0.5f;
+
+    private final Quaternionf qPrev = new Quaternionf();
+    private final Quaternionf qCurr = new Quaternionf();
+    private final Quaternionf qDelta = new Quaternionf();
+    private final Vector3f delta = new Vector3f();
+    private final Vector3f meanDelta = new Vector3f();
+    private final Vector3f axis = new Vector3f();
 
     public void update(Matrix4f newTransform, float dt) {
-        Vector3f prevTip = previousTransform.transformPosition(new Vector3f(0, 1, 0));
-        Vector3f currTip = currentTransform.transformPosition(new Vector3f(0, 1, 0));
-        Vector3f newTip = newTransform.transformPosition(new Vector3f(0, 1, 0));
+        currentTransform.getUnnormalizedRotation(qPrev).normalize();
+        newTransform.getUnnormalizedRotation(qCurr).normalize();
+        qPrev.conjugate(qDelta);
+        qCurr.mul(qDelta, qDelta);
 
-        Vector3f prevDelta = currTip.sub(prevTip, new Vector3f());
-        Vector3f currDelta = currTip.sub(newTip, new Vector3f());
-
-        float prevSpeed = prevDelta.length();
-        float currSpeed = currDelta.length();
-
-        // Beatcraft.LOGGER.info("dt, speeds: {}, {}, {}", dt, prevSpeed, currSpeed);
-        if (currSpeed > 0.2f * dt && prevSpeed > 0.0001f * dt) {
-            float dot = prevDelta.normalize(new Vector3f()).dot(currDelta.normalize(new Vector3f()));
-            // Beatcraft.LOGGER.info("what");
-            if (dot < turnaroundAngleThreshold) {
-                // Beatcraft.LOGGER.info("update from turnaround");
-                turnaround.set(currentTransform);
-            }
+        float halfAngle = (float) Math.acos(Math.max(-1f, Math.min(1f, qDelta.w)));
+        float sinHalf = (float) Math.sin(halfAngle);
+        delta.set(0);
+        if (sinHalf > 1e-6f) {
+            float angle = 2f * halfAngle;
+            delta.set(qDelta.x / sinHalf, qDelta.y / sinHalf, qDelta.z / sinHalf)
+                .normalize().mul(angle / dt);
         }
 
-        if (currSpeed < 0.5f * dt) {
-            boolean speedUpFromRest = prevSpeed < turnaroundRestThreshold * dt
-                && currSpeed > turnaroundSpeedUpFactor;
-            if (speedUpFromRest) {
-                // Beatcraft.LOGGER.info("Speed up from rest! {} -> {} (dt={})", prevSpeed, currSpeed, dt);
-                // turnaround.set(currentTransform);
-            }
+        deltaBuffer[currentDelta].set(delta);
+        currentDelta = (currentDelta + 1) % WINDOW;
+        meanDelta.set(0);
+        for (var o : deltaBuffer) {
+            meanDelta.add(o);
+        }
+        meanDelta.div(WINDOW);
+
+        float speed = meanDelta.length();
+        if (speed < MIN_SWING_SPEED) {
+            previousTransform.set(currentTransform);
+            currentTransform.set(newTransform);
+            return;
+        }
+
+        meanDelta.normalize(axis);
+
+        if (axis.dot(committedAxis) < AXIS_CHANGE_COS) {
+            turnaround.set(currentTransform);
+            committedAxis.set(axis);
         }
 
         previousTransform.set(currentTransform);

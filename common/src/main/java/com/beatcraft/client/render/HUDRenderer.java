@@ -121,6 +121,14 @@ public class HUDRenderer {
         return particle.getLink();
     }
 
+    public void postMiss(Vector3f position, Vector3f endpoint, Quaternionf orientation) {
+        postScore(-1, position, endpoint, orientation);
+    }
+
+    public void postBadcut(Vector3f position, Vector3f endpoint, Quaternionf orientation) {
+        postScore(0, position, endpoint, orientation);
+    }
+
     public void render(MultiBufferSource imm) {
         buffers = (MultiBufferSource.BufferSource) imm;
 

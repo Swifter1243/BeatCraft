@@ -262,7 +262,7 @@ public class PhysicalColorNote extends PhysicalGameplayObject<ColorNote> impleme
 
     @Override
     public Vector3f score$getInverseVelocity() {
-        return worldVelocity.negate(new Vector3f());
+        return getInverseVelocity();
     }
 
     @Override

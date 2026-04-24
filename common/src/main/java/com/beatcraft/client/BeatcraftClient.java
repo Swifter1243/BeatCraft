@@ -97,10 +97,6 @@ public class BeatcraftClient {
                     return;
                 }
                 var p = playerPos;
-                // var y = p.y;
-                // if (vr != null && vr.isActive()) {
-                //     y -= 2; // hacky fix for now
-                // }
                 var v = new Vec3i((int) p.x, (int) p.y, (int) p.z);
                 headsetLinkedBeatmap = new BeatmapController(
                     player.clientLevel,
@@ -124,12 +120,12 @@ public class BeatcraftClient {
 
         if (vr != null && vr.isActive()) {
             mat4.identity().translate(headPos).rotate(rot);
-            //sabers.getB().update(mat4, dt);
+            sabers.getB().update(mat4, dt);
         } else if (FPFC) {
             rot.rotateX(90 * Mth.DEG_TO_RAD);
             mat4.identity().translate(headPos).rotate(rot);
             sabers.getA().update(mat4, dt);
-            //sabers.getB().update(mat4, dt);
+            sabers.getB().update(mat4, dt);
             sabers.getC().update(mat4, dt);
         }
 

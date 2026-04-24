@@ -199,7 +199,7 @@ public class PhysicalChainNoteHead extends PhysicalGameplayObject<ChainNoteHead>
 
     @Override
     public Vector3f score$getInverseVelocity() {
-        return worldVelocity.negate(new Vector3f());
+        return getInverseVelocity();
     }
 
     @Override
