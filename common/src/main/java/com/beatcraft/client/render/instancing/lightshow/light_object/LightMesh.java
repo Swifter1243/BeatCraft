@@ -227,8 +227,8 @@ public class LightMesh {
         }
     }
 
-    protected record Triangle(VertexData a, VertexData b, VertexData c, TriangleData data, String baseMaterial) {
-        protected Triangle transform(JsonObject transformation, HashMap<String, TriangleData> materials) {
+    protected record Triangle(VertexData a, VertexData b, VertexData c, TriangleData data, String baseMaterial, int flags) {
+        protected Triangle transform(JsonObject transformation, HashMap<String, TriangleData> materials, int flags) {
             if (
                 transformation.has("scale")
                     || transformation.has("remap_data")
@@ -270,15 +270,17 @@ public class LightMesh {
                 var c = this.c.transform(scale, pos, rotation);
 
                 if (reWind) {
-                    return new Triangle(c, b, a, mat, baseMat);
+                    return new Triangle(c, b, a, mat, baseMat, flags);
                 } else {
-                    return new Triangle(a, b, c, mat, baseMat);
+                    return new Triangle(a, b, c, mat, baseMat, flags);
                 }
             }
             return this;
         }
 
     }
+
+    private record BillboardDesc(Vector3f origin, Vector3f axis, Vector3f normal, boolean cameraLock) {}
 
 
     public static final HashMap<String, LightMesh> meshes = new HashMap<>();
@@ -290,6 +292,7 @@ public class LightMesh {
 
     private final ArrayList<Triangle> triangles;
     private final HashMap<Integer, ResourceLocation> meshTextures;
+    private final ArrayList<BillboardDesc> billboardDescs;
     private boolean doBloom = true;
     private boolean doSolid = true;
     private boolean doMirroring = true;
@@ -306,6 +309,7 @@ public class LightMesh {
     private int indicesVbo;
     private int instanceVbo;
     private int indicesLength;
+    private int billboardSsbo;
 
     private boolean loaded = false;
 
@@ -401,6 +405,7 @@ public class LightMesh {
         this.id = id;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
+        this.billboardDescs = new ArrayList<>();
         LightMesh.unloadedTextures.addAll(unloadedTextures.values());
     }
 
@@ -483,14 +488,16 @@ public class LightMesh {
         indicesVbo = GL15.glGenBuffers();
         normalVbo = GL15.glGenBuffers();
         materialVbo = GL15.glGenBuffers();
+        billboardSsbo = GL45.glGenBuffers();
 
         int vertexCount = triangles.size() * 3;
         indicesLength = vertexCount;
 
         var positionUBuffer = MemoryUtil.memAllocFloat(vertexCount * 4);
-        var normalVBuffer   = MemoryUtil.memAllocFloat(vertexCount * 4);
-        var materialBuffer  = MemoryUtil.memAllocInt(vertexCount * 3);
-        var indexBuffer     = MemoryUtil.memAllocInt(vertexCount);
+        var normalVBuffer = MemoryUtil.memAllocFloat(vertexCount * 4);
+        var materialBuffer = MemoryUtil.memAllocInt(vertexCount * 3);
+        var indexBuffer = MemoryUtil.memAllocInt(vertexCount);
+        var billboardBuffer = MemoryUtil.memAllocFloat(billboardDescs.size() * (4 * 3));
 
         for (int i = 0; i < vertexCount; i++) {
             indexBuffer.put(i);
@@ -508,9 +515,15 @@ public class LightMesh {
             normalVBuffer.put(tri.b.normal.x).put(tri.b.normal.y).put(tri.b.normal.z).put(tri.b.uv.y + offset.y);
             normalVBuffer.put(tri.c.normal.x).put(tri.c.normal.y).put(tri.c.normal.z).put(tri.c.uv.y + offset.y);
 
-            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
-            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
-            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, 0);
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
+            putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
+        }
+
+        for (var bb : billboardDescs) {
+            billboardBuffer.put(bb.origin.x).put(bb.origin.y).put(bb.origin.z).put(0);
+            billboardBuffer.put(bb.axis.x).put(bb.axis.y).put(bb.axis.z).put(0);
+            billboardBuffer.put(bb.normal.x).put(bb.normal.y).put(bb.normal.z).put(bb.cameraLock ? 1f : 0f);
         }
 
         positionUBuffer.flip();
@@ -521,6 +534,11 @@ public class LightMesh {
         uploadFloatBuffer(vertexVbo, Location.POSITION_U, 4, positionUBuffer);
         uploadFloatBuffer(normalVbo, Location.NORMAL_V, 4, normalVBuffer);
         uploadIntBuffer(materialVbo, Location.LAYERS, 3, materialBuffer);
+
+        GL45.glBindBuffer(GL45.GL_SHADER_STORAGE_BUFFER, billboardSsbo);
+        GL45.glBufferData(GL45.GL_SHADER_STORAGE_BUFFER, billboardBuffer, GL45.GL_STATIC_DRAW);
+        GL45.glBindBufferBase(GL45.GL_SHADER_STORAGE_BUFFER, 0, billboardSsbo);
+        MemoryUtil.memFree(billboardBuffer);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesVbo);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
@@ -867,9 +885,9 @@ public class LightMesh {
             triangles.add(tri);
         }
 
-        protected void addToMesh(LightMesh mesh, JsonObject transform, HashMap<String, TriangleData> materials) {
+        protected void addToMesh(LightMesh mesh, JsonObject transform, HashMap<String, TriangleData> materials, int flags) {
             for (var tri : triangles) {
-                mesh.addTriangle(tri.transform(transform, materials));
+                mesh.addTriangle(tri.transform(transform, materials, flags));
             }
         }
 
@@ -1182,16 +1200,16 @@ public class LightMesh {
                             var mat = arr.get(3);
                             if (mat.isJsonObject()) {
                                 var dat = defaultData.extend(mat.getAsJsonObject());
-                                builder.addTriangle(new Triangle(a, b, c, dat, null));
+                                builder.addTriangle(new Triangle(a, b, c, dat, null, 0));
                             } else {
-                                builder.addTriangle(new Triangle(a, b, c, data.get(mat.getAsString()), mat.getAsString()));
+                                builder.addTriangle(new Triangle(a, b, c, data.get(mat.getAsString()), mat.getAsString(), 0));
                             }
                         } else if (arr.size() == 5) {
                             var baseMat = arr.get(3);
                             var modifier = arr.get(4);
-                            builder.addTriangle(new Triangle(a, b, c, data.get(baseMat.getAsString()).extend(modifier.getAsJsonObject()), baseMat.getAsString()));
+                            builder.addTriangle(new Triangle(a, b, c, data.get(baseMat.getAsString()).extend(modifier.getAsJsonObject()), baseMat.getAsString(), 0));
                         } else {
-                            builder.addTriangle(new Triangle(a, b, c, defaultData, "default"));
+                            builder.addTriangle(new Triangle(a, b, c, defaultData, "default", 0));
                         }
 
                     }
@@ -1215,7 +1233,26 @@ public class LightMesh {
             var transform = dat.getAsJsonObject();
             var partName = transform.get("part").getAsString();
             var part = parts.get(partName);
-            part.addToMesh(mesh, transform, data);
+            var flags = 0;
+            var billboard = transform.getAsJsonObject("billboard");
+            var shader_settings = transform.getAsJsonObject("shader_settings");
+            if (billboard != null) {
+                var bb = new BillboardDesc(
+                    JsonUtil.getVector3(billboard.getAsJsonArray("origin")),
+                    JsonUtil.getVector3(billboard.getAsJsonArray("axis")),
+                    JsonUtil.getVector3(billboard.getAsJsonArray("normal")),
+                    JsonUtil.getOrDefault(billboard, "camera_lock", JsonElement::getAsBoolean, false)
+                );
+                mesh.billboardDescs.add(bb);
+                flags |= mesh.billboardDescs.size() & 0xF;
+            }
+            if (shader_settings != null) {
+                var style = JsonUtil.getOrDefault(shader_settings, "style", JsonElement::getAsString, "");
+                if (style.equals("circle")) {
+                    flags |= 0x10;
+                }
+            }
+            part.addToMesh(mesh, transform, data, flags);
         }
 
         return mesh;

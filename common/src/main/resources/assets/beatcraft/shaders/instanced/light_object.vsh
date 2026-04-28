@@ -64,33 +64,44 @@ void main() {
     int billboard_idx = in_colorLayer_materialLayer_flags.z & 0xF;
     if (billboard_idx > 0) {
         BillboardDesc bd = billboards[billboard_idx - 1];
-        vec3 pivot = bd.origin.xyz;
-        vec3 axis = normalize(bd.axis.xyz);
+        vec3 camera_pos = (u_camera_pos * vec4(vec3(0.0), 1.0)).xyz;
+        vec3 authored_front = normalize(mat3(instance_model) * bd.forward_lock.xyz);
+        vec3 axis = normalize(mat3(instance_model) * bd.axis.xyz);
+        vec3 pivot = (instance_model * vec4(bd.origin.xyz, 1.0)).xyz;
         bool spin = bd.forward_lock.w > 0.5;
 
-        vec3 to_cam = normalize(u_camera_pos - pivot);
+        vec3 local = (instance_model * vec4(in_position, 1.0)).xyz - pivot;
 
-        vec3 right, up, forward;
+        vec3 to_cam = normalize(camera_pos - pivot);
+
+        vec3 world_right, world_up, world_forward;
 
         if (spin) {
-            forward = normalize(to_cam - dot(to_cam, axis) * axis);
-            right = normalize(cross(axis, forward));
-            up = axis;
+            vec3 cam_up = normalize(vec3(u_view[0][1], u_view[1][1], u_view[2][1]));
+            world_forward = to_cam;
+            vec3 up_hint = (abs(dot(world_forward, cam_up)) < 0.99) ? cam_up : vec3(0.0, 0.0, 1.0);
+            world_right = normalize(cross(world_forward, up_hint));
+            world_up = normalize(cross(world_right, world_forward));
         } else {
-            right = normalize(cross(axis, to_cam));
-            forward = normalize(cross(right, axis));
-            up = axis;
+            vec3 proj = to_cam - dot(to_cam, axis) * axis;
+            world_forward = (length(proj) > 0.001) ? normalize(proj) : authored_front;
+            world_right = normalize(cross(world_forward, axis));
+            world_up = axis;
         }
 
-        float scaleX = length(instance_model[0].xyz);
-        float scaleY = length(instance_model[1].xyz);
-        float scaleZ = length(instance_model[2].xyz);
+        vec3 helper = (abs(dot(authored_front, axis)) < 0.99) ? axis : vec3(1.0, 0.0, 0.0);
+        vec3 local_right = normalize(cross(authored_front, helper));
+        vec3 local_up = normalize(cross(local_right, authored_front));
 
-        vec3 local = in_position_u.xyz;
+        float cx = dot(local, local_right);
+        float cy = dot(local, local_up);
+        float cz = dot(local, authored_front);
+
         vec3 world_pos = pivot
-                       + right   * local.x * scaleX
-                       + up      * local.y * scaleY
-                       + forward * local.z * scaleZ;
+                       + world_right   * cx
+                       + world_up      * cy
+                       + world_forward * cz;
+
         pos = vec4(world_pos, 1.0);
     }
 
