@@ -57,7 +57,16 @@ Mesh format:
             "part": "name",
             "scale": [1, 1, 1],
             "position": [0, 0, 0],
-            "rotation": [0, 0, 0, 1] // quaternion
+            "rotation": [0, 0, 0, 1], // quaternion
+            "billboard": { // saber models only, only 15 can exist in one model
+                "origin": [0, 0, 0], // geometry-local fixed point for rotations to happen around
+                "axis": [0, 1, 0], // the axis to pivot around
+                "normal": [0, 0, -1], // the normal vector that tries to point at the camera
+                "camera_lock": false, // if false: can only pivot on axis. if true: axis is kept upright from the camera's perspective
+            },
+            "shader_settings": { // saber models only
+                "style": "circle", // changes geometry flags to enable certain effects
+            }
         }
     ]
     "textures": {
@@ -747,10 +756,10 @@ public class LightMesh {
         GlUtil.uniformMat4f("u_view", viewMat);
 
 
-        Matrix4f worldTransform = new Matrix4f();
-        worldTransform.translate(cameraPos);
-        worldTransform.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
-        GlUtil.setMat4f(shaderProgram, "world_transform", worldTransform);
+        Matrix4f uCameraPos = new Matrix4f();
+        uCameraPos.translate(cameraPos);
+        uCameraPos.rotate(BeatcraftRenderer.fullCameraRotation.conjugate(new Quaternionf()));
+        GlUtil.setMat4f(shaderProgram, "u_camera_pos", uCameraPos);
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
