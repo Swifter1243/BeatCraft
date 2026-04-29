@@ -1,5 +1,6 @@
 {
   "mesh_format": 1,
+  "type": "environment",
   "credits": [
     "Beatcraft",
     "Westbot"
