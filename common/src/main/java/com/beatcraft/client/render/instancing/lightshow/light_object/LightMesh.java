@@ -125,6 +125,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
+import java.util.function.Function;
 
 public class LightMesh {
 
@@ -275,7 +276,7 @@ public class LightMesh {
                     return new Triangle(a, b, c, mat, baseMat, flags);
                 }
             }
-            return this;
+            return new Triangle(this.a, this.b, this.c, this.data, this.baseMaterial, flags);
         }
 
     }
@@ -286,7 +287,7 @@ public class LightMesh {
     public static final HashMap<String, LightMesh> meshes = new HashMap<>();
 
     private static final HashSet<ResourceLocation> unloadedTextures = new HashSet<>();
-    private static final HashMap<ResourceLocation, Vector2f> uvMap = new HashMap<>();
+    private static final HashMap<ResourceLocation, Vector4f> uvMap = new HashMap<>();
     public static boolean initialized = false;
     private static int atlasGlId;
 
@@ -356,7 +357,7 @@ public class LightMesh {
                     var pos = new Vector2i();
 
                     if (atlasBuilder.add(new Vector2i(w, h), pos)) {
-                        var uv = new Vector2f(pos.x / 1024f, pos.y / 1024f);
+                        var uv = new Vector4f(pos.x, pos.y, pos.x+w, pos.y+h).div(1024);
                         uvMap.put(ident, uv);
                         tex.copyRect(atlas, 0, 0, pos.x, pos.y, w, h, false, false);
                     } else {
@@ -504,16 +505,27 @@ public class LightMesh {
         }
 
         for (var tri : triangles) {
-            var offset = uvMap.get(meshTextures.get(tri.data.textureId));
-            if (offset == null) offset = new Vector2f(0);
+            var rect = uvMap.get(meshTextures.get(tri.data.textureId));
+            var isCircle = ((tri.flags & 0xF0) >> 4) == 1;
 
-            positionUBuffer.put(tri.a.vertex.x).put(tri.a.vertex.y).put(tri.a.vertex.z).put(tri.a.uv.x + offset.x);
-            positionUBuffer.put(tri.b.vertex.x).put(tri.b.vertex.y).put(tri.b.vertex.z).put(tri.b.uv.x + offset.x);
-            positionUBuffer.put(tri.c.vertex.x).put(tri.c.vertex.y).put(tri.c.vertex.z).put(tri.c.uv.x + offset.x);
+            Function<Vector2f, Vector2f> remap = (uv) -> {
+                if (rect == null || isCircle) {
+                    return uv;
+                }
+                return new Vector2f(Mth.lerp(uv.x, rect.x, rect.z), Mth.lerp(uv.y, rect.y, rect.w));
+            };
 
-            normalVBuffer.put(tri.a.normal.x).put(tri.a.normal.y).put(tri.a.normal.z).put(tri.a.uv.y + offset.y);
-            normalVBuffer.put(tri.b.normal.x).put(tri.b.normal.y).put(tri.b.normal.z).put(tri.b.uv.y + offset.y);
-            normalVBuffer.put(tri.c.normal.x).put(tri.c.normal.y).put(tri.c.normal.z).put(tri.c.uv.y + offset.y);
+            var uvA = remap.apply(tri.a.uv);
+            var uvB = remap.apply(tri.b.uv);
+            var uvC = remap.apply(tri.c.uv);
+
+            positionUBuffer.put(tri.a.vertex.x).put(tri.a.vertex.y).put(tri.a.vertex.z).put(uvA.x);
+            positionUBuffer.put(tri.b.vertex.x).put(tri.b.vertex.y).put(tri.b.vertex.z).put(uvB.x);
+            positionUBuffer.put(tri.c.vertex.x).put(tri.c.vertex.y).put(tri.c.vertex.z).put(uvC.x);
+
+            normalVBuffer.put(tri.a.normal.x).put(tri.a.normal.y).put(tri.a.normal.z).put(uvA.y);
+            normalVBuffer.put(tri.b.normal.x).put(tri.b.normal.y).put(tri.b.normal.z).put(uvB.y);
+            normalVBuffer.put(tri.c.normal.x).put(tri.c.normal.y).put(tri.c.normal.z).put(uvC.y);
 
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
@@ -528,8 +540,9 @@ public class LightMesh {
 
         positionUBuffer.flip();
         normalVBuffer.flip();
-        indexBuffer.flip();
         materialBuffer.flip();
+        indexBuffer.flip();
+        billboardBuffer.flip();
 
         uploadFloatBuffer(vertexVbo, Location.POSITION_U, 4, positionUBuffer);
         uploadFloatBuffer(normalVbo, Location.NORMAL_V, 4, normalVBuffer);
@@ -803,6 +816,8 @@ public class LightMesh {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceBuffer, GL15.GL_DYNAMIC_DRAW);
         MemoryUtil.memFree(instanceBuffer);
 
+        GL45.glBindBufferBase(GL45.GL_SHADER_STORAGE_BUFFER, 0, billboardSsbo);
+
         // PHASE 4: draw
         GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, currentFbo);
         GL31.glDrawElementsInstanced(
@@ -949,7 +964,7 @@ public class LightMesh {
 
         protected void addUvs(JsonArray uvs) {
             uvs.forEach(uv -> {
-                this.uvs.add(JsonUtil.getVector2(uv.getAsJsonArray()).div(1024));
+                this.uvs.add(JsonUtil.getVector2(uv.getAsJsonArray()));
             });
         }
 
@@ -957,7 +972,7 @@ public class LightMesh {
             for (var key : uvs.keySet()) {
                 var val = uvs.get(key);
                 var i = this.uvs.size();
-                this.uvs.add(JsonUtil.getVector2(val.getAsJsonArray()).div(1024));
+                this.uvs.add(JsonUtil.getVector2(val.getAsJsonArray()));
                 namedUvs.put(key, i);
             }
         }

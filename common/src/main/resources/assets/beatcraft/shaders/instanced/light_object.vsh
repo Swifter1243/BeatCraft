@@ -28,11 +28,11 @@ struct BillboardDesc {
     vec4 origin;
     vec4 axis;
     vec4 forward_lock;
-}
+};
 
 layout(std430, binding = 0) readonly buffer BillboardBuffer {
     BillboardDesc billboards[15];
-}
+};
 
 uniform int passType; // 0 = normal, 1 = bloom, 2 = bloomfog, 3 = late lights
 uniform mat4 u_projection;

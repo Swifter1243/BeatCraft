@@ -26,20 +26,26 @@ vec4 lerpColor(vec4 c1, vec4 c2, float t) {
 }
 
 void main() {
+    if (v_style == 1) {
+        if (length(v_uv - 0.5) > 0.5) {
+            discard;
+        }
+    }
 
     vec4 tex_sample = ((v_style == 0)
         ? texture(u_texture, v_uv)
         : vec4(1.0)) * v_color;
 
     if (passType == 0 /* Normal */ && v_material != 2 /* Not Light/Nothing */) {
+        vec4 tex = tex_sample;
         if (v_material == 1 /* Light/Solid */) {
-            tex_sample = vec4(tex_sample.rgb, 1.0);
+            tex = vec4(tex.rgb, 1.0);
         }
         vec4 fog = texture(u_bloomfog, (screenUV.xy/(-screenUV.z*4.0))+0.5);
         float fadeHeight = clamp((v_pos.y - u_fog.x) / (u_fog.y - u_fog.x), 0.0, 1.0);
-        fragColor = lerpColor(tex_sample * fadeHeight, fog, clampF(abs(screenUV.z)));
+        fragColor = lerpColor(tex * fadeHeight, fog, clampF(abs(screenUV.z)));
     } else if (passType == 1 /* Bloom */) {
-        if (v_material == 0 /* Solid */) {
+        if (v_material == 0 /* Solid */ || v_material == 3 /* Tinted */) {
             discard;
         } else {
             vec2 uv = (screenUV.xy / (-screenUV.z * 2)) + 0.5;
@@ -51,7 +57,7 @@ void main() {
             fragColor = lerpColor(tex_sample * fadeHeight, vec4(0.0), clampF(abs(screenUV.z)));
         }
     } else if (passType == 2 /* Bloomfog */) {
-        if (v_material == 0 /* Solid */) {
+        if (v_material == 0 /* Solid */ || v_material == 3 /* Tinted */) {
             discard;
         } else {
             fragColor = v_color;
