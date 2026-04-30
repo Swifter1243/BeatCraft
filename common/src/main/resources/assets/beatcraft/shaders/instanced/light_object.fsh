@@ -6,6 +6,7 @@ in vec3 v_pos;
 in vec3 v_normal;
 flat in int v_material; // 0 = solid, 1 = light/solid, 2 = light/nothing, 3 = tinted
 flat in int v_style;
+flat in int v_flags;
 in vec3 screenUV;
 
 uniform int passType; // 0 = normal, 1 = bloom, 2 = bloomfog, 3 = late lights

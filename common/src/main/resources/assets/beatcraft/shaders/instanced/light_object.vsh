@@ -45,6 +45,7 @@ out vec3 v_pos;
 out vec3 v_normal;
 flat out int v_material;
 flat out int v_style;
+flat out int v_flags;
 out vec3 screenUV;
 
 void main() {
@@ -120,4 +121,5 @@ void main() {
     v_pos = vec4(wp).xyz;
     v_material = in_colorLayer_materialLayer_flags.y;
     v_style = (in_colorLayer_materialLayer_flags.z & 0xF0) >> 4;
+    v_flags = in_colorLayer_materialLayer_flags.z;
 }
