@@ -1,6 +1,5 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.common.items.ModItems;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -29,7 +28,7 @@ public abstract class ItemInHandLayerMixin {
 
         if (override) {
             poseStack.pushPose();
-            SaberRenderer.transformSaber(poseStack);
+            // TODO: re-position saber to expected position (third-person)
         }
         original.call(instance, livingEntity, itemStack, itemDisplayContext, bl, poseStack, multiBufferSource, i);
         if (override) {

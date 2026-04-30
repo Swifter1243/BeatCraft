@@ -1,4 +1,4 @@
-package com.beatcraft.client.render.instancing;
+package com.beatcraft.client.render.instancing.data;
 
 import com.beatcraft.common.data.types.Color;
 import org.joml.Matrix4f;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 import static com.beatcraft.client.render.instancing.InstancedMesh.*;
 
-public class ColorNoteInstanceData implements InstancedMesh.InstanceData {
+public class ColorNoteInstanceData implements InstanceData {
 
     private final Matrix4f transform;
     private final Color color;

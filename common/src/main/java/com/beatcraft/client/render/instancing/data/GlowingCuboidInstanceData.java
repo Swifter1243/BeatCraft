@@ -1,5 +1,6 @@
-package com.beatcraft.client.render.instancing;
+package com.beatcraft.client.render.instancing.data;
 
+import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.CompoundTransformState;
 import com.beatcraft.client.logic.Hitbox;

@@ -1,16 +1,15 @@
 package com.beatcraft.client.render.effect;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
-import com.beatcraft.client.render.instancing.ArrowInstanceData;
-import com.beatcraft.client.render.instancing.BombNoteInstanceData;
-import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.data.ArrowInstanceData;
+import com.beatcraft.client.render.instancing.data.BombNoteInstanceData;
+import com.beatcraft.client.render.instancing.data.ColorNoteInstanceData;
 import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.mixin_utils.BufferBuilderAccessor;
 import com.beatcraft.client.render.BeatcraftRenderer;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
+import com.beatcraft.client.render.instancing.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;

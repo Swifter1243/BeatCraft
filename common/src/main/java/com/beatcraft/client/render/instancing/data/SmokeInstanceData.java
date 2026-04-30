@@ -1,5 +1,6 @@
-package com.beatcraft.client.render.instancing;
+package com.beatcraft.client.render.instancing.data;
 
+import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;

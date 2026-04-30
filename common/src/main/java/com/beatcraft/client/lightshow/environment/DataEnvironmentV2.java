@@ -1,6 +1,5 @@
 package com.beatcraft.client.lightshow.environment;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.data.Difficulty;
@@ -11,7 +10,7 @@ import com.beatcraft.client.lightshow.environment.lightgroup.StaticLightsGroup;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.ring_lights.RingLightHandler;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
-import com.beatcraft.client.render.instancing.lightshow.light_object.MultiLightObject;
+import com.beatcraft.client.render.instancing.MultiLightObject;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.memory.MemoryPool;
 import com.google.gson.JsonObject;

@@ -10,7 +10,7 @@ import com.beatcraft.client.lightshow.event.events.ValueEvent;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
+import com.beatcraft.client.render.instancing.LightMesh;
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class RingLightHandler extends ActionLightGroupV2 {
 

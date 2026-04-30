@@ -1,6 +1,5 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.common.items.ModItems;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -30,7 +29,7 @@ public abstract class ItemEntityRendererMixin extends EntityRenderer<ItemEntity>
         )
     )
     public void renderInject(ItemEntity entity, float yaw, float tickDelta, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light, CallbackInfo ci, @Local BakedModel bakedModel) {
-        SaberRenderer.renderItemEntityTrail(entity, tickDelta, bakedModel);
+        // TODO: render saber (item view)
     }
 
     @Override

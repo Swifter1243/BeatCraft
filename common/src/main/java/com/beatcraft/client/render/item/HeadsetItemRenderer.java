@@ -1,7 +1,7 @@
 package com.beatcraft.client.render.item;
 
 import com.beatcraft.Beatcraft;
-import com.beatcraft.client.render.instancing.HeadsetInstanceData;
+import com.beatcraft.client.render.instancing.data.HeadsetInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;

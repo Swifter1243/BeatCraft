@@ -1,14 +1,12 @@
 package com.beatcraft.client.render.mesh;
 
 import com.beatcraft.Beatcraft;
-import com.beatcraft.client.render.instancing.debug.TransformationWidgetInstanceData;
+import com.beatcraft.client.render.instancing.data.*;
+import com.beatcraft.client.render.instancing.data.debug.TransformationWidgetInstanceData;
 import com.beatcraft.mixin_utils.ModelLoaderAccessor;
-import com.beatcraft.client.render.dynamic_loader.DynamicTexture;
 import com.beatcraft.client.render.instancing.*;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
-import com.beatcraft.client.render.item.SaberItemRenderer;
+import com.beatcraft.client.render.instancing.LightMesh;
 import com.beatcraft.common.utils.JsonUtil;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -24,16 +22,12 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import oshi.util.tuples.Triplet;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 
 public class MeshLoader {
 
@@ -694,222 +688,6 @@ public class MeshLoader {
             Beatcraft.LOGGER.error("Failed to load model json!", e);
             throw new RuntimeException(e);
         }
-    }
-
-    public static SaberItemRenderer.SaberModel loadSaberMesh(ResourceLocation identifier, ResourceLocation texture, String overrideId) {
-        try {
-            var reader = Minecraft.getInstance().getResourceManager().getResource(identifier).orElseThrow().openAsReader();
-            var rawJson = String.join("\n", reader.lines().toList());
-            var json = JsonParser.parseString(rawJson).getAsJsonObject();
-            var split = identifier.getPath().split("/");
-            return loadSectionedMesh(json, split[split.length-1], texture, overrideId);
-        } catch (IOException e) {
-            Beatcraft.LOGGER.error("Failed to load model json!", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static SaberItemRenderer.SaberModel loadSaberMesh(String filePath, HashMap<String, File> textureLookup) {
-        try {
-            var p = Path.of(filePath);
-            var rawJson = Files.readString(p);
-            var json = JsonParser.parseString(rawJson).getAsJsonObject();
-
-            var textures = json.getAsJsonObject("textures");
-            String[] parts = null;
-            for (int i = 0; i < 5; i++) {
-                if (textures.has(String.valueOf(i))) {
-                    parts = textures.get(String.valueOf(i)).getAsString().split("[/:]");
-                }
-            }
-            if (parts == null) {
-                Beatcraft.LOGGER.error("Failed to load model json! (texture must be named '0' - '4')");
-                return null;
-            }
-            var name = parts[parts.length-1];
-
-            var f = textureLookup.get(name);
-
-            if (f == null) {
-                Beatcraft.LOGGER.error("Undefined texture: '{}'", name);
-                return null;
-            }
-
-            var tex = new DynamicTexture(f.getAbsolutePath());
-            var fn = p.getFileName().toString();
-            return loadSectionedMesh(json, fn, tex.id(), fn);
-        } catch (IOException e) {
-            Beatcraft.LOGGER.error("Failed to load model json!", e);
-            return null;
-        }
-    }
-
-    private static SaberItemRenderer.SaberModel loadSectionedMesh(JsonObject json, String fileName, ResourceLocation texture, String id) {
-        var displayName = JsonUtil.getOrDefault(json, "display_name", JsonElement::getAsString, fileName);
-        var authors = JsonUtil.getOrDefault(json, "authors", JsonElement::getAsJsonArray, new JsonArray()).asList().stream().map(JsonElement::getAsString).toList();
-
-        AtomicInteger complexityScore = new AtomicInteger();
-
-        var textureSize = json.getAsJsonArray("texture_size").asList().stream().map(JsonElement::getAsInt).toList();
-
-        var groupAttrs = new HashMap<Integer, String>();
-        var origins = new HashMap<Integer, Vector3f>();
-
-        var groups = json.getAsJsonArray("groups");
-
-        groups.forEach(o -> {
-            var obj = o.getAsJsonObject();
-            var indices = obj.getAsJsonArray("children").asList().stream().map(JsonElement::getAsInt).toList();
-            var groupAttr = obj.get("name").getAsString();
-            var origin = JsonUtil.getVector3(obj.getAsJsonArray("origin")).div(16f);
-
-            for (var idx : indices) {
-                groupAttrs.put(idx, groupAttr + ";");
-                origins.put(idx, origin);
-            }
-
-        });
-
-        var elements = json.getAsJsonArray("elements");
-
-
-        var meshes = new ArrayList<SaberItemRenderer.AttributedMesh>();
-
-        BiFunction<Vector3f, String, SaberItemRenderer.AttributedMesh> getMesh = (v, s) -> {
-            for (var m : meshes) {
-                if (m.matchesAttributes(new SaberItemRenderer.AttributedMesh(null, v, s))) {
-                    return m;
-                }
-            }
-            var m = new SaberItemRenderer.AttributedMesh(new TriangleMesh(List.of(), List.of()), v, s);
-            meshes.add(m);
-            complexityScore.getAndIncrement();
-            return m;
-        };
-
-        AtomicInteger i = new AtomicInteger(0);
-        elements.forEach(e -> {
-            var obj = e.getAsJsonObject();
-            var idx = i.getAndIncrement();
-
-            var attrs = groupAttrs.getOrDefault(idx, "") + JsonUtil.getOrDefault(obj, "name", JsonElement::getAsString, "");
-            var rawRotation = obj.getAsJsonObject("rotation");
-            var rotationOrigin = JsonUtil.getVector3(rawRotation.getAsJsonArray("origin")).div(16f);
-
-            var swivel = new Vector3f(origins.computeIfAbsent(idx, x -> new Vector3f()));
-
-            swivel = new Vector3f(rotationOrigin).add(0, 0.5f, 0);
-
-            var min = JsonUtil.getVector3(obj.getAsJsonArray("from")).div(16f).add(0, 0.5f, 0);
-            var max = JsonUtil.getVector3(obj.getAsJsonArray("to")).div(16f).add(0, 0.5f, 0);
-
-            var include = new ArrayList<>(List.of("north", "east", "south", "west", "up", "down"));
-
-            if (min.x == max.x) {
-                include.removeAll(List.of("north", "south", "up", "down"));
-            }
-            if (min.y == max.y) {
-                include.removeAll(List.of("north", "east", "south", "west"));
-            }
-            if (min.z == max.z) {
-                include.removeAll(List.of("east", "west", "up", "down"));
-            }
-
-            if (include.isEmpty()) return;
-
-
-            var angleDegrees = rawRotation.get("angle").getAsFloat();
-            var rotationAxis = rawRotation.get("axis").getAsString();
-
-            var rotQt = new Quaternionf().rotationAxis(
-                angleDegrees * Mth.DEG_TO_RAD,
-                new Vector3f(
-                    rotationAxis.equals("x") ? 1 : 0,
-                    rotationAxis.equals("y") ? 1 : 0,
-                    rotationAxis.equals("z") ? 1 : 0
-                )
-            );
-
-            var mesh = getMesh.apply(swivel, attrs);
-
-            var verts = new ArrayList<Vector3f>();
-            var tris = new ArrayList<Triangle>();
-
-            var rawFaces = obj.getAsJsonObject("faces");
-
-            var n = 0;
-            for (var faceId : include) {
-                var rawFace = rawFaces.getAsJsonObject(faceId);
-                var uv = JsonUtil.getVector4(rawFace.getAsJsonArray("uv"));
-                uv.div(16f);
-                switch (faceId) {
-                    case "north" -> {
-                        verts.addAll(List.of(
-                            min,
-                            new Vector3f(min.x, max.y, min.z),
-                            new Vector3f(max.x, max.y, min.z),
-                            new Vector3f(max.x, min.y, min.z)
-                        ));
-                    }
-                    case "east" -> {
-                        verts.addAll(List.of(
-                            new Vector3f(max.x, min.y, min.z),
-                            new Vector3f(max.x, max.y, min.z),
-                            max,
-                            new Vector3f(max.x, min.y, max.z)
-                        ));
-                    }
-                    case "south" -> {
-                        verts.addAll(List.of(
-                            new Vector3f(max.x, min.y, max.z),
-                            max,
-                            new Vector3f(min.x, max.y, max.z),
-                            new Vector3f(min.x, min.y, max.z)
-                        ));
-                    }
-                    case "west" -> {
-                        verts.addAll(List.of(
-                            new Vector3f(min.x, min.y, max.z),
-                            new Vector3f(min.x, max.y, max.z),
-                            new Vector3f(min.x, max.y, min.z),
-                            min
-                        ));
-                    }
-                    case "up" -> {
-                        verts.addAll(List.of(
-                            max,
-                            new Vector3f(max.x, max.y, min.z),
-                            new Vector3f(min.x, max.y, min.z),
-                            new Vector3f(min.x, max.y, max.z)
-                        ));
-                    }
-                    case "down" -> {
-                        verts.addAll(List.of(
-                            new Vector3f(max.x, min.y, min.z),
-                            new Vector3f(max.x, min.y, max.z),
-                            new Vector3f(min.x, min.y, max.z),
-                            min
-                        ));
-                    }
-                }
-                var x = n * 4;
-                tris.addAll(List.of(
-                    new Triangle(x, x + 1, x + 2, new Vector2f(uv.x, uv.w), new Vector2f(uv.x, uv.y), new Vector2f(uv.z, uv.y)),
-                    new Triangle(x, x + 2, x + 3, new Vector2f(uv.x, uv.w), new Vector2f(uv.z, uv.y), new Vector2f(uv.z, uv.w))
-                ));
-                n++;
-            }
-
-            for (var vert : verts) {
-                vert.sub(rotationOrigin).rotate(rotQt).add(rotationOrigin);
-            }
-
-            mesh.mesh.addGeometry(verts, tris);
-
-        });
-
-        return new SaberItemRenderer.SaberModel(id, displayName, authors, meshes, complexityScore.get(), texture);
-
     }
 
     private static Vector2f @NotNull [] getUvs(UnboundJsonModel.UnboundJsonFace face) {

@@ -1,7 +1,5 @@
-package com.beatcraft.client.render.instancing;
+package com.beatcraft.client.render.instancing.data;
 
-import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.common.data.types.Color;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBInstancedArrays;
@@ -12,27 +10,25 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import static com.beatcraft.client.render.instancing.InstancedMesh.*;
-import static com.beatcraft.client.render.instancing.InstancedMesh.VEC4_SIZE_BYTES;
-import static com.beatcraft.client.render.instancing.InstancedMesh.MATRIX4F_SIZE_BYTES;
 
-public class ArrowInstanceData implements InstancedMesh.InstanceData {
+public class BombNoteInstanceData implements InstanceData {
     private final Matrix4f transform;
     private final Color color;
     private float dissolve;
     private int index;
 
-    private static final ArrayList<ArrowInstanceData> sharedCache = new ArrayList<>();
+    private static final ArrayList<BombNoteInstanceData> sharedCache = new ArrayList<>();
 
-    private ArrowInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
+    private BombNoteInstanceData(Matrix4f transform, Color color, float dissolve, int index) {
         this.transform = new Matrix4f(transform);
         this.color = color;
         this.dissolve = dissolve;
         this.index = index;
     }
 
-    public static ArrowInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
+    public static BombNoteInstanceData create(Matrix4f transform, Color color, float dissolve, int index) {
         if (sharedCache.isEmpty()) {
-            return new ArrowInstanceData(new Matrix4f(transform), new Color(color), dissolve, index);
+            return new BombNoteInstanceData(new Matrix4f(transform), new Color(color), dissolve, index);
         } else {
             var x = sharedCache.removeLast();
             x.transform.set(transform);
@@ -43,13 +39,9 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
         }
     }
 
-    public void setColor(Color color) {
-        this.color.set(color);
-    }
-
     @Override
-    public ArrowInstanceData copy() {
-        return ArrowInstanceData.create(transform, color, dissolve, index);
+    public InstanceData copy() {
+        return BombNoteInstanceData.create(transform, color, dissolve, index);
     }
 
     @Override
@@ -122,15 +114,7 @@ public class ArrowInstanceData implements InstancedMesh.InstanceData {
 
     }
 
-    public void setup(int program, DrawPass pass) {
-
-        GlUtil.uniform1i("u_pass", pass.ordinal());
-
-        if (pass == DrawPass.Bloom) {
-            GlUtil.setTex(program, "u_depth", 1, Bloomfog.sceneDepthBuffer);
-        }
-
-    }
+    public void setup(int program) {}
     public void cleanup() {}
 
 }

@@ -5,7 +5,7 @@ import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.beatmap.object.data.BombNote;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.common.memory.MemoryPool;
-import com.beatcraft.client.render.instancing.BombNoteInstanceData;
+import com.beatcraft.client.render.instancing.data.BombNoteInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;

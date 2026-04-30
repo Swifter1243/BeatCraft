@@ -1,6 +1,5 @@
 package com.beatcraft.mixin;
 
-import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.common.items.ModItems;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -26,7 +25,7 @@ public class ItemInHandRendererMixin {
     private ItemStack beatcraft$overrideSaberRender(ItemStack stack, AbstractClientPlayer player, @Local(argsOnly = true) PoseStack matrices, @Local(argsOnly = true) MultiBufferSource vertexConsumerProvider, @Local(argsOnly = true) InteractionHand hand, @Local(ordinal = 0, argsOnly = true) float tickDelta) {
         if (player == Minecraft.getInstance().player && (ClientDataHolderVR.getInstance().vr != null && ClientDataHolderVR.getInstance().vr.isActive())) {
             if (stack.is(ModItems.SABER_ITEM)) {
-                SaberRenderer.renderSaber(stack, matrices, vertexConsumerProvider, hand, player, tickDelta);
+                // TODO: Render Saber (VR first-person view)
                 return ItemStack.EMPTY;
             }
         }

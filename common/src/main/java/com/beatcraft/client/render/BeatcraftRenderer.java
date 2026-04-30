@@ -4,20 +4,16 @@ import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapManager;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.effect.MirrorHandler;
-import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.client.render.particle.SmokeParticle;
 import com.beatcraft.common.memory.MemoryPool;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.Mirror;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -36,8 +32,6 @@ public class BeatcraftRenderer {
     public static ShaderInstance arrowShader;
     public static ShaderInstance heartHealthShader;
     public static ShaderInstance BCPosTexColShader;
-
-    private static final ArrayList<Runnable> saberRenderCalls = new ArrayList<>();
 
     public static final Quaternionf fullCameraRotation = new Quaternionf();
 
@@ -124,21 +118,6 @@ public class BeatcraftRenderer {
         }
 
         DebugRenderer.render();
-
-    }
-
-    public static void recordSaberRenderCall(Runnable call) {
-        saberRenderCalls.add(call);
-    }
-
-    public static void renderSabers() {
-
-        for (var call : saberRenderCalls) {
-            call.run();
-        }
-        saberRenderCalls.clear();
-
-        SaberRenderer.renderAll();
 
     }
 

@@ -1,4 +1,4 @@
-package com.beatcraft.client.render.instancing.lightshow.light_object;
+package com.beatcraft.client.render.instancing;
 
 /*
 This mesh loads from json using a custom format.
@@ -109,6 +109,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
@@ -126,6 +127,21 @@ import java.util.Stack;
 import java.util.function.Function;
 
 public class LightMesh {
+
+    public enum Type {
+        Environment,
+        Note,
+        Saber;
+
+        public static @Nullable Type fromString(String value) {
+            return switch (value) {
+                case "environment" -> Type.Environment;
+                case "note" -> Type.Note;
+                case "saber" -> Type.Saber;
+                default -> null;
+            };
+        }
+    }
 
     private static final class Location {
         static final int POSITION_U = 0;
@@ -298,6 +314,7 @@ public class LightMesh {
     private int bloomfogStyle = 0;
     private boolean cullBackfaces = false;
     private boolean setClippingPlane = true;
+    public final Type type;
 
     private int shaderProgram = 0;
 
@@ -404,8 +421,9 @@ public class LightMesh {
 
     }
 
-    protected LightMesh(String id, HashMap<Integer, ResourceLocation> unloadedTextures) {
+    protected LightMesh(String id, Type type, HashMap<Integer, ResourceLocation> unloadedTextures) {
         this.id = id;
+        this.type = type;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
         this.billboardDescriptors = new ArrayList<>();
@@ -1114,6 +1132,12 @@ public class LightMesh {
 
         var format = JsonUtil.getOrDefault(json, "mesh_format", JsonElement::getAsInt, 0);
 
+        var type = JsonUtil.getOrDefault(json, "type", (x) -> Type.fromString(x.getAsString()), Type.Environment);
+
+        if (type == null) {
+            type = Type.Environment;
+        }
+
         if (format != 1) {
             throw new IOException("Mesh is not in a known format");
         }
@@ -1236,7 +1260,7 @@ public class LightMesh {
         }
 
         var rawMesh = json.getAsJsonArray("mesh");
-        var mesh = new LightMesh(name, textures);
+        var mesh = new LightMesh(name, type, textures);
         meshes.put(name, mesh);
 
         mesh.cullBackfaces = JsonUtil.getOrDefault(json, "cull", JsonElement::getAsBoolean, mesh.cullBackfaces);

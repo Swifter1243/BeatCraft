@@ -9,7 +9,7 @@ import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.client.render.instancing.InstancedMesh;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
+import com.beatcraft.client.render.instancing.LightMesh;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;

@@ -1,6 +1,5 @@
 package com.beatcraft.client.beatmap.object.physical;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.animation.AnimationState;
@@ -9,11 +8,9 @@ import com.beatcraft.client.beatmap.data.NoteType;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.data.ScoreState;
 import com.beatcraft.client.beatmap.object.data.SpawnQuaternionPool;
-import com.beatcraft.client.render.BeatcraftRenderer;
-import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.logic.Hitbox;
 import com.beatcraft.client.render.WorldRenderer;
-import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.data.ColorNoteInstanceData;
 import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.client.render.particle.BeatcraftParticleRenderer;
 import com.beatcraft.client.render.particle.Debris;

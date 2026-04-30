@@ -71,7 +71,6 @@ public abstract class LevelRendererMixin {
         BeatcraftRenderer.renderBeatmaps(camera);
         BeatcraftRenderer.renderDebug(cameraPos);
         BeatcraftRenderer.renderParticles();
-        BeatcraftRenderer.renderSabers();
         BeatcraftRenderer.renderSmoke();
         BeatcraftRenderer.renderBloom();
     }

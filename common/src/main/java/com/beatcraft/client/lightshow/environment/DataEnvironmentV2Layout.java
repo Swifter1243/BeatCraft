@@ -1,10 +1,9 @@
 package com.beatcraft.client.lightshow.environment;
 
-import com.beatcraft.Beatcraft;
 import com.beatcraft.client.animation.Easing;
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.spectrogram.SpectrogramTowers;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
+import com.beatcraft.client.render.instancing.LightMesh;
 import com.beatcraft.common.utils.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

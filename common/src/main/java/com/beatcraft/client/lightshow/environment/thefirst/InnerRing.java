@@ -4,7 +4,7 @@ import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
 import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMeshInstance;
+import com.beatcraft.client.render.instancing.LightMeshInstance;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;

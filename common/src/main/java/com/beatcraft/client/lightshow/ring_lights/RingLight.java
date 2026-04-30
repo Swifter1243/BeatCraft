@@ -2,9 +2,9 @@ package com.beatcraft.client.lightshow.ring_lights;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.client.lightshow.lights.LightObject;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMesh;
-import com.beatcraft.client.render.instancing.lightshow.light_object.LightMeshInstance;
-import com.beatcraft.client.render.instancing.lightshow.light_object.MultiLightObject;
+import com.beatcraft.client.render.instancing.LightMesh;
+import com.beatcraft.client.render.instancing.LightMeshInstance;
+import com.beatcraft.client.render.instancing.MultiLightObject;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 

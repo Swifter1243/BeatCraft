@@ -1,8 +1,10 @@
-package com.beatcraft.client.render.instancing;
+package com.beatcraft.client.render.instancing.data;
 
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.render.effect.Bloomfog;
 import com.beatcraft.client.render.gl.GlUtil;
+import com.beatcraft.client.render.instancing.DrawPass;
+import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;

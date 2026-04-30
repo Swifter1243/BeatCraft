@@ -1,4 +1,4 @@
-package com.beatcraft.client.render.instancing.debug;
+package com.beatcraft.client.render.instancing.data.debug;
 
 import com.beatcraft.client.render.instancing.InstancedMesh;
 import org.joml.Matrix4f;

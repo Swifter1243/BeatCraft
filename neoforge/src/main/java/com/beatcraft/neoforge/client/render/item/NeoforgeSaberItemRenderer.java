@@ -1,6 +1,5 @@
 package com.beatcraft.neoforge.client.render.item;
 
-import com.beatcraft.client.render.item.SaberItemRenderer;
 import com.beatcraft.neoforge.common.items.NeoforgeItems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -12,16 +11,16 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class NeoforgeSaberItemRenderer extends BlockEntityWithoutLevelRenderer {
-    private final SaberItemRenderer renderer;
+    // private final SaberItemRenderer renderer;
     public NeoforgeSaberItemRenderer(BlockEntityRenderDispatcher arg, EntityModelSet arg2) {
         super(arg, arg2);
-        renderer = new SaberItemRenderer();
+        // renderer = new SaberItemRenderer();
     }
 
     @Override
     public void renderByItem(ItemStack stack, @NotNull ItemDisplayContext itemDisplayContext, @NotNull PoseStack poseStack, @NotNull MultiBufferSource multiBufferSource, int i, int j) {
-        if (stack.is(NeoforgeItems.SABER_ITEM)) {
-            renderer.render(stack, itemDisplayContext, poseStack, multiBufferSource, i, j);
-        }
+        // if (stack.is(NeoforgeItems.SABER_ITEM)) {
+        //     renderer.render(stack, itemDisplayContext, poseStack, multiBufferSource, i, j);
+        // }
     }
 }

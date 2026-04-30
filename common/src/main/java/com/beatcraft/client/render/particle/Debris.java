@@ -2,7 +2,7 @@ package com.beatcraft.client.render.particle;
 
 import com.beatcraft.client.beatmap.BeatmapController;
 import com.beatcraft.common.data.types.Color;
-import com.beatcraft.client.render.instancing.ColorNoteInstanceData;
+import com.beatcraft.client.render.instancing.data.ColorNoteInstanceData;
 import com.beatcraft.client.render.instancing.InstancedMesh;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;

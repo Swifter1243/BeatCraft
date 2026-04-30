@@ -1,4 +1,4 @@
-package com.beatcraft.client.render.instancing.lightshow.light_object;
+package com.beatcraft.client.render.instancing;
 
 import com.beatcraft.common.data.types.Color;
 import com.beatcraft.client.lightshow.lights.LightState;

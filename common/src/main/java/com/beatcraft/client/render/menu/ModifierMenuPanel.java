@@ -7,7 +7,6 @@ import com.beatcraft.client.logic.InputSystem;
 import com.beatcraft.client.menu.ModifierMenu;
 import com.beatcraft.client.networking.ClientNetworking;
 import com.beatcraft.client.render.HUDRenderer;
-import com.beatcraft.client.render.item.SaberItemRenderer;
 import com.beatcraft.client.replay.ReplayHandler;
 import com.beatcraft.client.replay.ReplayInfo;
 import com.beatcraft.common.data.map.SongDownloader;
@@ -407,100 +406,100 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             new TextWidget("*Vivify maps are not fully supported", new Vector3f(0, 140, 0.01f), 1.5f)
         ));
 
-        updateSabersPage();
-
-        customSaberPage.children.addAll(List.of(
-            SettingsMenuPanel.getOptionModifier("Color Scheme",
-                () -> BeatcraftClient.playerConfig.preferences.colors.selected(
-                    Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() - 1, -1, 4)
-                ),
-                () -> BeatcraftClient.playerConfig.preferences.colors.selected(
-                    Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() + 1, -1, 4)
-                ),
-                () -> {
-                    var s = BeatcraftClient.playerConfig.preferences.colors.selected();
-                    return s == -1 ? "--" : String.valueOf(s);
-                },
-                new Vector3f(285, -175, 0)),
-
-            new ContainerWidget(new Vector3f(-350, 40, 0), new Vector2f(),
-                new ButtonWidget(new Vector3f(-25, -200, 0.05f), new Vector2f(50, 50), this::saberPageDown,
-                    new TextureWidget(Beatcraft.id("textures/gui/song_selector/up_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
-                ),
-                new ButtonWidget(new Vector3f(-25, 225, 0.05f), new Vector2f(50, 50), this::saberPageUp,
-                    new TextureWidget(Beatcraft.id("textures/gui/song_selector/down_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
-                ),
-                SettingsMenuPanel.getButton(
-                    new TextWidget("Set Left", new Vector3f(0, -8, 0.01f), 1.75f),
-                    () -> {
-                        assert Minecraft.getInstance().player != null;
-                        var isRight = Minecraft.getInstance().player.getMainArm() == HumanoidArm.RIGHT;
-                        ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, isRight, !isRight);
-                    },
-                    new Vector3f(125f/2f, 225, 0), new Vector2f(125, 20)
-                ),
-                SettingsMenuPanel.getButton(
-                    new TextWidget("Refresh", new Vector3f(0, -8, 0.01f), 1.75f),
-                    () -> refreshSabers = true,
-                    new Vector3f(125f/2f, 250, 0), new Vector2f(125, 20)
-                ),
-                SettingsMenuPanel.getButton(
-                    new TextWidget("Set Both", new Vector3f(0, -8, 0.01f), 1.75f),
-                    () -> ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, true, true),
-                    new Vector3f(125f*1.5f + 5, 225, 0), new Vector2f(125, 20)
-                ),
-                SettingsMenuPanel.getButton(
-                    new TextWidget("Set Default", new Vector3f(0, -8, 0.01f), 1.75f),
-                    () -> SaberItemRenderer.selectDefaultModel(SaberItemRenderer.models.get(selectedSaber).id),
-                    new Vector3f(125f*1.5f + 5, 250, 0), new Vector2f(125, 20)
-                ),
-                SettingsMenuPanel.getButton(
-                    new TextWidget("Set Right", new Vector3f(0, -8, 0.01f), 1.75f),
-                    () -> {
-                        assert Minecraft.getInstance().player != null;
-                        var isRight = Minecraft.getInstance().player.getMainArm() == HumanoidArm.RIGHT;
-                        ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, !isRight, isRight);
-                    },
-                    new Vector3f(125f*2.5f + 10, 225, 0), new Vector2f(125, 20)
-                )
-
-            ),
-            customSaberSelectors,
-
-            new VisibilityToggledWidget(
-                () -> BeatcraftClient.playerConfig.preferences.colors.selected() >= 0,
-                new ContainerWidget(new Vector3f(), new Vector2f(),
-                    getColorSelectorWidget(0, "Left"),
-                    getColorSelectorWidget(1, "Right"),
-                    getColorSelectorWidget(2, "Obstacle"),
-                    getColorSelectorWidget(3, "LeftEnv"),
-                    getColorSelectorWidget(4, "RightEnv"),
-                    getColorSelectorWidget(5, "WhiteEnv"),
-                    getColorSelectorWidget(6, "LeftBoost"),
-                    getColorSelectorWidget(7, "RightBoost"),
-                    getColorSelectorWidget(8, "WhiteBoost"),
-                    new TextWidget(() -> {
-                        var col = getCurrentColorArray();
-                        return "RGB: " + ((int) (col[0] * 255)) + " / " + ((int) (col[1] * 255)) + " / " + ((int) (col[2] * 255));
-                    }, new Vector3f(205, -38, 0.01f), 2.0f),
-                    getChannelSlider(ColorChannelWidget.Channel.R),
-                    getChannelSlider(ColorChannelWidget.Channel.G),
-                    getChannelSlider(ColorChannelWidget.Channel.B),
-                    SettingsMenuPanel.getButton(
-                        new TextWidget("Reset Color", new Vector3f(0, -8, 0.01f), 1.75f),
-                        () -> {
-                            var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
-                            if (scheme == null) {
-                                return;
-                            }
-                            scheme.getIndexed(selectedSchemeColor).set(new ColorScheme().getIndexed(selectedSchemeColor));
-                        },
-                        new Vector3f(205, 100, 0), new Vector2f(200, 20)
-                    )
-                )
-            )
-
-        ));
+        // updateSabersPage();
+        //
+        // customSaberPage.children.addAll(List.of(
+        //     SettingsMenuPanel.getOptionModifier("Color Scheme",
+        //         () -> BeatcraftClient.playerConfig.preferences.colors.selected(
+        //             Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() - 1, -1, 4)
+        //         ),
+        //         () -> BeatcraftClient.playerConfig.preferences.colors.selected(
+        //             Math.clamp(BeatcraftClient.playerConfig.preferences.colors.selected() + 1, -1, 4)
+        //         ),
+        //         () -> {
+        //             var s = BeatcraftClient.playerConfig.preferences.colors.selected();
+        //             return s == -1 ? "--" : String.valueOf(s);
+        //         },
+        //         new Vector3f(285, -175, 0)),
+        //
+        //     new ContainerWidget(new Vector3f(-350, 40, 0), new Vector2f(),
+        //         new ButtonWidget(new Vector3f(-25, -200, 0.05f), new Vector2f(50, 50), this::saberPageDown,
+        //             new TextureWidget(Beatcraft.id("textures/gui/song_selector/up_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
+        //         ),
+        //         new ButtonWidget(new Vector3f(-25, 225, 0.05f), new Vector2f(50, 50), this::saberPageUp,
+        //             new TextureWidget(Beatcraft.id("textures/gui/song_selector/down_arrow.png"), new Vector3f(), new Vector2f(50, 50)).withScale(0.75f)
+        //         ),
+        //         SettingsMenuPanel.getButton(
+        //             new TextWidget("Set Left", new Vector3f(0, -8, 0.01f), 1.75f),
+        //             () -> {
+        //                 assert Minecraft.getInstance().player != null;
+        //                 var isRight = Minecraft.getInstance().player.getMainArm() == HumanoidArm.RIGHT;
+        //                 ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, isRight, !isRight);
+        //             },
+        //             new Vector3f(125f/2f, 225, 0), new Vector2f(125, 20)
+        //         ),
+        //         SettingsMenuPanel.getButton(
+        //             new TextWidget("Refresh", new Vector3f(0, -8, 0.01f), 1.75f),
+        //             () -> refreshSabers = true,
+        //             new Vector3f(125f/2f, 250, 0), new Vector2f(125, 20)
+        //         ),
+        //         SettingsMenuPanel.getButton(
+        //             new TextWidget("Set Both", new Vector3f(0, -8, 0.01f), 1.75f),
+        //             () -> ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, true, true),
+        //             new Vector3f(125f*1.5f + 5, 225, 0), new Vector2f(125, 20)
+        //         ),
+        //         SettingsMenuPanel.getButton(
+        //             new TextWidget("Set Default", new Vector3f(0, -8, 0.01f), 1.75f),
+        //             () -> SaberItemRenderer.selectDefaultModel(SaberItemRenderer.models.get(selectedSaber).id),
+        //             new Vector3f(125f*1.5f + 5, 250, 0), new Vector2f(125, 20)
+        //         ),
+        //         SettingsMenuPanel.getButton(
+        //             new TextWidget("Set Right", new Vector3f(0, -8, 0.01f), 1.75f),
+        //             () -> {
+        //                 assert Minecraft.getInstance().player != null;
+        //                 var isRight = Minecraft.getInstance().player.getMainArm() == HumanoidArm.RIGHT;
+        //                 ClientNetworking.sendSetSaberPacket(SaberItemRenderer.models.get(selectedSaber).id, !isRight, isRight);
+        //             },
+        //             new Vector3f(125f*2.5f + 10, 225, 0), new Vector2f(125, 20)
+        //         )
+        //
+        //     ),
+        //     customSaberSelectors,
+        //
+        //     new VisibilityToggledWidget(
+        //         () -> BeatcraftClient.playerConfig.preferences.colors.selected() >= 0,
+        //         new ContainerWidget(new Vector3f(), new Vector2f(),
+        //             getColorSelectorWidget(0, "Left"),
+        //             getColorSelectorWidget(1, "Right"),
+        //             getColorSelectorWidget(2, "Obstacle"),
+        //             getColorSelectorWidget(3, "LeftEnv"),
+        //             getColorSelectorWidget(4, "RightEnv"),
+        //             getColorSelectorWidget(5, "WhiteEnv"),
+        //             getColorSelectorWidget(6, "LeftBoost"),
+        //             getColorSelectorWidget(7, "RightBoost"),
+        //             getColorSelectorWidget(8, "WhiteBoost"),
+        //             new TextWidget(() -> {
+        //                 var col = getCurrentColorArray();
+        //                 return "RGB: " + ((int) (col[0] * 255)) + " / " + ((int) (col[1] * 255)) + " / " + ((int) (col[2] * 255));
+        //             }, new Vector3f(205, -38, 0.01f), 2.0f),
+        //             getChannelSlider(ColorChannelWidget.Channel.R),
+        //             getChannelSlider(ColorChannelWidget.Channel.G),
+        //             getChannelSlider(ColorChannelWidget.Channel.B),
+        //             SettingsMenuPanel.getButton(
+        //                 new TextWidget("Reset Color", new Vector3f(0, -8, 0.01f), 1.75f),
+        //                 () -> {
+        //                     var scheme = BeatcraftClient.playerConfig.preferences.colors.currentScheme();
+        //                     if (scheme == null) {
+        //                         return;
+        //                     }
+        //                     scheme.getIndexed(selectedSchemeColor).set(new ColorScheme().getIndexed(selectedSchemeColor));
+        //                 },
+        //                 new Vector3f(205, 100, 0), new Vector2f(200, 20)
+        //             )
+        //         )
+        //     )
+        //
+        // ));
 
         setupReplayPageStatic();
         //replayPage.children.add(new TextWidget("COMING SOON", new Vector3f(0, -11, -0.01f), 3));
@@ -529,75 +528,75 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
         );
     }
 
-    private void refreshSabersList() {
-        SaberItemRenderer.init();
-        updateSaberPage = true;
-    }
+    // private void refreshSabersList() {
+    //     SaberItemRenderer.init();
+    //     updateSaberPage = true;
+    // }
 
     private static final int SABERS_WIDTH = 125 * 3 + 10;
     private static final int SABERS_HEIGHT = 420;
     private static final int SABERS_X = -150;
     private static final int SABERS_Y = -250;
-    private Widget getSaberWidget(SaberItemRenderer.SaberModel model, int row, int col, int idx) {
-        var width = (SABERS_WIDTH - (SABER_COLUMNS - 1f) * 5f) / SABER_COLUMNS;
-        var height = (SABERS_HEIGHT - (SABER_ROWS - 1f) * 5f) / SABER_ROWS;
-
-        var x = (SABERS_X + (width + 5f) * col) + width/2f;
-        var y = (SABERS_Y + (height + 5f) * row) + height/2f;
-
-        var size = new Vector2f(width, height);
-
-        var authors = String.join(", ", model.authors);
-
-        return new ButtonWidget(new Vector3f(x, y, 0), size,
-            () -> selectedSaber = idx,
-            new VisibilityToggledWidget(
-                () -> selectedSaber == idx,
-                new GradientWidget(new Vector3f(), size, 0x5F_20BB20, 0x5F_20BB20, 0)
-            ),
-            new HoverWidget(new Vector3f(0, 0, -0.02f), size,
-                List.of(
-                    new GradientWidget(new Vector3f(), size, 0x5F222222, 0x5F222222, 0)
-                ), List.of(
-                    new GradientWidget(new Vector3f(), size, 0x5F444444, 0x5F444444, 0)
-                )
-            ),
-            new TextWidget(model.modelName, new Vector3f(-width/2 + 5, -16, 0.01f), 2.0f).alignedLeft().withDynamicScaling((int) ((width-5) / 2.0f)),
-            new TextWidget(model.id, new Vector3f(-width/2 + 5, 10, 0.01f), 0.8f).withColor(0xFF_808080).alignedLeft().withDynamicScaling((int) ((width-5) / 0.8f)),
-            new TextWidget(authors, new Vector3f(-width/2 + 5, 0, 0.01f), 1f).withColor(0xFF_80BB80).alignedLeft().withDynamicScaling((int) (width-5))
-        );
-
-    }
-
-    private void updateSabersPage() {
-        var sabersPerPage = SABER_COLUMNS * SABER_ROWS;
-
-        var low = currentSaberPage * sabersPerPage;
-        var high = Math.min((currentSaberPage + 1) * sabersPerPage, SaberItemRenderer.models.size());
-
-        var widgets = new ArrayList<Widget>();
-
-        var row = 0;
-        var col = 0;
-        for (var i = low; i < high; ++i) {
-            widgets.add(getSaberWidget(SaberItemRenderer.models.get(i), row, col, i));
-            ++col;
-            if (col >= SABER_COLUMNS) {
-                col = 0;
-                ++row;
-            }
-        }
-
-        customSaberSelectors.children.clear();
-        customSaberSelectors.children.addAll(widgets);
-    }
-    private void saberPageDown() {
-        currentSaberPage = Math.max(0, currentSaberPage - 1);
-    }
-    private void saberPageUp() {
-        var max = (SaberItemRenderer.models.size() / (SABER_COLUMNS * SABER_ROWS));
-        currentSaberPage = Math.min(max, currentSaberPage + 1);
-    }
+    // private Widget getSaberWidget(SaberItemRenderer.SaberModel model, int row, int col, int idx) {
+    //     var width = (SABERS_WIDTH - (SABER_COLUMNS - 1f) * 5f) / SABER_COLUMNS;
+    //     var height = (SABERS_HEIGHT - (SABER_ROWS - 1f) * 5f) / SABER_ROWS;
+    //
+    //     var x = (SABERS_X + (width + 5f) * col) + width/2f;
+    //     var y = (SABERS_Y + (height + 5f) * row) + height/2f;
+    //
+    //     var size = new Vector2f(width, height);
+    //
+    //     var authors = String.join(", ", model.authors);
+    //
+    //     return new ButtonWidget(new Vector3f(x, y, 0), size,
+    //         () -> selectedSaber = idx,
+    //         new VisibilityToggledWidget(
+    //             () -> selectedSaber == idx,
+    //             new GradientWidget(new Vector3f(), size, 0x5F_20BB20, 0x5F_20BB20, 0)
+    //         ),
+    //         new HoverWidget(new Vector3f(0, 0, -0.02f), size,
+    //             List.of(
+    //                 new GradientWidget(new Vector3f(), size, 0x5F222222, 0x5F222222, 0)
+    //             ), List.of(
+    //                 new GradientWidget(new Vector3f(), size, 0x5F444444, 0x5F444444, 0)
+    //             )
+    //         ),
+    //         new TextWidget(model.modelName, new Vector3f(-width/2 + 5, -16, 0.01f), 2.0f).alignedLeft().withDynamicScaling((int) ((width-5) / 2.0f)),
+    //         new TextWidget(model.id, new Vector3f(-width/2 + 5, 10, 0.01f), 0.8f).withColor(0xFF_808080).alignedLeft().withDynamicScaling((int) ((width-5) / 0.8f)),
+    //         new TextWidget(authors, new Vector3f(-width/2 + 5, 0, 0.01f), 1f).withColor(0xFF_80BB80).alignedLeft().withDynamicScaling((int) (width-5))
+    //     );
+    //
+    // }
+    //
+    // private void updateSabersPage() {
+    //     var sabersPerPage = SABER_COLUMNS * SABER_ROWS;
+    //
+    //     var low = currentSaberPage * sabersPerPage;
+    //     var high = Math.min((currentSaberPage + 1) * sabersPerPage, SaberItemRenderer.models.size());
+    //
+    //     var widgets = new ArrayList<Widget>();
+    //
+    //     var row = 0;
+    //     var col = 0;
+    //     for (var i = low; i < high; ++i) {
+    //         widgets.add(getSaberWidget(SaberItemRenderer.models.get(i), row, col, i));
+    //         ++col;
+    //         if (col >= SABER_COLUMNS) {
+    //             col = 0;
+    //             ++row;
+    //         }
+    //     }
+    //
+    //     customSaberSelectors.children.clear();
+    //     customSaberSelectors.children.addAll(widgets);
+    // }
+    // private void saberPageDown() {
+    //     currentSaberPage = Math.max(0, currentSaberPage - 1);
+    // }
+    // private void saberPageUp() {
+    //     var max = (SaberItemRenderer.models.size() / (SABER_COLUMNS * SABER_ROWS));
+    //     currentSaberPage = Math.min(max, currentSaberPage + 1);
+    // }
 
     private static final float SELECTOR_WIDTH = 100f;
     private static final float SELECTOR_HEIGHT = 20f;
@@ -804,7 +803,7 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
     }
 
     private void setSabersPage() {
-        refreshSabersList();
+        // refreshSabersList();
         currentPage = SongSelectPage.Sabers;
         data.hudRenderer.controller.scene = HUDRenderer.MenuScene.SongSelect;
         BeatcraftClient.playerConfig.writeToFile();
@@ -1132,11 +1131,11 @@ public class ModifierMenuPanel extends MenuPanel<ModifierMenu> {
             case Sabers -> {
                 if (refreshSabers) {
                     refreshSabers = false;
-                    refreshSabersList();
+                    // refreshSabersList();
                 }
                 if (updateSaberPage) {
                     updateSaberPage = false;
-                    updateSabersPage();
+                    // updateSabersPage();
                 }
                 customSaberPage.draw(context, pointerPosition == null ? null : pointerPosition.mul(-128, new Vector2f()), triggerPressed);
             }

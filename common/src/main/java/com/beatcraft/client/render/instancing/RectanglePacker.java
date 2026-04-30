@@ -1,4 +1,4 @@
-package com.beatcraft.client.render.instancing.lightshow.light_object;
+package com.beatcraft.client.render.instancing;
 
 import org.joml.Vector2i;
 

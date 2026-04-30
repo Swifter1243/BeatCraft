@@ -1,6 +1,6 @@
 package com.beatcraft.client.render.particle;
 
-import com.beatcraft.client.render.instancing.SmokeInstanceData;
+import com.beatcraft.client.render.instancing.data.SmokeInstanceData;
 import com.beatcraft.client.render.mesh.MeshLoader;
 import com.beatcraft.common.utils.MathUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;

@@ -4,8 +4,6 @@ package com.beatcraft.client.replay;
 import com.beatcraft.Beatcraft;
 import com.beatcraft.client.BeatcraftClient;
 import com.beatcraft.client.beatmap.BeatmapController;
-import com.beatcraft.client.render.HUDRenderer;
-import com.beatcraft.client.render.effect.SaberRenderer;
 import com.beatcraft.common.data.components.ModComponents;
 import com.beatcraft.common.data.map.SongData;
 import com.beatcraft.common.items.ModItems;
@@ -144,8 +142,7 @@ public class Replayer {
         controller.logic.headPos = headPos;
         controller.logic.headRot = headRot;
 
-        SaberRenderer.renderReplaySaber(leftSaber, leftSaberPos, leftSaberRot);
-        SaberRenderer.renderReplaySaber(rightSaber, rightSaberPos, rightSaberRot);
+        // TODO: Render sabers (replay third-person)
 
         // ClientPlayNetworking.send(new SaberSyncC2SPayload(leftSaberPos, leftSaberRot, rightSaberPos, rightSaberRot, headPos, headRot));
         // ClientPlayNetworking.send(new BeatSyncC2SPayload(beat));
