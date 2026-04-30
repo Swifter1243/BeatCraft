@@ -97,7 +97,6 @@ import com.beatcraft.client.lightshow.lights.LightState;
 import com.beatcraft.common.memory.MemoryPool;
 import com.beatcraft.client.render.BeatcraftRenderer;
 import com.beatcraft.client.render.effect.Bloomfog;
-import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.render.gl.GlUtil;
 import com.beatcraft.common.utils.JsonUtil;
 import com.beatcraft.common.utils.MathUtil;
@@ -120,7 +119,6 @@ import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -281,7 +279,7 @@ public class LightMesh {
 
     }
 
-    private record BillboardDesc(Vector3f origin, Vector3f axis, Vector3f normal, boolean cameraLock) {}
+    private record BillboardDescriptor(Vector3f origin, Vector3f axis, Vector3f normal, boolean cameraLock) {}
 
 
     public static final HashMap<String, LightMesh> meshes = new HashMap<>();
@@ -289,11 +287,11 @@ public class LightMesh {
     private static final HashSet<ResourceLocation> unloadedTextures = new HashSet<>();
     private static final HashMap<ResourceLocation, Vector4f> uvMap = new HashMap<>();
     public static boolean initialized = false;
-    private static int atlasGlId;
+    private static int atlasGlId = 0;
 
     private final ArrayList<Triangle> triangles;
     private final HashMap<Integer, ResourceLocation> meshTextures;
-    private final ArrayList<BillboardDesc> billboardDescs;
+    private final ArrayList<BillboardDescriptor> billboardDescriptors;
     private boolean doBloom = true;
     private boolean doSolid = true;
     private boolean doMirroring = true;
@@ -336,10 +334,12 @@ public class LightMesh {
     private static final int TRANSFORM_OFFSET = 4 * 4;
     private static final int COLORS_OFFSET = TRANSFORM_OFFSET + 16 * 4;
 
-
     public static void buildMeshes() {
         if (initialized) return;
+        rebuildMeshes();
+    }
 
+    public static void rebuildMeshes() {
         uvMap.clear();
 
         var atlasBuilder = new AtlasBuilder(1024);
@@ -369,7 +369,9 @@ public class LightMesh {
                 }
             }
 
-            atlasGlId = GL31.glGenTextures();
+            if (atlasGlId == 0) {
+                atlasGlId = GL31.glGenTextures();
+            }
             GL31.glBindTexture(GL31.GL_TEXTURE_2D, atlasGlId);
 
             GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_LINEAR);
@@ -406,7 +408,7 @@ public class LightMesh {
         this.id = id;
         this.triangles = new ArrayList<>();
         meshTextures = unloadedTextures;
-        this.billboardDescs = new ArrayList<>();
+        this.billboardDescriptors = new ArrayList<>();
         LightMesh.unloadedTextures.addAll(unloadedTextures.values());
     }
 
@@ -498,7 +500,7 @@ public class LightMesh {
         var normalVBuffer = MemoryUtil.memAllocFloat(vertexCount * 4);
         var materialBuffer = MemoryUtil.memAllocInt(vertexCount * 3);
         var indexBuffer = MemoryUtil.memAllocInt(vertexCount);
-        var billboardBuffer = MemoryUtil.memAllocFloat(billboardDescs.size() * (4 * 3));
+        var billboardBuffer = MemoryUtil.memAllocFloat(billboardDescriptors.size() * (4 * 3));
 
         for (int i = 0; i < vertexCount; i++) {
             indexBuffer.put(i);
@@ -532,7 +534,7 @@ public class LightMesh {
             putVec3i(materialBuffer, tri.data.colorId, tri.data.materialId, tri.flags);
         }
 
-        for (var bb : billboardDescs) {
+        for (var bb : billboardDescriptors) {
             billboardBuffer.put(bb.origin.x).put(bb.origin.y).put(bb.origin.z).put(0);
             billboardBuffer.put(bb.axis.x).put(bb.axis.y).put(bb.axis.z).put(0);
             billboardBuffer.put(bb.normal.x).put(bb.normal.y).put(bb.normal.z).put(bb.cameraLock ? 1f : 0f);
@@ -1252,14 +1254,18 @@ public class LightMesh {
             var billboard = transform.getAsJsonObject("billboard");
             var shader_settings = transform.getAsJsonObject("shader_settings");
             if (billboard != null) {
-                var bb = new BillboardDesc(
+                var bb = new BillboardDescriptor(
                     JsonUtil.getVector3(billboard.getAsJsonArray("origin")),
                     JsonUtil.getVector3(billboard.getAsJsonArray("axis")),
                     JsonUtil.getVector3(billboard.getAsJsonArray("normal")),
                     JsonUtil.getOrDefault(billboard, "camera_lock", JsonElement::getAsBoolean, false)
                 );
-                mesh.billboardDescs.add(bb);
-                flags |= mesh.billboardDescs.size() & 0xF;
+                if (mesh.billboardDescriptors.contains(bb)) {
+                    flags |= (mesh.billboardDescriptors.indexOf(bb) + 1) & 0xF;
+                } else {
+                    mesh.billboardDescriptors.add(bb);
+                    flags |= mesh.billboardDescriptors.size() & 0xF;
+                }
             }
             if (shader_settings != null) {
                 var style = JsonUtil.getOrDefault(shader_settings, "style", JsonElement::getAsString, "");

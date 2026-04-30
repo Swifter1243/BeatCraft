@@ -26,6 +26,7 @@ vec4 lerpColor(vec4 c1, vec4 c2, float t) {
 }
 
 void main() {
+    bool overrideBlack = (v_flags & 2147483648) > 0;
     if (v_style == 1) {
         if (length(v_uv - 0.5) > 0.5) {
             discard;
@@ -38,6 +39,9 @@ void main() {
 
     if (passType == 0 /* Normal */ && v_material != 2 /* Not Light/Nothing */) {
         vec4 tex = tex_sample;
+        if (overrideBlack) { // 1 << 31
+            tex = vec4(vec3(0.0), 1.0);
+        }
         if (v_material == 1 /* Light/Solid */) {
             tex = vec4(tex.rgb, 1.0);
         }

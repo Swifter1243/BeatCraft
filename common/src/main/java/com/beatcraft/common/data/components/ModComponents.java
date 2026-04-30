@@ -24,6 +24,14 @@ public class ModComponents {
                 .build()
         );
 
+    public static final RegistrySupplier<DataComponentType<Integer>> SECONDARY_SABER_COLOR_COMPONENT =
+        COMPONENTS.register("secondary_saber_color", () ->
+            DataComponentType.<Integer>builder()
+                .persistent(Codec.INT)
+                .networkSynchronized(ByteBufCodecs.INT)
+                .build()
+        );
+
     public static final RegistrySupplier<DataComponentType<Integer>> AUTO_SYNC_COLOR =
         COMPONENTS.register("sync_color", () ->
             DataComponentType.<Integer>builder()

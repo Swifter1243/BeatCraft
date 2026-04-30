@@ -211,33 +211,33 @@ public class DebugRenderer {
 
     }
 
-    private static LightMesh SABER_TEST = null;
+    // private static LightMesh SABER_TEST = null;
     public static void render() {
-        if (SABER_TEST == null) {
-            try {
-                SABER_TEST = LightMesh.load("test_saber", Beatcraft.id("saber/saber.json"));
-            } catch (java.io.IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            if (!LightMesh.meshes.containsKey("test_saber")) {
-                LightMesh.meshes.put("test_saber", SABER_TEST);
-            }
-            var blank = new LightState(new Color(), 1f);
-            SABER_TEST.buildMesh();
-            SABER_TEST.draw(
-                new Matrix4f().translate(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f().negate()),
-                new LightState[]{
-                    new LightState(new Color(0xFFFF0000), 1f),
-                    new LightState(new Color(0xFF00FF00), 1f),
-                    new LightState(new Color(0xFFFFFFFF), 1f),
-                    blank,
-                    blank, blank, blank, blank
-                },
-                new Vector3f()
-            );
-            // SABER_TEST.renderSolid();
-        }
+        // if (SABER_TEST == null) {
+        //     try {
+        //         SABER_TEST = LightMesh.load("test_saber", Beatcraft.id("saber/saber.json"));
+        //         LightMesh.initialized = false;
+        //         LightMesh.buildMeshes();
+        //     } catch (java.io.IOException e) {
+        //         throw new RuntimeException(e);
+        //     }
+        // } else {
+        //     if (!LightMesh.meshes.containsKey("test_saber")) {
+        //         LightMesh.meshes.put("test_saber", SABER_TEST);
+        //     }
+        //     var blank = new LightState(new Color(0xFFFFFFFF), 1f);
+        //     SABER_TEST.draw(
+        //         new Matrix4f().translate(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().toVector3f().negate()),
+        //         new LightState[]{
+        //             new LightState(new Color(0xFFFF0000), 1f),
+        //             new LightState(new Color(0xFF00FF00), 1f),
+        //             new LightState(new Color(0xFFFFFFFF), 1f),
+        //             new LightState(new Color(0xFFFFFF00), 1f),
+        //             blank, blank, blank, blank
+        //         },
+        //         new Vector3f()
+        //     );
+        // }
 
         var map = BeatmapManager.getNearestFiltered(Minecraft.getInstance().player.position().toVector3f(), (map2) -> true);
         if (map != null) {

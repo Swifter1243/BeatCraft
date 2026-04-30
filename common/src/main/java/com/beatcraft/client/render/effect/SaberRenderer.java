@@ -102,23 +102,7 @@ public class SaberRenderer {
     public static void renderSaber(ItemStack item, PoseStack matrices, MultiBufferSource vertexConsumerProvider, InteractionHand hand, AbstractClientPlayer player, float tickDelta) {
         matrices.pushPose();
 
-
-
-        Vector3f worldPos = matrices.last().pose()
-            .getTranslation(new Vector3f());
-            // .add(BeatcraftClient.playerGlobalPosition.toVector3f())
-            // .add(BeatcraftClient.playerSaberPosition.toVector3f())
-            // .sub(BeatcraftClient.playerCameraPosition.toVector3f());
-
-        Quaternionf worldRotation = matrices.last().pose().getNormalizedRotation(new Quaternionf());
-
-        // PoseStack matrixStack = new PoseStack();
-        // matrixStack.translate(worldPos.x, worldPos.y, worldPos.z);
-        // matrixStack.scale(0.3333f, 0.3333f, 0.3333f);
-        // matrixStack.mulPose(worldRotation);
-        // matrixStack.pushPose();
         renderTrail(true, matrices, hand.equals(InteractionHand.MAIN_HAND), player, tickDelta, item);
-        // matrixStack.popPose();
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
             item, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, 255, 0,
@@ -150,8 +134,6 @@ public class SaberRenderer {
 
 
         matrices.popPose();
-
-        // ClientPlayNetworking.send(new SaberSyncC2SPayload(GameLogicHandler.leftSaberPos, GameLogicHandler.leftSaberRotation, GameLogicHandler.rightSaberPos, GameLogicHandler.rightSaberRotation, GameLogicHandler.headPos, GameLogicHandler.headRot));
 
     }
 
