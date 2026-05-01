@@ -1,5 +1,6 @@
 package com.beatcraft.mixin.vivecraft;
 
+import com.beatcraft.Beatcraft;
 import com.beatcraft.client.logic.InputSystem;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -30,7 +31,10 @@ public abstract class MCVRMixin {
     )
     private void hotbarLock(MCVR instance, int dir, Operation<Void> original) {
         if (!InputSystem.isHotbarLocked()) {
+            Beatcraft.LOGGER.info("Input blocked");
             original.call(instance, dir);
+        } else {
+            Beatcraft.LOGGER.info("Input not blocked");
         }
     }
 

@@ -8,6 +8,7 @@ import com.beatcraft.client.beatmap.data.*;
 import com.beatcraft.client.beatmap.object.data.GameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalGameplayObject;
 import com.beatcraft.client.beatmap.object.physical.PhysicalObstacle;
+import com.beatcraft.client.logic.InputSystem;
 import com.beatcraft.client.render.HUDRenderer;
 import com.beatcraft.client.render.effect.MirrorHandler;
 import com.beatcraft.client.replay.PlayRecorder;
@@ -178,6 +179,9 @@ public class BeatmapController {
             elapsedNanoTime = 0;
             firstFrame = true;
 
+            if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.getUUID().equals(trackedPlayer)) {
+                InputSystem.lockHotbar();
+            }
 
         } catch (IOException e) {
             Beatcraft.LOGGER.error("Failed to load map", e);
@@ -465,6 +469,9 @@ public class BeatmapController {
         }
         audio = null;
         scene = HUDRenderer.MenuScene.SongSelect;
+        if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.getUUID().equals(trackedPlayer)) {
+            InputSystem.unlockHotbar();
+        }
     }
 
 }
