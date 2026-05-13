@@ -10,7 +10,8 @@ public class SaberItemRenderer {
 
     public static class TrailRenderer {
         private boolean initialized = false;
-        private int size;
+        protected int size;
+        protected int visibleSize;
         private int vao = 0;
         private int vbo = 0;
         private int ebo = 0;
@@ -26,6 +27,14 @@ public class SaberItemRenderer {
         public void resize(int newSize) {
             size = newSize;
             reset();
+        }
+
+        public void setVisibleSize(int visibleSize) {
+            this.visibleSize = Math.clamp(visibleSize, 0, size);
+        }
+
+        public int getVisibleSize() {
+            return visibleSize;
         }
 
         public void setup() {
@@ -142,5 +151,8 @@ public class SaberItemRenderer {
         }
 
     }
+
+    private TrailRenderer trailRenderer;
+
 
 }
